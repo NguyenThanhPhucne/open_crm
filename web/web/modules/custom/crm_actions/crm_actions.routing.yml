@@ -1,0 +1,37 @@
+# Routes for CRM content types
+
+crm.add_contact_route:
+  path: '/crm/my-contacts'
+  defaults:
+    _controller: '\Drupal\views\Routing\ViewPageController::handle'
+    view_id: 'my_contacts'
+    display_id: 'page_1'
+  requirements:
+    _permission: 'create contact content'
+
+crm.add_deal_route:
+  path: '/crm/my-pipeline'
+  defaults:
+    _controller: '\Drupal\views\Routing\ViewPageController::handle'
+    view_id: 'my_deals'
+    display_id: 'page_1'
+  requirements:
+    _permission: 'create deal content'
+
+crm.add_activity_route:
+  path: '/crm/my-activities'
+  defaults:
+    _controller: '\Drupal\views\Routing\ViewPageController::handle'
+    view_id: 'my_activities'
+    display_id: 'page_1'
+  requirements:
+    _permission: 'create activity content'
+
+crm.add_organization_route:
+  path: '/crm/my-organizations'
+  defaults:
+    _controller: '\Drupal\views\Routing\ViewPageController::handle'
+    view_id: 'my_organizations'
+    display_id: 'page_1'
+  requirements:
+    _permission: 'create organization content'

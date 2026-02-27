@@ -1,0 +1,37 @@
+# Local actions for CRM
+
+crm.add_contact:
+  route_name: "node.add"
+  route_parameters:
+    node_type: "contact"
+  title: "Add Contact"
+  appears_on:
+    - view.my_contacts.page_1
+  class: Drupal\Core\Menu\LocalActionDefault
+
+crm.add_deal:
+  route_name: "node.add"
+  route_parameters:
+    node_type: "deal"
+  title: "Add Deal"
+  appears_on:
+    - view.my_deals.page_1
+  class: Drupal\Core\Menu\LocalActionDefault
+
+crm.add_activity:
+  route_name: "node.add"
+  route_parameters:
+    node_type: "activity"
+  title: "Add Activity"
+  appears_on:
+    - view.my_activities.page_1
+  class: Drupal\Core\Menu\LocalActionDefault
+
+crm.add_organization:
+  route_name: "node.add"
+  route_parameters:
+    node_type: "organization"
+  title: "Add Organization"
+  appears_on:
+    - view.my_organizations.page_1
+  class: Drupal\Core\Menu\LocalActionDefault

@@ -1,0 +1,7 @@
+crm_import.import_page:
+  path: "/crm/import"
+  defaults:
+    _controller: '\Drupal\crm_import\Controller\ImportController::importPage'
+    _title: "Import Data"
+  requirements:
+    _permission: "access content"

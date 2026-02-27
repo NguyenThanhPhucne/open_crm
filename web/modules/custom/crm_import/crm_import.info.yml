@@ -1,0 +1,7 @@
+name: 'CRM Import'
+type: module
+description: 'CSV import functionality for CRM entities'
+package: 'CRM'
+core_version_requirement: ^11
+dependencies:
+  - feeds:feeds

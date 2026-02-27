@@ -1,0 +1,284 @@
+<style>
+  .crm-quick-access {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: #f8fafc;
+  }
+
+  .crm-header {
+    margin-bottom: 32px;
+  }
+
+  .crm-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+  }
+
+  .crm-header p {
+    color: #64748b;
+    font-size: 15px;
+    margin: 0;
+  }
+
+  .crm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 2rem;
+  }
+
+  .crm-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1e293b;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crm-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--card-color);
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+  }
+
+  .crm-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    border-color: var(--card-color);
+  }
+
+  .crm-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .crm-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    background: var(--card-bg);
+    color: var(--card-color);
+    flex-shrink: 0;
+  }
+
+  .crm-card-icon i {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+  }
+
+  .crm-card-content h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    color: #1e293b;
+  }
+
+  .crm-card-content p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .crm-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  .crm-card-meta i {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+  }
+
+  /* Card color schemes */
+  .card-blue {
+    --card-color: #3b82f6;
+    --card-bg: #eff6ff;
+  }
+
+  .card-green {
+    --card-color: #10b981;
+    --card-bg: #ecfdf5;
+  }
+
+  .card-purple {
+    --card-color: #8b5cf6;
+    --card-bg: #f5f3ff;
+  }
+
+  .card-orange {
+    --card-color: #f59e0b;
+    --card-bg: #fffbeb;
+  }
+
+  .card-pink {
+    --card-color: #ec4899;
+    --card-bg: #fdf2f8;
+  }
+
+  .card-cyan {
+    --card-color: #06b6d4;
+    --card-bg: #ecfeff;
+  }
+
+  .card-red {
+    --card-color: #ef4444;
+    --card-bg: #fef2f2;
+  }
+
+  @media (max-width: 768px) {
+    .crm-quick-access {
+      padding: 24px 16px;
+    }
+
+    .crm-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+</style>
+
+<div class="crm-quick-access">
+  <div class="crm-header">
+    <h1>Quick Access</h1>
+    <p>Truy cập nhanh các chức năng chính của CRM</p>
+  </div>
+
+  <div class="crm-grid">
+    <a href="/crm/dashboard" class="crm-card card-blue">
+      <div class="crm-card-icon">
+        <i data-lucide="layout-dashboard"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>Dashboard</h3>
+        <p>Xem tổng quan và thống kê doanh số</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="trending-up"></i>
+        <span>Analytics</span>
+      </div>
+    </a>
+
+    <a href="/crm/my-contacts" class="crm-card card-green">
+      <div class="crm-card-icon">
+        <i data-lucide="users"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>My Contacts</h3>
+        <p>Quản lý danh sách khách hàng của bạn</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="user-check"></i>
+        <span>Contacts</span>
+      </div>
+    </a>
+
+    <a href="/crm/pipeline" class="crm-card card-purple">
+      <div class="crm-card-icon">
+        <i data-lucide="kanban-square"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>Sales Pipeline</h3>
+        <p>Quản lý deals với Kanban board</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="dollar-sign"></i>
+        <span>Kanban</span>
+      </div>
+    </a>
+
+    <a href="/crm/my-activities" class="crm-card card-orange">
+      <div class="crm-card-icon">
+        <i data-lucide="calendar-clock"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>My Activities</h3>
+        <p>Lịch làm việc và công việc cần làm</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="clock"></i>
+        <span>Schedule</span>
+      </div>
+    </a>
+
+    <a href="/crm/my-organizations" class="crm-card card-pink">
+      <div class="crm-card-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>My Organizations</h3>
+        <p>Danh sách công ty của bạn</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="briefcase-business"></i>
+        <span>Companies</span>
+      </div>
+    </a>
+
+    <a href="/crm/import" class="crm-card card-cyan">
+      <div class="crm-card-icon">
+        <i data-lucide="upload"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>Import Data</h3>
+        <p>Nhập hàng loạt từ file CSV</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="file-spreadsheet"></i>
+        <span>CSV Import</span>
+      </div>
+    </a>
+
+    <a href="/admin/content" class="crm-card card-red">
+      <div class="crm-card-icon">
+        <i data-lucide="folder-open"></i>
+      </div>
+      <div class="crm-card-content">
+        <h3>All Content</h3>
+        <p>Quản lý tất cả nội dung trong hệ thống</p>
+      </div>
+      <div class="crm-card-meta">
+        <i data-lucide="database"></i>
+        <span>Content</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Lucide Icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    lucide.createIcons();
+  });
+</script>

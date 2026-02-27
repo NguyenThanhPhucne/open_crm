@@ -1,0 +1,5 @@
+name: 'CRM Kanban Pipeline'
+type: module
+description: 'Kanban board for managing deals with drag-and-drop functionality'
+package: 'CRM'
+core_version_requirement: ^11

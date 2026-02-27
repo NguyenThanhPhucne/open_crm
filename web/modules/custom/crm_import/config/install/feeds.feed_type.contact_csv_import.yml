@@ -1,0 +1,54 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - crm_import
+id: contact_csv_import
+label: "Contact CSV Import"
+description: "Import contacts from CSV file"
+help: "Upload a CSV file with columns: name, email, phone, position"
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: "csv txt"
+  directory: "public://feeds/contacts"
+  allowed_schemes:
+    - public
+parser: csv
+parser_configuration:
+  delimiter: ","
+  no_headers: false
+  encoding: UTF-8
+processor: "entity:node"
+processor_configuration:
+  langcode: site_default
+  values:
+    type: contact
+  authorize: true
+  update_existing: 1
+  update_non_existent: skip
+  skip_hash_check: false
+  expiration: -1
+  owner_feed_author: true
+custom_sources: {}
+mappings:
+  - target: title
+    map:
+      value: name
+    unique:
+      value: false
+  - target: field_email
+    map:
+      value: email
+    unique:
+      value: true
+  - target: field_phone
+    map:
+      value: phone
+  - target: field_position
+    map:
+      value: position
+  - target: uid
+    map:
+      target_id: "1"

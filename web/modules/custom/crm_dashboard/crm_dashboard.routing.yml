@@ -1,0 +1,15 @@
+crm_dashboard.dashboard:
+  path: "/crm/dashboard"
+  defaults:
+    _controller: '\Drupal\crm_dashboard\Controller\DashboardController::view'
+    _title: "CRM Dashboard"
+  requirements:
+    _permission: "access content"
+
+crm_dashboard.test:
+  path: "/crm/dashboard-new"
+  defaults:
+    _controller: '\Drupal\crm_dashboard\Controller\DashboardController::view'
+    _title: "NEW Dashboard Test"
+  requirements:
+    _permission: "access content"

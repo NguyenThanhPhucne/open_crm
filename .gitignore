@@ -1,0 +1,197 @@
+# ============================================
+# Drupal CRM Project - .gitignore
+# ============================================
+# Chỉ commit code custom, không commit vendor, core, contrib
+# ============================================
+
+# ========== Composer ==========
+# Ignore dependencies (sẽ install lại từ composer.json)
+/vendor/
+
+# Keep composer files
+!composer.json
+!composer.lock
+
+# ========== Drupal Core ==========
+# Ignore toàn bộ Drupal core (sẽ install từ composer)
+/web/core/
+/web/.csslintrc
+/web/.editorconfig
+/web/.eslintignore
+/web/.eslintrc.json
+/web/.ht.router.php
+/web/.htaccess
+/web/autoload.php
+/web/index.php
+/web/INSTALL.txt
+/web/README.md
+/web/robots.txt
+/web/update.php
+/web/web.config
+
+# ========== Contributed Modules & Themes ==========
+# Ignore contrib (sẽ install từ composer)
+/web/modules/contrib/
+/web/themes/contrib/
+/web/profiles/contrib/
+/web/libraries/
+
+# ========== Custom Code (KEEP THESE!) ==========
+# Custom modules - COMMIT THESE
+!/web/modules/custom/
+
+# Custom themes - COMMIT THESE
+!/web/themes/custom/
+
+# Custom profiles - COMMIT THESE
+!/web/profiles/custom/
+
+# ========== Configuration ==========
+# Settings files - IGNORE (chứa DB credentials)
+/web/sites/*/settings.php
+/web/sites/*/settings.local.php
+/web/sites/*/services*.yml
+
+# Exception: Keep example files for documentation
+!/web/sites/*/settings.example.php
+!/web/sites/*/default.settings.php
+
+# Config sync directory - COMMIT if using config management
+# Uncomment nếu bạn dùng config sync:
+# !/web/sites/default/config/
+
+# ========== User Uploaded Files ==========
+# Ignore uploaded files và private files
+/web/sites/*/files/
+/web/sites/*/private/
+
+# Exception: Keep import templates
+!/web/sites/default/files/import-templates/
+!/web/sites/default/files/import-templates/*.csv
+
+# ========== Cache & Temporary Files ==========
+# Drupal cache
+/web/sites/*/files/css/
+/web/sites/*/files/js/
+/web/sites/*/files/php/
+/web/sites/*/files/styles/
+
+# Backup files
+*.bak
+*.swp
+*~
+*.orig
+
+# Temporary files
+/tmp/
+/temp/
+
+# ========== IDE & Editor Files ==========
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbproject/
+
+# Eclipse
+.project
+.buildpath
+.settings/
+
+# ========== OS Files ==========
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ========== Development Tools ==========
+# DDEV
+.ddev/
+!.ddev/config.yaml
+!.ddev/config.*.yaml
+
+# Docker
+docker-compose.override.yml
+
+# Node.js (nếu có frontend build)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# ========== Database & Dumps ==========
+*.sql
+*.sql.gz
+*.mysql
+*.dump
+
+# ========== Logs ==========
+*.log
+/logs/
+/log/
+
+# ========== Other ==========
+# Drush
+/.drush/
+/drush/contrib/
+
+# Drupal Console
+/.console/
+
+# DrupalVM
+.vagrant/
+
+# PHPUnit
+/phpunit.xml
+
+# Behat
+/behat.yml
+
+# ============================================
+# FILES TO KEEP (Explicitly not ignored)
+# ============================================
+
+# Project custom scripts
+!/scripts/
+!/scripts/**
+
+# Project documentation
+!/README.md
+!/CONTENT_TYPES.md
+!/SYSTEM_GAP_ANALYSIS.md
+!/LICENSE.txt
+!/*.md
+
+# Custom files
+!/lucide_icons_page.html
+!/create_taxonomies.php
+
+# Recipes
+!/recipes/
+!/recipes/**
+
+# Keep example.gitignore for reference
+!/web/example.gitignore

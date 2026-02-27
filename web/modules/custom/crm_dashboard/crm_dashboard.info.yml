@@ -1,0 +1,5 @@
+name: 'CRM Dashboard'
+type: module
+description: 'Professional dashboard with KPI cards and charts'
+core_version_requirement: ^11
+package: 'CRM'
