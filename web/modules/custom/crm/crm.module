@@ -32,8 +32,15 @@ function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
   }
 
   // Sales representatives: check ownership.
-  if ($account->hasRole('sales_representative')) {
-    $owner_field = $node->bundle() === 'activity' ? 'field_assigned_to' : 'field_owner';
+  if ($account->hasRole('sales_rep')) {
+    // Determine the ownership field based on content type
+    if ($node->bundle() === 'activity') {
+      $owner_field = 'field_assigned_to';
+    } elseif ($node->bundle() === 'organization') {
+      $owner_field = 'field_assigned_staff';
+    } else {
+      $owner_field = 'field_owner';
+    }
 
     if (!$node->hasField($owner_field)) {
       return AccessResult::neutral();
@@ -74,7 +81,7 @@ function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterf
   }
 
   // Only filter for sales representatives.
-  if (!$account->hasRole('sales_representative')) {
+  if (!$account->hasRole('sales_rep')) {
     return;
   }
 
@@ -84,14 +91,16 @@ function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterf
     if (isset($table['table']) && $table['table'] === 'node_field_data') {
       $alias = $table['alias'];
 
-      // Left join with field_owner and field_assigned_to.
+      // Left join with field_owner, field_assigned_to, and field_assigned_staff.
       $query->leftJoin('node__field_owner', 'crm_owner', "$alias.nid = crm_owner.entity_id");
       $query->leftJoin('node__field_assigned_to', 'crm_assigned', "$alias.nid = crm_assigned.entity_id");
+      $query->leftJoin('node__field_assigned_staff', 'crm_staff', "$alias.nid = crm_staff.entity_id");
 
-      // Filter: current user is owner OR assigned_to.
+      // Filter: current user is owner OR assigned_to OR assigned_staff.
       $or = $query->orConditionGroup()
         ->condition('crm_owner.field_owner_target_id', $account->id(), '=')
-        ->condition('crm_assigned.field_assigned_to_target_id', $account->id(), '=');
+        ->condition('crm_assigned.field_assigned_to_target_id', $account->id(), '=')
+        ->condition('crm_staff.field_assigned_staff_target_id', $account->id(), '=');
 
       $query->condition($or);
       break;
@@ -122,13 +131,21 @@ function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     return;
   }
 
-  $crm_types = ['contact', 'deal', 'organization'];
+  $crm_types = ['contact', 'deal'];
   $current_user = \Drupal::currentUser();
 
-  // Set field_owner for Contact, Deal, Organization.
+  // Set field_owner for Contact and Deal.
   if (in_array($node->bundle(), $crm_types)) {
     if (isset($form['field_owner'])) {
       $form['field_owner']['widget'][0]['target_id']['#default_value'] =
+        \Drupal\user\Entity\User::load($current_user->id());
+    }
+  }
+
+  // Set field_assigned_staff for Organization.
+  if ($node->bundle() === 'organization') {
+    if (isset($form['field_assigned_staff'])) {
+      $form['field_assigned_staff']['widget'][0]['target_id']['#default_value'] =
         \Drupal\user\Entity\User::load($current_user->id());
     }
   }
@@ -148,19 +165,26 @@ function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
  * Ensures owner is set when saving CRM content.
  */
 function crm_node_presave(NodeInterface $node) {
-  $crm_types = ['contact', 'deal', 'organization'];
+  $crm_types = ['contact', 'deal'];
   
   // Check if this is CRM content.
-  if (!in_array($node->bundle(), $crm_types) && $node->bundle() !== 'activity') {
+  if (!in_array($node->bundle(), $crm_types) && $node->bundle() !== 'activity' && $node->bundle() !== 'organization') {
     return;
   }
 
   $current_user = \Drupal::currentUser();
 
-  // Set owner for Contact, Deal, Organization if empty.
+  // Set owner for Contact and Deal if empty.
   if (in_array($node->bundle(), $crm_types)) {
     if ($node->hasField('field_owner') && $node->get('field_owner')->isEmpty()) {
       $node->set('field_owner', $current_user->id());
+    }
+  }
+
+  // Set assigned_staff for Organization if empty.
+  if ($node->bundle() === 'organization') {
+    if ($node->hasField('field_assigned_staff') && $node->get('field_assigned_staff')->isEmpty()) {
+      $node->set('field_assigned_staff', $current_user->id());
     }
   }
 

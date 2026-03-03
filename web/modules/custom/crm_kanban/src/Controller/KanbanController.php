@@ -271,6 +271,8 @@ class KanbanController extends ControllerBase {
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      position: relative;
+      z-index: 500;
     }
     
     .gin-breadcrumb-wrapper {
@@ -294,12 +296,15 @@ class KanbanController extends ControllerBase {
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: color 0.2s ease;
+      transition: all 0.2s ease;
       font-weight: 500;
+      cursor: pointer;
+      position: relative;
     }
     
     .gin-breadcrumb__link:hover {
       color: #3b82f6;
+      text-decoration: underline;
     }
     
     .region-sticky {
@@ -534,14 +539,16 @@ class KanbanController extends ControllerBase {
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.6);
-      z-index: 1000;
+      z-index: 2000;
       animation: fadeIn 0.2s ease;
+      pointer-events: none;
     }
     
     .deal-modal-overlay.active {
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: auto;
     }
     
     .deal-modal {
@@ -1445,6 +1452,25 @@ HTML;
     document.getElementById('dealClosingModal').addEventListener('click', function(e) {
       if (e.target === this) {
         closeDealModal();
+      }
+    });
+    
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('dealClosingModal');
+        if (modal.classList.contains('active')) {
+          closeDealModal();
+        }
+      }
+    });
+    
+    // Debug: Check for stuck modals on page load
+    window.addEventListener('load', function() {
+      const modal = document.getElementById('dealClosingModal');
+      if (modal && modal.classList.contains('active')) {
+        console.warn('Modal was stuck open, closing...');
+        modal.classList.remove('active');
       }
     });
     

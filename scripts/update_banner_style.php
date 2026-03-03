@@ -1,15 +1,16 @@
 <?php
 
 /**
- * Add Login/Register Banner to Homepage
+ * Update Login Banner to New Professional Style
+ * Run with: ddev drush scr scripts/update_banner_style.php
  */
 
 use Drupal\node\Entity\Node;
 
-echo "🔐 THÊM LOGIN/REGISTER VÀO HOMEPAGE\n";
+echo "🎨 CẬP NHẬT BANNER STYLE MỚI\n";
 echo "====================================\n\n";
 
-// Load homepage node (node 23 - Quick Access)
+// Load homepage node
 $node = Node::load(23);
 
 if (!$node) {
@@ -17,19 +18,35 @@ if (!$node) {
   exit(1);
 }
 
-echo "📄 Homepage: " . $node->getTitle() . " (node/{$node->id()})\n\n";
+echo "📄 Homepage: " . $node->getTitle() . "\n";
 
 $current_body = $node->body->value;
 
-// Check if login banner already exists
+// Remove old banner completely
 if (stripos($current_body, 'crm-login-banner') !== FALSE) {
-  echo "⚠️  Login banner đã tồn tại, đang cập nhật...\n";
-  // Remove old banner
-  $current_body = preg_replace('/<!-- Login Section for Anonymous Users -->.*?<\/div>\n\n/s', '', $current_body);
+  echo "🗑️  Xóa banner cũ...\n";
+  // Find the start
+  $start_pos = strpos($current_body, '<!-- Login Section for Anonymous Users -->');
+  if ($start_pos !== FALSE) {
+    // Find the end - look for the closing script tag and div
+    $search_from = $start_pos;
+    $end_marker = '</script>';
+    $end_pos = strpos($current_body, $end_marker, $search_from);
+    
+    if ($end_pos !== FALSE) {
+      // Include the closing tag
+      $end_pos += strlen($end_marker);
+      // Remove this entire section
+      $before = substr($current_body, 0, $start_pos);
+      $after = substr($current_body, $end_pos);
+      $current_body = $before . $after;
+      echo "✅ Đã xóa banner cũ\n";
+    }
+  }
 }
 
-// Create login banner HTML
-$login_banner = <<<'HTML'
+// Add new professional banner
+$new_banner = <<<'HTML'
 <!-- Login Section for Anonymous Users -->
 <div class="crm-login-banner" style="display: none;">
   <style>
@@ -176,7 +193,7 @@ $login_banner = <<<'HTML'
       </svg>
       Đăng nhập
     </a>
-    <a href="/user/register" class="btn-register">
+    <a href="/register" class="btn-register">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
         <circle cx="9" cy="7" r="4"></circle>
@@ -200,25 +217,15 @@ $login_banner = <<<'HTML'
 
 HTML;
 
-// Add login banner at the beginning
-$new_body = $login_banner . $current_body;
+// Add banner at the beginning of content
+$new_body = $new_banner . "\n\n" . trim($current_body);
 
-$node->set('body', [
-  'value' => $new_body,
-  'format' => 'full_html',
-]);
-
+// Update node
+$node->body->value = $new_body;
+$node->body->format = 'full_html';
 $node->save();
 
-echo "✅ Đã thêm login/register banner vào homepage!\n\n";
-echo "📍 Trang chủ: http://open-crm.ddev.site/\n";
-echo "🔗 Đăng nhập: http://open-crm.ddev.site/user/login\n";
-echo "🔗 Đăng ký: http://open-crm.ddev.site/user/register\n\n";
-echo "🎨 Features:\n";
-echo "   • Banner gradient màu tím chuyên nghiệp\n";
-echo "   • Slide-down animation khi load\n";
-echo "   • 2 nút: Đăng nhập (trắng) + Đăng ký (trong suốt)\n";
-echo "   • Tự động ẩn khi user đã login\n";
-echo "   • Responsive design cho mobile\n";
-echo "   • Smooth hover effects\n\n";
-echo "✨ HOÀN THÀNH!\n";
+echo "✅ Đã cập nhật banner style mới!\n";
+echo "🎨 Design: Professional (giống Facebook/Google)\n";
+echo "📊 Màu sắc: Xám nhạt/trắng với accent xanh\n";
+echo "🔄 Refresh trang để xem thay đổi!\n";

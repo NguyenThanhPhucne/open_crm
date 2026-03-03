@@ -18,6 +18,9 @@
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  z-index: 100;
 }
 
 .crm-back-link:hover,
@@ -26,6 +29,12 @@
   border-color: #adb5bd;
   color: #212529;
   text-decoration: none;
+  transform: translateX(-2px);
+}
+
+.crm-back-link:active,
+.button--back:active {
+  transform: translateX(-3px);
 }
 
 .crm-back-link:before {
@@ -36,12 +45,16 @@
 /* Form back button */
 .crm-form-back-button {
   margin-bottom: 1rem;
+  position: relative;
+  z-index: 100;
 }
 
 /* Page back button */
 .crm-page-back-button {
   margin-bottom: 1.5rem;
   padding: 1rem 0;
+  position: relative;
+  z-index: 100;
 }
 
 /* Quick navigation bar */

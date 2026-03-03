@@ -1,49 +1,55 @@
+#!/bin/bash
+
+echo "🎨 CẬP NHẬT BANNER STYLE MỚI"
+echo "===================================="
+echo ""
+
+# Create a temporary PHP file
+cat > /tmp/update_banner.php << 'PHPEOF'
 <?php
-
-/**
- * Add Login/Register Banner to Homepage
- */
-
 use Drupal\node\Entity\Node;
 
-echo "🔐 THÊM LOGIN/REGISTER VÀO HOMEPAGE\n";
-echo "====================================\n\n";
-
-// Load homepage node (node 23 - Quick Access)
 $node = Node::load(23);
-
 if (!$node) {
-  echo "❌ Không tìm thấy homepage (node 23)\n";
+  echo "Error: Node 23 not found\n";
   exit(1);
 }
 
-echo "📄 Homepage: " . $node->getTitle() . " (node/{$node->id()})\n\n";
-
 $current_body = $node->body->value;
 
-// Check if login banner already exists
+// Remove old banner
 if (stripos($current_body, 'crm-login-banner') !== FALSE) {
-  echo "⚠️  Login banner đã tồn tại, đang cập nhật...\n";
-  // Remove old banner
-  $current_body = preg_replace('/<!-- Login Section for Anonymous Users -->.*?<\/div>\n\n/s', '', $current_body);
+  $start_marker = '<!-- Login Section for Anonymous Users -->';
+  $end_marker = '</script>';
+  
+  $start_pos = strpos($current_body, $start_marker);
+  if ($start_pos !== FALSE) {
+    $end_pos = strpos($current_body, $end_marker, $start_pos);
+    if ($end_pos !== FALSE) {
+      $end_pos += strlen($end_marker);
+      // Find the closing </div> after the script
+      $div_end = strpos($current_body, '</div>', $end_pos);
+      if ($div_end !== FALSE) {
+        $end_pos = $div_end + 6; // length of </div>
+      }
+      
+      $before = substr($current_body, 0, $start_pos);
+      $after = substr($current_body, $end_pos);
+      $current_body = trim($before . $after);
+      echo "Removed old banner\n";
+    }
+  }
 }
 
-// Create login banner HTML
-$login_banner = <<<'HTML'
+// Add new professional banner
+$new_banner = <<<'HTML'
 <!-- Login Section for Anonymous Users -->
 <div class="crm-login-banner" style="display: none;">
   <style>
     @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    
     .crm-login-banner {
       background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
       border: 1px solid #e8eaed;
@@ -60,22 +66,14 @@ $login_banner = <<<'HTML'
       position: relative;
       overflow: hidden;
     }
-    
     .crm-login-banner::before {
       content: '';
       position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
+      left: 0; top: 0; bottom: 0;
       width: 4px;
       background: linear-gradient(to bottom, #1877f2 0%, #4285f4 100%);
     }
-    
-    .crm-login-banner .login-text {
-      flex: 1;
-      min-width: 280px;
-    }
-    
+    .crm-login-banner .login-text { flex: 1; min-width: 280px; }
     .crm-login-banner h2 {
       margin: 0 0 8px 0;
       font-size: 22px;
@@ -83,21 +81,18 @@ $login_banner = <<<'HTML'
       color: #202124;
       letter-spacing: -0.3px;
     }
-    
     .crm-login-banner p {
       margin: 0;
       font-size: 14px;
       color: #5f6368;
       line-height: 1.6;
     }
-    
     .crm-login-banner .login-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
     }
-    
     .crm-login-banner .btn-login,
     .crm-login-banner .btn-register {
       display: inline-flex;
@@ -112,30 +107,25 @@ $login_banner = <<<'HTML'
       white-space: nowrap;
       border: 1px solid transparent;
     }
-    
     .crm-login-banner .btn-login {
       background: #1877f2;
       color: white;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
-    
     .crm-login-banner .btn-login:hover {
       background: #166fe5;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
-    
     .crm-login-banner .btn-register {
       background: white;
       color: #5f6368;
       border: 1px solid #dadce0;
     }
-    
     .crm-login-banner .btn-register:hover {
       background: #f8f9fa;
       border-color: #d1d3d6;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
-    
     @media (max-width: 768px) {
       .crm-login-banner {
         flex-direction: column;
@@ -143,11 +133,7 @@ $login_banner = <<<'HTML'
         padding: 24px 28px;
         gap: 20px;
       }
-      
-      .crm-login-banner .login-actions {
-        width: 100%;
-      }
-      
+      .crm-login-banner .login-actions { width: 100%; }
       .crm-login-banner .btn-login,
       .crm-login-banner .btn-register {
         flex: 1;
@@ -155,18 +141,12 @@ $login_banner = <<<'HTML'
         min-height: 40px;
       }
     }
-    
-    /* Hide banner if user is logged in */
-    body.user-logged-in .crm-login-banner {
-      display: none !important;
-    }
+    body.user-logged-in .crm-login-banner { display: none !important; }
   </style>
-  
   <div class="login-text">
     <h2>Welcome to Open CRM</h2>
     <p>Quản lý khách hàng, deals và hoạt động kinh doanh một cách chuyên nghiệp. Đăng nhập để bắt đầu!</p>
   </div>
-  
   <div class="login-actions">
     <a href="/user/login" class="btn-login">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -176,7 +156,7 @@ $login_banner = <<<'HTML'
       </svg>
       Đăng nhập
     </a>
-    <a href="/user/register" class="btn-register">
+    <a href="/register" class="btn-register">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
         <circle cx="9" cy="7" r="4"></circle>
@@ -186,9 +166,7 @@ $login_banner = <<<'HTML'
       Đăng ký
     </a>
   </div>
-  
   <script>
-    // Show banner only for anonymous users
     document.addEventListener('DOMContentLoaded', function() {
       var loginBanner = document.querySelector('.crm-login-banner');
       if (loginBanner && !document.body.classList.contains('user-logged-in')) {
@@ -197,28 +175,31 @@ $login_banner = <<<'HTML'
     });
   </script>
 </div>
-
 HTML;
 
-// Add login banner at the beginning
-$new_body = $login_banner . $current_body;
-
-$node->set('body', [
-  'value' => $new_body,
-  'format' => 'full_html',
-]);
-
+$new_body = $new_banner . "\n\n" . $current_body;
+$node->body->value = $new_body;
+$node->body->format = 'full_html';
 $node->save();
 
-echo "✅ Đã thêm login/register banner vào homepage!\n\n";
-echo "📍 Trang chủ: http://open-crm.ddev.site/\n";
-echo "🔗 Đăng nhập: http://open-crm.ddev.site/user/login\n";
-echo "🔗 Đăng ký: http://open-crm.ddev.site/user/register\n\n";
-echo "🎨 Features:\n";
-echo "   • Banner gradient màu tím chuyên nghiệp\n";
-echo "   • Slide-down animation khi load\n";
-echo "   • 2 nút: Đăng nhập (trắng) + Đăng ký (trong suốt)\n";
-echo "   • Tự động ẩn khi user đã login\n";
-echo "   • Responsive design cho mobile\n";
-echo "   • Smooth hover effects\n\n";
-echo "✨ HOÀN THÀNH!\n";
+echo "Banner updated successfully!\n";
+PHPEOF
+
+echo "📝 Đang cập nhật banner..."
+ddev drush php:script /tmp/update_banner.php
+
+echo ""
+echo "✅ Hoàn tất!"
+echo ""
+echo "🎨 Banner mới:"
+echo "   • Màu: Xám nhạt/trắng gradient (professional)"
+echo "   • Border: Accent xanh Facebook/Google"
+echo "   • Button: Xanh #1877f2 (Facebook blue)"
+echo "   • Typography: Clean, modern"
+echo ""
+echo "🔄 Đang clear cache..."
+ddev drush cr
+
+echo ""
+echo "✨ Xong! Refresh trang để xem banner mới:"
+echo "   http://open-crm.ddev.site"

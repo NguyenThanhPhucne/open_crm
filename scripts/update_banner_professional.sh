@@ -1,35 +1,15 @@
-<?php
+#!/bin/bash
 
-/**
- * Add Login/Register Banner to Homepage
- */
+echo "🎨 CẬP NHẬT BANNER STYLE MỚI"
+echo "===================================="
+echo ""
 
-use Drupal\node\Entity\Node;
+# First, remove old banner
+echo "🗑️  Xóa banner cũ..."
+ddev drush sql-query "UPDATE node__body SET body_value = REGEXP_REPLACE(body_value, '<!-- Login Section for Anonymous Users -->.*</script>', '', 1, 0, 's') WHERE entity_id = 23"
 
-echo "🔐 THÊM LOGIN/REGISTER VÀO HOMEPAGE\n";
-echo "====================================\n\n";
-
-// Load homepage node (node 23 - Quick Access)
-$node = Node::load(23);
-
-if (!$node) {
-  echo "❌ Không tìm thấy homepage (node 23)\n";
-  exit(1);
-}
-
-echo "📄 Homepage: " . $node->getTitle() . " (node/{$node->id()})\n\n";
-
-$current_body = $node->body->value;
-
-// Check if login banner already exists
-if (stripos($current_body, 'crm-login-banner') !== FALSE) {
-  echo "⚠️  Login banner đã tồn tại, đang cập nhật...\n";
-  // Remove old banner
-  $current_body = preg_replace('/<!-- Login Section for Anonymous Users -->.*?<\/div>\n\n/s', '', $current_body);
-}
-
-// Create login banner HTML
-$login_banner = <<<'HTML'
+# Read the new banner HTML from file
+NEW_BANNER=$(cat <<'BANNER_END'
 <!-- Login Section for Anonymous Users -->
 <div class="crm-login-banner" style="display: none;">
   <style>
@@ -176,7 +156,7 @@ $login_banner = <<<'HTML'
       </svg>
       Đăng nhập
     </a>
-    <a href="/user/register" class="btn-register">
+    <a href="/register" class="btn-register">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
         <circle cx="9" cy="7" r="4"></circle>
@@ -197,28 +177,31 @@ $login_banner = <<<'HTML'
     });
   </script>
 </div>
+BANNER_END
+)
 
+echo "➕ Thêm banner mới..."
+
+# Use a PHP script through drush to properly handle the update
+ddev drush php:eval "
+\$node = \Drupal\node\Entity\Node::load(23);
+\$new_banner = <<<'HTML'
+$NEW_BANNER
 HTML;
 
-// Add login banner at the beginning
-$new_body = $login_banner . $current_body;
+\$current_body = \$node->body->value;
+\$new_body = \$new_banner . PHP_EOL . PHP_EOL . trim(\$current_body);
+\$node->body->value = \$new_body;
+\$node->body->format = 'full_html';
+\$node->save();
+echo 'Done';
+"
 
-$node->set('body', [
-  'value' => $new_body,
-  'format' => 'full_html',
-]);
-
-$node->save();
-
-echo "✅ Đã thêm login/register banner vào homepage!\n\n";
-echo "📍 Trang chủ: http://open-crm.ddev.site/\n";
-echo "🔗 Đăng nhập: http://open-crm.ddev.site/user/login\n";
-echo "🔗 Đăng ký: http://open-crm.ddev.site/user/register\n\n";
-echo "🎨 Features:\n";
-echo "   • Banner gradient màu tím chuyên nghiệp\n";
-echo "   • Slide-down animation khi load\n";
-echo "   • 2 nút: Đăng nhập (trắng) + Đăng ký (trong suốt)\n";
-echo "   • Tự động ẩn khi user đã login\n";
-echo "   • Responsive design cho mobile\n";
-echo "   • Smooth hover effects\n\n";
-echo "✨ HOÀN THÀNH!\n";
+echo "✅ Đã cập nhật banner thành công!"
+echo ""
+echo "🎨 Design mới:"
+echo "   - Màu: Xám nhạt/trắng (giống Google)"
+echo "   - Button: Xanh Facebook (#1877f2)"
+echo "   - Style: Professional, tinh tế"
+echo ""
+echo "🔄 Clear cache và refresh trang để xem!"
