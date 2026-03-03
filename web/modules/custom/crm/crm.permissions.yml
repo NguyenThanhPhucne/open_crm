@@ -1,0 +1,4 @@
+access user profiles:
+  title: "Access user profiles"
+  description: "View profile pages of other users"
+  restrict access: false

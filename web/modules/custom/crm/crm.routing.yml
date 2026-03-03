@@ -1,0 +1,25 @@
+crm.user_profile:
+  path: "/user/{user}/profile"
+  defaults:
+    _controller: '\Drupal\crm\Controller\UserProfileController::view'
+    _title: "User Profile"
+  requirements:
+    _permission: "access user profiles"
+    user: \d+
+  options:
+    parameters:
+      user:
+        type: entity:user
+
+crm.user_profile_canonical:
+  path: "/user/{user}"
+  defaults:
+    _controller: '\Drupal\crm\Controller\UserProfileController::view'
+    _title_callback: '\Drupal\crm\Controller\UserProfileController::getTitle'
+  requirements:
+    _custom_access: '\Drupal\crm\Controller\UserProfileController::access'
+    user: \d+
+  options:
+    parameters:
+      user:
+        type: entity:user

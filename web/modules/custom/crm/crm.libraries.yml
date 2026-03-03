@@ -1,0 +1,10 @@
+user_profile_styles:
+  version: 1.0
+  css:
+    theme:
+      css/user-profile.css: {}
+  js:
+    https://unpkg.com/lucide@latest: { type: external, minified: true }
+    js/user-profile.js: {}
+  dependencies:
+    - core/drupal

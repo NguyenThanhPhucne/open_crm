@@ -218,11 +218,11 @@ display:
             value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: #8b5cf6;\n          color: white;\n          text-decoration: none;\n          border-radius: 8px;\n          font-weight: 500;\n          box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);\n        \" onmouseover=\"this.style.background='#7c3aed'\" onmouseout=\"this.style.background='#8b5cf6'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
-      path: crm/my-pipeline
+      path: crm/my-deals
       menu:
         type: normal
-        title: "My Pipeline"
-        description: "Pipeline của tôi"
+        title: "My Deals"
+        description: "Deals của tôi"
         weight: 11
         menu_name: main
     cache_metadata:

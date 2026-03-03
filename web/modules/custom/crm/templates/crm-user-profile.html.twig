@@ -1,0 +1,165 @@
+<div class="crm-user-profile">
+  <!-- Debug: has_picture={{ has_picture ? 'TRUE' : 'FALSE' }}, url={{ user_picture_url }} -->
+  <div class="profile-header">
+    <div class="profile-avatar">
+      {% if has_picture %}
+        <img src="{{ user_picture_url }}" alt="{{ user_name }}" class="avatar-image">
+      {% else %}
+        <div class="avatar-placeholder">
+          <i data-lucide="user" width="64" height="64"></i>
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="profile-info">
+      <h1 class="profile-name">{{ user_name }}</h1>
+      
+      {% if role_names %}
+        <div class="profile-roles">
+          {% for role in role_names %}
+            <span class="role-badge">{{ role }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      {% if team_name %}
+        <div class="profile-team">
+          <i data-lucide="users" width="16" height="16"></i>
+          <span>Team: {{ team_name }}</span>
+        </div>
+      {% endif %}
+      
+      <div class="profile-meta">
+        <div class="meta-item">
+          <i data-lucide="mail" width="16" height="16"></i>
+          <span>{{ user_email }}</span>
+        </div>
+        <div class="meta-item">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span>Member since {{ user_created|date('M d, Y') }}</span>
+        </div>
+      </div>
+      
+      {% if is_own_profile %}
+        <div class="profile-actions">
+          <a href="/user/{{ user.id }}/edit" class="btn btn-primary">
+            <i data-lucide="edit" width="16" height="16"></i>
+            Edit Profile
+          </a>
+          <a href="/user/{{ user.id }}/edit" class="btn btn-secondary">
+            <i data-lucide="camera" width="16" height="16"></i>
+            Change Photo
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="profile-stats">
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #e3f2fd;">
+        <i data-lucide="users" width="24" height="24" stroke="#1976d2"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.contacts }}</div>
+        <div class="stat-label">Contacts</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #f3e5f5;">
+        <i data-lucide="briefcase" width="24" height="24" stroke="#7b1fa2"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.deals }}</div>
+        <div class="stat-label">Deals</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #e8f5e9;">
+        <i data-lucide="building" width="24" height="24" stroke="#388e3c"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.organizations }}</div>
+        <div class="stat-label">Organizations</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fff3e0;">
+        <i data-lucide="check-circle" width="24" height="24" stroke="#f57c00"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.activities }}</div>
+        <div class="stat-label">Activities</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="profile-content">
+    {% if recent_activities %}
+      <div class="profile-section">
+        <h2 class="section-title">
+          <i data-lucide="activity" width="20" height="20"></i>
+          Recent Activities
+        </h2>
+        <div class="activities-list">
+          {% for activity in recent_activities %}
+            <div class="activity-item">
+              <div class="activity-icon">
+                <i data-lucide="calendar-check" width="16" height="16"></i>
+              </div>
+              <div class="activity-details">
+                <a href="{{ activity.url }}" class="activity-title">{{ activity.title }}</a>
+                <div class="activity-meta">
+                  <span class="activity-type">{{ activity.type }}</span>
+                  {% if activity.date %}
+                    <span class="activity-date">{{ activity.date|date('M d, Y') }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <a href="/my-activities" class="view-all-link">
+          View all activities
+          <i data-lucide="arrow-right" width="16" height="16"></i>
+        </a>
+      </div>
+    {% endif %}
+    
+    {% if recent_deals %}
+      <div class="profile-section">
+        <h2 class="section-title">
+          <i data-lucide="briefcase" width="20" height="20"></i>
+          Recent Deals
+        </h2>
+        <div class="deals-list">
+          {% for deal in recent_deals %}
+            <div class="deal-item">
+              <div class="deal-icon">
+                <i data-lucide="trending-up" width="16" height="16"></i>
+              </div>
+              <div class="deal-details">
+                <a href="{{ deal.url }}" class="deal-title">{{ deal.title }}</a>
+                <div class="deal-meta">
+                  {% if deal.stage %}
+                    <span class="deal-stage">{{ deal.stage }}</span>
+                  {% endif %}
+                  {% if deal.value %}
+                    <span class="deal-value">{{ deal.value }} VND</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <a href="/my-deals" class="view-all-link">
+          View all deals
+          <i data-lucide="arrow-right" width="16" height="16"></i>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

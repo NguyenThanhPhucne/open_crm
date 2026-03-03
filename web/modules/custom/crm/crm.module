@@ -171,3 +171,29 @@ function crm_node_presave(NodeInterface $node) {
     }
   }
 }
+
+/**
+ * Implements hook_theme().
+ */
+function crm_theme($existing, $type, $theme, $path) {
+  return [
+    'crm_user_profile' => [
+      'variables' => [
+        'user' => NULL,
+        'user_name' => NULL,
+        'user_email' => NULL,
+        'user_created' => NULL,
+        'user_picture_url' => NULL,
+        'has_picture' => FALSE,
+        'role_names' => [],
+        'team_name' => NULL,
+        'stats' => [],
+        'recent_activities' => [],
+        'recent_deals' => [],
+        'current_user_id' => NULL,
+        'is_own_profile' => FALSE,
+      ],
+      'template' => 'crm-user-profile',
+    ],
+  ];
+}
