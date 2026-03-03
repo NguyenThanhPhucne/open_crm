@@ -1,0 +1,3 @@
+services:
+  crm_navigation.helper:
+    class: Drupal\crm_navigation\Service\NavigationHelper

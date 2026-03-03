@@ -1,0 +1,7 @@
+name: "CRM User Registration"
+description: "Custom user registration with role assignment and validation"
+type: module
+core_version_requirement: ^10 || ^11
+package: "CRM"
+dependencies:
+  - drupal:user

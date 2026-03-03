@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for CRM module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function crm_install() {
+  \Drupal::messenger()->addStatus(
+    t('CRM Core module installed successfully. Access control and data privacy are now active.')
+  );
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function crm_uninstall() {
+  \Drupal::messenger()->addStatus(
+    t('CRM Core module uninstalled. Access control has been removed.')
+  );
+}

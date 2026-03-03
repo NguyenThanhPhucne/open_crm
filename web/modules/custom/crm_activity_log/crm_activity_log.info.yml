@@ -1,0 +1,9 @@
+name: CRM Activity Log
+type: module
+description: 'Activity logging widget for Contact pages - Log calls, schedule meetings, track interactions'
+core_version_requirement: ^11
+package: CRM
+dependencies:
+  - drupal:node
+  - drupal:user
+  - drupal:datetime

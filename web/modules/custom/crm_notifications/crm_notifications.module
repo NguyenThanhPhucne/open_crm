@@ -1,0 +1,236 @@
+<?php
+
+/**
+ * @file
+ * CRM Notifications module - Email notifications for CRM events.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ */
+function crm_notifications_node_insert(EntityInterface $node) {
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+
+  // Notify when a new contact is assigned to a user
+  if ($node->bundle() === 'contact' && $node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
+    $owner = $node->get('field_owner')->entity;
+    if ($owner && $owner->getEmail()) {
+      \Drupal::service('crm_notifications.email_service')->sendNewContactAssigned($node, $owner);
+    }
+  }
+
+  // Notify when a new deal is assigned to a user
+  if ($node->bundle() === 'deal' && $node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
+    $owner = $node->get('field_owner')->entity;
+    if ($owner && $owner->getEmail()) {
+      \Drupal::service('crm_notifications.email_service')->sendNewDealAssigned($node, $owner);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node entities.
+ */
+function crm_notifications_node_update(EntityInterface $node) {
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+
+  // Check for deal stage changes
+  if ($node->bundle() === 'deal' && $node->hasField('field_stage')) {
+    $original = $node->original ?? NULL;
+    
+    if ($original && $original->hasField('field_stage')) {
+      $old_stage_id = $original->get('field_stage')->target_id;
+      $new_stage_id = $node->get('field_stage')->target_id;
+      
+      // Stage changed
+      if ($old_stage_id != $new_stage_id && !empty($new_stage_id)) {
+        $new_stage = $node->get('field_stage')->entity;
+        $stage_name = $new_stage ? $new_stage->getName() : '';
+        
+        // Notify owner about stage change
+        if ($node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
+          $owner = $node->get('field_owner')->entity;
+          if ($owner && $owner->getEmail()) {
+            \Drupal::service('crm_notifications.email_service')->sendDealStageChanged($node, $owner, $stage_name);
+          }
+        }
+        
+        // Special notifications for Won/Lost
+        if (stripos($stage_name, 'won') !== FALSE || stripos($stage_name, 'closed won') !== FALSE) {
+          if ($node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
+            $owner = $node->get('field_owner')->entity;
+            if ($owner && $owner->getEmail()) {
+              \Drupal::service('crm_notifications.email_service')->sendDealWon($node, $owner);
+            }
+          }
+        }
+        elseif (stripos($stage_name, 'lost') !== FALSE || stripos($stage_name, 'closed lost') !== FALSE) {
+          if ($node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
+            $owner = $node->get('field_owner')->entity;
+            if ($owner && $owner->getEmail()) {
+              \Drupal::service('crm_notifications.email_service')->sendDealLost($node, $owner);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Check for owner reassignment
+  if (($node->bundle() === 'contact' || $node->bundle() === 'deal') && $node->hasField('field_owner')) {
+    $original = $node->original ?? NULL;
+    
+    if ($original && $original->hasField('field_owner')) {
+      $old_owner_id = $original->get('field_owner')->target_id;
+      $new_owner_id = $node->get('field_owner')->target_id;
+      
+      // Owner changed
+      if ($old_owner_id != $new_owner_id && !empty($new_owner_id)) {
+        $new_owner = $node->get('field_owner')->entity;
+        if ($new_owner && $new_owner->getEmail()) {
+          if ($node->bundle() === 'contact') {
+            \Drupal::service('crm_notifications.email_service')->sendContactReassigned($node, $new_owner);
+          }
+          elseif ($node->bundle() === 'deal') {
+            \Drupal::service('crm_notifications.email_service')->sendDealReassigned($node, $new_owner);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function crm_notifications_cron() {
+  // Send reminders for deals closing soon (within 3 days)
+  $three_days = strtotime('+3 days');
+  
+  $query = \Drupal::entityQuery('node')
+    ->accessCheck(FALSE)
+    ->condition('type', 'deal')
+    ->condition('status', 1)
+    ->condition('field_closing_date', date('Y-m-d', time()), '>=')
+    ->condition('field_closing_date', date('Y-m-d', $three_days), '<=');
+  
+  $nids = $query->execute();
+  
+  if (!empty($nids)) {
+    $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+    
+    foreach ($nodes as $node) {
+      if ($node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
+        $owner = $node->get('field_owner')->entity;
+        if ($owner && $owner->getEmail()) {
+          \Drupal::service('crm_notifications.email_service')->sendDealClosingSoonReminder($node, $owner);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function crm_notifications_mail($key, &$message, $params) {
+  $site_name = $params['site_name'] ?? 'CRM System';
+  
+  switch ($key) {
+    case 'new_contact_assigned':
+      $message['subject'] = "[$site_name] New Contact Assigned: {$params['contact_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "A new contact has been assigned to you:\n\n";
+      $message['body'][] = "Contact: {$params['contact_name']}\n";
+      $message['body'][] = "View contact: {$params['contact_url']}\n\n";
+      $message['body'][] = "Please follow up with this contact soon.\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'new_deal_assigned':
+      $message['subject'] = "[$site_name] New Deal Assigned: {$params['deal_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "A new deal has been assigned to you:\n\n";
+      $message['body'][] = "Deal: {$params['deal_name']}\n";
+      $message['body'][] = "Amount: {$params['amount']}\n";
+      $message['body'][] = "View deal: {$params['deal_url']}\n\n";
+      $message['body'][] = "Good luck closing this deal!\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'contact_reassigned':
+      $message['subject'] = "[$site_name] Contact Reassigned: {$params['contact_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "A contact has been reassigned to you:\n\n";
+      $message['body'][] = "Contact: {$params['contact_name']}\n";
+      $message['body'][] = "View contact: {$params['contact_url']}\n\n";
+      $message['body'][] = "Please review the contact details and follow up.\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'deal_reassigned':
+      $message['subject'] = "[$site_name] Deal Reassigned: {$params['deal_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "A deal has been reassigned to you:\n\n";
+      $message['body'][] = "Deal: {$params['deal_name']}\n";
+      $message['body'][] = "Amount: {$params['amount']}\n";
+      $message['body'][] = "View deal: {$params['deal_url']}\n\n";
+      $message['body'][] = "Please review the deal and continue the sales process.\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'deal_stage_changed':
+      $message['subject'] = "[$site_name] Deal Stage Changed: {$params['deal_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "A deal stage has been updated:\n\n";
+      $message['body'][] = "Deal: {$params['deal_name']}\n";
+      $message['body'][] = "New Stage: {$params['new_stage']}\n";
+      $message['body'][] = "Amount: {$params['amount']}\n";
+      $message['body'][] = "View deal: {$params['deal_url']}\n\n";
+      $message['body'][] = "Keep up the good work!\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'deal_won':
+      $message['subject'] = "[$site_name] 🎉 Congratulations! Deal Won: {$params['deal_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "🎉 Congratulations! You won a deal:\n\n";
+      $message['body'][] = "Deal: {$params['deal_name']}\n";
+      $message['body'][] = "Amount: {$params['amount']}\n";
+      $message['body'][] = "View deal: {$params['deal_url']}\n\n";
+      $message['body'][] = "Excellent work! Your effort paid off.\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'deal_lost':
+      $message['subject'] = "[$site_name] Deal Lost: {$params['deal_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "Unfortunately, a deal was marked as lost:\n\n";
+      $message['body'][] = "Deal: {$params['deal_name']}\n";
+      $message['body'][] = "Amount: {$params['amount']}\n";
+      $message['body'][] = "View deal: {$params['deal_url']}\n\n";
+      $message['body'][] = "Please review and document the reason for future reference.\n\n";
+      $message['body'][] = "Keep pushing forward - the next one will be yours!\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+
+    case 'deal_closing_soon':
+      $message['subject'] = "[$site_name] ⏰ Reminder: Deal Closing Soon - {$params['deal_name']}";
+      $message['body'][] = "Hello {$params['owner']->getDisplayName()},\n\n";
+      $message['body'][] = "⏰ Reminder: One of your deals is closing soon:\n\n";
+      $message['body'][] = "Deal: {$params['deal_name']}\n";
+      $message['body'][] = "Amount: {$params['amount']}\n";
+      $message['body'][] = "Expected Close Date: {$params['closing_date']}\n";
+      $message['body'][] = "View deal: {$params['deal_url']}\n\n";
+      $message['body'][] = "Please follow up to ensure timely closure.\n\n";
+      $message['body'][] = "Best regards,\n$site_name";
+      break;
+  }
+}

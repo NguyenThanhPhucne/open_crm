@@ -1,0 +1,7 @@
+crm_activity_log.activities_tab:
+  route_name: crm_activity_log.activity_tab
+  base_route: entity.node.canonical
+  title: "Lịch sử tương tác"
+  weight: 10
+  appears_on:
+    - entity.node.canonical

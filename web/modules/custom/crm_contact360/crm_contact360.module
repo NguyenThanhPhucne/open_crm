@@ -1,0 +1,168 @@
+<?php
+
+/**
+ * @file
+ * CRM Contact 360 View module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_help().
+ */
+function crm_contact360_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.crm_contact360':
+      return '<p>' . t('Enhanced 360-degree view for Contact pages.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function crm_contact360_theme($existing, $type, $theme, $path) {
+  return [
+    'contact_360_view' => [
+      'variables' => [
+        'contact' => NULL,
+        'contact_data' => [],
+        'organization_data' => NULL,
+        'deals_data' => [],
+        'activities_data' => [],
+        'stats' => [],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function crm_contact360_node_view(array &$build, NodeInterface $node, $display, $view_mode) {
+  if ($node->bundle() === 'contact' && $view_mode === 'full') {
+    // Gather contact data
+    $contact_data = [
+      'nid' => $node->id(),
+      'title' => $node->getTitle(),
+      'email' => $node->hasField('field_email') ? $node->get('field_email')->value : '',
+      'phone' => $node->hasField('field_phone') ? $node->get('field_phone')->value : '',
+      'position' => $node->hasField('field_position') ? $node->get('field_position')->value : '',
+      'source' => '',
+      'customer_type' => '',
+    ];
+    
+    // Get taxonomy terms
+    if ($node->hasField('field_source') && !$node->get('field_source')->isEmpty()) {
+      $source_term = $node->get('field_source')->entity;
+      if ($source_term) {
+        $contact_data['source'] = $source_term->getName();
+      }
+    }
+    
+    if ($node->hasField('field_customer_type') && !$node->get('field_customer_type')->isEmpty()) {
+      $type_term = $node->get('field_customer_type')->entity;
+      if ($type_term) {
+        $contact_data['customer_type'] = $type_term->getName();
+      }
+    }
+    
+    // Get organization
+    $organization_data = NULL;
+    if ($node->hasField('field_organization') && !$node->get('field_organization')->isEmpty()) {
+      $org = $node->get('field_organization')->entity;
+      if ($org) {
+        $organization_data = [
+          'nid' => $org->id(),
+          'title' => $org->getTitle(),
+          'url' => '/node/' . $org->id(),
+        ];
+      }
+    }
+    
+    // Get related deals
+    $deals_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_contact', $node->id())
+      ->accessCheck(TRUE)
+      ->sort('created', 'DESC')
+      ->range(0, 5);
+    $deal_nids = $deals_query->execute();
+    $deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_nids);
+    
+    $deals_data = [];
+    $total_deal_value = 0;
+    foreach ($deals as $deal) {
+      $amount = $deal->hasField('field_amount') ? $deal->get('field_amount')->value : 0;
+      $total_deal_value += $amount;
+      
+      $stage_name = '';
+      if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
+        $stage = $deal->get('field_stage')->entity;
+        if ($stage) {
+          $stage_name = $stage->getName();
+        }
+      }
+      
+      $deals_data[] = [
+        'nid' => $deal->id(),
+        'title' => $deal->getTitle(),
+        'amount' => $amount,
+        'stage' => $stage_name,
+        'url' => '/node/' . $deal->id(),
+      ];
+    }
+    
+    // Get recent activities
+    $activities_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->condition('field_contact', $node->id())
+      ->accessCheck(TRUE)
+      ->sort('created', 'DESC')
+      ->range(0, 5);
+    $activity_nids = $activities_query->execute();
+    $activities = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($activity_nids);
+    
+    $activities_data = [];
+    foreach ($activities as $activity) {
+      $type = $activity->hasField('field_type') ? $activity->get('field_type')->value : '';
+      $description = $activity->hasField('field_description') ? $activity->get('field_description')->value : '';
+      
+      $activities_data[] = [
+        'nid' => $activity->id(),
+        'title' => $activity->getTitle(),
+        'type' => $type,
+        'description' => substr($description, 0, 100),
+        'created' => $activity->getCreatedTime(),
+        'url' => '/node/' . $activity->id(),
+      ];
+    }
+    
+    // Calculate stats
+    $stats = [
+      'total_deals' => count($deal_nids),
+      'total_deal_value' => $total_deal_value,
+      'total_activities' => count($activity_nids),
+    ];
+    
+    $build['contact_360'] = [
+      '#theme' => 'contact_360_view',
+      '#contact' => $node,
+      '#contact_data' => $contact_data,
+      '#organization_data' => $organization_data,
+      '#deals_data' => $deals_data,
+      '#activities_data' => $activities_data,
+      '#stats' => $stats,
+      '#cache' => [
+        'tags' => $node->getCacheTags(),
+      ],
+    ];
+    
+    // Remove default field display
+    foreach ($build as $key => $value) {
+      if (strpos($key, 'field_') === 0) {
+        unset($build[$key]);
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+services:
+  crm_login.route_subscriber:
+    class: Drupal\crm_login\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }

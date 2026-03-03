@@ -1,0 +1,7 @@
+name: "CRM Navigation"
+type: module
+description: "Navigation helpers and back buttons for CRM pages"
+core_version_requirement: ^10 || ^11
+package: "Open CRM"
+dependencies:
+  - drupal:node

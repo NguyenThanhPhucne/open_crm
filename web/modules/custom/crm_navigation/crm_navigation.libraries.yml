@@ -1,0 +1,14 @@
+crm_navigation.navigation_styles:
+  version: VERSION
+  css:
+    theme:
+      css/navigation.css: {}
+
+lucide:
+  version: latest
+  js:
+    https://unpkg.com/lucide@latest: { type: external, minified: true }
+    js/navigation.js: {}
+  header: true
+  dependencies:
+    - core/drupal

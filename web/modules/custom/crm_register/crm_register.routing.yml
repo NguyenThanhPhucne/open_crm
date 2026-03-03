@@ -1,0 +1,8 @@
+crm_register.register:
+  path: "/register"
+  defaults:
+    _form: '\Drupal\crm_register\Form\CrmRegisterForm'
+    _title: "Create Account"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "FALSE"

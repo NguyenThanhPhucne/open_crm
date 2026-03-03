@@ -1,0 +1,12 @@
+login_form:
+  version: 1.0
+  css:
+    theme:
+      css/login-form.css: {}
+  js:
+    js/login-form.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/jquery.once

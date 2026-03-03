@@ -1,0 +1,82 @@
+# Development Organizations Fixtures
+# These are sample organizations for development and testing
+# DO NOT use in production
+
+organizations:
+  - id: acme_corp
+    title: "Acme Corporation"
+    website: "https://acme.com"
+    address: "123 Main St, New York, NY 10001"
+    industry: Technology
+    status: active
+    annual_revenue: 5000000
+    employees_count: 150
+    notes: "Major enterprise client, interested in cloud solutions"
+    tags:
+      - sample
+      - development
+
+  - id: global_ent
+    title: "Global Enterprises Ltd"
+    website: "https://global-ent.com"
+    address: "456 Market St, San Francisco, CA 94103"
+    industry: Finance
+    status: active
+    annual_revenue: 12000000
+    employees_count: 500
+    notes: "Financial services company, compliance-focused"
+    tags:
+      - sample
+      - development
+
+  - id: tech_solutions
+    title: "Tech Solutions Inc"
+    website: "https://techsolutions.com"
+    address: "789 Innovation Dr, Austin, TX 78701"
+    industry: Technology
+    status: active
+    annual_revenue: 3000000
+    employees_count: 75
+    notes: "Growing startup, needs scalable infrastructure"
+    tags:
+      - sample
+      - development
+
+  - id: retail_plus
+    title: "Retail Plus"
+    website: "https://retailplus.com"
+    address: "321 Commerce Blvd, Chicago, IL 60601"
+    industry: Retail
+    status: active
+    annual_revenue: 8000000
+    employees_count: 300
+    notes: "Multi-location retail chain"
+    tags:
+      - sample
+      - development
+
+  - id: healthcare_sys
+    title: "HealthCare Systems"
+    website: "https://healthcaresys.com"
+    address: "555 Medical Center Dr, Boston, MA 02115"
+    industry: Healthcare
+    status: active
+    annual_revenue: 15000000
+    employees_count: 800
+    notes: "Regional healthcare provider, HIPAA compliance required"
+    tags:
+      - sample
+      - development
+
+  - id: manufacturing_co
+    title: "Manufacturing Co"
+    website: "https://manufacturingco.com"
+    address: "999 Industrial Pkwy, Detroit, MI 48201"
+    industry: Manufacturing
+    status: active
+    annual_revenue: 20000000
+    employees_count: 1200
+    notes: "Heavy machinery manufacturer"
+    tags:
+      - sample
+      - development

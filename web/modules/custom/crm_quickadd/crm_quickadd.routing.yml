@@ -1,0 +1,55 @@
+crm_quickadd.contact_form:
+  path: "/crm/quickadd/contact"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::contactForm'
+    _title: "Thêm khách hàng nhanh"
+  requirements:
+    _permission: "create contact content"
+
+crm_quickadd.contact_submit:
+  path: "/crm/quickadd/contact/submit"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::contactSubmit'
+  requirements:
+    _permission: "create contact content"
+  methods: [POST]
+
+crm_quickadd.deal_form:
+  path: "/crm/quickadd/deal"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::dealForm'
+    _title: "Thêm cơ hội nhanh"
+  requirements:
+    _permission: "create deal content"
+
+crm_quickadd.deal_submit:
+  path: "/crm/quickadd/deal/submit"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::dealSubmit'
+  requirements:
+    _permission: "create deal content"
+  methods: [POST]
+
+crm_quickadd.organization_form:
+  path: "/crm/quickadd/organization"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::organizationForm'
+    _title: "Thêm tổ chức nhanh"
+  requirements:
+    _permission: "create organization content"
+
+crm_quickadd.organization_submit:
+  path: "/crm/quickadd/organization/submit"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::organizationSubmit'
+  requirements:
+    _permission: "create organization content"
+  methods: [POST]
+
+crm_quickadd.check_duplicate:
+  path: "/crm/quickadd/check-duplicate"
+  defaults:
+    _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::checkDuplicate'
+  requirements:
+    _permission: "access content"
+  methods: [POST]

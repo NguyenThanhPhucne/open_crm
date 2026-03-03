@@ -14,63 +14,78 @@ class DashboardController extends ControllerBase {
    * Display the dashboard.
    */
   public function view() {
-    // Get dashboard metrics
+    // Get current user to filter data
+    $current_user = \Drupal::currentUser();
+    $user_id = $current_user->id();
+    
+    // Get dashboard metrics (filtered by user ownership)
     $contacts_count = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
+      ->condition('field_owner', $user_id)
       ->accessCheck(FALSE)
       ->count()
       ->execute();
 
     $orgs_count = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
+      ->condition('field_assigned_staff', $user_id)
       ->accessCheck(FALSE)
       ->count()
       ->execute();
 
     $deals_count = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_owner', $user_id)
       ->accessCheck(FALSE)
       ->count()
       ->execute();
 
     $activities_count = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_assigned_to', $user_id)
       ->accessCheck(FALSE)
       ->count()
       ->execute();
 
-    // Get deals by stage
-    $stages = [
-      'prospecting' => 'Prospecting',
-      'qualification' => 'Qualification',
-      'proposal' => 'Proposal',
-      'negotiation' => 'Negotiation',
-      'closed_won' => 'Closed Won',
-      'closed_lost' => 'Closed Lost'
-    ];
+    // Load pipeline stages dynamically from taxonomy.
+    $stage_terms = \Drupal::entityTypeManager()
+      ->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'pipeline_stage']);
 
+    $stages = [];
+    $stage_colors = [];
     $deals_by_stage = [];
-    $stage_colors = [
-      'prospecting' => '#60a5fa',
-      'qualification' => '#34d399',
-      'proposal' => '#fbbf24',
-      'negotiation' => '#f472b6',
-      'closed_won' => '#10b981',
-      'closed_lost' => '#ef4444'
-    ];
 
-    foreach (array_keys($stages) as $stage) {
+    // Dynamic color palette (cycles through colors based on stage order).
+    $color_palette = [
+      '#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#10b981', '#ef4444',
+      '#06b6d4', '#84cc16', '#f97316', '#a855f7', '#14b8a6', '#f43f5e',
+    ];
+    $color_index = 0;
+
+    foreach ($stage_terms as $term) {
+      $stage_id = $term->id();
+      $stage_name = $term->getName();
+      $stages[$stage_id] = $stage_name;
+      $stage_colors[$stage_id] = $color_palette[$color_index % count($color_palette)];
+      $color_index++;
+
+      // Count deals in this stage (filtered by current user).
       $count = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
-        ->condition('field_stage', $stage)
+        ->condition('field_stage', $stage_id)
+        ->condition('field_owner', $user_id)
         ->accessCheck(FALSE)
         ->count()
         ->execute();
-      $deals_by_stage[$stage] = $count;
+      $deals_by_stage[$stage_id] = $count;
     }
 
-    // Get total deal value and won/lost deals
-    $deals = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => 'deal']);
+    // Get total deal value and won/lost deals (filtered by current user)
+    $deals = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
+      'type' => 'deal',
+      'field_owner' => $user_id,
+    ]);
     $total_value = 0;
     $won_value = 0;
     $lost_value = 0;
@@ -101,6 +116,123 @@ class DashboardController extends ControllerBase {
     $won_value_display = '$' . number_format($won_value / 1000000, 1) . 'M';
     $lost_value_display = '$' . number_format($lost_value / 1000000, 1) . 'M';
     $active_value = $total_value - $won_value - $lost_value;
+    
+    // Calculate additional KPIs
+    $total_closed = $won_count + $lost_count;
+    $win_rate = $total_closed > 0 ? round(($won_count / $total_closed) * 100, 1) : 0;
+    $avg_deal_size = $won_count > 0 ? round($won_value / $won_count, 0) : 0;
+    $avg_deal_display = '$' . number_format($avg_deal_size / 1000, 0) . 'K';
+    $conversion_rate = $deals_count > 0 ? round(($won_count / $deals_count) * 100, 1) : 0;
+    
+    // Get recent activities (last 10, filtered by current user)
+    $activity_ids = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->condition('field_assigned_to', $user_id)
+      ->accessCheck(FALSE)
+      ->sort('created', 'DESC')
+      ->range(0, 10)
+      ->execute();
+    
+    $recent_activities = [];
+    if (!empty($activity_ids)) {
+      $activities = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($activity_ids);
+      foreach ($activities as $activity) {
+        // Get activity type from taxonomy term (entity reference)
+        $type_value = 'note'; // default
+        if ($activity->hasField('field_type') && !$activity->get('field_type')->isEmpty()) {
+          $type_term = $activity->get('field_type')->entity;
+          if ($type_term) {
+            $type_value = strtolower($type_term->getName());
+          }
+        }
+        
+        $type_icons = [
+          'call' => 'phone',
+          'meeting' => 'calendar',
+          'email' => 'mail',
+          'note' => 'file-text',
+          'task' => 'check-square',
+        ];
+        
+        $type_colors = [
+          'call' => '#3b82f6',
+          'meeting' => '#8b5cf6',
+          'email' => '#10b981',
+          'note' => '#f59e0b',
+          'task' => '#ec4899',
+        ];
+        
+        $contact_name = '';
+        if ($activity->hasField('field_contact') && !$activity->get('field_contact')->isEmpty()) {
+          $contact = $activity->get('field_contact')->entity;
+          if ($contact) {
+            $contact_name = $contact->getTitle();
+          }
+        }
+        
+        $recent_activities[] = [
+          'title' => $activity->getTitle(),
+          'type' => ucfirst($type_value ?? 'note'),
+          'icon' => $type_icons[$type_value] ?? 'activity',
+          'color' => $type_colors[$type_value] ?? '#64748b',
+          'contact' => $contact_name,
+          'created' => \Drupal::service('date.formatter')->format($activity->getCreatedTime(), 'custom', 'd/m H:i'),
+        ];
+      }
+    }
+    
+    // Get recent deals (last 8, filtered by current user)
+    $deal_ids = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_owner', $user_id)
+      ->accessCheck(FALSE)
+      ->sort('created', 'DESC')
+      ->range(0, 8)
+      ->execute();
+    
+    $recent_deals = [];
+    if (!empty($deal_ids)) {
+      $deals_list = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_ids);
+      foreach ($deals_list as $deal) {
+        $amount = 0;
+        if ($deal->hasField('field_amount') && !$deal->get('field_amount')->isEmpty()) {
+          $amount = floatval($deal->get('field_amount')->value);
+        }
+        
+        $stage = 'new';
+        $stage_label = 'New';
+        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
+          $stage = $deal->get('field_stage')->value ?? 'new';
+          $stage_label = ucfirst(str_replace('_', ' ', $stage ?? 'new'));
+        }
+        
+        $stage_colors_deals = [
+          'new' => '#dbeafe',
+          'qualified' => '#e9d5ff',
+          'proposal' => '#fed7aa',
+          'negotiation' => '#fce7f3',
+          'closed_won' => '#d1fae5',
+          'closed_lost' => '#fee2e2',
+        ];
+        
+        $contact_name = '';
+        if ($deal->hasField('field_contact') && !$deal->get('field_contact')->isEmpty()) {
+          $contact = $deal->get('field_contact')->entity;
+          if ($contact) {
+            $contact_name = $contact->getTitle();
+          }
+        }
+        
+        $recent_deals[] = [
+          'id' => $deal->id(),
+          'title' => $deal->getTitle(),
+          'amount' => '$' . number_format($amount / 1000, 0) . 'K',
+          'stage' => $stage_label,
+          'stage_color' => $stage_colors_deals[$stage] ?? '#f1f5f9',
+          'contact' => $contact_name,
+        ];
+      }
+    }
     
     // Build JSON data for charts
     $stage_labels_json = json_encode(array_values($stages));
@@ -169,6 +301,19 @@ class DashboardController extends ControllerBase {
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 32px;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
     
     .stat-card {
@@ -287,7 +432,7 @@ class DashboardController extends ControllerBase {
       margin-bottom: 32px;
     }
     
-    .chart-card {
+    .section-card {
       background: white;
       border-radius: 12px;
       padding: 24px;
@@ -295,8 +440,228 @@ class DashboardController extends ControllerBase {
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
     
-    .chart-header {
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-title i {
+      color: #3b82f6;
+    }
+    
+    .view-all-link {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s;
+    }
+    
+    .view-all-link:hover {
+      color: #2563eb;
+    }
+    
+    /* Activity Items */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    
+    .activity-item:hover {
+      background: #f8fafc;
+    }
+    
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .activity-icon.call { background: #eff6ff; }
+    .activity-icon.meeting { background: #f5f3ff; }
+    .activity-icon.email { background: #ecfdf5; }
+    .activity-icon.note { background: #fffbeb; }
+    
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .activity-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .activity-meta {
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .activity-contact {
+      color: #3b82f6;
+    }
+    
+    .activity-time {
+      font-size: 11px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+    
+    /* Deal Items */
+    .deal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .deal-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+      transition: all 0.2s;
+    }
+    
+    .deal-item:hover {
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .deal-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .deal-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .deal-contact {
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    .deal-amount {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-right: 12px;
+    }
+    
+    .deal-stage {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+    
+    .empty-state i {
+      width: 48px;
+      height: 48px;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+    
+    .empty-state-text {
+      font-size: 14px;
+      color: #64748b;
+    }
+    
+    .chart-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .chart-card:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+      border-color: #cbd5e1;
+    }
+    
+    .chart-card:hover::before {
+      opacity: 1;
+    }
+    
+    .chart-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
     }
     
     .chart-title {
@@ -304,23 +669,59 @@ class DashboardController extends ControllerBase {
       font-weight: 600;
       color: #1e293b;
       margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .chart-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+      border-radius: 2px;
     }
     
     .chart-subtitle {
       font-size: 13px;
       color: #64748b;
+      margin-left: 14px;
     }
     
     .chart-container {
       position: relative;
-      height: 280px;
+      height: 320px;
+      padding: 10px 0;
+    }
+    
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #f1f5f9;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
     }
     
     .action-bar {
       display: flex;
       justify-content: center;
       gap: 12px;
-      margin-top: 32px;
+      margin: 24px 0 32px 0;
     }
     
     .btn {
@@ -364,8 +765,16 @@ class DashboardController extends ControllerBase {
         grid-template-columns: repeat(2, 1fr);
       }
       
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
       .charts-section {
         grid-template-columns: 1fr;
+      }
+      
+      .action-bar {
+        flex-direction: column;
       }
     }
   </style>
@@ -375,6 +784,26 @@ class DashboardController extends ControllerBase {
     <div class="dashboard-header">
       <h1>CRM Dashboard</h1>
       <p>Overview of your sales performance and activities</p>
+    </div>
+    
+    <!-- Navigation Buttons -->
+    <div class="action-bar">
+      <a href="/" class="btn btn-primary">
+        <i data-lucide="home" width="18" height="18"></i>
+        Home
+      </a>
+      <a href="/crm/my-contacts" class="btn btn-primary">
+        <i data-lucide="users" width="18" height="18"></i>
+        Contacts
+      </a>
+      <a href="/crm/pipeline" class="btn btn-primary">
+        <i data-lucide="kanban-square" width="18" height="18"></i>
+        Pipeline
+      </a>
+      <a href="/crm/my-activities" class="btn btn-primary">
+        <i data-lucide="activity" width="18" height="18"></i>
+        Activities
+      </a>
     </div>
     
     <!-- Statistics Cards -->
@@ -444,44 +873,163 @@ class DashboardController extends ControllerBase {
         <div class="stat-value">{$lost_count}</div>
         <div class="stat-desc">{$lost_value_display} lost</div>
       </div>
+      
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon pink">
+            <i data-lucide="target" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-value">{$win_rate}%</div>
+        <div class="stat-desc">Deals won rate</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon blue">
+            <i data-lucide="percent" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Conversion</div>
+        </div>
+        <div class="stat-value">{$conversion_rate}%</div>
+        <div class="stat-desc">Overall conversion</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon purple">
+            <i data-lucide="bar-chart-3" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Avg Deal</div>
+        </div>
+        <div class="stat-value">{$avg_deal_display}</div>
+        <div class="stat-desc">Average value</div>
+      </div>
     </div>
     
-    <!-- Charts -->
-    <div class="charts-section">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title">Pipeline Stage Distribution</div>
-          <div class="chart-subtitle">Current deals by stage</div>
+    <!-- Main Content Grid -->
+    <div class="main-content">
+      <!-- Left Column: Charts + Recent Deals -->
+      <div class="left-column">
+        <!-- Charts -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Pipeline Stage Distribution</div>
+              <div class="chart-subtitle">Current deals by stage</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="stageChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Deal Value Overview</div>
+              <div class="chart-subtitle">Won vs Lost vs Active</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="valueChart"></canvas>
+            </div>
+          </div>
         </div>
-        <div class="chart-container">
-          <canvas id="stageChart"></canvas>
+        
+        <!-- Recent Deals -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              <i data-lucide="briefcase" width="20" height="20"></i>
+              Recent Deals
+            </div>
+            <a href="/crm/pipeline" class="view-all-link">
+              View all
+              <i data-lucide="arrow-right" width="14" height="14"></i>
+            </a>
+          </div>
+          <div class="deal-list">
+HTML;
+
+    // Add recent deals
+    if (!empty($recent_deals)) {
+      foreach ($recent_deals as $deal) {
+        $html .= <<<DEAL
+            <div class="deal-item">
+              <div class="deal-info">
+                <div class="deal-title">{$deal['title']}</div>
+                <div class="deal-contact">{$deal['contact']}</div>
+              </div>
+              <div class="deal-amount">{$deal['amount']}</div>
+              <span class="deal-stage" style="background: {$deal['stage_color']}; color: #0f172a;">{$deal['stage']}</span>
+            </div>
+DEAL;
+      }
+    } else {
+      $html .= <<<EMPTY
+            <div class="empty-state">
+              <i data-lucide="inbox"></i>
+              <div class="empty-state-text">No deals yet</div>
+            </div>
+EMPTY;
+    }
+
+    $html .= <<<HTML
+          </div>
         </div>
       </div>
       
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title">Deal Value Overview</div>
-          <div class="chart-subtitle">Won vs Lost vs Active</div>
+      <!-- Right Sidebar: Recent Activities -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i data-lucide="activity" width="20" height="20"></i>
+            Recent Activities
+          </div>
+          <a href="/crm/my-activities" class="view-all-link">
+            View all
+            <i data-lucide="arrow-right" width="14" height="14"></i>
+          </a>
         </div>
-        <div class="chart-container">
-          <canvas id="valueChart"></canvas>
+        <div class="activity-list">
+HTML;
+
+    // Add recent activities
+    if (!empty($recent_activities)) {
+      foreach ($recent_activities as $activity) {
+        $type_class = strtolower($activity['type']);
+        $contact_html = '';
+        if ($activity['contact']) {
+          $contact_html = '• <span class="activity-contact">' . $activity['contact'] . '</span>';
+        }
+        
+        $html .= <<<ACTIVITY
+          <div class="activity-item">
+            <div class="activity-icon {$type_class}">
+              <i data-lucide="{$activity['icon']}" width="18" height="18" style="color: {$activity['color']}"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">{$activity['title']}</div>
+              <div class="activity-meta">
+                <span class="activity-type">{$activity['type']}</span>
+                {$contact_html}
+              </div>
+            </div>
+            <div class="activity-time">{$activity['created']}</div>
+          </div>
+ACTIVITY;
+      }
+    } else {
+      $html .= <<<EMPTY
+          <div class="empty-state">
+            <i data-lucide="inbox"></i>
+            <div class="empty-state-text">No activities yet</div>
+          </div>
+EMPTY;
+    }
+
+    $html .= <<<HTML
         </div>
       </div>
-    </div>
-    
-    <div class="action-bar">
-      <a href="/" class="btn btn-primary">
-        <i data-lucide="arrow-left" width="18" height="18"></i>
-        Back to Home
-      </a>
-      <a href="/crm/my-contacts" class="btn btn-primary">
-        <i data-lucide="users" width="18" height="18"></i>
-        View Contacts
-      </a>
-      <a href="/crm/my-pipeline" class="btn btn-primary">
-        <i data-lucide="briefcase" width="18" height="18"></i>
-        View Pipeline
-      </a>
     </div>
   </div>
   
@@ -489,52 +1037,148 @@ class DashboardController extends ControllerBase {
     // Initialize Lucide icons
     lucide.createIcons();
     
-    // Modern color palette
+    // Modern color palette with gradients
     const colors = {
       blue: '#3b82f6',
+      blueLight: '#60a5fa',
       green: '#10b981',
+      greenLight: '#34d399',
       yellow: '#f59e0b',
+      yellowLight: '#fbbf24',
       pink: '#ec4899',
+      pinkLight: '#f472b6',
       emerald: '#10b981',
+      emeraldLight: '#34d399',
       red: '#ef4444',
+      redLight: '#f87171',
       slate: '#64748b'
     };
     
-    // Stage Chart - Horizontal Bar
+    // Custom plugin to add data labels on bars
+    const dataLabelsPlugin = {
+      id: 'dataLabels',
+      afterDatasetDraw(chart, args, options) {
+        const { ctx } = chart;
+        ctx.save();
+        
+        const dataset = args.meta.data;
+        dataset.forEach((datapoint, index) => {
+          const value = chart.data.datasets[0].data[index];
+          if (value > 0) {
+            const x = datapoint.x + 10;
+            const y = datapoint.y + (datapoint.height / 2);
+            
+            ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(value, x, y);
+          }
+        });
+        
+        ctx.restore();
+      }
+    };
+    
+    // Stage Chart - Enhanced Horizontal Bar with gradients
     const stageCtx = document.getElementById('stageChart').getContext('2d');
-    new Chart(stageCtx, {
+    
+    // Create gradient backgrounds for each bar
+    const createGradient = (ctx, color1, color2, width) => {
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, color1);
+      gradient.addColorStop(1, color2);
+      return gradient;
+    };
+    
+    const stageChart = new Chart(stageCtx, {
       type: 'bar',
       data: {
         labels: {$stage_labels_json},
         datasets: [{
           label: 'Deals',
           data: {$stage_data_json},
-          backgroundColor: [
-            colors.blue,
-            colors.green,
-            colors.yellow,
-            colors.pink,
-            colors.emerald,
-            colors.red
-          ],
-          borderRadius: 6,
+          backgroundColor: function(context) {
+            const chart = context.chart;
+            const {ctx, chartArea} = chart;
+            if (!chartArea) return colors.blue;
+            
+            const colorPairs = [
+              [colors.blue, colors.blueLight],
+              [colors.green, colors.greenLight],
+              [colors.yellow, colors.yellowLight],
+              [colors.pink, colors.pinkLight],
+              [colors.emerald, colors.emeraldLight],
+              [colors.red, colors.redLight]
+            ];
+            
+            const index = context.dataIndex;
+            const pair = colorPairs[index % colorPairs.length];
+            return createGradient(ctx, pair[0], pair[1], chartArea.right);
+          },
+          borderRadius: 8,
           borderSkipped: false,
+          barThickness: 32,
+          hoverBackgroundColor: function(context) {
+            const chart = context.chart;
+            const {ctx, chartArea} = chart;
+            if (!chartArea) return colors.blue;
+            
+            const colorPairs = [
+              [colors.blueLight, colors.blue],
+              [colors.greenLight, colors.green],
+              [colors.yellowLight, colors.yellow],
+              [colors.pinkLight, colors.pink],
+              [colors.emeraldLight, colors.emerald],
+              [colors.redLight, colors.red]
+            ];
+            
+            const index = context.dataIndex;
+            const pair = colorPairs[index % colorPairs.length];
+            return createGradient(ctx, pair[0], pair[1], chartArea.right);
+          }
         }]
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+          duration: 1200,
+          easing: 'easeInOutQuart',
+          delay: (context) => {
+            return context.dataIndex * 100;
+          }
+        },
         plugins: {
           legend: {
             display: false
           },
           tooltip: {
-            backgroundColor: '#1e293b',
-            padding: 12,
-            titleFont: { size: 13 },
-            bodyFont: { size: 14, weight: 'bold' },
-            cornerRadius: 8
+            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+            padding: 16,
+            titleFont: { 
+              size: 14,
+              weight: '600'
+            },
+            bodyFont: { 
+              size: 16, 
+              weight: 'bold' 
+            },
+            cornerRadius: 10,
+            displayColors: false,
+            callbacks: {
+              title: function(context) {
+                return context[0].label;
+              },
+              label: function(context) {
+                const value = context.parsed.x;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return value + ' deals (' + percentage + '%)';
+              }
+            },
+            boxPadding: 6
           }
         },
         scales: {
@@ -542,69 +1186,175 @@ class DashboardController extends ControllerBase {
             beginAtZero: true,
             ticks: {
               stepSize: 1,
-              font: { size: 11 },
-              color: colors.slate
+              font: { 
+                size: 12,
+                weight: '500'
+              },
+              color: colors.slate,
+              padding: 8
             },
             grid: {
-              color: '#f1f5f9',
-              drawBorder: false
+              color: 'rgba(241, 245, 249, 0.8)',
+              drawBorder: false,
+              lineWidth: 1
+            },
+            border: {
+              display: false
             }
           },
           y: {
             ticks: {
-              font: { size: 12 },
-              color: '#1e293b'
+              font: { 
+                size: 13,
+                weight: '600'
+              },
+              color: '#1e293b',
+              padding: 12
             },
             grid: {
               display: false
+            },
+            border: {
+              display: false
             }
           }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        onHover: (event, activeElements) => {
+          event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
         }
-      }
+      },
+      plugins: [dataLabelsPlugin]
     });
     
-    // Value Chart - Doughnut
+    // Value Chart - Enhanced Doughnut with gradients and animations
     const valueCtx = document.getElementById('valueChart').getContext('2d');
-    new Chart(valueCtx, {
+    
+    const valueChart = new Chart(valueCtx, {
       type: 'doughnut',
       data: {
         labels: ['Won', 'Lost', 'Active Pipeline'],
         datasets: [{
           data: [{$won_value}, {$lost_value}, {$active_value}],
-          backgroundColor: [colors.green, colors.red, colors.blue],
-          borderWidth: 0,
-          hoverOffset: 8
+          backgroundColor: function(context) {
+            const chart = context.chart;
+            const {ctx, chartArea} = chart;
+            if (!chartArea) return colors.green;
+            
+            const colorPairs = [
+              [colors.green, colors.greenLight],      // Won
+              [colors.red, colors.redLight],          // Lost
+              [colors.blue, colors.blueLight]         // Active
+            ];
+            
+            const index = context.dataIndex;
+            const pair = colorPairs[index];
+            
+            const gradient = ctx.createLinearGradient(
+              chartArea.left, 
+              chartArea.top, 
+              chartArea.right, 
+              chartArea.bottom
+            );
+            gradient.addColorStop(0, pair[0]);
+            gradient.addColorStop(1, pair[1]);
+            return gradient;
+          },
+          borderWidth: 4,
+          borderColor: '#ffffff',
+          hoverBorderWidth: 6,
+          hoverBorderColor: '#ffffff',
+          hoverOffset: 12
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '65%',
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 1400,
+          easing: 'easeInOutQuart'
+        },
         plugins: {
           legend: {
+            display: true,
             position: 'bottom',
             labels: {
-              padding: 15,
-              font: { size: 12 },
+              padding: 20,
+              font: {
+                size: 13,
+                weight: '600',
+                family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+              },
               color: '#1e293b',
               usePointStyle: true,
-              pointStyle: 'circle'
+              pointStyle: 'circle',
+              boxWidth: 8,
+              boxHeight: 8,
+              generateLabels: function(chart) {
+                const data = chart.data;
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  
+                  return {
+                    text: label + ' (' + percentage + '%)',
+                    fillStyle: i === 0 ? colors.green : i === 1 ? colors.red : colors.blue,
+                    hidden: false,
+                    index: i
+                  };
+                });
+              }
             }
           },
           tooltip: {
-            backgroundColor: '#1e293b',
-            padding: 12,
-            titleFont: { size: 13 },
-            bodyFont: { size: 14, weight: 'bold' },
-            cornerRadius: 8,
+            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+            padding: 16,
+            titleFont: { 
+              size: 14,
+              weight: '600'
+            },
+            bodyFont: { 
+              size: 13
+            },
+            cornerRadius: 10,
+            displayColors: true,
+            boxWidth: 12,
+            boxHeight: 12,
+            boxPadding: 8,
+            usePointStyle: true,
             callbacks: {
               label: function(context) {
-                let label = context.label || '';
-                let value = context.parsed || 0;
-                return label + ': $' + (value / 1000000).toFixed(1) + 'M';
+                const label = context.label || '';
+                const value = context.parsed;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                const formatted = new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 1,
+                  notation: 'compact',
+                  compactDisplay: 'short'
+                }).format(value);
+                
+                return label + ': ' + formatted + ' (' + percentage + '%)';
               }
             }
           }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'point'
+        },
+        onHover: (event, activeElements) => {
+          event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
         }
       }
     });

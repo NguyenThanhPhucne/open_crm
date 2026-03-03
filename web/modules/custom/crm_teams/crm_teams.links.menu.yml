@@ -1,0 +1,6 @@
+crm_teams.links.menu:
+  title: "Team Management"
+  description: "Manage sales teams and permissions"
+  route_name: crm_teams.settings
+  parent: system.admin
+  weight: 50

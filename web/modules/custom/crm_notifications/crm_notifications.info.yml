@@ -1,0 +1,8 @@
+name: CRM Notifications
+type: module
+description: 'Email notifications for CRM events (deal updates, assignments, reminders)'
+core_version_requirement: ^11
+package: CRM
+dependencies:
+  - drupal:node
+  - drupal:user

@@ -1,0 +1,5 @@
+services:
+  access_check.crm_activity_tab:
+    class: Drupal\crm_activity_log\Access\ActivityTabAccessCheck
+    tags:
+      - { name: access_check, applies_to: _activity_tab_access }

@@ -1,0 +1,6 @@
+crm_kanban.pipeline:
+  title: "Pipeline"
+  description: "Kanban board for managing deals"
+  route_name: crm_kanban.pipeline
+  menu_name: main
+  weight: 20

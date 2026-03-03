@@ -1,0 +1,9 @@
+name: "CRM Import/Export"
+type: module
+description: "Import và Export dữ liệu CRM từ CSV/Excel"
+package: CRM
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:user
+  - drupal:file

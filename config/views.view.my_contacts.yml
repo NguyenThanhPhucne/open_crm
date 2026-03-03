@@ -1,0 +1,232 @@
+uuid: db4ad027-d342-45f9-84e3-9c98ae9015d3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_customer_type
+    - field.storage.node.field_email
+    - field.storage.node.field_organization
+    - field.storage.node.field_phone
+    - field.storage.node.field_source
+    - node.type.contact
+    - system.menu.main
+  module:
+    - node
+id: my_contacts
+label: "My Contacts"
+module: views
+description: "Danh sách khách hàng của tôi"
+tag: CRM
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: "My Contacts"
+      fields:
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          plugin_id: field
+          label: Name
+          type: string
+          settings:
+            link_to_entity: true
+        field_organization:
+          id: field_organization
+          table: node__field_organization
+          field: field_organization
+          plugin_id: field
+          label: Organization
+          type: entity_reference_label
+          settings:
+            link: true
+        field_phone:
+          id: field_phone
+          table: node__field_phone
+          field: field_phone
+          plugin_id: field
+          label: Phone
+        field_email:
+          id: field_email
+          table: node__field_email
+          field: field_email
+          plugin_id: field
+          label: Email
+        field_source:
+          id: field_source
+          table: node__field_source
+          field: field_source
+          plugin_id: field
+          label: Source
+          type: entity_reference_label
+        field_customer_type:
+          id: field_customer_type
+          table: node__field_customer_type
+          field: field_customer_type
+          plugin_id: field
+          label: "Customer Type"
+          type: entity_reference_label
+      pager:
+        type: full
+        options:
+          offset: 0
+          items_per_page: 25
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Search
+          reset_button: true
+          reset_button_label: Reset
+          exposed_sorts_label: "Sort by"
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
+      arguments:
+        uid:
+          id: uid
+          table: node__field_owner
+          field: field_owner_target_id
+          plugin_id: numeric
+          default_action: default
+          default_argument_type: current_user
+          summary:
+            sort_order: asc
+            number_of_records: 0
+            format: default_summary
+          specify_validation: true
+          validate:
+            type: none
+      filters:
+        status:
+          id: status
+          table: node_field_data
+          field: status
+          plugin_id: boolean
+          value: "1"
+        type:
+          id: type
+          table: node_field_data
+          field: type
+          plugin_id: bundle
+          value:
+            contact: contact
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          plugin_id: string
+          operator: contains
+          value: ""
+          exposed: true
+          expose:
+            operator_id: title_op
+            label: "Name"
+            description: "Search by contact name"
+            use_operator: false
+            operator: title_op
+            identifier: name
+            required: false
+            remember: false
+            placeholder: "Enter name..."
+        field_email_value:
+          id: field_email_value
+          table: node__field_email
+          field: field_email_value
+          plugin_id: string
+          operator: contains
+          value: ""
+          exposed: true
+          expose:
+            operator_id: field_email_value_op
+            label: "Email"
+            description: "Search by email"
+            use_operator: false
+            operator: field_email_value_op
+            identifier: email
+            required: false
+            remember: false
+            placeholder: "Enter email..."
+        field_phone_value:
+          id: field_phone_value
+          table: node__field_phone
+          field: field_phone_value
+          plugin_id: string
+          operator: contains
+          value: ""
+          exposed: true
+          expose:
+            operator_id: field_phone_value_op
+            label: "Phone"
+            description: "Search by phone number"
+            use_operator: false
+            operator: field_phone_value_op
+            identifier: phone
+            required: false
+            remember: false
+            placeholder: "Enter phone..."
+      style:
+        type: table
+        options:
+          grouping: {}
+          row_class: ""
+          default_row_class: true
+      display_extenders: {}
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - "languages:language_content"
+        - "languages:language_interface"
+        - url
+        - url.query_args
+        - user
+        - "user.node_grants:view"
+      tags:
+        - "config:field.storage.node.field_customer_type"
+        - "config:field.storage.node.field_email"
+        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_phone"
+        - "config:field.storage.node.field_source"
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      header:
+        area:
+          id: area
+          table: views
+          field: area
+          plugin_id: text
+          content:
+            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/contact\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: #10b981;\n          color: white;\n          text-decoration: none;\n          border-radius: 8px;\n          font-weight: 500;\n          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);\n        \" onmouseover=\"this.style.background='#059669'\" onmouseout=\"this.style.background='#10b981'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Contact\n        </a>\n      </div>"
+            format: full_html
+      display_extenders: {}
+      path: crm/my-contacts
+      menu:
+        type: normal
+        title: "My Contacts"
+        description: "Danh sách khách hàng của tôi"
+        weight: 10
+        menu_name: main
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - "languages:language_content"
+        - "languages:language_interface"
+        - url
+        - url.query_args
+        - user
+        - "user.node_grants:view"
+      tags:
+        - "config:field.storage.node.field_customer_type"
+        - "config:field.storage.node.field_email"
+        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_phone"
+        - "config:field.storage.node.field_source"

@@ -1,0 +1,39 @@
+crm_import_export.import_page:
+  path: "/admin/crm/import"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ImportController::importPage'
+    _title: "Import Data"
+  requirements:
+    _permission: "administer crm import export"
+
+crm_import_export.import_contacts:
+  path: "/admin/crm/import/contacts"
+  defaults:
+    _form: '\Drupal\crm_import_export\Form\ImportContactsForm'
+    _title: "Import Contacts"
+  requirements:
+    _permission: "administer crm import export"
+
+crm_import_export.import_deals:
+  path: "/admin/crm/import/deals"
+  defaults:
+    _form: '\Drupal\crm_import_export\Form\ImportDealsForm'
+    _title: "Import Deals"
+  requirements:
+    _permission: "administer crm import export"
+
+crm_import_export.export_contacts:
+  path: "/admin/crm/export/contacts"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ExportController::exportContacts'
+    _title: "Export Contacts"
+  requirements:
+    _permission: "administer crm import export"
+
+crm_import_export.export_deals:
+  path: "/admin/crm/export/deals"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ExportController::exportDeals'
+    _title: "Export Deals"
+  requirements:
+    _permission: "administer crm import export"

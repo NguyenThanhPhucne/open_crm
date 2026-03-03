@@ -1,3 +1,11 @@
+crm_dashboard.admin:
+  path: "/admin/crm"
+  defaults:
+    _controller: '\Drupal\crm_dashboard\Controller\DashboardController::view'
+    _title: "CRM Dashboard"
+  requirements:
+    _permission: "access content"
+
 crm_dashboard.dashboard:
   path: "/crm/dashboard"
   defaults:

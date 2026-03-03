@@ -1,0 +1,12 @@
+activity_widget:
+  version: 1.0
+  css:
+    theme:
+      css/activity-widget.css: {}
+  js:
+    js/activity-widget.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - core/jquery
+    - core/jquery.once

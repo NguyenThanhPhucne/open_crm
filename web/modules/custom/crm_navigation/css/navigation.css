@@ -1,0 +1,184 @@
+/* CRM Navigation Styles */
+
+/* Back button */
+.crm-back-button-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.crm-back-link,
+.button--back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #495057;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.crm-back-link:hover,
+.button--back:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+  text-decoration: none;
+}
+
+.crm-back-link:before {
+  content: "←";
+  font-size: 1.2em;
+}
+
+/* Form back button */
+.crm-form-back-button {
+  margin-bottom: 1rem;
+}
+
+/* Page back button */
+.crm-page-back-button {
+  margin-bottom: 1.5rem;
+  padding: 1rem 0;
+}
+
+/* Quick navigation bar */
+.crm-quick-nav {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0 2rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.crm-navigation-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.crm-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crm-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #475569;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.crm-nav-link i {
+  display: inline-flex;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.crm-nav-link:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.crm-nav-link:hover i {
+  stroke: #ffffff;
+}
+
+/* Current page highlight */
+.crm-nav-link.is-active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.crm-nav-link.is-active i {
+  stroke: #ffffff;
+}
+
+/* Cancel button styling */
+.form-actions .button--secondary {
+  background: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+}
+
+.form-actions .button--secondary:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .crm-navigation-bar {
+    flex-direction: column;
+  }
+
+  .crm-nav-link {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Breadcrumb enhancement */
+.breadcrumb {
+  background: transparent;
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "→";
+  padding: 0 0.5rem;
+  color: #6c757d;
+}
+
+/* Context menu for quick actions */
+.crm-context-menu {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+
+.crm-fab-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #5b6cff;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(91, 108, 255, 0.4);
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.crm-fab-button:hover {
+  background: #4959ff;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(91, 108, 255, 0.5);
+}

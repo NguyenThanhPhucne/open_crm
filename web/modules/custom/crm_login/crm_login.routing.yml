@@ -1,0 +1,17 @@
+crm_login.login:
+  path: "/login"
+  defaults:
+    _form: '\Drupal\crm_login\Form\CrmLoginForm'
+    _title: "Đăng nhập"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "FALSE"
+
+# Redirect old /user/login to new /login
+user.login.redirect:
+  path: "/user/login"
+  defaults:
+    _controller: '\Drupal\crm_login\Controller\RedirectController::redirectToLogin'
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "FALSE"

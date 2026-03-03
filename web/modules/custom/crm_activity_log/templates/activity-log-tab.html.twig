@@ -1,0 +1,93 @@
+<div class="activity-log-container">
+  <div class="activity-header">
+    <div>
+      <h2>
+        <i data-lucide="activity"></i>
+        Lịch sử tương tác với {{ contact_name }}
+      </h2>
+      <p class="subtitle">Tất cả hoạt động, cuộc gọi, và lịch hẹn</p>
+    </div>
+    <div class="activity-actions">
+      <a href="/crm/activity/log-call/{{ contact_id }}" class="btn-action btn-primary">
+        <i data-lucide="phone"></i>
+        Log Call
+      </a>
+      <a href="/crm/activity/schedule-meeting/{{ contact_id }}" class="btn-action btn-secondary">
+        <i data-lucide="calendar-plus"></i>
+        Schedule Meeting
+      </a>
+    </div>
+  </div>
+
+  {% if activities is empty %}
+    <div class="empty-state">
+      <i data-lucide="inbox"></i>
+      <h3>Chưa có hoạt động nào</h3>
+      <p>Bắt đầu ghi nhận cuộc gọi hoặc đặt lịch hẹn với khách hàng này.</p>
+      <a href="/crm/activity/log-call/{{ contact_id }}" class="btn-primary">
+        <i data-lucide="phone"></i>
+        Log cuộc gọi đầu tiên
+      </a>
+    </div>
+  {% else %}
+    <div class="activity-timeline">
+      {% for activity in activities %}
+        <div class="activity-item activity-{{ activity.type|lower }}">
+          <div class="activity-icon">
+            {% if activity.type == 'Call' %}
+              <i data-lucide="phone"></i>
+            {% elseif activity.type == 'Meeting' %}
+              <i data-lucide="calendar"></i>
+            {% elseif activity.type == 'Email' %}
+              <i data-lucide="mail"></i>
+            {% else %}
+              <i data-lucide="file-text"></i>
+            {% endif %}
+          </div>
+          <div class="activity-content">
+            <div class="activity-header-row">
+              <h4>{{ activity.title }}</h4>
+              <span class="activity-badge">{{ activity.type }}</span>
+            </div>
+            
+            {% if activity.description %}
+              <p class="activity-description">{{ activity.description }}</p>
+            {% endif %}
+
+            {% if activity.outcome %}
+              <div class="activity-outcome">
+                <i data-lucide="check-circle"></i>
+                <strong>Kết quả:</strong> {{ activity.outcome }}
+              </div>
+            {% endif %}
+
+            <div class="activity-meta">
+              <span>
+                <i data-lucide="user"></i>
+                {{ activity.author }}
+              </span>
+              <span>
+                <i data-lucide="clock"></i>
+                {{ activity.created }}
+              </span>
+              <a href="/node/{{ activity.id }}/edit" class="activity-edit">
+                <i data-lucide="edit-2"></i>
+                Sửa
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<!-- Lucide Icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  });
+</script>

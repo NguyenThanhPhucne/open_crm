@@ -1,0 +1,24 @@
+quickadd:
+  version: 1.0
+  css:
+    theme:
+      css/quickadd.css: {}
+  js:
+    js/quickadd.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - core/jquery
+    - core/jquery.once
+
+floating_button:
+  version: 1.0
+  css:
+    theme:
+      css/floating_button.css: {}
+  js:
+    js/floating_button.js: {}
+    https://unpkg.com/lucide@latest: { type: external, minified: true }
+  dependencies:
+    - core/drupal
+    - core/once

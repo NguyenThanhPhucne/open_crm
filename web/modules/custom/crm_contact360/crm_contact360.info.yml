@@ -1,0 +1,7 @@
+name: 'CRM Contact 360 View'
+type: module
+description: 'Enhanced 360-degree view for Contact pages with professional card layout'
+package: Custom
+core_version_requirement: ^11
+dependencies:
+  - drupal:node

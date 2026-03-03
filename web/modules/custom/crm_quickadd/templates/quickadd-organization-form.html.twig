@@ -1,0 +1,52 @@
+<div class="quickadd-modal-wrapper">
+  <div class="quickadd-form-container">
+    <div class="quickadd-header">
+      <h2>
+        <i data-lucide="building-2"></i>
+        Thêm tổ chức nhanh
+      </h2>
+      <button class="quickadd-close" onclick="window.history.back()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <form id="quickadd-organization-form" class="quickadd-form">
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="org-name" class="required">Tên công ty</label>
+          <input type="text" id="org-name" name="name" required placeholder="Công ty TNHH ABC">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="org-website">Website</label>
+          <input type="url" id="org-website" name="website" placeholder="https://example.com">
+        </div>
+        <div class="form-group">
+          <label for="org-industry">Ngành nghề</label>
+          <select id="org-industry" name="industry">
+            {{ industry_options|raw }}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="org-address">Địa chỉ</label>
+          <input type="text" id="org-address" name="address" placeholder="123 Đường ABC, Quận 1, TP.HCM">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" onclick="window.history.back()">Hủy</button>
+        <button type="submit" class="btn-primary">
+          <i data-lucide="save"></i>
+          Lưu tổ chức
+        </button>
+      </div>
+
+      <div id="quickadd-message" class="alert" style="display:none;"></div>
+    </form>
+  </div>
+</div>

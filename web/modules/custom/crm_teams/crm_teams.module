@@ -1,0 +1,226 @@
+<?php
+
+/**
+ * @file
+ * CRM Teams module - Team-based access control.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_node_access().
+ */
+function crm_teams_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  $bundle = $node->bundle();
+  
+  // Only apply to CRM content types
+  if (!in_array($bundle, ['contact', 'deal', 'organization', 'activity'])) {
+    return AccessResult::neutral();
+  }
+  
+  // Admin and users with 'bypass crm team access' can do anything
+  if ($account->hasPermission('administer nodes') || $account->hasPermission('bypass crm team access')) {
+    return AccessResult::neutral();
+  }
+  
+  // For view operation, check team membership
+  if ($op === 'view') {
+    $user_team = _crm_teams_get_user_team($account->id());
+    $owner_team = _crm_teams_get_entity_owner_team($node);
+    
+    // If no teams assigned, allow access (backward compatibility)
+    if (empty($user_team) || empty($owner_team)) {
+      return AccessResult::neutral();
+    }
+    
+    // Check if user's team matches owner's team
+    if ($user_team === $owner_team) {
+      return AccessResult::allowed()->cachePerUser()->addCacheableDependency($node);
+    }
+    
+    // Deny access if teams don't match
+    return AccessResult::forbidden('Access denied: different team')->cachePerUser()->addCacheableDependency($node);
+  }
+  
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_query_TAG_alter() for entity queries.
+ */
+function crm_teams_query_node_access_alter($query) {
+  $account = \Drupal::currentUser();
+  
+  // Skip for admin
+  if ($account->hasPermission('bypass crm team access') || $account->hasPermission('administer nodes')) {
+    return;
+  }
+  
+  // Get user's team
+  $user_team_id = _crm_teams_get_user_team($account->id());
+  
+  if (!empty($user_team_id)) {
+    // Join with users table to filter by team
+    $query->leftJoin('users_field_data', 'ufd', 'node_field_data.uid = ufd.uid');
+    $query->leftJoin('user__field_team', 'uft', 'ufd.uid = uft.entity_id');
+    
+    // Add condition: only show nodes where owner has same team
+    $or = $query->orConditionGroup()
+      ->condition('uft.field_team_target_id', $user_team_id, '=')
+      ->isNull('uft.field_team_target_id'); // Also show nodes with no team assigned
+    
+    $query->condition($or);
+  }
+}
+
+/**
+ * Get user's team ID.
+ */
+function _crm_teams_get_user_team($uid) {
+  $user = \Drupal::entityTypeManager()->getStorage('user')->load($uid);
+  
+  if ($user && $user->hasField('field_team') && !$user->get('field_team')->isEmpty()) {
+    return $user->get('field_team')->target_id;
+  }
+  
+  return NULL;
+}
+
+/**
+ * Get entity owner's team ID.
+ */
+function _crm_teams_get_entity_owner_team(EntityInterface $entity) {
+  if ($entity->hasField('uid')) {
+    $owner = $entity->get('uid')->entity;
+    
+    if ($owner) {
+      return _crm_teams_get_user_team($owner->id());
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Implements hook_views_query_alter().
+ */
+function crm_teams_views_query_alter($view, $query) {
+  $account = \Drupal::currentUser();
+  
+  // Skip for admin or bypass permission
+  if ($account->hasPermission('bypass crm team access') || $account->hasPermission('administer nodes')) {
+    return;
+  }
+  
+  // Apply to CRM views
+  $crm_views = ['crm_contacts', 'crm_deals', 'crm_activities', 'crm_organizations'];
+  
+  if (in_array($view->id(), $crm_views)) {
+    $user_team_id = _crm_teams_get_user_team($account->id());
+    
+    if (!empty($user_team_id)) {
+      // Add join to user's team field
+      $configuration = [
+        'table' => 'user__field_team',
+        'field' => 'entity_id',
+        'left_table' => 'node_field_data',
+        'left_field' => 'uid',
+        'operator' => '=',
+      ];
+      
+      $join = \Drupal\views\Views::pluginManager('join')->createInstance('standard', $configuration);
+      $query->addRelationship('user__field_team', $join, 'node_field_data');
+      
+      // Add where condition
+      $query->addWhere(0, 'user__field_team.field_team_target_id', $user_team_id, '=');
+    }
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function crm_teams_install() {
+  // Create team vocabulary if not exists
+  $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::load('crm_team');
+  
+  if (!$vocabulary) {
+    $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::create([
+      'vid' => 'crm_team',
+      'name' => 'CRM Teams',
+      'description' => 'Sales teams for access control',
+    ]);
+    $vocabulary->save();
+    
+    // Create default teams
+    $teams = [
+      'Sales Team A' => 'Primary sales team',
+      'Sales Team B' => 'Secondary sales team',
+      'Sales Team C' => 'Third sales team',
+      'Manager Team' => 'Management team with full access',
+    ];
+    
+    foreach ($teams as $name => $description) {
+      $term = \Drupal\taxonomy\Entity\Term::create([
+        'vid' => 'crm_team',
+        'name' => $name,
+        'description' => $description,
+      ]);
+      $term->save();
+    }
+  }
+  
+  // Create field_team on User entity
+  $field_storage = \Drupal\field\Entity\FieldStorageConfig::loadByName('user', 'field_team');
+  
+  if (!$field_storage) {
+    $field_storage = \Drupal\field\Entity\FieldStorageConfig::create([
+      'field_name' => 'field_team',
+      'entity_type' => 'user',
+      'type' => 'entity_reference',
+      'settings' => [
+        'target_type' => 'taxonomy_term',
+      ],
+      'cardinality' => 1,
+    ]);
+    $field_storage->save();
+  }
+  
+  $field = \Drupal\field\Entity\FieldConfig::loadByName('user', 'user', 'field_team');
+  
+  if (!$field) {
+    $field = \Drupal\field\Entity\FieldConfig::create([
+      'field_storage' => $field_storage,
+      'bundle' => 'user',
+      'label' => 'Team',
+      'description' => 'Sales team membership',
+      'required' => FALSE,
+      'settings' => [
+        'handler' => 'default:taxonomy_term',
+        'handler_settings' => [
+          'target_bundles' => [
+            'crm_team' => 'crm_team',
+          ],
+        ],
+      ],
+    ]);
+    $field->save();
+    
+    // Add to form display
+    $form_display = \Drupal::entityTypeManager()
+      ->getStorage('entity_form_display')
+      ->load('user.user.default');
+    
+    if ($form_display) {
+      $form_display->setComponent('field_team', [
+        'type' => 'options_select',
+        'weight' => 50,
+      ])->save();
+    }
+  }
+  
+  \Drupal::messenger()->addStatus('CRM Teams module installed successfully. Teams created: Sales Team A, B, C, and Manager Team.');
+}

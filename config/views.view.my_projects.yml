@@ -1,0 +1,172 @@
+uuid: d7f2c8e9-4a1b-4d32-b9f3-7e8c6d5a4b3c
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_amount
+    - field.storage.node.field_closing_date
+    - field.storage.node.field_organization
+    - field.storage.node.field_stage
+    - node.type.deal
+    - system.menu.main
+  module:
+    - datetime
+    - node
+    - user
+id: my_projects
+label: "My Projects"
+module: views
+description: "Customer portal - View deals/projects where I am the contact"
+tag: "Customer Portal"
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: "My Projects"
+      fields:
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          plugin_id: field
+          label: "Project Name"
+          type: string
+          settings:
+            link_to_entity: true
+        field_stage:
+          id: field_stage
+          table: node__field_stage
+          field: field_stage
+          plugin_id: field
+          label: Status
+          type: entity_reference_label
+        field_amount:
+          id: field_amount
+          table: node__field_amount
+          field: field_amount
+          plugin_id: field
+          label: Value
+          settings:
+            thousand_separator: ","
+            decimal_separator: .
+            suffix: " VND"
+        field_closing_date:
+          id: field_closing_date
+          table: node__field_closing_date
+          field: field_closing_date
+          plugin_id: field
+          label: "Expected Close"
+          settings:
+            format_type: medium
+        field_organization:
+          id: field_organization
+          table: node__field_organization
+          field: field_organization
+          plugin_id: field
+          label: Company
+          type: entity_reference_label
+          settings:
+            link: true
+      pager:
+        type: full
+        options:
+          offset: 0
+          items_per_page: 20
+          expose:
+            items_per_page: true
+            items_per_page_options: "10, 20, 50"
+      sorts:
+        field_closing_date_value:
+          id: field_closing_date_value
+          table: node__field_closing_date
+          field: field_closing_date_value
+          plugin_id: date
+          order: DESC
+      filters:
+        status:
+          id: status
+          table: node_field_data
+          field: status
+          plugin_id: boolean
+          value: "1"
+        type:
+          id: type
+          table: node_field_data
+          field: type
+          plugin_id: bundle
+          value:
+            deal: deal
+        field_stage_target_id:
+          id: field_stage_target_id
+          table: node__field_stage
+          field: field_stage_target_id
+          plugin_id: taxonomy_index_tid
+          exposed: true
+          expose:
+            operator_id: field_stage_target_id_op
+            label: "Filter by Status"
+            identifier: stage
+            multiple: false
+            remember: false
+          vid: pipeline_stage
+          type: select
+          hierarchy: false
+      relationships:
+        field_contact:
+          id: field_contact
+          table: node__field_contact
+          field: field_contact
+          plugin_id: standard
+          required: true
+          label: "Contact Reference"
+      access:
+        type: role
+        options:
+          role:
+            customer: customer
+            authenticated: authenticated
+      cache:
+        type: tag
+        options: {}
+      query:
+        type: views_query
+        options:
+          query_comment: ""
+          disable_sql_rewrite: false
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {}
+      path: my/projects
+      menu:
+        type: normal
+        title: "My Projects"
+        description: "View your projects and opportunities"
+        menu_name: main
+        weight: 10
+        context: "0"
+      arguments:
+        uid:
+          id: uid
+          table: users_field_data
+          field: uid
+          relationship: field_contact
+          plugin_id: numeric
+          default_action: default
+          default_argument_type: current_user
+          summary:
+            sort_order: asc
+            number_of_records: 0
+            format: default_summary
+          specify_validation: true
+          validate:
+            type: none
+          breakpoint: none

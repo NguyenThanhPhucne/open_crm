@@ -1,0 +1,48 @@
+crm_activity_log.activity_tab:
+  path: "/node/{node}/activities"
+  defaults:
+    _controller: '\Drupal\crm_activity_log\Controller\ActivityLogController::activityTab'
+    _title: "Lịch sử tương tác"
+  requirements:
+    _activity_tab_access: "TRUE"
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+crm_activity_log.log_call:
+  path: "/crm/activity/log-call/{contact}"
+  defaults:
+    _controller: '\Drupal\crm_activity_log\Controller\ActivityLogController::logCallForm'
+    _title: "Log Call"
+  requirements:
+    _permission: "create activity content"
+    contact: \d+
+
+crm_activity_log.log_call_submit:
+  path: "/crm/activity/log-call/{contact}/submit"
+  defaults:
+    _controller: '\Drupal\crm_activity_log\Controller\ActivityLogController::logCallSubmit'
+  requirements:
+    _permission: "create activity content"
+    contact: \d+
+  methods: [POST]
+
+crm_activity_log.schedule_meeting:
+  path: "/crm/activity/schedule-meeting/{contact}"
+  defaults:
+    _controller: '\Drupal\crm_activity_log\Controller\ActivityLogController::scheduleMeetingForm'
+    _title: "Schedule Meeting"
+  requirements:
+    _permission: "create activity content"
+    contact: \d+
+
+crm_activity_log.schedule_meeting_submit:
+  path: "/crm/activity/schedule-meeting/{contact}/submit"
+  defaults:
+    _controller: '\Drupal\crm_activity_log\Controller\ActivityLogController::scheduleMeetingSubmit'
+  requirements:
+    _permission: "create activity content"
+    contact: \d+
+  methods: [POST]

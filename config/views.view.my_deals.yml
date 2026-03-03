@@ -1,0 +1,243 @@
+uuid: 0b61c4d3-108f-4459-be31-205b98453af6
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_amount
+    - field.storage.node.field_closing_date
+    - field.storage.node.field_contact
+    - field.storage.node.field_organization
+    - field.storage.node.field_probability
+    - field.storage.node.field_stage
+    - node.type.deal
+    - system.menu.main
+  module:
+    - datetime
+    - node
+id: my_deals
+label: "My Deals"
+module: views
+description: "Danh sách cơ hội của tôi"
+tag: CRM
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: "My Pipeline"
+      fields:
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          plugin_id: field
+          label: Deal
+          type: string
+          settings:
+            link_to_entity: true
+        field_amount:
+          id: field_amount
+          table: node__field_amount
+          field: field_amount
+          plugin_id: field
+          label: Amount
+          settings:
+            thousand_separator: ","
+            decimal_separator: .
+            suffix: " VND"
+        field_stage:
+          id: field_stage
+          table: node__field_stage
+          field: field_stage
+          plugin_id: field
+          label: Stage
+          type: entity_reference_label
+        field_probability:
+          id: field_probability
+          table: node__field_probability
+          field: field_probability
+          plugin_id: field
+          label: Probability
+          settings:
+            suffix: "%"
+        field_closing_date:
+          id: field_closing_date
+          table: node__field_closing_date
+          field: field_closing_date
+          plugin_id: field
+          label: "Close Date"
+          settings:
+            format_type: medium
+        field_contact:
+          id: field_contact
+          table: node__field_contact
+          field: field_contact
+          plugin_id: field
+          label: Contact
+          type: entity_reference_label
+          settings:
+            link: true
+        field_organization:
+          id: field_organization
+          table: node__field_organization
+          field: field_organization
+          plugin_id: field
+          label: Organization
+          type: entity_reference_label
+          settings:
+            link: true
+      pager:
+        type: full
+        options:
+          offset: 0
+          items_per_page: 25
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Search
+          reset_button: true
+          reset_button_label: Reset
+      sorts:
+        field_close_date_value:
+          id: field_close_date_value
+          table: node__field_close_date
+          field: field_close_date_value
+          plugin_id: date
+          order: ASC
+      arguments:
+        uid:
+          id: uid
+          table: node__field_owner
+          field: field_owner_target_id
+          plugin_id: numeric
+          default_action: default
+          default_argument_type: current_user
+          summary:
+            sort_order: asc
+            number_of_records: 0
+            format: default_summary
+          specify_validation: true
+          validate:
+            type: none
+      filters:
+        status:
+          id: status
+          table: node_field_data
+          field: status
+          plugin_id: boolean
+          value: "1"
+        type:
+          id: type
+          table: node_field_data
+          field: type
+          plugin_id: bundle
+          value:
+            deal: deal
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          plugin_id: string
+          operator: contains
+          value: ""
+          exposed: true
+          expose:
+            operator_id: title_op
+            label: "Deal Name"
+            description: "Search by deal name"
+            use_operator: false
+            operator: title_op
+            identifier: title
+            required: false
+            remember: false
+            placeholder: "Enter deal name..."
+        field_amount_value:
+          id: field_amount_value
+          table: node__field_amount
+          field: field_amount_value
+          plugin_id: numeric
+          operator: between
+          value:
+            min: ""
+            max: ""
+          exposed: true
+          expose:
+            operator_id: field_amount_value_op
+            label: "Amount Range"
+            description: "Filter by deal amount"
+            use_operator: false
+            operator: field_amount_value_op
+            identifier: amount
+            required: false
+            remember: false
+            min_placeholder: "Min amount"
+            max_placeholder: "Max amount"
+      style:
+        type: table
+        options:
+          grouping:
+            - field: field_stage
+              rendered: true
+              rendered_strip: false
+          row_class: ""
+          default_row_class: true
+      display_extenders: {}
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - "languages:language_content"
+        - "languages:language_interface"
+        - url
+        - url.query_args
+        - user
+        - "user.node_grants:view"
+      tags:
+        - "config:field.storage.node.field_amount"
+        - "config:field.storage.node.field_closing_date"
+        - "config:field.storage.node.field_contact"
+        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_probability"
+        - "config:field.storage.node.field_stage"
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      header:
+        area:
+          id: area
+          table: views
+          field: area
+          plugin_id: text
+          content:
+            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: #8b5cf6;\n          color: white;\n          text-decoration: none;\n          border-radius: 8px;\n          font-weight: 500;\n          box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);\n        \" onmouseover=\"this.style.background='#7c3aed'\" onmouseout=\"this.style.background='#8b5cf6'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
+            format: full_html
+      display_extenders: {}
+      path: crm/my-pipeline
+      menu:
+        type: normal
+        title: "My Pipeline"
+        description: "Pipeline của tôi"
+        weight: 11
+        menu_name: main
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - "languages:language_content"
+        - "languages:language_interface"
+        - url
+        - url.query_args
+        - user
+        - "user.node_grants:view"
+      tags:
+        - "config:field.storage.node.field_amount"
+        - "config:field.storage.node.field_closing_date"
+        - "config:field.storage.node.field_contact"
+        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_probability"
+        - "config:field.storage.node.field_stage"

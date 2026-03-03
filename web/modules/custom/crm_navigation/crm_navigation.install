@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for CRM Navigation module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function crm_navigation_install() {
+  \Drupal::messenger()->addStatus(t('CRM Navigation module has been installed. Back buttons and quick navigation will now appear on CRM pages.'));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function crm_navigation_uninstall() {
+  \Drupal::messenger()->addStatus(t('CRM Navigation module has been uninstalled.'));
+}

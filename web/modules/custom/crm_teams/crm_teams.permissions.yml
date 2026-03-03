@@ -1,0 +1,9 @@
+administer crm teams:
+  title: "Administer CRM Teams"
+  description: "Manage team assignments and settings"
+  restrict access: true
+
+bypass crm team access:
+  title: "Bypass CRM team access control"
+  description: "View all CRM data regardless of team (for Managers)"
+  restrict access: true

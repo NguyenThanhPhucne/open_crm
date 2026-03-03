@@ -1,0 +1,13 @@
+crm_import_export.import:
+  title: "Import Data"
+  route_name: crm_import_export.import_page
+  menu_name: admin
+  parent: system.admin_crm
+  weight: 20
+
+crm_import_export.export_contacts:
+  title: "Export Contacts"
+  route_name: crm_import_export.export_contacts
+  menu_name: admin
+  parent: system.admin_crm
+  weight: 21

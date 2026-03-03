@@ -1,0 +1,100 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.server.crm_database
+    - node.type.organization
+  module:
+    - search_api
+    - node
+id: crm_organizations_index
+name: "CRM Organizations"
+description: "Search index for CRM organizations and companies"
+read_only: false
+field_settings:
+  title:
+    label: "Organization Name"
+    datasource_id: "entity:node"
+    property_path: title
+    type: text
+    boost: !!float 5
+  field_website:
+    label: "Website"
+    datasource_id: "entity:node"
+    property_path: field_website
+    type: string
+  field_address:
+    label: "Address"
+    datasource_id: "entity:node"
+    property_path: field_address
+    type: text
+  field_industry:
+    label: "Industry"
+    datasource_id: "entity:node"
+    property_path: field_industry
+    type: string
+  field_assigned_staff:
+    label: "Assigned Staff"
+    datasource_id: "entity:node"
+    property_path: "field_assigned_staff:entity:name"
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_assigned_staff
+  field_status:
+    label: "Status"
+    datasource_id: "entity:node"
+    property_path: field_status
+    type: string
+  field_annual_revenue:
+    label: "Annual Revenue"
+    datasource_id: "entity:node"
+    property_path: field_annual_revenue
+    type: decimal
+  field_employees_count:
+    label: "Employees Count"
+    datasource_id: "entity:node"
+    property_path: field_employees_count
+    type: integer
+  created:
+    label: "Created"
+    datasource_id: "entity:node"
+    property_path: created
+    type: date
+  status:
+    label: "Published"
+    datasource_id: "entity:node"
+    property_path: status
+    type: boolean
+datasource_settings:
+  "entity:node":
+    bundles:
+      default: false
+      selected:
+        - organization
+    languages:
+      default: true
+      selected: {}
+processor_settings:
+  add_url: {}
+  entity_status: {}
+  entity_type: {}
+  ignorecase:
+    fields:
+      - title
+      - field_address
+  tokenizer:
+    fields:
+      - title
+      - field_address
+  transliteration:
+    fields:
+      - title
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 50
+  index_directly: true
+  track_changes_in_references: true
+server: crm_database

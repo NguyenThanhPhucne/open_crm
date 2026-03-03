@@ -1,0 +1,8 @@
+name: CRM Quick Add
+type: module
+description: 'Quick Add Modal for fast Contact, Deal, and Organization creation with AJAX validation'
+package: CRM
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:user

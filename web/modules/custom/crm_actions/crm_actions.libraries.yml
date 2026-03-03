@@ -1,0 +1,11 @@
+global_nav:
+  version: 1.0
+  css:
+    theme:
+      css/crm_actions.css: {}
+  js:
+    js/crm_actions.js: {}
+    https://unpkg.com/lucide@latest: { type: external, minified: true }
+  dependencies:
+    - core/drupal
+    - core/once

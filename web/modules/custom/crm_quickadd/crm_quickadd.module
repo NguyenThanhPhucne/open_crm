@@ -1,0 +1,112 @@
+<?php
+
+/**
+ * @file
+ * CRM QuickAdd module file.
+ */
+
+use Drupal\Core\Render\Markup;
+
+/**
+ * Implements hook_page_attachments().
+ */
+function crm_quickadd_page_attachments(array &$attachments) {
+  $current_user = \Drupal::currentUser();
+  
+  // Only for authenticated users
+  if ($current_user->isAuthenticated()) {
+    $current_path = \Drupal::request()->getRequestUri();
+    
+    // Show on CRM pages
+    if (str_contains($current_path, '/crm/') || 
+        str_contains($current_path, '/node/') ||
+        str_contains($current_path, '/app/')) {
+      
+      $attachments['#attached']['library'][] = 'crm_quickadd/floating_button';
+    }
+  }
+}
+
+/**
+ * Implements hook_page_top().
+ */
+function crm_quickadd_page_top(array &$page_top) {
+  $current_user = \Drupal::currentUser();
+  
+  // Only for authenticated users
+  if ($current_user->isAuthenticated()) {
+    $current_path = \Drupal::request()->getRequestUri();
+    
+    // Show on CRM pages
+    if (str_contains($current_path, '/crm/') || 
+        str_contains($current_path, '/node/') ||
+        str_contains($current_path, '/app/')) {
+      
+      $page_top['crm_quickadd_fab'] = [
+        '#markup' => Markup::create(_crm_quickadd_build_fab()),
+        '#cache' => [
+          'contexts' => ['url.path', 'user'],
+        ],
+      ];
+    }
+  }
+}
+
+/**
+ * Build Floating Action Button with Quick Add menu.
+ */
+function _crm_quickadd_build_fab() {
+  $html = <<<'HTML'
+<div class="crm-fab-container">
+  <div class="crm-fab-menu" id="crm-fab-menu">
+    <a href="/node/add/contact" class="crm-fab-menu-item" data-type="contact">
+      <i data-lucide="user-plus" width="20" height="20"></i>
+      <span>Thêm Khách hàng</span>
+    </a>
+    <a href="/node/add/deal" class="crm-fab-menu-item" data-type="deal">
+      <i data-lucide="briefcase" width="20" height="20"></i>
+      <span>Thêm Deal</span>
+    </a>
+    <a href="/node/add/organization" class="crm-fab-menu-item" data-type="org">
+      <i data-lucide="building-2" width="20" height="20"></i>
+      <span>Thêm Tổ chức</span>
+    </a>
+  </div>
+  
+  <button class="crm-fab-button" id="crm-fab-button" aria-label="Quick Add">
+    <i data-lucide="plus" width="24" height="24"></i>
+  </button>
+</div>
+HTML;
+
+  return $html;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function crm_quickadd_theme($existing, $type, $theme, $path) {
+  return [
+    'quickadd_contact_form' => [
+      'variables' => [
+        'org_options' => '',
+        'type_options' => '',
+        'source_options' => '',
+      ],
+      'template' => 'quickadd-contact-form',
+    ],
+    'quickadd_deal_form' => [
+      'variables' => [
+        'contact_options' => '',
+        'stage_options' => '',
+      ],
+      'template' => 'quickadd-deal-form',
+    ],
+    'quickadd_organization_form' => [
+      'variables' => [
+        'industry_options' => '',
+      ],
+      'template' => 'quickadd-organization-form',
+    ],
+  ];
+}

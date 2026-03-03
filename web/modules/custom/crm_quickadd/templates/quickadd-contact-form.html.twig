@@ -1,0 +1,80 @@
+<div class="quickadd-modal-wrapper">
+  <div class="quickadd-form-container">
+    <div class="quickadd-header">
+      <h2>
+        <i data-lucide="user-plus"></i>
+        Thêm khách hàng nhanh
+      </h2>
+      <button class="quickadd-close" onclick="window.history.back()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <form id="quickadd-contact-form" class="quickadd-form">
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="contact-name" class="required">Tên khách hàng</label>
+          <input type="text" id="contact-name" name="name" required placeholder="Nguyễn Văn A">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="contact-phone" class="required">Số điện thoại</label>
+          <input type="tel" id="contact-phone" name="phone" required placeholder="+84 901234567">
+          <span class="validation-message" id="phone-validation"></span>
+        </div>
+        <div class="form-group">
+          <label for="contact-email">Email</label>
+          <input type="email" id="contact-email" name="email" placeholder="name@company.com">
+          <span class="validation-message" id="email-validation"></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="contact-position">Chức vụ</label>
+          <input type="text" id="contact-position" name="position" placeholder="Sales Manager">
+        </div>
+        <div class="form-group">
+          <label for="contact-customer-type">Phân loại</label>
+          <select id="contact-customer-type" name="customer_type">
+            {{ type_options|raw }}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="contact-source">Nguồn KH</label>
+          <select id="contact-source" name="source">
+            {{ source_options|raw }}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="contact-organization">Công ty</label>
+          <select id="contact-organization" name="organization">
+            {{ org_options|raw }}
+          </select>
+        </div>
+      </div>
+
+      <div id="inline-org-fields" class="inline-fields" style="display:none;">
+        <div class="form-group full-width">
+          <label for="inline-org-name">Tên công ty mới</label>
+          <input type="text" id="inline-org-name" name="organization_name" placeholder="Công ty ABC">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" onclick="window.history.back()">Hủy</button>
+        <button type="submit" class="btn-primary">
+          <i data-lucide="save"></i>
+          Lưu khách hàng
+        </button>
+      </div>
+
+      <div id="quickadd-message" class="alert" style="display:none;"></div>
+    </form>
+  </div>
+</div>

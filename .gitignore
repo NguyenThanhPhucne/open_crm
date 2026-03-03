@@ -1,19 +1,20 @@
 # ============================================
 # Drupal CRM Project - .gitignore
 # ============================================
-# Chỉ commit code custom, không commit vendor, core, contrib
+# Chỉ commit code custom và config quan trọng
+# Không commit vendor, core, contrib, files
 # ============================================
 
-# ========== Composer ==========
+# ========== Composer Dependencies ==========
 # Ignore dependencies (sẽ install lại từ composer.json)
 /vendor/
 
-# Keep composer files
+# Keep composer files để rebuild dependencies
 !composer.json
 !composer.lock
 
 # ========== Drupal Core ==========
-# Ignore toàn bộ Drupal core (sẽ install từ composer)
+# Ignore toàn bộ Drupal core (install từ composer)
 /web/core/
 /web/.csslintrc
 /web/.editorconfig
@@ -30,24 +31,249 @@
 /web/web.config
 
 # ========== Contributed Modules & Themes ==========
-# Ignore contrib (sẽ install từ composer)
+# Ignore contrib modules/themes (install từ composer)
 /web/modules/contrib/
 /web/themes/contrib/
 /web/profiles/contrib/
 /web/libraries/
 
-# ========== Custom Code (KEEP THESE!) ==========
-# Custom modules - COMMIT THESE
+# ========== Custom Code (KEEP - IMPORTANT!) ==========
+# Custom modules - GIỮ LẠI ĐỂ COMMIT
 !/web/modules/custom/
+!/web/modules/custom/**
 
-# Custom themes - COMMIT THESE
+# Custom themes - GIỮ LẠI ĐỂ COMMIT
 !/web/themes/custom/
+!/web/themes/custom/**
 
-# Custom profiles - COMMIT THESE
+# Custom profiles - GIỮ LẠI NẾU CÓ
 !/web/profiles/custom/
+!/web/profiles/custom/**
 
-# ========== Configuration ==========
+# ========== Configuration (KEEP - IMPORTANT!) ==========
+# Config directory - GIỮ LẠI VIEWS VÀ CONFIG QUAN TRỌNG
+!/config/
+!/config/**/*.yml
+
 # Settings files - IGNORE (chứa DB credentials)
+/web/sites/*/settings.php
+/web/sites/*/settings.local.php
+/web/sites/*/services*.yml
+/web/sites/*/settings.ddev.php
+
+# Exception: Keep default settings for reference
+!/web/sites/*/default.settings.php
+
+# ========== User Uploaded Files ==========
+# Ignore tất cả uploaded files
+/web/sites/*/files/
+/web/sites/*/private/
+
+# Exception: Giữ lại custom CSS nếu có
+!/web/sites/default/files/crm_custom_tables.css
+
+# Exception: Giữ thư mục import templates (nhưng không commit file trong đó)
+!/web/sites/default/files/crm_imports/
+/web/sites/default/files/crm_imports/*
+!/web/sites/default/files/crm_imports/.htaccess
+
+# ========== Cache & Generated Files ==========
+# Drupal generated cache
+/web/sites/*/files/css/
+/web/sites/*/files/js/
+/web/sites/*/files/php/
+/web/sites/*/files/styles/
+/web/sites/*/files/languages/
+
+# Backup files
+*.bak
+*.swp
+*~
+*.orig
+*.tmp
+
+# ========== IDE & Editor Files ==========
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbproject/
+
+# Eclipse
+.project
+.buildpath
+.settings/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ========== OS Files ==========
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE_BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.fuse_hidden*
+
+# ========== Development Tools ==========
+# DDEV - keep config but ignore local overrides
+.ddev/
+!.ddev/config.yaml
+!.ddev/config.*.yaml
+!.ddev/docker-compose.*.yaml
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Node.js (nếu có frontend build)
+node_modules/
+npm-debug.log
+yarn-error.log
+/package-lock.json
+/yarn.lock
+/.pnp/
+.pnp.js
+
+# ========== Database Files ==========
+# Database dumps và backups
+*.sql
+*.sql.gz
+*.mysql
+*.dump
+*.sqlite
+*.db
+/backups/
+
+# ========== Logs ==========
+# Log files
+*.log
+/logs/
+/log/
+/web/sites/*/logs/
+
+# ========== Drupal Development Tools ==========
+# Drush
+/.drush/
+/drush/contrib/
+/drush/Commands/
+
+# Drupal Console
+/.console/
+/.drupal-console/
+
+# DrupalVM
+.vagrant/
+Vagrantfile.local
+
+# PHPUnit
+/phpunit.xml
+
+# Behat
+/behat.yml
+
+# ========== Test Files ==========
+# Testing
+/web/sites/simpletest/
+/tests/
+
+# ============================================
+# FILES TO KEEP (Explicitly included)
+# ============================================
+
+# Project root files - GIỮ LẠI
+!composer.json
+!composer.lock
+!README.md
+!LICENSE.txt
+
+# Documentation - GIỮ CÁC FILE QUAN TRỌNG
+!CONTENT_TYPES.md
+!FEATURES_GUIDE.md
+!TEAM_PERMISSIONS_GUIDE.md
+!COMPLETE_GUIDE.md
+!PRODUCTION_READINESS.md
+!DATA_IMPORT_GUIDE.md
+!CUSTOM_MODULES_API_DOCS.md
+
+# Ignore các file report và test không cần thiết
+AUDIT_REPORT.md
+CODE_QUALITY_AUDIT.md
+CODE_REVIEW_SUMMARY.md
+ERROR_FIX_REPORT.md
+FINAL_CLEANUP_REPORT.md
+FINAL_FORM_TEST_REPORT.md
+FINAL_VALIDATION_REPORT.md
+LOGIN_URL_CONSOLIDATION_REPORT.txt
+LUCIDE_ICONS_MIGRATION.txt
+NAVIGATION_CONSOLIDATION_REPORT.txt
+PHASE_*.md
+PIPELINE_NAVIGATION_INTEGRATION.txt
+QUICKADD_DEBUG_GUIDE.md
+QUICKADD_TESTING_GUIDE.md
+ROUTES_VIEWS_AUDIT.txt
+SAMPLE_DATA_CLEANUP_REPORT.md
+SYSTEM_GAP_ANALYSIS.md
+TEST_ACCESS_CONTROL.txt
+VERIFICATION_SUMMARY.md
+CRM_NAVIGATION_GUIDE.txt
+
+# Sample data - KHÔNG COMMIT
+sample_contacts.csv
+sample_deals.csv
+
+# Test files - KHÔNG COMMIT
+test_quickadd.php
+lucide_icons_page.html
+
+# Scripts - GIỮ LẠI NẾU CẦN
+!/scripts/
+scripts/add_*.php
+scripts/add_*.sh
+scripts/audit_*.php
+
+# Recipes - GIỮ LẠI
+!/recipes/
+!/recipes/**
+
+# Drupal Discord folder - KHÔNG COMMIT
+/Drupal Discord/
+
+# Fixtures - GIỮ LẠI
+!/fixtures/
+!/fixtures/**/*.yml
+!/fixtures/**/*.php
+
+# CSV files columns - KHÔNG CẦN
+*.csv
+!fixtures/**/*.csv
+!config/**/*.csv
 /web/sites/*/settings.php
 /web/sites/*/settings.local.php
 /web/sites/*/services*.yml

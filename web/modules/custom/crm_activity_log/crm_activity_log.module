@@ -1,0 +1,77 @@
+<?php
+
+/**
+ * @file
+ * CRM Activity Log module file.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function crm_activity_log_theme($existing, $type, $theme, $path) {
+  return [
+    'activity_log_tab' => [
+      'variables' => [
+        'contact_id' => NULL,
+        'contact_name' => '',
+        'activities' => [],
+      ],
+      'template' => 'activity-log-tab',
+    ],
+    'log_call_form' => [
+      'variables' => [
+        'contact_id' => NULL,
+        'contact_name' => '',
+      ],
+      'template' => 'log-call-form',
+    ],
+    'schedule_meeting_form' => [
+      'variables' => [
+        'contact_id' => NULL,
+        'contact_name' => '',
+      ],
+      'template' => 'schedule-meeting-form',
+    ],
+    'activity_quick_actions' => [
+      'variables' => [
+        'contact_id' => NULL,
+      ],
+      'template' => 'activity-quick-actions',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function crm_activity_log_entity_extra_field_info() {
+  $extra = [];
+
+  $extra['node']['contact']['display']['activity_quick_actions'] = [
+    'label' => t('Activity Quick Actions'),
+    'description' => t('Quick action buttons for logging calls and scheduling meetings'),
+    'weight' => 10,
+    'visible' => TRUE,
+  ];
+
+  return $extra;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view().
+ */
+function crm_activity_log_node_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  if ($entity->bundle() === 'contact' && $view_mode === 'full') {
+    if ($display->getComponent('activity_quick_actions')) {
+      $build['activity_quick_actions'] = [
+        '#theme' => 'activity_quick_actions',
+        '#contact_id' => $entity->id(),
+        '#attached' => ['library' => ['crm_activity_log/activity_widget']],
+        '#weight' => 10,
+      ];
+    }
+  }
+}

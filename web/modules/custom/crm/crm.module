@@ -1,0 +1,173 @@
+<?php
+
+/**
+ * @file
+ * CRM Core module - Access control and data privacy.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_node_access().
+ *
+ * Controls access to CRM content based on field_owner/field_assigned_to.
+ * - Administrators: Full access
+ * - Sales Managers: Can view/edit all team content
+ * - Sales Representatives: Can only view/edit their own content
+ */
+function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  $crm_types = ['contact', 'deal', 'activity', 'organization'];
+
+  // Only apply to CRM content types.
+  if (!in_array($node->bundle(), $crm_types)) {
+    return AccessResult::neutral();
+  }
+
+  // Administrators and managers: full access.
+  if ($account->hasRole('administrator') || $account->hasRole('sales_manager')) {
+    return AccessResult::neutral();
+  }
+
+  // Sales representatives: check ownership.
+  if ($account->hasRole('sales_representative')) {
+    $owner_field = $node->bundle() === 'activity' ? 'field_assigned_to' : 'field_owner';
+
+    if (!$node->hasField($owner_field)) {
+      return AccessResult::neutral();
+    }
+
+    $owner_id = $node->get($owner_field)->target_id;
+
+    // Check operations.
+    if (in_array($op, ['view', 'update', 'delete'])) {
+      if ($owner_id == $account->id()) {
+        return AccessResult::allowed()
+          ->cachePerUser()
+          ->addCacheableDependency($node);
+      }
+      else {
+        return AccessResult::forbidden('You can only access your own content')
+          ->cachePerUser()
+          ->addCacheableDependency($node);
+      }
+    }
+  }
+
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_query_TAG_alter() for 'node_access'.
+ *
+ * Automatically filters node queries for sales representatives
+ * to show only their own content in views and entity queries.
+ */
+function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterface $query) {
+  $account = \Drupal::currentUser();
+
+  // Skip for admins and managers.
+  if ($account->hasRole('administrator') || $account->hasRole('sales_manager')) {
+    return;
+  }
+
+  // Only filter for sales representatives.
+  if (!$account->hasRole('sales_representative')) {
+    return;
+  }
+
+  // Add owner filter.
+  $tables = $query->getTables();
+  foreach ($tables as $table) {
+    if (isset($table['table']) && $table['table'] === 'node_field_data') {
+      $alias = $table['alias'];
+
+      // Left join with field_owner and field_assigned_to.
+      $query->leftJoin('node__field_owner', 'crm_owner', "$alias.nid = crm_owner.entity_id");
+      $query->leftJoin('node__field_assigned_to', 'crm_assigned', "$alias.nid = crm_assigned.entity_id");
+
+      // Filter: current user is owner OR assigned_to.
+      $or = $query->orConditionGroup()
+        ->condition('crm_owner.field_owner_target_id', $account->id(), '=')
+        ->condition('crm_assigned.field_assigned_to_target_id', $account->id(), '=');
+
+      $query->condition($or);
+      break;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Sets default owner = current user when creating new CRM content.
+ */
+function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Only apply to node forms.
+  if (strpos($form_id, 'node_') !== 0) {
+    return;
+  }
+
+  $form_object = $form_state->getFormObject();
+  if (!method_exists($form_object, 'getEntity')) {
+    return;
+  }
+
+  $node = $form_object->getEntity();
+
+  // Only for new nodes.
+  if (!$node->isNew()) {
+    return;
+  }
+
+  $crm_types = ['contact', 'deal', 'organization'];
+  $current_user = \Drupal::currentUser();
+
+  // Set field_owner for Contact, Deal, Organization.
+  if (in_array($node->bundle(), $crm_types)) {
+    if (isset($form['field_owner'])) {
+      $form['field_owner']['widget'][0]['target_id']['#default_value'] =
+        \Drupal\user\Entity\User::load($current_user->id());
+    }
+  }
+
+  // Set field_assigned_to for Activity.
+  if ($node->bundle() === 'activity') {
+    if (isset($form['field_assigned_to'])) {
+      $form['field_assigned_to']['widget'][0]['target_id']['#default_value'] =
+        \Drupal\user\Entity\User::load($current_user->id());
+    }
+  }
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Ensures owner is set when saving CRM content.
+ */
+function crm_node_presave(NodeInterface $node) {
+  $crm_types = ['contact', 'deal', 'organization'];
+  
+  // Check if this is CRM content.
+  if (!in_array($node->bundle(), $crm_types) && $node->bundle() !== 'activity') {
+    return;
+  }
+
+  $current_user = \Drupal::currentUser();
+
+  // Set owner for Contact, Deal, Organization if empty.
+  if (in_array($node->bundle(), $crm_types)) {
+    if ($node->hasField('field_owner') && $node->get('field_owner')->isEmpty()) {
+      $node->set('field_owner', $current_user->id());
+    }
+  }
+
+  // Set assigned_to for Activity if empty.
+  if ($node->bundle() === 'activity') {
+    if ($node->hasField('field_assigned_to') && $node->get('field_assigned_to')->isEmpty()) {
+      $node->set('field_assigned_to', $current_user->id());
+    }
+  }
+}

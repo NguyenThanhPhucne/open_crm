@@ -1,0 +1,23 @@
+crm_teams.settings:
+  path: "/admin/crm/teams"
+  defaults:
+    _controller: '\Drupal\crm_teams\Controller\TeamsManagementController::manageTeams'
+    _title: "Team Management"
+  requirements:
+    _permission: "administer crm teams"
+
+crm_teams.assign_team:
+  path: "/admin/crm/teams/assign"
+  defaults:
+    _controller: '\Drupal\crm_teams\Controller\TeamsManagementController::assignTeam'
+  requirements:
+    _permission: "administer crm teams"
+  methods: [POST]
+
+crm_teams.user_team_form:
+  path: "/admin/crm/teams/user/{user}"
+  defaults:
+    _form: '\Drupal\crm_teams\Form\UserTeamForm'
+    _title: "Assign Team to User"
+  requirements:
+    _permission: "administer crm teams"

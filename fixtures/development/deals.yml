@@ -1,0 +1,116 @@
+# Development Deals Fixtures
+# Sample deals for development and testing
+# DO NOT use in production
+
+deals:
+  - id: enterprise_license
+    title: "Enterprise Software License"
+    amount: 150000
+    probability: 75
+    stage: Proposal
+    contact: john_smith
+    organization: acme_corp
+    closing_date: "2026-04-15"
+    description: "Annual enterprise license for 150 users with premium support"
+    notes: "Competitor: Salesforce. Key differentiator: Custom integration"
+    tags:
+      - sample
+      - development
+
+  - id: cloud_migration
+    title: "Cloud Migration Project"
+    amount: 250000
+    probability: 60
+    stage: Negotiation
+    contact: sarah_johnson
+    organization: global_ent
+    closing_date: "2026-05-20"
+    description: "Full cloud infrastructure migration with 3-year support contract"
+    notes: "Budget approved, waiting for final sign-off from board"
+    tags:
+      - sample
+      - development
+
+  - id: support_contract
+    title: "Annual Support Contract"
+    amount: 50000
+    probability: 90
+    stage: Won
+    contact: mike_davis
+    organization: tech_solutions
+    closing_date: "2026-03-01"
+    description: "Premium 24/7 support with 2-hour SLA"
+    notes: "Signed! Start date: March 1, 2026"
+    tags:
+      - sample
+      - development
+
+  - id: consulting_services
+    title: "Consulting Services - Q2 2026"
+    amount: 75000
+    probability: 50
+    stage: Qualified
+    contact: emily_brown
+    organization: acme_corp
+    closing_date: "2026-06-30"
+    description: "Strategic consulting for digital transformation initiative"
+    notes: "Budget allocated but timeline uncertain"
+    tags:
+      - sample
+      - development
+
+  - id: retail_pos
+    title: "Retail POS System Upgrade"
+    amount: 120000
+    probability: 65
+    stage: Proposal
+    contact: david_wilson
+    organization: retail_plus
+    closing_date: "2026-07-15"
+    description: "Modern cloud POS for 12 retail locations"
+    notes: "Demo scheduled for next week"
+    tags:
+      - sample
+      - development
+
+  - id: healthcare_compliance
+    title: "Healthcare Compliance Platform"
+    amount: 300000
+    probability: 40
+    stage: Prospect
+    contact: lisa_anderson
+    organization: healthcare_sys
+    closing_date: "2026-08-30"
+    description: "HIPAA-compliant patient data management system"
+    notes: "Early stage, multiple stakeholders involved"
+    tags:
+      - sample
+      - development
+
+  - id: erp_integration
+    title: "ERP Integration Package"
+    amount: 180000
+    probability: 55
+    stage: Qualified
+    contact: robert_taylor
+    organization: manufacturing_co
+    closing_date: "2026-06-15"
+    description: "Custom integration with existing SAP system"
+    notes: "Technical discovery completed, awaiting proposal review"
+    tags:
+      - sample
+      - development
+
+  - id: saas_subscription
+    title: "SaaS Platform Subscription"
+    amount: 36000
+    probability: 80
+    stage: Negotiation
+    contact: jennifer_martin
+    organization: tech_solutions
+    closing_date: "2026-04-01"
+    description: "3-year SaaS subscription for team collaboration platform"
+    notes: "Price negotiation in progress, likely to close"
+    tags:
+      - sample
+      - development

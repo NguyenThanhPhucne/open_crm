@@ -1,0 +1,282 @@
+# Development Activities Fixtures
+# Sample activities for development and testing
+# DO NOT use in production
+
+activities:
+  # Calls
+  - id: call_001
+    title: "Initial Discovery Call - Acme Corp"
+    type: Call
+    contact: john_smith
+    deal: enterprise_license
+    datetime: "2026-02-20T10:00:00"
+    description: "Discussed business needs, current pain points, and software requirements. Customer is interested in enterprise features and integration capabilities."
+    outcome: "[Outcome: Khách nghe máy - Quan tâm] Khách hàng quan tâm đến gói Enterprise."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: call_002
+    title: "Follow-up Call - Global Enterprises"
+    type: Call
+    contact: sarah_johnson
+    deal: cloud_migration
+    datetime: "2026-02-22T14:30:00"
+    description: "Addressed technical questions about cloud architecture and security. Discussed migration timeline and resource requirements."
+    outcome: "[Outcome: Khách nghe máy - Quan tâm] Đang review proposal, cần thêm 1 tuần."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: call_003
+    title: "Pricing Discussion - Retail Plus"
+    type: Call
+    contact: david_wilson
+    deal: retail_pos
+    datetime: "2026-02-25T11:00:00"
+    description: "Negotiated pricing for 12-location deployment. Customer requested volume discount and extended payment terms."
+    outcome: "[Outcome: Khách nghe máy - Quan tâm] Đang xem xét giá, sẽ phản hồi tuần sau."
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  - id: call_004
+    title: "Check-in Call - Tech Solutions"
+    type: Call
+    contact: mike_davis
+    deal: support_contract
+    datetime: "2026-02-28T09:00:00"
+    description: "Post-sale check-in call. Customer is satisfied with service. Discussed upcoming training session."
+    outcome: "[Outcome: Khách nghe máy - Hài lòng] Dịch vụ tốt, sẽ giới thiệu cho đối tác."
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  # Emails
+  - id: email_001
+    title: "Proposal Sent - Acme Corp"
+    type: Email
+    contact: john_smith
+    deal: enterprise_license
+    datetime: "2026-02-21T16:00:00"
+    description: "Sent detailed proposal including pricing, implementation timeline, and ROI analysis. Attached case studies from similar enterprise clients."
+    outcome: "Email gửi thành công. Khách hàng đã xem proposal (email tracking)."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: email_002
+    title: "Technical Documentation Sent - Global Enterprises"
+    type: Email
+    contact: sarah_johnson
+    deal: cloud_migration
+    datetime: "2026-02-23T10:30:00"
+    description: "Sent architecture diagrams, security whitepaper, and compliance certifications. Included answers to all technical questions from previous call."
+    outcome: "Khách hàng đã nhận và đang review với technical team."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: email_003
+    title: "Contract Draft Sent - Tech Solutions"
+    type: Email
+    contact: mike_davis
+    deal: support_contract
+    datetime: "2026-02-27T14:00:00"
+    description: "Sent annual support contract with agreed terms. Included SLA details and escalation procedures."
+    outcome: "Khách hàng đã ký và gửi lại hợp đồng. Deal won!"
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  - id: email_004
+    title: "Case Study Shared - Healthcare Systems"
+    type: Email
+    contact: lisa_anderson
+    deal: healthcare_compliance
+    datetime: "2026-03-01T11:00:00"
+    description: "Shared healthcare client case studies demonstrating HIPAA compliance capabilities and implementation success."
+    outcome: "Khách hàng quan tâm, sẽ schedule meeting với compliance team."
+    assigned_to: manager
+    tags:
+      - sample
+      - development
+
+  # Meetings
+  - id: meeting_001
+    title: "Product Demo - Acme Corp"
+    type: Meeting
+    contact: emily_brown
+    deal: consulting_services
+    datetime: "2026-02-24T15:00:00"
+    description: "Live product demonstration for marketing team. Showed key features, integrations, and customization capabilities. Very positive reception."
+    outcome: "Demo thành công! Marketing Director rất ấn tượng. Sẽ present lên CEO."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: meeting_002
+    title: "Technical Deep Dive - Global Enterprises"
+    type: Meeting
+    contact: sarah_johnson
+    deal: cloud_migration
+    datetime: "2026-02-26T13:00:00"
+    description: "3-hour technical workshop covering migration strategy, data transfer, and rollback procedures. Technical team present."
+    outcome: "Technical team approved solution. Waiting for executive approval."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: meeting_003
+    title: "Site Visit - Retail Plus"
+    type: Meeting
+    contact: david_wilson
+    deal: retail_pos
+    datetime: "2026-03-03T10:00:00"
+    description: "On-site visit to 2 retail locations. Assessed current infrastructure, network capability, and staff training needs."
+    outcome: "Site assessment complete. Ready to prepare final proposal."
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  - id: meeting_004
+    title: "Executive Presentation - Manufacturing Co"
+    type: Meeting
+    contact: robert_taylor
+    deal: erp_integration
+    datetime: "2026-03-04T14:00:00"
+    description: "Presentation to C-level executives highlighting ERP integration benefits and ROI. CEO, COO, CFO attended."
+    outcome: "Executives impressed. Approved budget, moving to contract negotiation."
+    assigned_to: manager
+    tags:
+      - sample
+      - development
+
+  - id: meeting_005
+    title: "Kickoff Meeting - Tech Solutions"
+    type: Meeting
+    contact: mike_davis
+    deal: support_contract
+    datetime: "2026-03-02T09:00:00"
+    description: "Project kickoff meeting. Introduced support team, reviewed SLA terms, and set up communication channels."
+    outcome: "Kickoff successful. Customer relationship off to great start."
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  # Tasks
+  - id: task_001
+    title: "Prepare Custom Quote - Acme Corp"
+    type: Task
+    contact: john_smith
+    deal: enterprise_license
+    datetime: "2026-02-19T09:00:00"
+    description: "Create customized pricing quote for 150-user enterprise license including volume discount and multi-year pricing options."
+    outcome: "Quote prepared and reviewed by manager. Ready to send."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: task_002
+    title: "Security Questionnaire - Global Enterprises"
+    type: Task
+    contact: sarah_johnson
+    deal: cloud_migration
+    datetime: "2026-02-24T10:00:00"
+    description: "Complete 50-question security and compliance questionnaire required by customer's IT security team."
+    outcome: "Questionnaire completed with help from security team. Submitted to customer."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development
+
+  - id: task_003
+    title: "Reference Call Setup - Retail Plus"
+    type: Task
+    contact: david_wilson
+    deal: retail_pos
+    datetime: "2026-02-28T13:00:00"
+    description: "Coordinate reference call between Retail Plus and existing retail customer. Schedule call and prepare reference customer."
+    outcome: "Reference call scheduled for next week. Existing customer briefed."
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  - id: task_004
+    title: "Contract Review - Healthcare Systems"
+    type: Task
+    contact: lisa_anderson
+    deal: healthcare_compliance
+    datetime: "2026-03-01T15:00:00"
+    description: "Review customer's standard vendor agreement. Identify any problematic clauses that need legal review."
+    outcome: "Contract reviewed. 3 clauses flagged for legal team review."
+    assigned_to: manager
+    tags:
+      - sample
+      - development
+
+  - id: task_005
+    title: "ROI Calculator - Manufacturing Co"
+    type: Task
+    contact: robert_taylor
+    deal: erp_integration
+    datetime: "2026-03-02T11:00:00"
+    description: "Build custom ROI calculator showing cost savings from ERP integration over 3-year period."
+    outcome: "ROI model completed. Shows 18-month payback period."
+    assigned_to: manager
+    tags:
+      - sample
+      - development
+
+  - id: task_006
+    title: "Competitor Analysis - Tech Solutions"
+    type: Task
+    contact: jennifer_martin
+    deal: saas_subscription
+    datetime: "2026-02-26T14:00:00"
+    description: "Prepare competitive analysis comparing our platform vs. competitors mentioned by customer in discovery call."
+    outcome: "Competitive analysis complete. Key differentiators identified."
+    assigned_to: salesrep2
+    tags:
+      - sample
+      - development
+
+  # Additional diverse activities
+  - id: call_005
+    title: "Urgent Issue Resolution - Healthcare Systems"
+    type: Call
+    contact: lisa_anderson
+    deal: healthcare_compliance
+    datetime: "2026-03-03T16:30:00"
+    description: "Emergency call to address customer's concerns about data residency requirements for patient data."
+    outcome: "[Outcome: Resolved] Confirmed data center locations comply with requirements."
+    assigned_to: manager
+    tags:
+      - sample
+      - development
+
+  - id: email_005
+    title: "Weekly Progress Update - Acme Corp"
+    type: Email
+    contact: john_smith
+    deal: enterprise_license
+    datetime: "2026-03-05T09:00:00"
+    description: "Weekly status email updating customer on proposal review process and next steps."
+    outcome: "Customer appreciates proactive communication. Decision expected next week."
+    assigned_to: salesrep1
+    tags:
+      - sample
+      - development

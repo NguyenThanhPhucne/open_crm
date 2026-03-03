@@ -1,0 +1,104 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.server.crm_database
+    - node.type.deal
+  module:
+    - search_api
+    - node
+id: crm_deals_index
+name: "CRM Deals"
+description: "Search index for CRM deals and opportunities"
+read_only: false
+field_settings:
+  title:
+    label: "Deal Name"
+    datasource_id: "entity:node"
+    property_path: title
+    type: text
+    boost: !!float 5
+  field_amount:
+    label: "Amount"
+    datasource_id: "entity:node"
+    property_path: field_amount
+    type: decimal
+  field_stage:
+    label: "Pipeline Stage"
+    datasource_id: "entity:node"
+    property_path: "field_stage:entity:name"
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_stage
+  field_contact:
+    label: "Related Contact"
+    datasource_id: "entity:node"
+    property_path: "field_contact:entity:title"
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_contact
+  field_organization:
+    label: "Related Organization"
+    datasource_id: "entity:node"
+    property_path: "field_organization:entity:title"
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_organization
+  field_owner:
+    label: "Owner"
+    datasource_id: "entity:node"
+    property_path: "field_owner:entity:name"
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_owner
+  field_closing_date:
+    label: "Closing Date"
+    datasource_id: "entity:node"
+    property_path: field_closing_date
+    type: date
+  field_probability:
+    label: "Win Probability"
+    datasource_id: "entity:node"
+    property_path: field_probability
+    type: integer
+  created:
+    label: "Created"
+    datasource_id: "entity:node"
+    property_path: created
+    type: date
+  status:
+    label: "Published"
+    datasource_id: "entity:node"
+    property_path: status
+    type: boolean
+datasource_settings:
+  "entity:node":
+    bundles:
+      default: false
+      selected:
+        - deal
+    languages:
+      default: true
+      selected: {}
+processor_settings:
+  add_url: {}
+  entity_status: {}
+  entity_type: {}
+  ignorecase:
+    fields:
+      - title
+  tokenizer:
+    fields:
+      - title
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 50
+  index_directly: true
+  track_changes_in_references: true
+server: crm_database

@@ -1,0 +1,4 @@
+services:
+  crm_import_export.data_validation:
+    class: Drupal\crm_import_export\Service\DataValidationService
+    arguments: ["@entity_type.manager", "@logger.factory", "@current_user"]

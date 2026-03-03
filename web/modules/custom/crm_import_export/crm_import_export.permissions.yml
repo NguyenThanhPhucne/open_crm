@@ -1,0 +1,4 @@
+administer crm import export:
+  title: "Administer CRM Import/Export"
+  description: "Import and export CRM data"
+  restrict access: TRUE

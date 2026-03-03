@@ -1,0 +1,154 @@
+<div class="activity-quick-actions-widget">
+  <h3>
+    <i data-lucide="zap"></i>
+    Quick Actions
+  </h3>
+  <div class="quick-action-buttons">
+    <a href="/crm/activity/log-call/{{ contact_id }}" class="quick-action-btn btn-call">
+      <i data-lucide="phone"></i>
+      <div>
+        <strong>Log Call</strong>
+        <span>Ghi nhận cuộc gọi nhanh</span>
+      </div>
+    </a>
+    <a href="/crm/activity/schedule-meeting/{{ contact_id }}" class="quick-action-btn btn-meeting">
+      <i data-lucide="calendar-plus"></i>
+      <div>
+        <strong>Schedule Meeting</strong>
+        <span>Đặt lịch hẹn</span>
+      </div>
+    </a>
+    <a href="/node/{{ contact_id }}/activities" class="quick-action-btn btn-history">
+      <i data-lucide="clock-arrow-up"></i>
+      <div>
+        <strong>View History</strong>
+        <span>Xem lịch sử tương tác</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<style>
+.activity-quick-actions-widget {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.activity-quick-actions-widget h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.activity-quick-actions-widget h3 svg {
+  width: 22px;
+  height: 22px;
+  color: #3b82f6;
+}
+
+.quick-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-btn svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.quick-action-btn strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.quick-action-btn span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.btn-call {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.btn-call svg {
+  color: #3b82f6;
+}
+
+.btn-call:hover {
+  border-color: #3b82f6;
+  background: #dbeafe;
+}
+
+.btn-meeting {
+  border-color: #ddd6fe;
+  background: #f5f3ff;
+}
+
+.btn-meeting svg {
+  color: #8b5cf6;
+}
+
+.btn-meeting:hover {
+  border-color: #8b5cf6;
+  background: #ede9fe;
+}
+
+.btn-history {
+  border-color: #d1fae5;
+  background: #ecfdf5;
+}
+
+.btn-history svg {
+  color: #10b981;
+}
+
+.btn-history:hover {
+  border-color: #10b981;
+  background: #d1fae5;
+}
+
+@media (max-width: 640px) {
+  .quick-action-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+</script>

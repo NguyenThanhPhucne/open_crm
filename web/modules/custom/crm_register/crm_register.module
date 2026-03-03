@@ -1,0 +1,58 @@
+<?php
+
+/**
+ * @file
+ * CRM Registration module file.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function crm_register_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.crm_register':
+      return '<p>' . t('Custom CRM user registration with role assignment and validation.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function crm_register_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'welcome':
+      $user = $params['user'];
+      $role = $params['role'];
+      
+      $message['subject'] = t('Welcome to Open CRM!');
+      $message['body'][] = t('Hi @name,', ['@name' => $user->getDisplayName()]);
+      $message['body'][] = '';
+      $message['body'][] = t('Your account has been successfully created with the role: @role', ['@role' => $role]);
+      $message['body'][] = '';
+      $message['body'][] = t('Username: @username', ['@username' => $user->getAccountName()]);
+      $message['body'][] = t('Email: @email', ['@email' => $user->getEmail()]);
+      $message['body'][] = '';
+      $message['body'][] = t('You can now access your CRM dashboard at: @url', [
+        '@url' => \Drupal::request()->getSchemeAndHttpHost() . '/crm/dashboard',
+      ]);
+      $message['body'][] = '';
+      $message['body'][] = t('Thank you for joining Open CRM!');
+      break;
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function crm_register_preprocess_page(&$variables) {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if ($route_name === 'crm_register.register') {
+    // Remove page title
+    $variables['page']['#title'] = '';
+    // Add body class
+    $variables['attributes']['class'][] = 'page-auth';
+    $variables['attributes']['class'][] = 'path-register';
+  }
+}

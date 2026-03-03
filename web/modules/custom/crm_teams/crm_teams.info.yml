@@ -1,0 +1,10 @@
+name: CRM Teams
+description: 'Team-based access control for CRM - Sales Team A không xem được khách của Team B'
+type: module
+core_version_requirement: ^10 || ^11
+package: CRM
+dependencies:
+  - drupal:taxonomy
+  - drupal:node
+  - drupal:user
+  - drupal:views

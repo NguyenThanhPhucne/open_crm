@@ -1,0 +1,9 @@
+name: 'CRM Core'
+type: module
+description: 'Core CRM functionality: access control, data privacy, owner tracking'
+package: CRM
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:user
+  - drupal:views

@@ -1,0 +1,11 @@
+services:
+  crm_notifications.email_service:
+    class: Drupal\crm_notifications\Service\EmailService
+    arguments:
+      [
+        "@plugin.manager.mail",
+        "@config.factory",
+        "@entity_type.manager",
+        "@current_user",
+        "@url_generator",
+      ]

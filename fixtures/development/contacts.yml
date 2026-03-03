@@ -1,0 +1,100 @@
+# Development Contacts Fixtures
+# Sample contacts for development and testing
+# DO NOT use in production
+
+contacts:
+  - id: john_smith
+    title: "John Smith"
+    email: "john.smith@acme.com"
+    phone: "+1-555-0101"
+    position: "Chief Executive Officer"
+    organization: acme_corp
+    lead_source: Website
+    notes: "Decision maker, interested in enterprise license"
+    tags:
+      - sample
+      - development
+
+  - id: sarah_johnson
+    title: "Sarah Johnson"
+    email: "sarah.j@global-ent.com"
+    phone: "+1-555-0102"
+    position: "Chief Technology Officer"
+    organization: global_ent
+    lead_source: Referral
+    notes: "Technical decision maker, prefers cloud-native solutions"
+    tags:
+      - sample
+      - development
+
+  - id: mike_davis
+    title: "Mike Davis"
+    email: "mike.d@techsolutions.com"
+    phone: "+1-555-0103"
+    position: "VP of Sales"
+    organization: tech_solutions
+    lead_source: Event
+    notes: "Met at Tech Conference 2026, hot lead"
+    tags:
+      - sample
+      - development
+
+  - id: emily_brown
+    title: "Emily Brown"
+    email: "emily.brown@acme.com"
+    phone: "+1-555-0104"
+    position: "Marketing Director"
+    organization: acme_corp
+    lead_source: Call
+    notes: "Influencer in organization, reports to CEO"
+    tags:
+      - sample
+      - development
+
+  - id: david_wilson
+    title: "David Wilson"
+    email: "david.w@retailplus.com"
+    phone: "+1-555-0105"
+    position: "Operations Manager"
+    organization: retail_plus
+    lead_source: Referral
+    notes: "Manages day-to-day operations across 12 locations"
+    tags:
+      - sample
+      - development
+
+  - id: lisa_anderson
+    title: "Lisa Anderson"
+    email: "lisa.anderson@healthcaresys.com"
+    phone: "+1-555-0106"
+    position: "IT Director"
+    organization: healthcare_sys
+    lead_source: Website
+    notes: "Security and compliance focused"
+    tags:
+      - sample
+      - development
+
+  - id: robert_taylor
+    title: "Robert Taylor"
+    email: "robert.t@manufacturingco.com"
+    phone: "+1-555-0107"
+    position: "Chief Operating Officer"
+    organization: manufacturing_co
+    lead_source: Event
+    notes: "Looking for ERP integration solutions"
+    tags:
+      - sample
+      - development
+
+  - id: jennifer_martin
+    title: "Jennifer Martin"
+    email: "jennifer.m@techsolutions.com"
+    phone: "+1-555-0108"
+    position: "Product Manager"
+    organization: tech_solutions
+    lead_source: Social Media
+    notes: "Evaluating multiple vendors"
+    tags:
+      - sample
+      - development
