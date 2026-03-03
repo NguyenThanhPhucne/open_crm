@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ Professional List View - Teams Management</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1 {
+      font-size: 42px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: #64748b;
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+    
+    .section {
+      background: #f8fafc;
+      padding: 24px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .section h2 {
+      color: #0f172a;
+      font-size: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .feature-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s;
+    }
+    
+    .feature-card:hover {
+      border-color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+    }
+    
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    
+    .feature-desc {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .highlight {
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #1e40af;
+      font-weight: 600;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 10px 10px 10px 0;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+    }
+    
+    .button-secondary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .button-secondary:hover {
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    }
+    
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .comparison-item {
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+    }
+    
+    .comparison-item.before {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-color: #f87171;
+    }
+    
+    .comparison-item.after {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-color: #4ade80;
+    }
+    
+    .comparison-title {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    
+    .comparison-item.before .comparison-title {
+      color: #dc2626;
+    }
+    
+    .comparison-item.after .comparison-title {
+      color: #16a34a;
+    }
+    
+    code {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+    }
+    
+    ul {
+      margin-left: 20px;
+      line-height: 1.8;
+    }
+    
+    li {
+      color: #475569;
+      margin: 8px 0;
+    }
+    
+    .emoji {
+      font-size: 24px;
+      margin-right: 8px;
+    }
+    
+    @media (max-width: 768px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+      
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Professional List View</h1>
+    <p class="subtitle">Giao diện chuyên nghiệp với icons và styling đẹp mắt cho Teams Management</p>
+    
+    <div class="section">
+      <h2><span class="emoji">🎨</span> Tính Năng Mới</h2>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">👤</div>
+          <div class="feature-title">Avatar với Gradient</div>
+          <div class="feature-desc">
+            Mỗi user có avatar với <span class="highlight">gradient độc đáo</span> và initials,
+            kèm theo <span class="highlight">ID badge</span> chuyên nghiệp
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📧</div>
+          <div class="feature-title">Email Icon Box</div>
+          <div class="feature-desc">
+            Email hiển thị với <span class="highlight">icon box gradient</span>,
+            dễ nhìn và chuyên nghiệp hơn
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-title">Team Badges</div>
+          <div class="feature-desc">
+            Team badges với <span class="highlight">borders và gradients</span>,
+            icons khác nhau cho có team và không có team
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔑</div>
+          <div class="feature-title">Role Badges</div>
+          <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-title">Hover Effects</div>
+          <div class="feature-desc">
+            Hover lên row sẽ có <span class="highlight">gradient background</span>,
+            <span class="highlight">left border màu</span>, và <span class="highlight">slide effect</span>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">💾</div>
+          <div class="feature-title">Professional Buttons</div>
+          <div class="feature-desc">
+            Dropdown và Save button với <span class="highlight">shadows</span>,
+            <span class="highlight">smooth animations</span>, và hover effects
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2><span class="emoji">📊</span> So Sánh Trước & Sau</h2>
+      
+      <div class="comparison">
+        <div class="comparison-item before">
+          <div class="comparison-title">❌ Trước (Cũ)</div>
+          <ul>
+            <li>Table đơn giản, không có styling</li>
+            <li>Avatar đơn sắc, không gradient</li>
+            <li>Badges đơn giản</li>
+            <li>Không có icon boxes</li>
+            <li>Hover effect cơ bản</li>
+            <li>Buttons không có shadows</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-item after">
+          <div class="comparison-title">✅ Sau (Mới)</div>
+          <ul>
+            <li>Table chuyên nghiệp với gradients</li>
+            <li>Avatar đa sắc với effects</li>
+            <li>Badges với borders & gradients</li>
+            <li>Icon boxes cho mọi thông tin</li>
+            <li>Hover có gradient & slide effect</li>
+            <li>Buttons với shadows & animations</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2><span class="emoji">🎨</span> Chi Tiết Styling</h2>
+      
+      <h3 style="margin: 20px 0 10px 0; color: #0f172a;">1. Avatar với Gradient</h3>
+      <ul>
+        <li><code>.user-avatar-table</code> - 44x44px, border-radius 12px</li>
+        <li>6 gradients khác nhau dựa trên user ID</li>
+        <li>Box shadow cho depth effect</li>
+        <li>Pseudo-element <code>::after</code> cho border gradient</li>
+      </ul>
+      
+      <h3 style="margin: 20px 0 10px 0; color: #0f172a;">2. Icon Boxes</h3>
+      <ul>
+        <li><code>.email-icon</code> - 32x32px với gradient xanh dương</li>
+        <li>Rounded corners 8px</li>
+        <li>Centered icon với lucide icons</li>
+      </ul>
+      
+      <h3 style="margin: 20px 0 10px 0; color: #0f172a;">3. Team & Role Badges</h3>
+      <ul>
+        <li>Padding 8px 14px, border-radius 8px</li>
+        <li>2px solid borders với màu matching</li>
+        <li>Gradient backgrounds</li>
+        <li>Icons với proper sizing</li>
+      </ul>
+      
+      <h3 style="margin: 20px 0 10px 0; color: #0f172a;">4. Row Hover Effects</h3>
+      <ul>
+        <li>Gradient background: <code>linear-gradient(135deg, #faf5ff, #f5f3ff)</code></li>
+        <li>Left border 3px với gradient tím-xanh</li>
+        <li><code>transform: translateX(2px)</code> - slide effect</li>
+        <li>Box shadow cho depth</li>
+      </ul>
+      
+      <h3 style="margin: 20px 0 10px 0; color: #0f172a;">5. Action Buttons</h3>
+      <ul>
+        <li>Dropdown: Custom arrow icon, hover states</li>
+        <li>Save button: Gradient xanh lá, shadows, lift effect</li>
+        <li>Smooth transitions 0.2s cho mọi interactions</li>
+      </ul>
+    </div>
+    
+    <div class="section">
+      <h2><span class="emoji">✨</span> CSS Classes Mới</h2>
+      <div style="background: #1e293b; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 16px 0;">
+        <code style="display: block; line-height: 1.6; white-space: pre;">
+.user-avatar-table    - Avatar với gradient
+.user-info-table      - Container cho tên & info
+.user-name-table      - Tên user styled
+.user-id-badge        - Badge hiển thị ID
+.email-cell           - Email container
+.email-icon           - Icon box cho email
+.team-cell            - Team container
+.team-badge-table     - Team badge styled
+.role-cell            - Role container
+.role-badge-table     - Role badge styled
+.action-cell          - Actions container
+.team-select-table    - Dropdown styled
+.save-btn-table       - Save button styled
+        </code>
+      </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px; padding-top: 40px; border-top: 2px solid #e2e8f0;">
+      <h2 style="margin-bottom: 20px;">🚀 Kiểm Tra Ngay!</h2>
+      <a href="http://open-crm.ddev.site/admin/crm/teams" class="button button-secondary" target="_blank">
+        🌐 Mở Teams Management
+      </a>
+      <a href="http://open-crm.ddev.site/user/login" class="button" target="_blank">
+        🔑 Đăng Nhập
+      </a>
+      
+      <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px;">
+        <h3 style="color: #92400e; margin-bottom: 10px;">📝 Hướng Dẫn Sử Dụng</h3>
+        <ol style="text-align: left; max-width: 600px; margin: 0 auto; color: #92400e;">
+          <li>Đăng nhập với tài khoản admin</li>
+          <li>Vào trang Teams Management</li>
+          <li>Tìm phần "User Team Assignments"</li>
+          <li>Nhấn nút <strong>"List"</strong> để xem giao diện mới</li>
+          <li>Hover qua các rows để xem effects</li>
+          <li>Thử gán team cho users</li>
+        </ol>
+      </div>
+      
+      <div style="margin-top: 20px; color: #64748b; font-size: 14px;">
+        ✅ Cache đã được clear<br>
+        ✅ List view đã được cải thiện<br>
+        ✅ Tất cả icons và gradients hoạt động<br>
+        ✅ Responsive và smooth animations
+      </div>
+    </div>
+  </div>
+</body>
+</html>
