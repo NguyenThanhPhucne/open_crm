@@ -1,12 +1,11 @@
 <div class="crm-user-profile">
-  <!-- Debug: has_picture={{ has_picture ? 'TRUE' : 'FALSE' }}, url={{ user_picture_url }} -->
   <div class="profile-header">
     <div class="profile-avatar">
       {% if has_picture %}
         <img src="{{ user_picture_url }}" alt="{{ user_name }}" class="avatar-image">
       {% else %}
         <div class="avatar-placeholder">
-          <i data-lucide="user" width="64" height="64"></i>
+          <span class="avatar-initial">{{ user_initial }}</span>
         </div>
       {% endif %}
     </div>
@@ -122,7 +121,7 @@
             </div>
           {% endfor %}
         </div>
-        <a href="/my-activities" class="view-all-link">
+        <a href="/crm/my-activities" class="view-all-link">
           View all activities
           <i data-lucide="arrow-right" width="16" height="16"></i>
         </a>
@@ -155,7 +154,7 @@
             </div>
           {% endfor %}
         </div>
-        <a href="/my-deals" class="view-all-link">
+        <a href="/crm/my-deals" class="view-all-link">
           View all deals
           <i data-lucide="arrow-right" width="16" height="16"></i>
         </a>

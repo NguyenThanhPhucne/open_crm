@@ -325,6 +325,10 @@ class DashboardController extends ControllerBase {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
     
     .stat-card::before {
@@ -343,6 +347,11 @@ class DashboardController extends ControllerBase {
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       transform: translateY(-2px);
       border-color: #cbd5e1;
+    }
+    
+    .stat-card:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     
     .stat-card:hover::before {
@@ -808,7 +817,7 @@ class DashboardController extends ControllerBase {
     
     <!-- Statistics Cards -->
     <div class="stats-grid">
-      <div class="stat-card">
+      <a href="/crm/my-contacts" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon blue">
             <i data-lucide="users" width="24" height="24"></i>
@@ -817,9 +826,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$contacts_count}</div>
         <div class="stat-desc">Active contacts</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/admin/content?type=organization" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon purple">
             <i data-lucide="building-2" width="24" height="24"></i>
@@ -828,9 +837,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$orgs_count}</div>
         <div class="stat-desc">Companies</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/my-deals" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon orange">
             <i data-lucide="briefcase" width="24" height="24"></i>
@@ -839,9 +848,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$deals_count}</div>
         <div class="stat-desc">In pipeline</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/my-deals" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon green">
             <i data-lucide="dollar-sign" width="24" height="24"></i>
@@ -850,9 +859,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$total_value_display}</div>
         <div class="stat-desc">Deal value</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/pipeline" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon green">
             <i data-lucide="trending-up" width="24" height="24"></i>
@@ -861,9 +870,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$won_count}</div>
         <div class="stat-desc">{$won_value_display} revenue</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/pipeline" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon red">
             <i data-lucide="trending-down" width="24" height="24"></i>
@@ -872,9 +881,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$lost_count}</div>
         <div class="stat-desc">{$lost_value_display} lost</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/pipeline" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon pink">
             <i data-lucide="target" width="24" height="24"></i>
@@ -883,9 +892,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$win_rate}%</div>
         <div class="stat-desc">Deals won rate</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/pipeline" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon blue">
             <i data-lucide="percent" width="24" height="24"></i>
@@ -894,9 +903,9 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$conversion_rate}%</div>
         <div class="stat-desc">Overall conversion</div>
-      </div>
+      </a>
       
-      <div class="stat-card">
+      <a href="/crm/my-deals" class="stat-card">
         <div class="stat-header">
           <div class="stat-icon purple">
             <i data-lucide="bar-chart-3" width="24" height="24"></i>
@@ -905,7 +914,7 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$avg_deal_display}</div>
         <div class="stat-desc">Average value</div>
-      </div>
+      </a>
     </div>
     
     <!-- Main Content Grid -->

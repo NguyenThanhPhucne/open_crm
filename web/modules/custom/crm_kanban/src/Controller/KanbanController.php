@@ -1102,10 +1102,6 @@ class KanbanController extends ControllerBase {
           <i data-lucide="activity" width="18" height="18"></i>
           <span>Activities</span>
         </a>
-        <a href="/app/organizations" class="crm-nav-item">
-          <i data-lucide="building-2" width="18" height="18"></i>
-          <span>Organizations</span>
-        </a>
       </div>
       <div class="crm-nav-actions">
         <div class="crm-quick-add-dropdown">

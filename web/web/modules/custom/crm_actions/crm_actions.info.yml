@@ -1,5 +1,0 @@
-name: 'CRM Actions'
-type: module
-description: 'Provides action buttons for CRM views'
-core_version_requirement: ^11
-package: 'CRM'

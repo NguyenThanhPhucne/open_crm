@@ -40,6 +40,14 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.avatar-placeholder .avatar-initial {
+  color: white;
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
 .avatar-placeholder i,
 .avatar-placeholder svg {
   stroke: white;

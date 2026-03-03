@@ -56,6 +56,10 @@ class UserProfileController extends ControllerBase {
     
     // Get user basic info
     $user_name = $user->getDisplayName();
+    // Capitalize first letter of username for professional display
+    $user_name = ucfirst($user_name);
+    // Get first letter for avatar placeholder
+    $user_initial = strtoupper(mb_substr($user_name, 0, 1));
     $user_email = $user->getEmail();
     $user_created = $user->getCreatedTime();
     $user_roles = $user->getRoles();
@@ -103,21 +107,7 @@ class UserProfileController extends ControllerBase {
         }
         
         $has_picture = TRUE;
-        
-        // Debug logging
-        \Drupal::logger('crm')->notice('User @uid picture: @url (has_picture: @has)', [
-          '@uid' => $uid,
-          '@url' => $user_picture_url,
-          '@has' => $has_picture ? 'TRUE' : 'FALSE',
-        ]);
       }
-    } else {
-      // Debug logging for no picture
-      \Drupal::logger('crm')->notice('User @uid: No picture found (hasField: @has, isEmpty: @empty)', [
-        '@uid' => $uid,
-        '@has' => $user->hasField('user_picture') ? 'TRUE' : 'FALSE',
-        '@empty' => ($user->hasField('user_picture') && $user->get('user_picture')->isEmpty()) ? 'TRUE' : 'FALSE',
-      ]);
     }
     
     // Get statistics
@@ -138,6 +128,7 @@ class UserProfileController extends ControllerBase {
       '#theme' => 'crm_user_profile',
       '#user' => $user,
       '#user_name' => $user_name,
+      '#user_initial' => $user_initial,
       '#user_email' => $user_email,
       '#user_created' => $user_created,
       '#user_picture_url' => $user_picture_url,

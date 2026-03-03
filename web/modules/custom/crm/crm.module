@@ -181,6 +181,7 @@ function crm_theme($existing, $type, $theme, $path) {
       'variables' => [
         'user' => NULL,
         'user_name' => NULL,
+        'user_initial' => NULL,
         'user_email' => NULL,
         'user_created' => NULL,
         'user_picture_url' => NULL,
