@@ -82,10 +82,16 @@ class DashboardController extends ControllerBase {
     }
 
     // Get total deal value and won/lost deals (filtered by current user)
-    $deals = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
-      'type' => 'deal',
-      'field_owner' => $user_id,
-    ]);
+    // NOTE: loadByProperties() does NOT work with entity reference fields like field_owner!
+    // Must use entityQuery instead.
+    $deal_ids = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_owner', $user_id)
+      ->accessCheck(FALSE)
+      ->execute();
+    
+    $deals = !empty($deal_ids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_ids) : [];
+    
     $total_value = 0;
     $won_value = 0;
     $lost_value = 0;
