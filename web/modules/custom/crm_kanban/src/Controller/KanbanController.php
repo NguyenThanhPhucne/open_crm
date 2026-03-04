@@ -129,6 +129,7 @@ class KanbanController extends ControllerBase {
     
     .kanban-container {
       padding: 24px;
+      padding-top: 24px;
       overflow-x: auto;
       overflow-y: hidden;
       scroll-behavior: smooth;
@@ -688,10 +689,6 @@ class KanbanController extends ControllerBase {
         width: 280px;
       }
       
-      .crm-nav-items {
-        gap: 8px;
-      }
-      
       .kanban-board {
         gap: 14px;
       }
@@ -702,23 +699,6 @@ class KanbanController extends ControllerBase {
     }
     
     @media (max-width: 768px) {
-      .crm-nav-brand span {
-        display: none;
-      }
-      
-      .crm-nav-item span {
-        display: none;
-      }
-      
-      .crm-quick-add-btn span {
-        display: none;
-      }
-      
-      .crm-nav-container {
-        padding: 0 12px;
-        gap: 12px;
-      }
-      
       .kanban-container {
         padding: 16px;
       }
@@ -753,18 +733,6 @@ class KanbanController extends ControllerBase {
       
       .kanban-container {
         padding: 12px;
-      }
-      
-      .crm-global-nav {
-        padding: 0 8px;
-      }
-      
-      .crm-nav-container {
-        gap: 8px;
-      }
-      
-      .crm-nav-brand {
-        font-size: 16px;
       }
       
       .page-title {
@@ -816,19 +784,139 @@ class KanbanController extends ControllerBase {
       }
     }
     
+    /* CRM Navigation Bar - Drupal Toolbar Style */
+    .crm-toolbar {
+      background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+      border-bottom: 2px solid #3b82f6;
+      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+      height: 42px;
+      margin: -24px -24px 24px -24px;
+    }
+    
+    .crm-toolbar-lining {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 0 1rem;
+      max-width: 100%;
+    }
+    
+    .crm-toolbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 100%;
+    }
+    
+    .crm-toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      text-decoration: none;
+      height: 100%;
+      border-right: 1px solid #e5e7eb;
+    }
+    
+    .crm-toolbar-brand:hover {
+      background: rgba(0, 0, 0, 0.03);
+      color: #0969da;
+    }
+    
+    .crm-toolbar-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 14px;
+      height: 100%;
+      font-size: 13px;
+      font-weight: 500;
+      color: #4b5563;
+      text-decoration: none;
+      border-right: 1px solid #f3f4f6;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    
+    .crm-toolbar-item:hover {
+      background: rgba(59, 130, 246, 0.08);
+      color: #2563eb;
+    }
+    
+    .crm-toolbar-item.active {
+      background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(243,244,246,0.9) 100%);
+      color: #1e40af;
+      font-weight: 600;
+      border-left: 1px solid #e5e7eb;
+    }
+    
+    .crm-toolbar-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+    
+    .crm-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 100%;
+    }
+    
+    .crm-toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      height: 100%;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      text-decoration: none;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .crm-toolbar-btn:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    
+    .crm-toolbar-btn:active {
+      transform: translateY(0);
+    }
+    
+    .crm-toolbar-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2.5;
+    }
+    
+    .kanban-container {
+      padding-top: 39px;
+    }
+    
+    @media (max-width: 768px) {
+      .crm-toolbar-item span,
+      .crm-toolbar-btn span,
+      .crm-toolbar-brand span {
+        display: none;
+      }
+      
+      .crm-toolbar-item,
+      .crm-toolbar-btn {
+        padding: 0 10px;
+      }
+    }
+    
     @media (max-width: 480px) {
-      .crm-nav-items {
-        gap: 4px;
-      }
-      
-      .crm-nav-item {
-        padding: 6px 8px;
-      }
-      
-      .crm-quick-add-btn {
-        padding: 6px 10px;
-      }
-      
       .kanban-column {
         max-height: 350px;
       }
@@ -846,6 +934,44 @@ class KanbanController extends ControllerBase {
       }
     }
   </style>
+  
+  <!-- CRM Toolbar -->
+  <div class="crm-toolbar">
+    <div class="crm-toolbar-lining clearfix">
+      <div class="crm-toolbar-menu">
+        <a href="/crm/dashboard" class="crm-toolbar-brand">
+          <i data-lucide="layout-dashboard" width="18" height="18"></i>
+          <span>CRM</span>
+        </a>
+        <a href="/crm/dashboard" class="crm-toolbar-item">
+          <i data-lucide="home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/crm/pipeline" class="crm-toolbar-item active">
+          <i data-lucide="kanban-square"></i>
+          <span>Pipeline</span>
+        </a>
+        <a href="/crm/my-contacts" class="crm-toolbar-item">
+          <i data-lucide="users"></i>
+          <span>Contacts</span>
+        </a>
+        <a href="/crm/my-deals" class="crm-toolbar-item">
+          <i data-lucide="briefcase"></i>
+          <span>Deals</span>
+        </a>
+        <a href="/crm/my-activities" class="crm-toolbar-item">
+          <i data-lucide="activity"></i>
+          <span>Activities</span>
+        </a>
+      </div>
+      <div class="crm-toolbar-actions">
+        <a href="/node/add/deal" class="crm-toolbar-btn">
+          <i data-lucide="plus"></i>
+          <span>New Deal</span>
+        </a>
+      </div>
+    </div>
+  </div>
   
   <!-- Deal Closing Modal -->
   <div class="deal-modal-overlay" id="dealClosingModal">

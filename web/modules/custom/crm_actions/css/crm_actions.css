@@ -77,19 +77,39 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  border: none;
+  background: white;
+  color: #10b981 !important;
+  border: 1.5px solid #10b981;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.crm-quick-add-btn svg {
+  color: #10b981;
+  stroke: #10b981;
 }
 
 .crm-quick-add-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: #f0fdf4;
+  border-color: #10b981;
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.crm-quick-add-btn:active {
+  background: #dcfce7;
+  color: #059669 !important;
+  border-color: #059669;
+}
+
+.crm-quick-add-btn:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .crm-quick-add-menu {
@@ -442,13 +462,15 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
+  background: white;
+  color: #10b981 !important;
+  border: 1.5px solid #10b981;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: all 0.2s ease;
 }
 
 .views-field-field-assigned-staff a:after,
@@ -458,9 +480,11 @@
 
 .views-field-field-assigned-staff a:hover,
 .views-field-field-assigned-to a:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  color: white;
+  background: #f0fdf4;
+  border-color: #10b981;
+  color: #10b981 !important;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Industry Field Badge */
@@ -551,10 +575,10 @@
 }
 
 .pager__item.is-active {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border: 2px solid #2563eb;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  background: white;
+  color: #3b82f6 !important;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .pager__item--first a,

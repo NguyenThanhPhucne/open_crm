@@ -40,7 +40,7 @@ class CrmEditLink extends FieldPluginBase {
     
     $account = \Drupal::currentUser();
     $nid = $entity->id();
-    $title = htmlspecialchars($entity->getTitle(), ENT_QUOTES);
+    $title = htmlspecialchars($entity->getTitle() ?? '', ENT_QUOTES);
     
     // Check if user can edit
     $can_edit = $this->checkPermission($account, $entity, $bundle, 'edit');

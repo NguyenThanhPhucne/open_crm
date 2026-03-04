@@ -236,7 +236,7 @@ class InlineEditController extends ControllerBase {
     ?>
     <div class="crm-edit-container">
       <div class="crm-edit-header">
-        <h2><?= $type_label ?>: <?= htmlspecialchars($node->getTitle()) ?></h2>
+        <h2><?= $type_label ?>: <?= htmlspecialchars($node->getTitle() ?? '') ?></h2>
         <a href="/node/<?= $nid ?>" class="back-link">← Back to View</a>
       </div>
       
@@ -494,7 +494,7 @@ class InlineEditController extends ControllerBase {
     $label = $field['label'];
     $type = $field['type'];
     $required = $field['required'];
-    $value = htmlspecialchars($field['value']);
+    $value = htmlspecialchars($field['value'] ?? '');
     $required_class = $required ? 'required' : '';
     
     echo '<div class="form-field">';

@@ -3,7 +3,7 @@
 namespace Drupal\crm_import_export\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Response;
+use Drupal\Core\Render\Markup;
 
 /**
  * Controller for Import pages.
@@ -17,15 +17,8 @@ class ImportController extends ControllerBase {
     $base_url = \Drupal::request()->getSchemeAndHttpHost();
     
     $html = <<<HTML
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Import Data - CRM</title>
-  <link rel="icon" type="image/x-icon" href="/core/misc/favicon.ico">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
     * {
       margin: 0;
       padding: 0;
@@ -37,6 +30,7 @@ class ImportController extends ControllerBase {
       background: #f8fafc;
       min-height: 100vh;
       color: #1e293b;
+      padding: 20px;
     }
     
     .import-header {
@@ -361,11 +355,16 @@ class ImportController extends ControllerBase {
   <script>
     lucide.createIcons();
   </script>
-</body>
-</html>
 HTML;
 
-    return new Response($html);
+    return [
+      '#markup' => Markup::create($html),
+      '#attached' => [
+        'library' => [
+          'core/drupal',
+        ],
+      ],
+    ];
   }
 
 }

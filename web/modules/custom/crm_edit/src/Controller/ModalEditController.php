@@ -172,7 +172,7 @@ class ModalEditController extends ControllerBase {
    */
   protected function generateModalHTML($node, $fields) {
     $nid = $node->id();
-    $title = htmlspecialchars($node->getTitle());
+    $title = htmlspecialchars($node->getTitle() ?? '');
     $type = $node->bundle();
     
     ob_start();
@@ -193,13 +193,13 @@ class ModalEditController extends ControllerBase {
           <?php foreach ($fields as $field): ?>
             <div class="form-field">
               <label <?= $field['required'] ? 'class="required"' : '' ?>>
-                <?= htmlspecialchars($field['label']) ?>
+                <?= htmlspecialchars($field['label'] ?? '') ?>
                 <?= $field['required'] ? '<span class="required-mark">*</span>' : '' ?>
               </label>
               <?php
                 $field_name = $field['name'];
                 $field_type = $field['type'];
-                $field_value = $field['value'];
+                $field_value = $field['value'] ?? '';
                 $field_settings = $field['settings'] ?? [];
                 $required = $field['required'] ? 'required' : '';
                 $description = $field['description'] ?? '';
@@ -220,16 +220,16 @@ class ModalEditController extends ControllerBase {
                     break;
                     
                   case 'email':
-                    echo "<input type='email' name='$field_name' value='" . htmlspecialchars($field_value) . "' $required class='form-control'>";
+                    echo "<input type='email' name='$field_name' value='" . htmlspecialchars($field_value ?? '') . "' $required class='form-control'>";
                     break;
                     
                   case 'decimal':
                   case 'float':
-                    echo "<input type='number' step='0.01' name='$field_name' value='" . htmlspecialchars($field_value) . "' $required class='form-control'>";
+                    echo "<input type='number' step='0.01' name='$field_name' value='" . htmlspecialchars($field_value ?? '') . "' $required class='form-control'>";
                     break;
                     
                   case 'integer':
-                    echo "<input type='number' name='$field_name' value='" . htmlspecialchars($field_value) . "' $required class='form-control'>";
+                    echo "<input type='number' name='$field_name' value='" . htmlspecialchars($field_value ?? '') . "' $required class='form-control'>";
                     break;
                     
                   case 'datetime':
@@ -239,21 +239,21 @@ class ModalEditController extends ControllerBase {
                     
                   case 'text_long':
                   case 'text_with_summary':
-                    echo "<textarea name='$field_name' $required class='form-control' rows='4'>" . htmlspecialchars($field_value) . "</textarea>";
+                    echo "<textarea name='$field_name' $required class='form-control' rows='4'>" . htmlspecialchars($field_value ?? '') . "</textarea>";
                     break;
                     
                   case 'telephone':
-                    echo "<input type='tel' name='$field_name' value='" . htmlspecialchars($field_value) . "' $required class='form-control'>";
+                    echo "<input type='tel' name='$field_name' value='" . htmlspecialchars($field_value ?? '') . "' $required class='form-control'>";
                     break;
                     
                   default:
-                    echo "<input type='text' name='$field_name' value='" . htmlspecialchars($field_value) . "' $required class='form-control'>";
+                    echo "<input type='text' name='$field_name' value='" . htmlspecialchars($field_value ?? '') . "' $required class='form-control'>";
                     break;
                 }
                 
                 // Show field description
                 if ($description) {
-                  echo "<small class='field-description'>" . htmlspecialchars($description) . "</small>";
+                  echo "<small class='field-description'>" . htmlspecialchars($description ?? '') . "</small>";
                 }
               ?>
             </div>
@@ -304,7 +304,7 @@ class ModalEditController extends ControllerBase {
         $entities = $storage->loadMultiple($entity_ids);
         foreach ($entities as $entity) {
           $selected = ($entity->id() == $current_value) ? 'selected' : '';
-          $label = $entity->label() ?? $entity->id();
+          $label = $entity->label() ?? $entity->id() ?? '';
           echo "<option value='{$entity->id()}' $selected>" . htmlspecialchars($label) . "</option>";
         }
       }
@@ -324,7 +324,7 @@ class ModalEditController extends ControllerBase {
     
     foreach ($allowed_values as $key => $label) {
       $selected = ($key == $current_value) ? 'selected' : '';
-      echo "<option value='" . htmlspecialchars($key) . "' $selected>" . htmlspecialchars($label) . "</option>";
+      echo "<option value='" . htmlspecialchars((string)$key) . "' $selected>" . htmlspecialchars($label ?? '') . "</option>";
     }
     
     echo "</select>";

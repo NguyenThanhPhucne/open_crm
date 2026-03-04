@@ -129,16 +129,162 @@
   stroke: #ffffff;
 }
 
-/* Cancel button styling */
-.form-actions .button--secondary {
-  background: #6c757d;
-  color: #ffffff;
-  border-color: #6c757d;
+/* ============================================
+   DRUPAL BUTTON OVERRIDES - CLEAN MINIMAL STYLE
+   ============================================ */
+
+/* Primary buttons - Blue outline style */
+.button--primary,
+.button.button--primary,
+button.button--primary,
+input.button--primary {
+  background: white !important;
+  color: #3b82f6 !important;
+  border: 1.5px solid #3b82f6 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
 }
 
-.form-actions .button--secondary:hover {
-  background: #5a6268;
-  border-color: #545b62;
+.button--primary svg,
+.button.button--primary svg {
+  color: #3b82f6;
+  stroke: #3b82f6;
+}
+
+.button--primary:hover,
+.button.button--primary:hover,
+button.button--primary:hover,
+input.button--primary:hover {
+  background: #eff6ff !important;
+  color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transform: none !important;
+}
+
+.button--primary:active,
+.button.button--primary:active,
+button.button--primary:active,
+input.button--primary:active {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+.button--primary:focus,
+.button.button--primary:focus,
+button.button--primary:focus,
+input.button--primary:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Action buttons - Same style as primary */
+.button--action,
+.button.button--action,
+a.button--action {
+  background: white !important;
+  color: #3b82f6 !important;
+  border: 1.5px solid #3b82f6 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.button--action:hover,
+.button.button--action:hover,
+a.button--action:hover {
+  background: #eff6ff !important;
+  color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transform: none !important;
+  text-decoration: none;
+}
+
+.button--action:active,
+.button.button--action:active,
+a.button--action:active {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+/* Secondary/Cancel buttons - Gray outline style */
+.form-actions .button--secondary,
+.button--secondary,
+.button.button--secondary {
+  background: white !important;
+  color: #64748b !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-actions .button--secondary:hover,
+.button--secondary:hover,
+.button.button--secondary:hover {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transform: none !important;
+}
+
+.form-actions .button--secondary:active,
+.button--secondary:active,
+.button.button--secondary:active {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #64748b !important;
+}
+
+/* Danger/Delete buttons - Keep filled red for emphasis */
+.button--danger,
+.button.button--danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+.button--danger:hover,
+.button.button--danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow:
+    0 4px 6px -1px rgba(239, 68, 68, 0.4),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.button--danger:active,
+.button.button--danger:active {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+  transform: translateY(0) !important;
+}
+
+/* Form submit buttons */
+#edit-submit,
+input[type="submit"] {
+  background: white !important;
+  color: #3b82f6 !important;
+  border: 1.5px solid #3b82f6 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+}
+
+#edit-submit:hover,
+input[type="submit"]:hover {
+  background: #eff6ff !important;
+  color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
 }
 
 /* Responsive */

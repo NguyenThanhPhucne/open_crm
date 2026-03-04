@@ -313,7 +313,7 @@ class AddController extends ControllerBase {
           <?php foreach ($fields as $field): ?>
             <div class="form-field <?= $field['required'] ? 'required-field' : '' ?>">
               <label <?= $field['required'] ? 'class="required"' : '' ?>>
-                <?= htmlspecialchars($field['label']) ?>
+                <?= htmlspecialchars($field['label'] ?? '') ?>
                 <?= $field['required'] ? '<span class="required-mark">*</span>' : '' ?>
               </label>
               
@@ -321,7 +321,7 @@ class AddController extends ControllerBase {
                 $field_name = $field['name'];
                 $field_type = $field['type'];
                 $field_settings = $field['settings'];
-                $value = htmlspecialchars($field['value']);
+                $value = htmlspecialchars($field['value'] ?? '');
                 
                 // Render appropriate input based on field type
                 switch ($field_type) {
@@ -368,7 +368,7 @@ class AddController extends ControllerBase {
                     if (!empty($field_settings['allowed_values'])) {
                       foreach ($field_settings['allowed_values'] as $key => $label) {
                         $selected = ($value == $key) ? 'selected' : '';
-                        echo '<option value="' . htmlspecialchars($key) . '" ' . $selected . '>' . htmlspecialchars($label) . '</option>';
+                        echo '<option value="' . htmlspecialchars((string)$key) . '" ' . $selected . '>' . htmlspecialchars($label ?? '') . '</option>';
                       }
                     }
                     echo '</select>';
@@ -385,7 +385,7 @@ class AddController extends ControllerBase {
                       foreach ($users as $user) {
                         if ($user->id() > 0) { // Skip anonymous
                           $selected = ($value == $user->id()) ? 'selected' : '';
-                          echo '<option value="' . $user->id() . '" ' . $selected . '>' . htmlspecialchars($user->getDisplayName()) . '</option>';
+                          echo '<option value="' . $user->id() . '" ' . $selected . '>' . htmlspecialchars($user->getDisplayName() ?? '') . '</option>';
                         }
                       }
                     } elseif ($target_type === 'taxonomy_term') {
@@ -396,7 +396,7 @@ class AddController extends ControllerBase {
                           $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree($vocabulary);
                           foreach ($terms as $term) {
                             $selected = ($value == $term->tid) ? 'selected' : '';
-                            echo '<option value="' . $term->tid . '" ' . $selected . '>' . htmlspecialchars($term->name) . '</option>';
+                            echo '<option value="' . $term->tid . '" ' . $selected . '>' . htmlspecialchars($term->name ?? '') . '</option>';
                           }
                         }
                       }
@@ -407,7 +407,7 @@ class AddController extends ControllerBase {
                         $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => $target_bundles]);
                         foreach ($nodes as $node) {
                           $selected = ($value == $node->id()) ? 'selected' : '';
-                          echo '<option value="' . $node->id() . '" ' . $selected . '>' . htmlspecialchars($node->getTitle()) . '</option>';
+                          echo '<option value="' . $node->id() . '" ' . $selected . '>' . htmlspecialchars($node->getTitle() ?? '') . '</option>';
                         }
                       }
                     }

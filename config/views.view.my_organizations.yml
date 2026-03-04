@@ -1,22 +1,21 @@
-uuid: db4ad027-d342-45f9-84e3-9c98ae9015d3
+uuid: 3b8f2e91-4c7a-4d2e-9a31-7e5c9d8a1f23
 langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.node.field_customer_type
-    - field.storage.node.field_email
-    - field.storage.node.field_organization
+    - field.storage.node.field_assigned_staff
+    - field.storage.node.field_industry
     - field.storage.node.field_phone
-    - field.storage.node.field_source
-    - node.type.contact
+    - field.storage.node.field_website
+    - node.type.organization
     - system.menu.main
   module:
     - crm_edit
     - node
-id: my_contacts
-label: "My Contacts"
+id: my_organizations
+label: "My Organizations"
 module: views
-description: "Danh sách khách hàng của tôi"
+description: "Danh sách tổ chức của tôi"
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -27,52 +26,51 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "My Contacts"
+      title: "My Organizations"
       fields:
         title:
           id: title
           table: node_field_data
           field: title
           plugin_id: field
-          label: Name
+          label: "Organization Name"
           type: string
           settings:
             link_to_entity: true
-        field_organization:
-          id: field_organization
-          table: node__field_organization
-          field: field_organization
+        field_industry:
+          id: field_industry
+          table: node__field_industry
+          field: field_industry
           plugin_id: field
-          label: Organization
+          label: Industry
           type: entity_reference_label
-          settings:
-            link: true
         field_phone:
           id: field_phone
           table: node__field_phone
           field: field_phone
           plugin_id: field
           label: Phone
-        field_email:
-          id: field_email
-          table: node__field_email
-          field: field_email
+        field_website:
+          id: field_website
+          table: node__field_website
+          field: field_website
           plugin_id: field
-          label: Email
-        field_source:
-          id: field_source
-          table: node__field_source
-          field: field_source
+          label: Website
+          settings:
+            trim_length: null
+            url_only: false
+            url_plain: false
+            rel: ""
+            target: _blank
+        field_assigned_staff:
+          id: field_assigned_staff
+          table: node__field_assigned_staff
+          field: field_assigned_staff
           plugin_id: field
-          label: Source
+          label: "Assigned To"
           type: entity_reference_label
-        field_customer_type:
-          id: field_customer_type
-          table: node__field_customer_type
-          field: field_customer_type
-          plugin_id: field
-          label: "Customer Type"
-          type: entity_reference_label
+          settings:
+            link: false
         crm_edit_link:
           id: crm_edit_link
           table: node_field_data
@@ -135,10 +133,10 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       arguments:
-        uid:
-          id: uid
-          table: node__field_owner
-          field: field_owner_target_id
+        field_assigned_staff_target_id:
+          id: field_assigned_staff_target_id
+          table: node__field_assigned_staff
+          field: field_assigned_staff_target_id
           plugin_id: numeric
           default_action: default
           default_argument_type: current_user
@@ -162,7 +160,7 @@ display:
           field: type
           plugin_id: bundle
           value:
-            contact: contact
+            organization: organization
         title:
           id: title
           table: node_field_data
@@ -173,32 +171,14 @@ display:
           exposed: true
           expose:
             operator_id: title_op
-            label: Name
-            description: "Search by contact name"
+            label: "Organization Name"
+            description: "Search by organization name"
             use_operator: false
             operator: title_op
             identifier: name
             required: false
             remember: false
-            placeholder: "Enter name..."
-        field_email_value:
-          id: field_email_value
-          table: node__field_email
-          field: field_email_value
-          plugin_id: string
-          operator: contains
-          value: ""
-          exposed: true
-          expose:
-            operator_id: field_email_value_op
-            label: Email
-            description: "Search by email"
-            use_operator: false
-            operator: field_email_value_op
-            identifier: email
-            required: false
-            remember: false
-            placeholder: "Enter email..."
+            placeholder: "Enter organization name..."
         field_phone_value:
           id: field_phone_value
           table: node__field_phone
@@ -234,11 +214,10 @@ display:
         - user
         - "user.node_grants:view"
       tags:
-        - "config:field.storage.node.field_customer_type"
-        - "config:field.storage.node.field_email"
-        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_assigned_staff"
+        - "config:field.storage.node.field_industry"
         - "config:field.storage.node.field_phone"
-        - "config:field.storage.node.field_source"
+        - "config:field.storage.node.field_website"
   page_1:
     id: page_1
     display_title: Page
@@ -252,15 +231,15 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/contact\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: white;\n          color: #10b981;\n          text-decoration: none;\n          border-radius: 8px;\n          border: 1.5px solid #10b981;\n          font-weight: 600;\n          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);\n          transition: all 0.2s ease;\n        \" onmouseover=\"this.style.background='#f0fdf4'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'\" onmouseout=\"this.style.background='white'; this.style.boxShadow='0 1px 2px rgba(0, 0, 0, 0.05)'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Contact\n        </a>\n      </div>"
+            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/organization\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: white;\n          color: #3b82f6;\n          text-decoration: none;\n          border-radius: 8px;\n          border: 1.5px solid #3b82f6;\n          font-weight: 600;\n          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);\n          transition: all 0.2s ease;\n        \" onmouseover=\"this.style.background='#eff6ff'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'\" onmouseout=\"this.style.background='white'; this.style.boxShadow='0 1px 2px rgba(0, 0, 0, 0.05)'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Organization\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
-      path: crm/my-contacts
+      path: crm/my-organizations
       menu:
         type: normal
-        title: "My Contacts"
-        description: "Danh sách khách hàng của tôi"
-        weight: 10
+        title: "My Organizations"
+        description: "Danh sách tổ chức của tôi"
+        weight: 15
         menu_name: main
     cache_metadata:
       max-age: -1
@@ -272,8 +251,7 @@ display:
         - user
         - "user.node_grants:view"
       tags:
-        - "config:field.storage.node.field_customer_type"
-        - "config:field.storage.node.field_email"
-        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_assigned_staff"
+        - "config:field.storage.node.field_industry"
         - "config:field.storage.node.field_phone"
-        - "config:field.storage.node.field_source"
+        - "config:field.storage.node.field_website"

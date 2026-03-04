@@ -82,6 +82,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  justify-content: flex-end;
 }
 
 .crm-action-btn {
@@ -116,7 +117,7 @@
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(59, 130, 246, 0.1);
   transform: translate(-50%, -50%);
   transition:
     width 0.6s,
@@ -128,33 +129,57 @@
   height: 300px;
 }
 
-/* Edit button */
+/* Edit button - Clean minimal style with blue text on white background */
 .crm-edit-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white !important;
-}
-
-.crm-edit-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-1px);
-  box-shadow:
-    0 4px 6px -1px rgba(59, 130, 246, 0.4),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.crm-edit-btn:active {
-  transform: translateY(0);
+  background: white;
+  color: #3b82f6 !important;
+  border: 1.5px solid #3b82f6;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Delete button */
+.crm-edit-btn svg {
+  color: #3b82f6;
+  stroke: #3b82f6;
+}
+
+.crm-edit-btn:hover {
+  background: #eff6ff;
+  color: #3b82f6 !important;
+  border-color: #3b82f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transform: none;
+}
+
+.crm-edit-btn:active {
+  background: #dbeafe;
+  color: #2563eb !important;
+  border-color: #2563eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: none;
+}
+
+.crm-edit-btn:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Delete button - Keep filled red for prominent warning */
 .crm-delete-btn {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white !important;
+  border: none;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+}
+
+.crm-delete-btn svg {
+  color: white;
+  stroke: white;
 }
 
 .crm-delete-btn:hover {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white !important;
   transform: translateY(-1px);
   box-shadow:
     0 4px 6px -1px rgba(239, 68, 68, 0.4),
@@ -162,8 +187,15 @@
 }
 
 .crm-delete-btn:active {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.crm-delete-btn:focus {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 /* Legacy support for old button class */
@@ -713,43 +745,37 @@
 }
 
 .crm-modal-footer .btn-save {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  box-shadow:
-    0 4px 6px rgba(59, 130, 246, 0.25),
-    0 1px 3px rgba(0, 0, 0, 0.1);
+  background: white;
+  color: #3b82f6 !important;
+  border: 1.5px solid #3b82f6;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.crm-modal-footer .btn-save svg {
+  color: #3b82f6;
+  stroke: #3b82f6;
 }
 
 .crm-modal-footer .btn-save:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 12px rgba(59, 130, 246, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.15);
+  background: #eff6ff;
+  color: #3b82f6 !important;
+  border-color: #3b82f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transform: none;
 }
 
 .crm-modal-footer .btn-save:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+  background: #dbeafe;
+  color: #2563eb !important;
+  border-color: #2563eb;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.crm-modal-footer .btn-cancel {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.crm-modal-footer .btn-cancel:hover {
-  background: #e5e7eb;
-}
-
-.crm-modal-footer .btn-save {
-  background: linear-gradient(135deg, #27ae60, #229954);
-  color: white;
-}
-
-.crm-modal-footer .btn-save:hover {
-  background: linear-gradient(135deg, #229954, #1d8348);
-  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+.crm-modal-footer .btn-save:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Toast messages */
@@ -1613,9 +1639,9 @@
 }
 
 .add-form .save-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
+  background: white;
+  color: #10b981 !important;
+  border: 1.5px solid #10b981;
   padding: 11px 24px;
   border-radius: 8px;
   font-size: 14px;
@@ -1625,29 +1651,43 @@
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.add-form .save-btn svg {
+  color: #10b981;
+  stroke: #10b981;
 }
 
 .add-form .save-btn:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+  background: #f0fdf4;
+  color: #10b981 !important;
+  border-color: #10b981;
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .add-form .save-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  background: #dcfce7;
+  color: #059669 !important;
+  border-color: #059669;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.add-form .save-btn:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .add-form .save-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-}
-
-.add-form .save-btn svg {
-  width: 16px;
-  height: 16px;
+  background: #f3f4f6;
+  color: #9ca3af !important;
+  border-color: #d1d5db;
 }
 
 .add-form .btn-secondary {
