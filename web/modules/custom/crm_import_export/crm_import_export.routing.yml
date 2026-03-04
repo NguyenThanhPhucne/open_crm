@@ -6,6 +6,14 @@ crm_import_export.import_page:
   requirements:
     _permission: "administer crm import export"
 
+crm_import_export.import_page_user:
+  path: "/crm/import"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ImportController::importPage'
+    _title: "Import Data"
+  requirements:
+    _permission: "access content"
+
 crm_import_export.import_contacts:
   path: "/admin/crm/import/contacts"
   defaults:
