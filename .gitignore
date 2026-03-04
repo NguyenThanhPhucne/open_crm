@@ -1,20 +1,19 @@
 # ============================================
 # Drupal CRM Project - .gitignore
 # ============================================
-# Chỉ commit code custom và config quan trọng
-# Không commit vendor, core, contrib, files
+# Only commit custom code and essential config
+# Exclude vendor, core, contrib, and generated files
 # ============================================
 
 # ========== Composer Dependencies ==========
-# Ignore dependencies (sẽ install lại từ composer.json)
 /vendor/
 
-# Keep composer files để rebuild dependencies
+# Keep composer files to rebuild dependencies
 !composer.json
 !composer.lock
 
 # ========== Drupal Core ==========
-# Ignore toàn bộ Drupal core (install từ composer)
+# Drupal core is installed via Composer
 /web/core/
 /web/.csslintrc
 /web/.editorconfig
@@ -29,68 +28,98 @@
 /web/robots.txt
 /web/update.php
 /web/web.config
+/web/example.gitignore
 
 # ========== Contributed Modules & Themes ==========
-# Ignore contrib modules/themes (install từ composer)
+# Install from composer - don't commit
 /web/modules/contrib/
 /web/themes/contrib/
 /web/profiles/contrib/
 /web/libraries/
 
-# ========== Custom Code (KEEP - IMPORTANT!) ==========
-# Custom modules - GIỮ LẠI ĐỂ COMMIT
+# ========== Custom Code (COMMIT THESE!) ==========
+# Custom modules - KEEP
 !/web/modules/custom/
 !/web/modules/custom/**
 
-# Custom themes - GIỮ LẠI ĐỂ COMMIT
+# Custom themes - KEEP
 !/web/themes/custom/
 !/web/themes/custom/**
 
-# Custom profiles - GIỮ LẠI NẾU CÓ
+# Custom profiles - KEEP if exists
 !/web/profiles/custom/
 !/web/profiles/custom/**
 
-# ========== Configuration (KEEP - IMPORTANT!) ==========
-# Config directory - GIỮ LẠI VIEWS VÀ CONFIG QUAN TRỌNG
+# ========== Configuration (COMMIT!) ==========
+# Config directory - KEEP ALL YML FILES
 !/config/
 !/config/**/*.yml
 
-# Settings files - IGNORE (chứa DB credentials)
+# ========== Settings & Credentials ==========
+# Ignore settings files (contain DB credentials)
 /web/sites/*/settings.php
 /web/sites/*/settings.local.php
-/web/sites/*/services*.yml
 /web/sites/*/settings.ddev.php
+/web/sites/*/services*.yml
 
-# Exception: Keep default settings for reference
+# Keep default settings template
 !/web/sites/*/default.settings.php
 
 # ========== User Uploaded Files ==========
-# Ignore tất cả uploaded files
+# Ignore all uploaded files
 /web/sites/*/files/
 /web/sites/*/private/
 
-# Exception: Giữ lại custom CSS nếu có
-!/web/sites/default/files/crm_custom_tables.css
-
-# Exception: Giữ thư mục import templates (nhưng không commit file trong đó)
-!/web/sites/default/files/crm_imports/
-/web/sites/default/files/crm_imports/*
-!/web/sites/default/files/crm_imports/.htaccess
+# Exception: Keep directory structure with .htaccess
+!/web/sites/default/files/.htaccess
 
 # ========== Cache & Generated Files ==========
-# Drupal generated cache
 /web/sites/*/files/css/
 /web/sites/*/files/js/
 /web/sites/*/files/php/
 /web/sites/*/files/styles/
 /web/sites/*/files/languages/
+/web/sites/simpletest/
 
-# Backup files
-*.bak
-*.swp
-*~
-*.orig
-*.tmp
+# ========== Scripts ==========
+# Keep essential scripts
+!/scripts/
+!/scripts/**
+
+# Ignore generated/test scripts
+scripts/*test*.php
+scripts/*test*.sh
+scripts/*debug*.php
+scripts/*audit*.php
+scripts/*check*.php
+scripts/*fix*.php
+scripts/*fix*.sh
+
+# ========== Fixtures & Sample Data (KEEP) ==========
+!/fixtures/
+!/fixtures/**/*.yml
+!/fixtures/**/*.php
+
+# ========== Recipes (KEEP) ==========
+!/recipes/
+!/recipes/**
+
+# ========== Documentation ==========
+# Keep essential docs
+!README.md
+!LICENSE.txt
+!COMPLETE_GUIDE.md
+!CONTENT_TYPES.md
+!FEATURES_GUIDE.md
+!TEAM_PERMISSIONS_GUIDE.md
+!PRODUCTION_READINESS.md
+!DATA_IMPORT_GUIDE.md
+!DATA_STORAGE_EXPLANATION.md
+!CUSTOM_MODULES_API_DOCS.md
+
+# Keep docs folder
+!/docs/
+!/docs/**/*.md
 
 # ========== IDE & Editor Files ==========
 # PhpStorm / IntelliJ IDEA
@@ -133,36 +162,35 @@ nbproject/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-$RECYCLE_BIN/
+$RECYCLE.BIN/
 *.lnk
 
 # Linux
-*~
 .directory
 .fuse_hidden*
 
 # ========== Development Tools ==========
-# DDEV - keep config but ignore local overrides
+# DDEV - keep main config
 .ddev/
 !.ddev/config.yaml
 !.ddev/config.*.yaml
-!.ddev/docker-compose.*.yaml
 
 # Docker
 docker-compose.override.yml
 .docker/
 
-# Node.js (nếu có frontend build)
+# Node.js (if frontend build exists)
 node_modules/
 npm-debug.log
 yarn-error.log
-/package-lock.json
-/yarn.lock
+package-lock.json
+yarn.lock
 /.pnp/
 .pnp.js
+/build/
+/dist/
 
 # ========== Database Files ==========
-# Database dumps và backups
 *.sql
 *.sql.gz
 *.mysql
@@ -170,15 +198,21 @@ yarn-error.log
 *.sqlite
 *.db
 /backups/
+/database/
 
 # ========== Logs ==========
-# Log files
 *.log
 /logs/
 /log/
 /web/sites/*/logs/
 
-# ========== Drupal Development Tools ==========
+# ========== Testing ==========
+/tests/
+/phpunit.xml
+/behat.yml
+/.phpunit.result.cache
+
+# ========== Other Tools ==========
 # Drush
 /.drush/
 /drush/contrib/
@@ -192,232 +226,26 @@ yarn-error.log
 .vagrant/
 Vagrantfile.local
 
-# PHPUnit
-/phpunit.xml
-
-# Behat
-/behat.yml
-
-# ========== Test Files ==========
-# Testing
-/web/sites/simpletest/
-/tests/
-
-# ============================================
-# FILES TO KEEP (Explicitly included)
-# ============================================
-
-# Project root files - GIỮ LẠI
-!composer.json
-!composer.lock
-!README.md
-!LICENSE.txt
-
-# Documentation - GIỮ CÁC FILE QUAN TRỌNG
-!CONTENT_TYPES.md
-!FEATURES_GUIDE.md
-!TEAM_PERMISSIONS_GUIDE.md
-!COMPLETE_GUIDE.md
-!PRODUCTION_READINESS.md
-!DATA_IMPORT_GUIDE.md
-!CUSTOM_MODULES_API_DOCS.md
-
-# Ignore các file report và test không cần thiết
-AUDIT_REPORT.md
-CODE_QUALITY_AUDIT.md
-CODE_REVIEW_SUMMARY.md
-ERROR_FIX_REPORT.md
-FINAL_CLEANUP_REPORT.md
-FINAL_FORM_TEST_REPORT.md
-FINAL_VALIDATION_REPORT.md
-LOGIN_URL_CONSOLIDATION_REPORT.txt
-LUCIDE_ICONS_MIGRATION.txt
-NAVIGATION_CONSOLIDATION_REPORT.txt
-PHASE_*.md
-PIPELINE_NAVIGATION_INTEGRATION.txt
-QUICKADD_DEBUG_GUIDE.md
-QUICKADD_TESTING_GUIDE.md
-ROUTES_VIEWS_AUDIT.txt
-SAMPLE_DATA_CLEANUP_REPORT.md
-SYSTEM_GAP_ANALYSIS.md
-TEST_ACCESS_CONTROL.txt
-VERIFICATION_SUMMARY.md
-CRM_NAVIGATION_GUIDE.txt
-
-# Sample data - KHÔNG COMMIT
-sample_contacts.csv
-sample_deals.csv
-
-# Test files - KHÔNG COMMIT
-test_quickadd.php
-lucide_icons_page.html
-
-# Scripts - GIỮ LẠI NẾU CẦN
-!/scripts/
-scripts/add_*.php
-scripts/add_*.sh
-scripts/audit_*.php
-
-# Recipes - GIỮ LẠI
-!/recipes/
-!/recipes/**
-
-# Drupal Discord folder - KHÔNG COMMIT
-/Drupal Discord/
-
-# Fixtures - GIỮ LẠI
-!/fixtures/
-!/fixtures/**/*.yml
-!/fixtures/**/*.php
-
-# CSV files columns - KHÔNG CẦN
-*.csv
-!fixtures/**/*.csv
-!config/**/*.csv
-/web/sites/*/settings.php
-/web/sites/*/settings.local.php
-/web/sites/*/services*.yml
-
-# Exception: Keep example files for documentation
-!/web/sites/*/settings.example.php
-!/web/sites/*/default.settings.php
-
-# Config sync directory - COMMIT if using config management
-# Uncomment nếu bạn dùng config sync:
-# !/web/sites/default/config/
-
-# ========== User Uploaded Files ==========
-# Ignore uploaded files và private files
-/web/sites/*/files/
-/web/sites/*/private/
-
-# Exception: Keep import templates
-!/web/sites/default/files/import-templates/
-!/web/sites/default/files/import-templates/*.csv
-
-# ========== Cache & Temporary Files ==========
-# Drupal cache
-/web/sites/*/files/css/
-/web/sites/*/files/js/
-/web/sites/*/files/php/
-/web/sites/*/files/styles/
-
-# Backup files
+# ========== Temporary & Backup Files ==========
 *.bak
 *.swp
 *~
 *.orig
-
-# Temporary files
+*.tmp
 /tmp/
 /temp/
 
-# ========== IDE & Editor Files ==========
-# PhpStorm / IntelliJ IDEA
-.idea/
-*.iml
-*.ipr
-*.iws
+# Test HTML files
+*.test.html
+test-*.html
+*-test.html
 
-# VS Code
-.vscode/
-*.code-workspace
+# Sample data CSVs
+sample_*.csv
 
-# Sublime Text
-*.sublime-project
-*.sublime-workspace
+# Backup gitignore
+.gitignore.old
 
-# NetBeans
-nbproject/
-
-# Eclipse
-.project
-.buildpath
-.settings/
-
-# ========== OS Files ==========
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.directory
-
-# ========== Development Tools ==========
-# DDEV
-.ddev/
-!.ddev/config.yaml
-!.ddev/config.*.yaml
-
-# Docker
-docker-compose.override.yml
-
-# Node.js (nếu có frontend build)
-node_modules/
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
-
-# ========== Database & Dumps ==========
-*.sql
-*.sql.gz
-*.mysql
-*.dump
-
-# ========== Logs ==========
-*.log
-/logs/
-/log/
-
-# ========== Other ==========
-# Drush
-/.drush/
-/drush/contrib/
-
-# Drupal Console
-/.console/
-
-# DrupalVM
-.vagrant/
-
-# PHPUnit
-/phpunit.xml
-
-# Behat
-/behat.yml
-
-# ============================================
-# FILES TO KEEP (Explicitly not ignored)
-# ============================================
-
-# Project custom scripts
-!/scripts/
-!/scripts/**
-
-# Project documentation
-!/README.md
-!/CONTENT_TYPES.md
-!/SYSTEM_GAP_ANALYSIS.md
-!/LICENSE.txt
-!/*.md
-
-# Custom files
-!/lucide_icons_page.html
-!/create_taxonomies.php
-
-# Recipes
-!/recipes/
-!/recipes/**
-
-# Keep example.gitignore for reference
-!/web/example.gitignore
+# ========== Core Test Fixtures (Keep) ==========
+# Don't ignore core test fixtures
+!/web/core/modules/system/tests/fixtures/**

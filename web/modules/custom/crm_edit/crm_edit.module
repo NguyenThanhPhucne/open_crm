@@ -10,6 +10,22 @@ use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
 
 /**
+ * Implements hook_views_data_alter().
+ *
+ * Register crm_edit_link field for Views.
+ */
+function crm_edit_views_data_alter(array &$data) {
+  // Add field to node base table
+  $data['node_field_data']['crm_edit_link'] = [
+    'title' => t('CRM Edit/Delete Links'),
+    'help' => t('Provides Edit and Delete action buttons with permission checking.'),
+    'field' => [
+      'id' => 'crm_edit_link',
+    ],
+  ];
+}
+
+/**
  * Implements hook_node_view_alter().
  *
  * Add edit button to CRM content pages.
@@ -93,19 +109,4 @@ function crm_edit_get_owner_field($bundle) {
   ];
   
   return $fields[$bundle] ?? 'field_owner';
-}
-
-/**
- * Implements hook_views_data_alter().
- *
- * Add edit link field to views.
- */
-function crm_edit_views_data_alter(array &$data) {
-  $data['node']['crm_edit_link'] = [
-    'title' => t('CRM Quick Edit Link'),
-    'help' => t('Shows a quick edit link for CRM content.'),
-    'field' => [
-      'id' => 'crm_edit_link',
-    ],
-  ];
 }
