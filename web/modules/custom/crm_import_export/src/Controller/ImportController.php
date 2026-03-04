@@ -3,8 +3,7 @@
 namespace Drupal\crm_import_export\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Controller for Import pages.
@@ -15,180 +14,358 @@ class ImportController extends ControllerBase {
    * Main import page - hub for all import operations.
    */
   public function importPage() {
-    $build = [];
-
-    // Header with gradient style
-    $build['header'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'div',
-      '#attributes' => [
-        'class' => ['import-header'],
-        'style' => 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white;'
-      ],
-      '#value' => '<h1 style="margin: 0; font-size: 2rem;">📥 Import Data</h1><p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Import contacts, deals, and other CRM data from CSV/Excel files</p>',
-    ];
-
-    // Import options container
-    $build['import_options'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => ['import-options-grid'],
-        'style' => 'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;'
-      ],
-    ];
-
-    // Import Contacts option
-    $build['import_options']['contacts'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => ['import-card'],
-        'style' => 'background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; transition: all 0.3s; cursor: pointer;',
-      ],
-    ];
+    $base_url = \Drupal::request()->getSchemeAndHttpHost();
     
-    $contacts_url = Url::fromRoute('crm_import_export.import_contacts');
-    $build['import_options']['contacts']['icon'] = [
-      '#markup' => '<div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>',
-    ];
-    $build['import_options']['contacts']['title'] = [
-      '#markup' => '<h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">Import Contacts</h3>',
-    ];
-    $build['import_options']['contacts']['description'] = [
-      '#markup' => '<p style="color: #6b7280; margin: 0 0 1rem 0;">Import customer and lead data from CSV files. Supports duplicate detection and field mapping.</p>',
-    ];
-    $build['import_options']['contacts']['link'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Import Contacts →'),
-      '#url' => $contacts_url,
-      '#attributes' => [
-        'class' => ['button', 'button--primary'],
-        'style' => 'display: inline-block; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;',
-      ],
-    ];
-
-    // Import Deals option
-    $build['import_options']['deals'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'class' => ['import-card'],
-        'style' => 'background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; transition: all 0.3s;',
-      ],
-    ];
+    $html = <<<HTML
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Data - CRM</title>
+  <link rel="icon" type="image/x-icon" href="/core/misc/favicon.ico">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     
-    $deals_url = Url::fromRoute('crm_import_export.import_deals');
-    $build['import_options']['deals']['icon'] = [
-      '#markup' => '<div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>',
-    ];
-    $build['import_options']['deals']['title'] = [
-      '#markup' => '<h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">Import Deals</h3>',
-    ];
-    $build['import_options']['deals']['description'] = [
-      '#markup' => '<p style="color: #6b7280; margin: 0 0 1rem 0;">Import deal pipeline data with amounts, stages, and related contacts.</p>',
-    ];
-    $build['import_options']['deals']['link'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Import Deals →'),
-      '#url' => $deals_url,
-      '#attributes' => [
-        'class' => ['button', 'button--primary'],
-        'style' => 'display: inline-block; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;',
-      ],
-    ];
-
-    // Help section
-    $build['help'] = [
-      '#type' => 'details',
-      '#title' => $this->t('📖 Import Guidelines'),
-      '#open' => FALSE,
-      '#attributes' => [
-        'style' => 'background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-top: 2rem;'
-      ],
-    ];
-
-    $build['help']['content'] = [
-      '#markup' => '
-        <div style="color: #374151;">
-          <h4 style="margin-top: 0;">CSV File Format Requirements:</h4>
-          <ul>
-            <li><strong>Encoding:</strong> UTF-8 (recommended)</li>
-            <li><strong>Delimiter:</strong> Comma (,) or semicolon (;)</li>
-            <li><strong>First row:</strong> Must contain column headers</li>
-            <li><strong>File size:</strong> Maximum 10MB per file</li>
-          </ul>
-          
-          <h4>Contacts CSV Example:</h4>
-          <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto;">
-Name,Email,Phone,Position,Organization
-John Doe,john@example.com,0901234567,Sales Director,ABC Company
-Jane Smith,jane@example.com,0987654321,CEO,XYZ Corporation
-          </pre>
-          
-          <h4>Deals CSV Example:</h4>
-          <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto;">
-Title,Amount,Contact Email,Stage,Closing Date
-New Website Project,50000,john@example.com,Proposal,2026-03-30
-ERP System,150000,jane@example.com,Negotiation,2026-04-15
-          </pre>
-          
-          <h4>Tips:</h4>
-          <ul>
-            <li>✓ Use template files for correct column names</li>
-            <li>✓ Duplicate detection is based on email (contacts) or title (deals)</li>
-            <li>✓ Large files will be processed in batches</li>
-            <li>✓ You can preview data before final import</li>
-          </ul>
-        </div>
-      ',
-    ];
-
-    // Recent imports (if we want to track this later)
-    $build['recent'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'style' => 'margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border: 1px solid #e5e7eb;'
-      ],
-    ];
-    $build['recent']['title'] = [
-      '#markup' => '<h3 style="margin-top: 0;">📊 Quick Stats</h3>',
-    ];
-
-    // Get current user
-    $current_user = \Drupal::currentUser();
-    $user_id = $current_user->id();
-
-    // Get entity counts for current user only
-    $contact_count = \Drupal::entityQuery('node')
-      ->condition('type', 'contact')
-      ->condition('field_owner', $user_id)
-      ->accessCheck(FALSE)
-      ->count()
-      ->execute();
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      min-height: 100vh;
+      color: #1e293b;
+    }
     
-    $deal_count = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->condition('field_owner', $user_id)
-      ->accessCheck(FALSE)
-      ->count()
-      ->execute();
-
-    $build['recent']['stats'] = [
-      '#markup' => "
-        <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;'>
-          <div style='padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;'>
-            <div style='font-size: 2rem; font-weight: bold;'>{$contact_count}</div>
-            <div style='opacity: 0.9;'>Total Contacts</div>
+    .import-header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .import-header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .import-header p {
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 8px;
+      margin-left: 40px;
+    }
+    
+    .import-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    
+    .import-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .import-card {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    
+    .import-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      border-color: #3b82f6;
+    }
+    
+    .import-card-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .import-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .import-icon.blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+    }
+    
+    .import-icon.purple {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
+    }
+    
+    .import-card-title h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+    
+    .import-card-title p {
+      font-size: 14px;
+      color: #64748b;
+    }
+    
+    .import-card-body {
+      margin-bottom: 24px;
+    }
+    
+    .field-list h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 12px;
+    }
+    
+    .field-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .field-tag {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .field-list ul {
+      list-style: none;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    
+    .field-list li:before {
+      content: '•';
+      color: #10b981;
+      margin-right: 6px;
+      font-weight: bold;
+    }
+    
+    .import-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+    
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 32px;
+    }
+    
+    .info-box-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .info-box-header i {
+      color: #3b82f6;
+    }
+    
+    .info-box-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e40af;
+    }
+    
+    .info-box ul {
+      list-style: none;
+      color: #1e40af;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    
+    .info-box li:before {
+      content: '✓';
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    @media (max-width: 1100px) {
+      .import-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="import-header">
+    <h1>
+      <i data-lucide="upload" width="28" height="28" style="color: #3b82f6;"></i>
+      Import Data
+    </h1>
+    <p>Bulk import contacts, deals, and other CRM data from CSV/Excel files</p>
+  </div>
+  
+  <div class="import-container">
+    <div class="import-grid">
+      <!-- Contacts Import -->
+      <div class="import-card">
+        <div class="import-card-header">
+          <div class="import-icon blue">
+            <i data-lucide="users" width="28" height="28"></i>
           </div>
-          <div style='padding: 1rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 8px; color: white;'>
-            <div style='font-size: 2rem; font-weight: bold;'>{$deal_count}</div>
-            <div style='opacity: 0.9;'>Total Deals</div>
+          <div class="import-card-title">
+            <h2>Import Contacts</h2>
+            <p>Upload CSV file to import customer and lead data</p>
           </div>
         </div>
-      ",
-    ];
+        
+        <div class="import-card-body">
+          <div class="field-list">
+            <h4>Required CSV Columns</h4>
+            <div class="field-tags">
+              <span class="field-tag">name</span>
+              <span class="field-tag">email</span>
+              <span class="field-tag">phone</span>
+              <span class="field-tag">position</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="import-actions">
+          <a href="/admin/crm/import/contacts" class="btn btn-primary">
+            <i data-lucide="upload" width="16" height="16"></i>
+            Start Import
+          </a>
+          <a href="/sites/default/files/import-templates/contacts_template.csv" class="btn btn-secondary" download>
+            <i data-lucide="download" width="16" height="16"></i>
+            Download Template
+          </a>
+        </div>
+      </div>
+      
+      <!-- Deals Import -->
+      <div class="import-card">
+        <div class="import-card-header">
+          <div class="import-icon purple">
+            <i data-lucide="trending-up" width="28" height="28"></i>
+          </div>
+          <div class="import-card-title">
+            <h2>Import Deals</h2>
+            <p>Upload CSV file to import deal pipeline data</p>
+          </div>
+        </div>
+        
+        <div class="import-card-body">
+          <div class="field-list">
+            <h4>Required CSV Columns</h4>
+            <div class="field-tags">
+              <span class="field-tag">title</span>
+              <span class="field-tag">amount</span>
+              <span class="field-tag">stage</span>
+              <span class="field-tag">contact</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="import-actions">
+          <a href="/admin/crm/import/deals" class="btn btn-primary">
+            <i data-lucide="upload" width="16" height="16"></i>
+            Start Import
+          </a>
+          <a href="/sites/default/files/import-templates/deals_template.csv" class="btn btn-secondary" download>
+            <i data-lucide="download" width="16" height="16"></i>
+            Download Template
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="info-box">
+      <div class="info-box-header">
+        <i data-lucide="info" width="24" height="24"></i>
+        <h3>How to Import</h3>
+      </div>
+      <ul>
+        <li>Download the CSV template for the entity type you want to import</li>
+        <li>Fill in your data following the template format (keep the header row)</li>
+        <li>Click "Start Import" and upload your CSV file</li>
+        <li>Review the field mapping and data preview</li>
+        <li>Click "Import" to begin processing your data</li>
+        <li>Wait for the import to complete and check the results</li>
+      </ul>
+    </div>
+  </div>
 
-    $build['#attached']['library'][] = 'core/drupal.dialog.ajax';
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
+HTML;
 
-    return $build;
+    return new Response($html);
   }
 
 }

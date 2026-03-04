@@ -1,0 +1,10 @@
+name: "CRM Workflow Automation"
+type: module
+description: "Automated workflows for CRM (Deal Won validation, Email notifications)"
+package: "CRM"
+core_version_requirement: ^11
+
+dependencies:
+  - drupal:node
+  - drupal:user
+  - drupal:taxonomy

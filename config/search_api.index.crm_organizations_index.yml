@@ -1,3 +1,4 @@
+uuid: 67de089a-4100-4e50-9afe-9396f73d8c22
 langcode: en
 status: true
 dependencies:
@@ -12,27 +13,21 @@ name: "CRM Organizations"
 description: "Search index for CRM organizations and companies"
 read_only: false
 field_settings:
-  title:
-    label: "Organization Name"
+  created:
+    label: Created
     datasource_id: "entity:node"
-    property_path: title
-    type: text
-    boost: !!float 5
-  field_website:
-    label: "Website"
-    datasource_id: "entity:node"
-    property_path: field_website
-    type: string
+    property_path: created
+    type: date
   field_address:
-    label: "Address"
+    label: Address
     datasource_id: "entity:node"
     property_path: field_address
     type: text
-  field_industry:
-    label: "Industry"
+  field_annual_revenue:
+    label: "Annual Revenue"
     datasource_id: "entity:node"
-    property_path: field_industry
-    type: string
+    property_path: field_annual_revenue
+    type: decimal
   field_assigned_staff:
     label: "Assigned Staff"
     datasource_id: "entity:node"
@@ -41,31 +36,37 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_assigned_staff
-  field_status:
-    label: "Status"
-    datasource_id: "entity:node"
-    property_path: field_status
-    type: string
-  field_annual_revenue:
-    label: "Annual Revenue"
-    datasource_id: "entity:node"
-    property_path: field_annual_revenue
-    type: decimal
   field_employees_count:
     label: "Employees Count"
     datasource_id: "entity:node"
     property_path: field_employees_count
     type: integer
-  created:
-    label: "Created"
+  field_industry:
+    label: Industry
     datasource_id: "entity:node"
-    property_path: created
-    type: date
+    property_path: field_industry
+    type: string
+  field_status:
+    label: Status
+    datasource_id: "entity:node"
+    property_path: field_status
+    type: string
+  field_website:
+    label: Website
+    datasource_id: "entity:node"
+    property_path: field_website
+    type: string
   status:
-    label: "Published"
+    label: Published
     datasource_id: "entity:node"
     property_path: status
     type: boolean
+  title:
+    label: "Organization Name"
+    datasource_id: "entity:node"
+    property_path: title
+    type: text
+    boost: 5.0
 datasource_settings:
   "entity:node":
     bundles:
@@ -77,16 +78,19 @@ datasource_settings:
       selected: {}
 processor_settings:
   add_url: {}
+  content_access:
+    weights:
+      preprocess_query: -30
   entity_status: {}
   entity_type: {}
   ignorecase:
     fields:
-      - title
       - field_address
+      - title
   tokenizer:
     fields:
-      - title
       - field_address
+      - title
   transliteration:
     fields:
       - title

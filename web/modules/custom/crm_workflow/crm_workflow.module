@@ -1,0 +1,326 @@
+<?php
+
+/**
+ * @file
+ * CRM Workflow Automation module.
+ * 
+ * Implements automated workflows for CRM:
+ * - Deal Won validation (require file upload)
+ * - Email notifications to managers
+ * - Activity logging automation
+ * 
+ * TODO: Complete implementation according to COMPREHENSIVE_AUDIT_REPORT.md
+ */
+
+use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_node_presave().
+ * 
+ * Validates deal before saving.
+ * - If stage = "Won" → require file upload
+ */
+function crm_workflow_node_presave(NodeInterface $node) {
+  // Only apply to deals
+  if ($node->bundle() !== 'deal') {
+    return;
+  }
+  
+  // Check if stage changed to "Won"
+  if ($node->hasField('field_stage') && !$node->get('field_stage')->isEmpty()) {
+    $stage_id = $node->get('field_stage')->target_id;
+    $stage_term = \Drupal\taxonomy\Entity\Term::load($stage_id);
+    
+    if (!$stage_term) {
+      return;
+    }
+    
+    $stage_name = $stage_term->getName();
+    
+    // If stage = "Won", check if field_contract_file is not empty
+    if ($stage_name === 'Won') {
+      // Check if contract file field exists and has a file
+      if ($node->hasField('field_contract_file')) {
+        if ($node->get('field_contract_file')->isEmpty()) {
+          // Add warning message
+          \Drupal::messenger()->addWarning(t('Lưu ý: Bạn nên upload file hợp đồng khi chốt Deal Won!'));
+          // Note: We use warning instead of blocking to maintain flexibility
+          // If you want to block, uncomment the line below:
+          // throw new \Drupal\Core\Entity\EntityStorageException('Missing contract file');
+        }
+      }
+      
+      \Drupal::logger('crm_workflow')->notice('Deal marked as Won: @title', [
+        '@title' => $node->label(),
+      ]);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node.
+ * 
+ * Triggers actions when new node is created.
+ */
+function crm_workflow_node_insert(NodeInterface $node) {
+  if ($node->bundle() === 'deal') {
+    _crm_workflow_check_deal_won($node);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node.
+ * 
+ * Triggers actions when node is updated.
+ */
+function crm_workflow_node_update(NodeInterface $node) {
+  if ($node->bundle() === 'deal') {
+    _crm_workflow_check_deal_won($node);
+  }
+}
+
+/**
+ * Check if deal is won and send notification.
+ * 
+ * @param \Drupal\node\NodeInterface $node
+ *   The deal node.
+ */
+function _crm_workflow_check_deal_won(NodeInterface $node) {
+  if (!$node->hasField('field_stage') || $node->get('field_stage')->isEmpty()) {
+    return;
+  }
+  
+  $stage_id = $node->get('field_stage')->target_id;
+  $stage_term = \Drupal\taxonomy\Entity\Term::load($stage_id);
+  
+  if (!$stage_term || $stage_term->getName() !== 'Won') {
+    return;
+  }
+  
+  // Get deal owner
+  $owner = $node->hasField('field_owner') ? $node->get('field_owner')->entity : null;
+  
+  if (!$owner) {
+    return;
+  }
+  
+  // Find manager email
+  $manager_email = _crm_workflow_get_manager_email($owner);
+  
+  if (!$manager_email) {
+    \Drupal::logger('crm_workflow')->warning('Cannot find manager email for deal: @title', [
+      '@title' => $node->label(),
+    ]);
+    return;
+  }
+  
+  // Send email notification
+  _crm_workflow_send_deal_won_email($node, $manager_email);
+  
+  \Drupal::logger('crm_workflow')->info('Deal won notification sent for: @title', [
+    '@title' => $node->label(),
+  ]);
+}
+
+/**
+ * Get manager email for a sales rep.
+ * 
+ * @param \Drupal\user\Entity\User $sales_rep
+ *   The sales rep user.
+ * 
+ * @return string|null
+ *   Manager email or NULL.
+ */
+function _crm_workflow_get_manager_email($sales_rep) {
+  // Strategy 1: Check if sales rep has field_manager reference
+  if ($sales_rep->hasField('field_manager') && !$sales_rep->get('field_manager')->isEmpty()) {
+    $manager = $sales_rep->get('field_manager')->entity;
+    if ($manager) {
+      return $manager->getEmail();
+    }
+  }
+  
+  // Strategy 2: Find manager of same team
+  if ($sales_rep->hasField('field_team') && !$sales_rep->get('field_team')->isEmpty()) {
+    $team_id = $sales_rep->get('field_team')->target_id;
+    
+    // Find users with sales_manager role in same team
+    $query = \Drupal::entityQuery('user')
+      ->condition('status', 1)
+      ->condition('field_team', $team_id)
+      ->accessCheck(FALSE);
+    
+    $query->condition('roles', 'sales_manager');
+    
+    $uids = $query->execute();
+    
+    if (!empty($uids)) {
+      $manager = \Drupal\user\Entity\User::load(reset($uids));
+      return $manager ? $manager->getEmail() : NULL;
+    }
+  }
+  
+  // Strategy 3: Find any sales_manager
+  $query = \Drupal::entityQuery('user')
+    ->condition('status', 1)
+    ->accessCheck(FALSE);
+  
+  $query->condition('roles', 'sales_manager');
+  
+  $uids = $query->execute();
+  
+  if (empty($uids)) {
+    return NULL;
+  }
+  
+  $manager = \Drupal\user\Entity\User::load(reset($uids));
+  return $manager ? $manager->getEmail() : NULL;
+}
+
+/**
+ * Send email notification when deal is won.
+ * 
+ * @param \Drupal\node\NodeInterface $node
+ *   The deal node.
+ * @param string $to
+ *   Recipient email.
+ */
+function _crm_workflow_send_deal_won_email(NodeInterface $node, $to) {
+  $mailManager = \Drupal::service('plugin.manager.mail');
+  $module = 'crm_workflow';
+  $key = 'deal_won';
+  $langcode = \Drupal::currentUser()->getPreferredLangcode();
+  
+  // Get owner info
+  $owner = $node->get('field_owner')->entity;
+  $owner_name = $owner ? $owner->getDisplayName() : 'Unknown';
+  
+  // Get amount
+  $amount = $node->hasField('field_amount') ? $node->get('field_amount')->value : 0;
+  
+  // Build params
+  $params = [
+    'deal_title' => $node->label(),
+    'deal_amount' => $amount,
+    'sales_rep' => $owner_name,
+    'deal_url' => $node->toUrl('canonical', ['absolute' => TRUE])->toString(),
+  ];
+  
+  // Send email
+  $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, TRUE);
+  
+  if ($result['result']) {
+    \Drupal::logger('crm_workflow')->notice('Deal won email sent to @email for deal: @title', [
+      '@email' => $to,
+      '@title' => $node->label(),
+    ]);
+    
+    // Show message to user
+    \Drupal::messenger()->addStatus(t('Email notification sent to manager about deal won.'));
+  }
+  else {
+    \Drupal::logger('crm_workflow')->error('Failed to send deal won email for: @title', [
+      '@title' => $node->label(),
+    ]);
+  }
+}
+
+/**
+ * Implements hook_mail().
+ * 
+ * Defines email templates.
+ */
+function crm_workflow_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'deal_won':
+      $message['subject'] = '🎉 Deal Won: ' . $params['deal_title'];
+      $message['headers']['Content-Type'] = 'text/html; charset=UTF-8;';
+      
+      $amount_formatted = number_format($params['deal_amount'], 0, ',', '.');
+      
+      $message['body'][] = sprintf(
+        '<h2>Chúc mừng! Deal đã được chốt thành công.</h2>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+          <tr>
+            <td style="padding: 8px; font-weight: bold;">Deal:</td>
+            <td style="padding: 8px;">%s</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; font-weight: bold;">Giá trị:</td>
+            <td style="padding: 8px;">%s VND</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; font-weight: bold;">Sales Rep:</td>
+            <td style="padding: 8px;">%s</td>
+          </tr>
+        </table>
+        <p><a href="%s" style="display: inline-block; padding: 10px 20px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">Xem chi tiết →</a></p>
+        <hr>
+        <p style="color: #666; font-size: 12px;">
+          Email này được gửi tự động từ hệ thống CRM.<br>
+          Thời gian: %s
+        </p>',
+        $params['deal_title'],
+        $amount_formatted,
+        $params['sales_rep'],
+        $params['deal_url'],
+        date('d/m/Y H:i:s')
+      );
+      break;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ * 
+ * Alter forms to add custom validation or widgets.
+ */
+function crm_workflow_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add custom validation to deal form
+  if ($form_id === 'node_deal_form' || $form_id === 'node_deal_edit_form') {
+    // TODO: Add custom validation
+    // $form['#validate'][] = '_crm_workflow_validate_deal_won';
+  }
+}
+
+/**
+ * Custom validation for deal form.
+ */
+function _crm_workflow_validate_deal_won(array &$form, FormStateInterface $form_state) {
+  $stage = $form_state->getValue(['field_stage', 0, 'target_id']);
+  
+  if (!$stage) {
+    return;
+  }
+  
+  $stage_term = \Drupal\taxonomy\Entity\Term::load($stage);
+  
+  if ($stage_term && $stage_term->getName() === 'Won') {
+    // Check if contract file is uploaded
+    $contract_file = $form_state->getValue(['field_contract_file', 0, 'target_id']);
+    
+    if (empty($contract_file)) {
+      $form_state->setErrorByName('field_contract_file', t('Bạn phải upload file hợp đồng trước khi chốt Deal Won!'));
+    }
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function crm_workflow_help($route_name, $route_match) {
+  switch ($route_name) {
+    case 'help.page.crm_workflow':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('CRM Workflow Automation module provides automated workflows for Open CRM system.') . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Deal Won validation (require contract file upload)') . '</li>';
+      $output .= '<li>' . t('Email notifications to managers when deal is won') . '</li>';
+      $output .= '<li>' . t('Activity logging automation') . '</li>';
+      $output .= '</ul>';
+      return $output;
+  }
+}

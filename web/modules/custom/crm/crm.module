@@ -13,10 +13,13 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Implements hook_node_access().
  *
- * Controls access to CRM content based on field_owner/field_assigned_to.
+ * UNIFIED ACCESS CONTROL - Controls access based on:
+ * 1. Owner-based access (field_owner, field_assigned_to, field_assigned_staff)
+ * 2. Team-based access (field_team on users) - OPTIONAL
+ * 
  * - Administrators: Full access
- * - Sales Managers: Can view/edit all team content
- * - Sales Representatives: Can only view/edit their own content
+ * - Sales Managers (or users with 'bypass crm team access'): View all team content
+ * - Sales Representatives: Can only view/edit their own content OR same team content
  */
 function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
   $crm_types = ['contact', 'deal', 'activity', 'organization'];
@@ -26,14 +29,16 @@ function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
     return AccessResult::neutral();
   }
 
-  // Administrators and managers: full access.
-  if ($account->hasRole('administrator') || $account->hasRole('sales_manager')) {
+  // Administrators and users with bypass permission: full access.
+  if ($account->hasRole('administrator') || 
+      $account->hasPermission('bypass crm team access') ||
+      $account->hasRole('sales_manager')) {
     return AccessResult::neutral();
   }
 
-  // Sales representatives: check ownership.
+  // Sales representatives: check ownership AND team.
   if ($account->hasRole('sales_rep')) {
-    // Determine the ownership field based on content type
+    // Determine the ownership field based on content type.
     if ($node->bundle() === 'activity') {
       $owner_field = 'field_assigned_to';
     } elseif ($node->bundle() === 'organization') {
@@ -50,13 +55,20 @@ function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
 
     // Check operations.
     if (in_array($op, ['view', 'update', 'delete'])) {
-      if ($owner_id == $account->id()) {
+      // Check 1: Is current user the owner?
+      $is_owner = ($owner_id == $account->id());
+      
+      // Check 2: Same team? (Optional - only if field_team exists)
+      $same_team = _crm_check_same_team($account->id(), $owner_id);
+      
+      // Allow if owner OR same team.
+      if ($is_owner || $same_team) {
         return AccessResult::allowed()
           ->cachePerUser()
           ->addCacheableDependency($node);
       }
       else {
-        return AccessResult::forbidden('You can only access your own content')
+        return AccessResult::forbidden('You can only access your own content or same team content')
           ->cachePerUser()
           ->addCacheableDependency($node);
       }
@@ -70,13 +82,15 @@ function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
  * Implements hook_query_TAG_alter() for 'node_access'.
  *
  * Automatically filters node queries for sales representatives
- * to show only their own content in views and entity queries.
+ * to show only their own content OR same team content in views and entity queries.
  */
 function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterface $query) {
   $account = \Drupal::currentUser();
 
-  // Skip for admins and managers.
-  if ($account->hasRole('administrator') || $account->hasRole('sales_manager')) {
+  // Skip for admins, managers, and users with bypass permission.
+  if ($account->hasRole('administrator') || 
+      $account->hasRole('sales_manager') ||
+      $account->hasPermission('bypass crm team access')) {
     return;
   }
 
@@ -85,7 +99,7 @@ function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterf
     return;
   }
 
-  // Add owner filter.
+  // Add owner filter + team filter.
   $tables = $query->getTables();
   foreach ($tables as $table) {
     if (isset($table['table']) && $table['table'] === 'node_field_data') {
@@ -96,11 +110,22 @@ function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterf
       $query->leftJoin('node__field_assigned_to', 'crm_assigned', "$alias.nid = crm_assigned.entity_id");
       $query->leftJoin('node__field_assigned_staff', 'crm_staff', "$alias.nid = crm_staff.entity_id");
 
-      // Filter: current user is owner OR assigned_to OR assigned_staff.
+      // Build condition: current user is owner OR assigned_to OR assigned_staff.
       $or = $query->orConditionGroup()
         ->condition('crm_owner.field_owner_target_id', $account->id(), '=')
         ->condition('crm_assigned.field_assigned_to_target_id', $account->id(), '=')
         ->condition('crm_staff.field_assigned_staff_target_id', $account->id(), '=');
+      
+      // Optional: Add team-based filtering if field_team exists.
+      $user_team_id = _crm_get_user_team($account->id());
+      if (!empty($user_team_id)) {
+        // Join to owner's user to check their team.
+        $query->leftJoin('users_field_data', 'crm_node_owner', "$alias.uid = crm_node_owner.uid");
+        $query->leftJoin('user__field_team', 'crm_owner_team', "crm_node_owner.uid = crm_owner_team.entity_id");
+        
+        // Also allow if owner is in same team.
+        $or->condition('crm_owner_team.field_team_target_id', $user_team_id, '=');
+      }
 
       $query->condition($or);
       break;
@@ -221,4 +246,95 @@ function crm_theme($existing, $type, $theme, $path) {
       'template' => 'crm-user-profile',
     ],
   ];
+}
+
+/**
+ * Helper function: Check if two users are in the same team.
+ * 
+ * @param int $uid1
+ *   First user ID.
+ * @param int $uid2
+ *   Second user ID.
+ * 
+ * @return bool
+ *   TRUE if same team, FALSE otherwise.
+ */
+function _crm_check_same_team($uid1, $uid2) {
+  $team1 = _crm_get_user_team($uid1);
+  $team2 = _crm_get_user_team($uid2);
+  
+  // If either user has no team, return FALSE (no team-based access).
+  if (empty($team1) || empty($team2)) {
+    return FALSE;
+  }
+  
+  return ($team1 === $team2);
+}
+
+/**
+ * Helper function: Get user's team ID.
+ * 
+ * @param int $uid
+ *   User ID.
+ * 
+ * @return int|null
+ *   Team taxonomy term ID or NULL.
+ */
+function _crm_get_user_team($uid) {
+  $user = \Drupal::entityTypeManager()->getStorage('user')->load($uid);
+  
+  if ($user && $user->hasField('field_team') && !$user->get('field_team')->isEmpty()) {
+    return $user->get('field_team')->target_id;
+  }
+  
+  return NULL;
+}
+
+/**
+ * Helper function: Get entity owner's team ID.
+ * 
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity (node).
+ * 
+ * @return int|null
+ *   Team taxonomy term ID or NULL.
+ */
+function _crm_get_entity_owner_team(\Drupal\Core\Entity\EntityInterface $entity) {
+  if ($entity->hasField('uid')) {
+    $owner = $entity->get('uid')->entity;
+    
+    if ($owner) {
+      return _crm_get_user_team($owner->id());
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Implements hook_help().
+ */
+function crm_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.crm':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('CRM Core module provides unified access control for Open CRM system.') . '</p>';
+      $output .= '<h3>' . t('Access Control Features') . '</h3>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Owner-based access control (field_owner, field_assigned_to, field_assigned_staff)') . '</li>';
+      $output .= '<li>' . t('Team-based access control (optional, via field_team on users)') . '</li>';
+      $output .= '<li>' . t('Role-based permissions (Administrator, Sales Manager, Sales Rep)') . '</li>';
+      $output .= '<li>' . t('Automatic default owner assignment on content creation') . '</li>';
+      $output .= '</ul>';
+      $output .= '<h3>' . t('Permission Levels') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Administrator') . '</dt>';
+      $output .= '<dd>' . t('Full access to all content.') . '</dd>';
+      $output .= '<dt>' . t('Sales Manager (or bypass crm team access permission)') . '</dt>';
+      $output .= '<dd>' . t('Can view and edit all team content.') . '</dd>';
+      $output .= '<dt>' . t('Sales Representative') . '</dt>';
+      $output .= '<dd>' . t('Can only view and edit their own content, or content from team members (if teams are configured).') . '</dd>';
+      $output .= '</dl>';
+      return $output;
+  }
 }
