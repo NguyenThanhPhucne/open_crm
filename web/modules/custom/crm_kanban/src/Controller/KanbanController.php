@@ -3,7 +3,7 @@
 namespace Drupal\crm_kanban\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Response;
+use Drupal\Core\Render\Markup;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -96,7 +96,14 @@ class KanbanController extends ControllerBase {
     // Build Kanban HTML
     $html = $this->buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage);
     
-    return new Response($html);
+    return [
+      '#markup' => Markup::create($html),
+      '#attached' => [
+        'library' => [
+          'core/drupal',
+        ],
+      ],
+    ];
   }
 
   /**
@@ -104,16 +111,9 @@ class KanbanController extends ControllerBase {
    */
   private function buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage) {
     $html = <<<'HTML'
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Pipeline - Kanban</title>
-  <link rel="icon" type="image/x-icon" href="/core/misc/favicon.ico">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <style>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
     * {
       margin: 0;
       padding: 0;
@@ -125,243 +125,6 @@ class KanbanController extends ControllerBase {
       background: #f8fafc;
       min-height: 100vh;
       color: #1e293b;
-    }
-    
-    /* Global Navigation */
-    .crm-global-nav {
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-    
-    .crm-nav-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      height: 60px;
-      gap: 32px;
-    }
-    
-    .crm-nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 18px;
-      font-weight: 700;
-      color: #1e293b;
-      padding-right: 32px;
-      border-right: 1px solid #e2e8f0;
-    }
-    
-    .crm-nav-items {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex: 1;
-    }
-    
-    .crm-nav-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      color: #64748b;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-    
-    .crm-nav-item:hover {
-      background: #f1f5f9;
-      color: #1e293b;
-    }
-    
-    .crm-nav-item.active {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: white;
-    }
-    
-    .crm-nav-item.active:hover {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    }
-    
-    .crm-nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .crm-quick-add-dropdown {
-      position: relative;
-    }
-    
-    .crm-quick-add-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .crm-quick-add-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-    
-    .crm-quick-add-menu {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-      padding: 8px;
-      min-width: 220px;
-      display: none;
-      z-index: 1001;
-      border: 1px solid #e2e8f0;
-    }
-    
-    .crm-quick-add-menu.active {
-      display: block;
-    }
-    
-    .crm-quick-add-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      color: #1e293b;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-    
-    .crm-quick-add-menu-item:hover {
-      background: #f8fafc;
-      color: #0f172a;
-    }
-    
-    .crm-quick-add-menu-item i {
-      color: #64748b;
-    }
-    
-    .crm-quick-add-menu-item:hover i {
-      color: #10b981;
-    }
-    
-    /* Gin Secondary Toolbar */
-    .gin-secondary-toolbar {
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-      position: relative;
-      z-index: 500;
-    }
-    
-    .gin-breadcrumb-wrapper {
-      padding: 12px 24px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .gin-breadcrumb__list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-    
-    .gin-breadcrumb__link {
-      color: #64748b;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      font-weight: 500;
-      cursor: pointer;
-      position: relative;
-    }
-    
-    .gin-breadcrumb__link:hover {
-      color: #3b82f6;
-      text-decoration: underline;
-    }
-    
-    .region-sticky {
-      background: white;
-      position: sticky;
-      top: 60px;
-      z-index: 99;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    .region-sticky__items {
-      padding: 16px 24px;
-    }
-    
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .sticky-shadow {
-      height: 4px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
-      position: sticky;
-      top: 140px;
-      z-index: 98;
-    }
-    
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-    
-    .kanban-header {
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 20px 24px;
-      z-index: 100;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    
-    .kanban-header h1 {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1e293b;
-      display: flex;
-      align-items: center;
-      gap: 12px;
     }
     
     .kanban-container {
@@ -1083,95 +846,6 @@ class KanbanController extends ControllerBase {
       }
     }
   </style>
-</head>
-<body>
-  <!-- Global Navigation -->
-  <div class="crm-global-nav">
-    <div class="crm-nav-container">
-      <div class="crm-nav-brand">
-        <i data-lucide="zap" width="24" height="24" style="color: #3b82f6;"></i>
-        <span>OpenCRM</span>
-      </div>
-      <div class="crm-nav-items">
-        <a href="/crm/dashboard" class="crm-nav-item">
-          <i data-lucide="layout-dashboard" width="18" height="18"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="/crm/my-contacts" class="crm-nav-item">
-          <i data-lucide="users" width="18" height="18"></i>
-          <span>Contacts</span>
-        </a>
-        <a href="/crm/pipeline" class="crm-nav-item active">
-          <i data-lucide="kanban-square" width="18" height="18"></i>
-          <span>Pipeline</span>
-        </a>
-        <a href="/crm/my-activities" class="crm-nav-item">
-          <i data-lucide="activity" width="18" height="18"></i>
-          <span>Activities</span>
-        </a>
-      </div>
-      <div class="crm-nav-actions">
-        <div class="crm-quick-add-dropdown">
-          <button class="crm-quick-add-btn" id="crm-quick-add-toggle">
-            <i data-lucide="plus" width="18" height="18"></i>
-            <span>Quick Add</span>
-            <i data-lucide="chevron-down" width="16" height="16" style="margin-left: 4px;"></i>
-          </button>
-          <div class="crm-quick-add-menu" id="crm-quick-add-menu">
-            <a href="/crm/quickadd/contact" class="crm-quick-add-menu-item">
-              <i data-lucide="user-plus" width="18" height="18"></i>
-              <span>Thêm Khách hàng</span>
-            </a>
-            <a href="/crm/quickadd/deal" class="crm-quick-add-menu-item">
-              <i data-lucide="briefcase" width="18" height="18"></i>
-              <span>Thêm Deal</span>
-            </a>
-            <a href="/crm/quickadd/organization" class="crm-quick-add-menu-item">
-              <i data-lucide="building-2" width="18" height="18"></i>
-              <span>Thêm Tổ chức</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Gin Secondary Toolbar -->
-  <div class="gin-secondary-toolbar layout-container" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 0;">
-    <div class="gin-breadcrumb-wrapper" style="padding: 12px 24px; border-bottom: 1px solid #e2e8f0;">
-      <nav class="gin-breadcrumb" role="navigation" aria-labelledby="system-breadcrumb">
-        <h2 id="system-breadcrumb" class="visually-hidden" style="position: absolute; width: 1px; height: 1px; overflow: hidden;">Breadcrumb</h2>
-        <ol class="gin-breadcrumb__list" style="list-style: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-          <li class="gin-breadcrumb__item">
-            <a href="/" class="gin-breadcrumb__link" title="Return to site content" style="color: #64748b; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s;">
-              <i data-lucide="arrow-left" width="16" height="16"></i>
-              Back to site
-            </a>
-          </li>
-        </ol>
-      </nav>
-    </div>
-    
-    <div class="region-sticky-watcher"></div>
-    <header class="region region-sticky" style="background: white;">
-      <div class="layout-container region-sticky__items" style="padding: 16px 24px;">
-        <div class="region-sticky__items__inner">
-          <h1 class="page-title" style="font-size: 28px; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 12px;">
-            <i data-lucide="kanban-square" width="28" height="28" style="color: #3b82f6;"></i>
-            Sales Pipeline
-          </h1>
-        </div>
-      </div>
-    </header>
-  </div>
-  <div class="sticky-shadow"></div>
-  
-  <div class="kanban-header" style="display: none;">
-    <h1>
-      <i data-lucide="kanban-square" width="28" height="28" style="color: #3b82f6;"></i>
-      Sales Pipeline
-    </h1>
-  </div>
   
   <!-- Deal Closing Modal -->
   <div class="deal-modal-overlay" id="dealClosingModal">
@@ -1538,8 +1212,6 @@ HTML;
       });
     });
   </script>
-</body>
-</html>
 HTML;
 
     return $html;

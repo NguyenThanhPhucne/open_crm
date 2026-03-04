@@ -3,7 +3,7 @@
 namespace Drupal\crm_dashboard\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Response;
+use Drupal\Core\Render\Markup;
 
 /**
  * Controller for CRM Dashboard.
@@ -247,16 +247,9 @@ class DashboardController extends ControllerBase {
 
     // Build HTML with professional design
     $html = <<<HTML
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRM Dashboard</title>
-  <link rel="icon" type="image/x-icon" href="/core/misc/favicon.ico">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
     * {
       margin: 0;
       padding: 0;
@@ -267,7 +260,7 @@ class DashboardController extends ControllerBase {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #f8fafc;
       min-height: 100vh;
-      padding: 32px 20px;
+      padding: 20px;
       color: #1e293b;
     }
     
@@ -280,26 +273,6 @@ class DashboardController extends ControllerBase {
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .dashboard-header {
-      margin-bottom: 32px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .dashboard-header h1 {
-      font-size: 28px;
-      font-weight: 600;
-      color: #1e293b;
-      margin: 0 0 6px 0;
-      letter-spacing: -0.02em;
-    }
-    
-    .dashboard-header p {
-      color: #64748b;
-      font-size: 14px;
-      margin: 0;
     }
     
     .stats-grid {
@@ -732,45 +705,6 @@ class DashboardController extends ControllerBase {
       border-radius: 3px;
     }
     
-    .action-bar {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin: 24px 0 32px 0;
-    }
-    
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 11px 20px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 14px;
-      transition: all 0.15s ease;
-      border: 1px solid #e2e8f0;
-      cursor: pointer;
-    }
-    
-    .btn-primary {
-      background: white;
-      color: #3b82f6;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-    
-    .btn-primary:hover {
-      background: #eff6ff;
-      border-color: #3b82f6;
-      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
-      transform: translateY(-1px);
-    }
-    
-    .btn-primary:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-    
     @media (max-width: 768px) {
       .dashboard-header h1 {
         font-size: 24px;
@@ -787,40 +721,9 @@ class DashboardController extends ControllerBase {
       .charts-section {
         grid-template-columns: 1fr;
       }
-      
-      .action-bar {
-        flex-direction: column;
-      }
     }
   </style>
-</head>
-<body>
   <div class="dashboard-container">
-    <div class="dashboard-header">
-      <h1>CRM Dashboard</h1>
-      <p>Overview of your sales performance and activities</p>
-    </div>
-    
-    <!-- Navigation Buttons -->
-    <div class="action-bar">
-      <a href="/" class="btn btn-primary">
-        <i data-lucide="home" width="18" height="18"></i>
-        Home
-      </a>
-      <a href="/crm/my-contacts" class="btn btn-primary">
-        <i data-lucide="users" width="18" height="18"></i>
-        Contacts
-      </a>
-      <a href="/crm/pipeline" class="btn btn-primary">
-        <i data-lucide="kanban-square" width="18" height="18"></i>
-        Pipeline
-      </a>
-      <a href="/crm/my-activities" class="btn btn-primary">
-        <i data-lucide="activity" width="18" height="18"></i>
-        Activities
-      </a>
-    </div>
-    
     <!-- Statistics Cards -->
     <div class="stats-grid">
       <a href="/crm/my-contacts" class="stat-card">
@@ -1374,13 +1277,17 @@ EMPTY;
       }
     });
   </script>
-</body>
-</html>
 HTML;
 
-    // Return raw HTML response without Drupal theme
-    $response = new Response($html);
-    return $response;
+    // Return render array with Drupal toolbar support
+    return [
+      '#markup' => Markup::create($html),
+      '#attached' => [
+        'library' => [
+          'core/drupal',
+        ],
+      ],
+    ];
   }
 
 }
