@@ -1,0 +1,111 @@
+<?php
+
+/**
+ * @file
+ * CRM Edit module - Inline editing functionality with permissions.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Render\Markup;
+
+/**
+ * Implements hook_node_view_alter().
+ *
+ * Add edit button to CRM content pages.
+ */
+function crm_edit_node_view_alter(array &$build, EntityInterface $entity, $display) {
+  $crm_types = ['contact', 'deal', 'organization', 'activity'];
+  
+  if ($entity->getEntityTypeId() === 'node' && in_array($entity->bundle(), $crm_types)) {
+    $account = \Drupal::currentUser();
+    $bundle = $entity->bundle();
+    
+    // Check if user can edit
+    $can_edit = FALSE;
+    
+    if ($account->hasRole('administrator')) {
+      $can_edit = TRUE;
+    } elseif ($account->hasRole('sales_manager') && $account->hasPermission("edit any {$bundle} content")) {
+      $can_edit = TRUE;
+    } elseif ($account->hasRole('sales_rep') && $account->hasPermission("edit own {$bundle} content")) {
+      // Check ownership
+      $owner_field = crm_edit_get_owner_field($bundle);
+      if ($entity->hasField($owner_field)) {
+        $owner_id = $entity->get($owner_field)->target_id;
+        if ($owner_id == $account->id()) {
+          $can_edit = TRUE;
+        }
+      }
+    }
+    
+    if ($can_edit && $display->getMode() === 'full') {
+      $edit_url = Url::fromRoute("crm_edit.edit_{$bundle}", ['node' => $entity->id()]);
+      
+      $build['crm_edit_button'] = [
+        '#type' => 'markup',
+        '#markup' => Markup::create('
+          <div class="crm-quick-edit-button" style="
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+          ">
+            <a href="' . $edit_url->toString() . '" class="btn-edit-floating" style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 14px 24px;
+              background: linear-gradient(135deg, #3498db, #2980b9);
+              color: white;
+              text-decoration: none;
+              border-radius: 50px;
+              font-weight: 600;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+              transition: all 0.3s;
+            " onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(0,0,0,0.3)\';" onmouseout="this.style.transform=\'\'; this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.2)\';">
+              <i data-lucide="edit-2" style="width: 18px; height: 18px;"></i>
+              Quick Edit
+            </a>
+          </div>
+          <script src="https://unpkg.com/lucide@latest"></script>
+          <script>
+            if (typeof lucide !== "undefined") {
+              lucide.createIcons();
+            }
+          </script>
+        '),
+        '#weight' => 1000,
+      ];
+    }
+  }
+}
+
+/**
+ * Get ownership field for content type.
+ */
+function crm_edit_get_owner_field($bundle) {
+  $fields = [
+    'contact' => 'field_owner',
+    'deal' => 'field_owner',
+    'organization' => 'field_assigned_staff',
+    'activity' => 'field_assigned_to',
+  ];
+  
+  return $fields[$bundle] ?? 'field_owner';
+}
+
+/**
+ * Implements hook_views_data_alter().
+ *
+ * Add edit link field to views.
+ */
+function crm_edit_views_data_alter(array &$data) {
+  $data['node']['crm_edit_link'] = [
+    'title' => t('CRM Quick Edit Link'),
+    'help' => t('Shows a quick edit link for CRM content.'),
+    'field' => [
+      'id' => 'crm_edit_link',
+    ],
+  ];
+}

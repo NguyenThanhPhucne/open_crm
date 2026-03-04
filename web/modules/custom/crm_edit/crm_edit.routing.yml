@@ -1,0 +1,134 @@
+crm_edit.edit_contact:
+  path: "/crm/edit/contact/{node}"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::editContact'
+    _title: "Edit Contact"
+  requirements:
+    _permission: "edit own contact content+edit any contact content"
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+crm_edit.edit_deal:
+  path: "/crm/edit/deal/{node}"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::editDeal'
+    _title: "Edit Deal"
+  requirements:
+    _permission: "edit own deal content+edit any deal content"
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+crm_edit.edit_organization:
+  path: "/crm/edit/organization/{node}"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::editOrganization'
+    _title: "Edit Organization"
+  requirements:
+    _permission: "edit own organization content+edit any organization content"
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+crm_edit.edit_activity:
+  path: "/crm/edit/activity/{node}"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::editActivity'
+    _title: "Edit Activity"
+  requirements:
+    _permission: "edit own activity content+edit any activity content"
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+crm_edit.ajax_save:
+  path: "/crm/edit/ajax/save"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::ajaxSave'
+  requirements:
+    _permission: "access content"
+  methods: [POST]
+
+crm_edit.ajax_validate:
+  path: "/crm/edit/ajax/validate"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::ajaxValidate'
+  requirements:
+    _permission: "access content"
+  methods: [POST]
+crm_edit.modal_form:
+  path: "/crm/edit/modal/form"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\ModalEditController::getEditForm'
+  requirements:
+    _permission: "access content"
+  methods: [GET]
+
+crm_edit.ajax_delete:
+  path: "/crm/edit/ajax/delete"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\DeleteController::ajaxDelete'
+  requirements:
+    _permission: "access content"
+  methods: [POST]
+
+crm_edit.ajax_create_form:
+  path: "/crm/edit/ajax/create/form"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\AddController::getCreateForm'
+  requirements:
+    _permission: "access content"
+  methods: [GET]
+
+crm_edit.ajax_create:
+  path: "/crm/edit/ajax/create"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\AddController::ajaxCreate'
+  requirements:
+    _permission: "access content"
+  methods: [POST]
+
+crm_edit.add_contact:
+  path: "/crm/add/contact"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\AddController::addPage'
+    type: "contact"
+    _title: "Add Contact"
+  requirements:
+    _permission: "create contact content"
+
+crm_edit.add_deal:
+  path: "/crm/add/deal"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\AddController::addPage'
+    type: "deal"
+    _title: "Add Deal"
+  requirements:
+    _permission: "create deal content"
+
+crm_edit.add_organization:
+  path: "/crm/add/organization"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\AddController::addPage'
+    type: "organization"
+    _title: "Add Organization"
+  requirements:
+    _permission: "create organization content"
+
+crm_edit.add_activity:
+  path: "/crm/add/activity"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\AddController::addPage'
+    type: "activity"
+    _title: "Add Activity"
+  requirements:
+    _permission: "create activity content"

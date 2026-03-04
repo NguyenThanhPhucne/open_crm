@@ -1,0 +1,8 @@
+name: "CRM Edit"
+description: "Inline editing functionality for CRM content with role-based permissions"
+type: module
+core_version_requirement: ^11
+package: "CRM"
+dependencies:
+  - node
+  - crm
