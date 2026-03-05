@@ -20,6 +20,9 @@ class KanbanController extends ControllerBase {
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
     
+    // Check if user is administrator
+    $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
+    
     // Load pipeline stages dynamically from taxonomy.
     $stage_terms = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
@@ -43,7 +46,7 @@ class KanbanController extends ControllerBase {
       $color_index++;
     }
 
-    // Get deals grouped by stage (filtered by current user)
+    // Get deals grouped by stage (filtered by current user for non-admins)
     $deals_by_stage = [];
     $totals_by_stage = [];
     
@@ -51,9 +54,13 @@ class KanbanController extends ControllerBase {
       $query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
         ->condition('field_stage', $stage_id)
-        ->condition('field_owner', $user_id)
         ->accessCheck(FALSE)
         ->sort('created', 'DESC');
+      
+      // Only filter by owner for non-admin users
+      if (!$is_admin) {
+        $query->condition('field_owner', $user_id);
+      }
       
       $nids = $query->execute();
       $deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);

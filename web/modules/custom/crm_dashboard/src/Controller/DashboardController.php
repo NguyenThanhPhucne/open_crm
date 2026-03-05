@@ -18,34 +18,41 @@ class DashboardController extends ControllerBase {
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
     
-    // Get dashboard metrics (filtered by user ownership)
-    $contacts_count = \Drupal::entityQuery('node')
+    // Check if user is administrator
+    $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
+    
+    // Get dashboard metrics (filtered by user ownership for non-admins)
+    $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_owner', $user_id)
-      ->accessCheck(FALSE)
-      ->count()
-      ->execute();
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $contacts_query->condition('field_owner', $user_id);
+    }
+    $contacts_count = $contacts_query->count()->execute();
 
-    $orgs_count = \Drupal::entityQuery('node')
+    $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
-      ->condition('field_assigned_staff', $user_id)
-      ->accessCheck(FALSE)
-      ->count()
-      ->execute();
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $orgs_query->condition('field_assigned_staff', $user_id);
+    }
+    $orgs_count = $orgs_query->count()->execute();
 
-    $deals_count = \Drupal::entityQuery('node')
+    $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_owner', $user_id)
-      ->accessCheck(FALSE)
-      ->count()
-      ->execute();
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $deals_query->condition('field_owner', $user_id);
+    }
+    $deals_count = $deals_query->count()->execute();
 
-    $activities_count = \Drupal::entityQuery('node')
+    $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_assigned_to', $user_id)
-      ->accessCheck(FALSE)
-      ->count()
-      ->execute();
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $activities_query->condition('field_assigned_to', $user_id);
+    }
+    $activities_count = $activities_query->count()->execute();
 
     // Load pipeline stages dynamically from taxonomy.
     $stage_terms = \Drupal::entityTypeManager()
@@ -70,25 +77,28 @@ class DashboardController extends ControllerBase {
       $stage_colors[$stage_id] = $color_palette[$color_index % count($color_palette)];
       $color_index++;
 
-      // Count deals in this stage (filtered by current user).
-      $count = \Drupal::entityQuery('node')
+      // Count deals in this stage (filtered by current user for non-admins).
+      $stage_query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
         ->condition('field_stage', $stage_id)
-        ->condition('field_owner', $user_id)
-        ->accessCheck(FALSE)
-        ->count()
-        ->execute();
+        ->accessCheck(FALSE);
+      if (!$is_admin) {
+        $stage_query->condition('field_owner', $user_id);
+      }
+      $count = $stage_query->count()->execute();
       $deals_by_stage[$stage_id] = $count;
     }
 
-    // Get total deal value and won/lost deals (filtered by current user)
+    // Get total deal value and won/lost deals (filtered by current user for non-admins)
     // NOTE: loadByProperties() does NOT work with entity reference fields like field_owner!
     // Must use entityQuery instead.
-    $deal_ids = \Drupal::entityQuery('node')
+    $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_owner', $user_id)
-      ->accessCheck(FALSE)
-      ->execute();
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $deal_ids_query->condition('field_owner', $user_id);
+    }
+    $deal_ids = $deal_ids_query->execute();
     
     $deals = !empty($deal_ids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_ids) : [];
     
@@ -130,14 +140,16 @@ class DashboardController extends ControllerBase {
     $avg_deal_display = '$' . number_format($avg_deal_size / 1000, 0) . 'K';
     $conversion_rate = $deals_count > 0 ? round(($won_count / $deals_count) * 100, 1) : 0;
     
-    // Get recent activities (last 10, filtered by current user)
-    $activity_ids = \Drupal::entityQuery('node')
+    // Get recent activities (last 10, filtered by current user for non-admins)
+    $activity_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_assigned_to', $user_id)
       ->accessCheck(FALSE)
       ->sort('created', 'DESC')
-      ->range(0, 10)
-      ->execute();
+      ->range(0, 10);
+    if (!$is_admin) {
+      $activity_ids_query->condition('field_assigned_to', $user_id);
+    }
+    $activity_ids = $activity_ids_query->execute();
     
     $recent_activities = [];
     if (!empty($activity_ids)) {
@@ -187,14 +199,16 @@ class DashboardController extends ControllerBase {
       }
     }
     
-    // Get recent deals (last 8, filtered by current user)
-    $deal_ids = \Drupal::entityQuery('node')
+    // Get recent deals (last 8, filtered by current user for non-admins)
+    $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_owner', $user_id)
       ->accessCheck(FALSE)
       ->sort('created', 'DESC')
-      ->range(0, 8)
-      ->execute();
+      ->range(0, 8);
+    if (!$is_admin) {
+      $deal_ids_query->condition('field_owner', $user_id);
+    }
+    $deal_ids = $deal_ids_query->execute();
     
     $recent_deals = [];
     if (!empty($deal_ids)) {

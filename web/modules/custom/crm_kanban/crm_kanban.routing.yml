@@ -1,16 +1,24 @@
 crm_kanban.pipeline:
-  path: '/crm/pipeline'
+  path: "/crm/pipeline"
   defaults:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::view'
-    _title: 'Sales Pipeline'
+    _title: "Sales Pipeline"
   requirements:
-    _permission: 'access content'
+    _permission: "access content"
+
+crm_kanban.all_pipeline:
+  path: "/crm/all-pipeline"
+  defaults:
+    _controller: '\Drupal\crm_kanban\Controller\KanbanController::view'
+    _title: "All Pipeline"
+  requirements:
+    _permission: "access content"
 
 crm_kanban.update_stage:
-  path: '/crm/pipeline/update-stage'
+  path: "/crm/pipeline/update-stage"
   defaults:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::updateStage'
   requirements:
-    _permission: 'access content'
+    _permission: "access content"
   options:
     no_cache: TRUE

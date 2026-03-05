@@ -54,7 +54,12 @@ function crm_actions_page_top(array &$page_top) {
  */
 function _crm_actions_build_navbar() {
   $current_path = \Drupal::request()->getRequestUri();
+  $current_user = \Drupal::currentUser();
   
+  // Check if user is administrator
+  $is_admin = in_array('administrator', $current_user->getRoles()) || $current_user->id() == 1;
+  
+  // Base items for regular users
   $items = [
     [
       'url' => '/crm/dashboard',
@@ -63,34 +68,36 @@ function _crm_actions_build_navbar() {
       'active' => str_contains($current_path, '/crm/dashboard'),
     ],
     [
-      'url' => '/crm/my-contacts',
-      'label' => 'Contacts',
+      'url' => $is_admin ? '/crm/all-contacts' : '/crm/my-contacts',
+      'label' => $is_admin ? 'All Contacts' : 'Contacts',
       'icon' => 'users',
-      'active' => str_contains($current_path, '/crm/my-contacts') || str_contains($current_path, '/node/add/contact'),
+      'active' => str_contains($current_path, '/crm/my-contacts') || 
+                  str_contains($current_path, '/crm/all-contacts') || 
+                  str_contains($current_path, '/node/add/contact'),
     ],
     [
-      'url' => '/crm/my-deals',
-      'label' => 'Deals',
+      'url' => $is_admin ? '/crm/all-deals' : '/crm/my-deals',
+      'label' => $is_admin ? 'All Deals' : 'Deals',
       'icon' => 'briefcase',
-      'active' => str_contains($current_path, '/crm/my-deals'),
+      'active' => str_contains($current_path, '/crm/my-deals') || str_contains($current_path, '/crm/all-deals'),
     ],
     [
-      'url' => '/crm/pipeline',
-      'label' => 'Pipeline',
+      'url' => $is_admin ? '/crm/all-pipeline' : '/crm/pipeline',
+      'label' => $is_admin ? 'All Pipeline' : 'Pipeline',
       'icon' => 'kanban-square',
-      'active' => str_contains($current_path, '/crm/pipeline'),
+      'active' => str_contains($current_path, '/crm/pipeline') || str_contains($current_path, '/crm/all-pipeline'),
     ],
     [
-      'url' => '/crm/my-activities',
-      'label' => 'Activities',
+      'url' => $is_admin ? '/crm/all-activities' : '/crm/my-activities',
+      'label' => $is_admin ? 'All Activities' : 'Activities',
       'icon' => 'activity',
-      'active' => str_contains($current_path, '/crm/my-activities'),
+      'active' => str_contains($current_path, '/crm/my-activities') || str_contains($current_path, '/crm/all-activities'),
     ],
     [
-      'url' => '/app/organizations',
-      'label' => 'Organizations',
+      'url' => $is_admin ? '/crm/all-organizations' : '/crm/my-organizations',
+      'label' => $is_admin ? 'All Organizations' : 'Organizations',
       'icon' => 'building-2',
-      'active' => str_contains($current_path, '/app/organizations'),
+      'active' => str_contains($current_path, '/crm/my-organizations') || str_contains($current_path, '/crm/all-organizations'),
     ],
   ];
   
