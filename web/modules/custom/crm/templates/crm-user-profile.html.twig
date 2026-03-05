@@ -1,40 +1,44 @@
 <div class="crm-user-profile">
-  <div class="profile-header">
-    <div class="profile-avatar">
+  <!-- Profile Header Card -->
+  <div class="profile-header-card">
+    <div class="profile-avatar-wrapper">
       {% if has_picture %}
-        <img src="{{ user_picture_url }}" alt="{{ user_name }}" class="avatar-image">
+        <img src="{{ user_picture_url }}" alt="{{ user_name }}" class="profile-avatar">
       {% else %}
-        <div class="avatar-placeholder">
+        <div class="profile-avatar profile-avatar-placeholder">
           <span class="avatar-initial">{{ user_initial }}</span>
         </div>
       {% endif %}
     </div>
     
-    <div class="profile-info">
-      <h1 class="profile-name">{{ user_name }}</h1>
+    <div class="profile-header-content">
+      <div class="profile-main-info">
+        <h1 class="profile-name">{{ user_name }}</h1>
+        
+        {% if role_names %}
+          <div class="profile-roles">
+            {% for role in role_names %}
+              <span class="role-badge role-badge-{{ role|lower|replace({' ': '-'}) }}">{{ role }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
       
-      {% if role_names %}
-        <div class="profile-roles">
-          {% for role in role_names %}
-            <span class="role-badge">{{ role }}</span>
-          {% endfor %}
-        </div>
-      {% endif %}
-      
-      {% if team_name %}
-        <div class="profile-team">
-          <i data-lucide="users" width="16" height="16"></i>
-          <span>Team: {{ team_name }}</span>
-        </div>
-      {% endif %}
-      
-      <div class="profile-meta">
-        <div class="meta-item">
-          <i data-lucide="mail" width="16" height="16"></i>
+      <div class="profile-metadata">
+        {% if team_name %}
+          <div class="metadata-item">
+            <i data-lucide="users" width="18" height="18"></i>
+            <span>{{ team_name }}</span>
+          </div>
+        {% endif %}
+        
+        <div class="metadata-item">
+          <i data-lucide="mail" width="18" height="18"></i>
           <span>{{ user_email }}</span>
         </div>
-        <div class="meta-item">
-          <i data-lucide="calendar" width="16" height="16"></i>
+        
+        <div class="metadata-item">
+          <i data-lucide="calendar" width="18" height="18"></i>
           <span>Member since {{ user_created|date('M d, Y') }}</span>
         </div>
       </div>
@@ -42,78 +46,89 @@
       {% if is_own_profile %}
         <div class="profile-actions">
           <a href="/user/{{ user.id }}/edit" class="btn btn-primary">
-            <i data-lucide="edit" width="16" height="16"></i>
-            Edit Profile
+            <i data-lucide="pencil" width="18" height="18"></i>
+            <span>Edit Profile</span>
           </a>
           <a href="/user/{{ user.id }}/edit" class="btn btn-secondary">
-            <i data-lucide="camera" width="16" height="16"></i>
-            Change Photo
+            <i data-lucide="camera" width="18" height="18"></i>
+            <span>Change Photo</span>
           </a>
         </div>
       {% endif %}
     </div>
   </div>
   
-  <div class="profile-stats">
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #e3f2fd;">
-        <i data-lucide="users" width="24" height="24" stroke="#1976d2"></i>
+  <!-- Statistics Cards Grid -->
+  <div class="stats-grid">
+    <div class="stat-card stat-card-blue">
+      <div class="stat-icon-wrapper">
+        <i data-lucide="users" width="20" height="20"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <div class="stat-value">{{ stats.contacts }}</div>
         <div class="stat-label">Contacts</div>
       </div>
     </div>
     
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #f3e5f5;">
-        <i data-lucide="briefcase" width="24" height="24" stroke="#7b1fa2"></i>
+    <div class="stat-card stat-card-purple">
+      <div class="stat-icon-wrapper">
+        <i data-lucide="briefcase" width="20" height="20"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <div class="stat-value">{{ stats.deals }}</div>
         <div class="stat-label">Deals</div>
       </div>
     </div>
     
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #e8f5e9;">
-        <i data-lucide="building" width="24" height="24" stroke="#388e3c"></i>
+    <div class="stat-card stat-card-green">
+      <div class="stat-icon-wrapper">
+        <i data-lucide="building" width="20" height="20"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <div class="stat-value">{{ stats.organizations }}</div>
         <div class="stat-label">Organizations</div>
       </div>
     </div>
     
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #fff3e0;">
-        <i data-lucide="check-circle" width="24" height="24" stroke="#f57c00"></i>
+    <div class="stat-card stat-card-orange">
+      <div class="stat-icon-wrapper">
+        <i data-lucide="check-circle" width="20" height="20"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <div class="stat-value">{{ stats.activities }}</div>
         <div class="stat-label">Activities</div>
       </div>
     </div>
   </div>
   
-  <div class="profile-content">
+  <!-- Content Grid: Activities & Deals -->
+  <div class="content-grid">
+    <!-- Recent Activities Card -->
     {% if recent_activities %}
-      <div class="profile-section">
-        <h2 class="section-title">
-          <i data-lucide="activity" width="20" height="20"></i>
-          Recent Activities
-        </h2>
-        <div class="activities-list">
+      <div class="content-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="activity" width="20" height="20"></i>
+            <span>Recent Activities</span>
+          </div>
+          <a href="/crm/my-activities" class="view-all-link">
+            <span>View all</span>
+            <i data-lucide="arrow-right" width="16" height="16"></i>
+          </a>
+        </div>
+        
+        <div class="activity-list">
           {% for activity in recent_activities %}
             <div class="activity-item">
               <div class="activity-icon">
-                <i data-lucide="calendar-check" width="16" height="16"></i>
+                <i data-lucide="calendar-check" width="18" height="18"></i>
               </div>
-              <div class="activity-details">
+              <div class="activity-content">
                 <a href="{{ activity.url }}" class="activity-title">{{ activity.title }}</a>
                 <div class="activity-meta">
                   <span class="activity-type">{{ activity.type }}</span>
                   {% if activity.date %}
+                    <span class="activity-separator">•</span>
                     <span class="activity-date">{{ activity.date|date('M d, Y') }}</span>
                   {% endif %}
                 </div>
@@ -121,32 +136,37 @@
             </div>
           {% endfor %}
         </div>
-        <a href="/crm/my-activities" class="view-all-link">
-          View all activities
-          <i data-lucide="arrow-right" width="16" height="16"></i>
-        </a>
       </div>
     {% endif %}
     
+    <!-- Recent Deals Card -->
     {% if recent_deals %}
-      <div class="profile-section">
-        <h2 class="section-title">
-          <i data-lucide="briefcase" width="20" height="20"></i>
-          Recent Deals
-        </h2>
-        <div class="deals-list">
+      <div class="content-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="trending-up" width="20" height="20"></i>
+            <span>Recent Deals</span>
+          </div>
+          <a href="/crm/my-deals" class="view-all-link">
+            <span>View all</span>
+            <i data-lucide="arrow-right" width="16" height="16"></i>
+          </a>
+        </div>
+        
+        <div class="deal-list">
           {% for deal in recent_deals %}
             <div class="deal-item">
               <div class="deal-icon">
-                <i data-lucide="trending-up" width="16" height="16"></i>
+                <i data-lucide="briefcase" width="18" height="18"></i>
               </div>
-              <div class="deal-details">
+              <div class="deal-content">
                 <a href="{{ deal.url }}" class="deal-title">{{ deal.title }}</a>
                 <div class="deal-meta">
                   {% if deal.stage %}
                     <span class="deal-stage">{{ deal.stage }}</span>
                   {% endif %}
                   {% if deal.value %}
+                    <span class="deal-separator">•</span>
                     <span class="deal-value">{{ deal.value }} VND</span>
                   {% endif %}
                 </div>
@@ -154,10 +174,6 @@
             </div>
           {% endfor %}
         </div>
-        <a href="/crm/my-deals" class="view-all-link">
-          View all deals
-          <i data-lucide="arrow-right" width="16" height="16"></i>
-        </a>
       </div>
     {% endif %}
   </div>
