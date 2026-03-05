@@ -69,6 +69,12 @@ function _crm_actions_build_navbar() {
       'active' => str_contains($current_path, '/crm/my-contacts') || str_contains($current_path, '/node/add/contact'),
     ],
     [
+      'url' => '/crm/my-deals',
+      'label' => 'Deals',
+      'icon' => 'briefcase',
+      'active' => str_contains($current_path, '/crm/my-deals'),
+    ],
+    [
       'url' => '/crm/pipeline',
       'label' => 'Pipeline',
       'icon' => 'kanban-square',
@@ -104,29 +110,6 @@ function _crm_actions_build_navbar() {
     $nav_html .= '</a>';
   }
   
-  $nav_html .= '</div>';
-  $nav_html .= '<div class="crm-nav-actions">';
-  $nav_html .= '<div class="crm-quick-add-dropdown">';
-  $nav_html .= '<button class="crm-quick-add-btn" id="crm-quick-add-toggle">';
-  $nav_html .= '<i data-lucide="plus" width="18" height="18"></i>';
-  $nav_html .= '<span>Quick Add</span>';
-  $nav_html .= '<i data-lucide="chevron-down" width="16" height="16" style="margin-left: 4px;"></i>';
-  $nav_html .= '</button>';
-  $nav_html .= '<div class="crm-quick-add-menu" id="crm-quick-add-menu">';
-  $nav_html .= '<a href="/crm/quickadd/contact" class="crm-quick-add-menu-item">';
-  $nav_html .= '<i data-lucide="user-plus" width="18" height="18"></i>';
-  $nav_html .= '<span>Thêm Khách hàng</span>';
-  $nav_html .= '</a>';
-  $nav_html .= '<a href="/crm/quickadd/deal" class="crm-quick-add-menu-item">';
-  $nav_html .= '<i data-lucide="briefcase" width="18" height="18"></i>';
-  $nav_html .= '<span>Thêm Deal</span>';
-  $nav_html .= '</a>';
-  $nav_html .= '<a href="/crm/quickadd/organization" class="crm-quick-add-menu-item">';
-  $nav_html .= '<i data-lucide="building-2" width="18" height="18"></i>';
-  $nav_html .= '<span>Thêm Tổ chức</span>';
-  $nav_html .= '</a>';
-  $nav_html .= '</div>';
-  $nav_html .= '</div>';
   $nav_html .= '</div>';
   $nav_html .= '</div>';
   $nav_html .= '</div>';

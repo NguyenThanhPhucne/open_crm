@@ -31,6 +31,7 @@
 .crm-nav-items {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   flex: 1;
 }
@@ -54,12 +55,15 @@
 }
 
 .crm-nav-item.active {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
+  background: white;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
 }
 
 .crm-nav-item.active:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
 }
 
 .crm-nav-actions {
@@ -188,6 +192,182 @@
 }
 
 /* ============================================
+   DRUPAL BUTTON OVERRIDES - BLUE OUTLINE STYLE
+   ============================================ */
+
+/* Primary buttons - Blue outline style */
+.button--primary,
+.button.button--primary,
+button.button--primary,
+input.button--primary,
+a.button--primary {
+  background: white !important;
+  color: #3b82f6 !important;
+  border: 2px solid #3b82f6 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.button--primary svg,
+.button.button--primary svg {
+  color: #3b82f6 !important;
+  stroke: #3b82f6 !important;
+}
+
+.button--primary:hover,
+.button.button--primary:hover,
+button.button--primary:hover,
+input.button--primary:hover,
+a.button--primary:hover {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.button--primary:active,
+.button.button--primary:active,
+button.button--primary:active,
+input.button--primary:active,
+a.button--primary:active {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+.button--primary:focus,
+.button.button--primary:focus,
+button.button--primary:focus,
+input.button--primary:focus,
+a.button--primary:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Action buttons - Same style as primary */
+.button--action,
+.button.button--action,
+a.button--action,
+button.button--action {
+  background: white !important;
+  color: #3b82f6 !important;
+  border: 2px solid #3b82f6 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.button--action svg,
+.button.button--action svg {
+  color: #3b82f6 !important;
+  stroke: #3b82f6 !important;
+}
+
+.button--action:hover,
+.button.button--action:hover,
+a.button--action:hover,
+button.button--action:hover {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.button--action:active,
+.button.button--action:active,
+a.button--action:active,
+button.button--action:active {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+.button--action:focus,
+.button.button--action:focus,
+a.button--action:focus,
+button.button--action:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Secondary/Cancel buttons - Gray outline style */
+.button--secondary,
+.button.button--secondary,
+button.button--secondary {
+  background: white !important;
+  color: #64748b !important;
+  border: 2px solid #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.button--secondary:hover,
+.button.button--secondary:hover,
+button.button--secondary:hover {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.button--secondary:active,
+.button.button--secondary:active,
+button.button--secondary:active {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #64748b !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+/* Danger/Delete buttons - Keep filled red for emphasis */
+.button--danger,
+.button.button--danger,
+button.button--danger,
+a.button--danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: 2px solid #dc2626 !important;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.button--danger:hover,
+.button.button--danger:hover,
+button.button--danger:hover,
+a.button--danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.button--danger:active,
+.button.button--danger:active,
+button.button--danger:active,
+a.button--danger:active {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+  border-color: #991b1b !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  transform: none !important;
+}
+
+/* ============================================
    PROFESSIONAL VIEW STYLING - ORGANIZATIONS & ACTIVITIES
    ============================================ */
 
@@ -304,9 +484,9 @@
 
 .views-exposed-form .button {
   padding: 10px 24px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border: none;
+  background: white;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
@@ -316,8 +496,9 @@
 }
 
 .views-exposed-form .button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  background: #eff6ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 /* Table Styling - Modern & Professional */
@@ -463,8 +644,8 @@
   gap: 6px;
   padding: 5px 12px;
   background: white;
-  color: #10b981 !important;
-  border: 1.5px solid #10b981;
+  color: #3b82f6 !important;
+  border: 1.5px solid #3b82f6;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
@@ -480,11 +661,11 @@
 
 .views-field-field-assigned-staff a:hover,
 .views-field-field-assigned-to a:hover {
-  background: #f0fdf4;
-  border-color: #10b981;
-  color: #10b981 !important;
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb !important;
   transform: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 /* Industry Field Badge */
@@ -567,18 +748,18 @@
 }
 
 .pager__item a:hover {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .pager__item.is-active {
   background: white;
   color: #3b82f6 !important;
   border: 2px solid #3b82f6;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .pager__item--first a,
