@@ -54,28 +54,28 @@ $html = <<<'HTML'
   }
   
   .welcome-banner {
-    background: white;
-    border-radius: 12px;
-    padding: 20px 28px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 32px;
-    gap: 24px;
+    margin-bottom: 40px;
+    gap: 32px;
   }
   
   .banner-content h1 {
-    font-size: 22px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
   }
   
   .banner-content p {
-    font-size: 14px;
-    color: #6b7280;
-    line-height: 1.5;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
   }
   
   .banner-actions {
@@ -104,47 +104,62 @@ $html = <<<'HTML'
   }
   
   .btn-primary {
-    background: #3b82f6;
-    color: white;
+    background: white;
+    color: #667eea;
     border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   .btn-primary:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
+    background: #f8f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
   
   .btn-secondary {
-    background: white;
-    color: #4b5563;
-    border: 1px solid #d1d5db;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
   }
   
   .btn-secondary:hover {
-    background: #f9fafb;
-    border-color: #9ca3af;
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
   }
   
   .page-header {
-    margin-bottom: 32px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
   
-  .page-header h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 8px;
+  .page-header-icon {
+    width: 32px;
+    height: 32px;
+    color: #667eea;
+    flex-shrink: 0;
   }
   
-  .page-header p {
-    font-size: 14px;
+  .page-header-content h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  
+  .page-header-content p {
+    font-size: 15px;
     color: #64748b;
+    line-height: 1.5;
   }
   
   .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
   }
   
   .crm-card {
@@ -153,7 +168,7 @@ $html = <<<'HTML'
     padding: 24px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     text-decoration: none;
     color: inherit;
@@ -167,22 +182,22 @@ $html = <<<'HTML'
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     height: 3px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    opacity: 0;
-    transition: opacity 0.2s;
+    width: 0;
+    background: var(--card-color, #3b82f6);
+    transition: width 0.25s ease-out;
   }
   
   .crm-card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15), 0 6px 12px -4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
     border-color: #cbd5e1;
   }
   
   .crm-card:hover::before {
-    opacity: 1;
+    width: 100%;
   }
   
   .crm-card:active {
@@ -198,8 +213,8 @@ $html = <<<'HTML'
   }
   
   .card-icon {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -208,9 +223,9 @@ $html = <<<'HTML'
   }
   
   .card-icon i {
-    width: 24px;
-    height: 24px;
-    stroke-width: 2;
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
   }
   
   .card-icon.blue { 
@@ -284,29 +299,23 @@ $html = <<<'HTML'
   .card-action {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 8px;
+    font-size: 14px;
     font-weight: 600;
-    color: #3b82f6;
-    padding: 8px 14px;
-    border-radius: 6px;
-    background: #eff6ff;
+    color: var(--card-color, #3b82f6);
+    padding: 0;
     transition: all 0.2s ease;
     align-self: flex-start;
   }
   
   .card-action i {
-    width: 14px;
-    height: 14px;
-    transition: transform 0.2s ease;
-  }
-  
-  .crm-card:hover .card-action {
-    background: #dbeafe;
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
   }
   
   .crm-card:hover .card-action i {
-    transform: translateX(2px);
+    transform: translateX(4px);
   }
   
   /* Responsive */
@@ -346,6 +355,12 @@ $html = <<<'HTML'
       grid-template-columns: repeat(2, 1fr);
     }
   }
+  
+  @media (min-width: 1025px) and (max-width: 1280px) {
+    .cards-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 </style>
 
 <div class="quick-access-container">
@@ -353,28 +368,31 @@ $html = <<<'HTML'
   <div class="welcome-banner">
     <div class="banner-content">
       <h1>Welcome to Open CRM</h1>
-      <p>Quản lý khách hàng, deals và hoạt động kinh doanh một cách chuyên nghiệp. Đăng nhập để bắt đầu!</p>
+      <p>Manage customers, deals and business activities professionally. Login to get started.</p>
     </div>
     <div class="banner-actions">
       <a href="/user/login" class="btn btn-primary">
-        <span>Đăng nhập</span>
+        <span>Login</span>
         <i data-lucide="arrow-right"></i>
       </a>
       <a href="/user/register" class="btn btn-secondary">
         <i data-lucide="user-plus"></i>
-        <span>Đăng ký</span>
+        <span>Register</span>
       </a>
     </div>
   </div>
   
   <div class="page-header">
-    <h1>🚀 Quick Access</h1>
-    <p>Truy cập nhanh các chức năng chính của CRM</p>
+    <i data-lucide="rocket" class="page-header-icon"></i>
+    <div class="page-header-content">
+      <h1>Quick Access</h1>
+      <p>Quickly access the main CRM features</p>
+    </div>
   </div>
   
   <div class="cards-grid">
     <!-- Dashboard Card -->
-    <a href="/crm/dashboard" class="crm-card">
+    <a href="/crm/dashboard" class="crm-card" style="--card-color: #3b82f6;">
       <div class="card-header">
         <div class="card-icon blue">
           <i data-lucide="bar-chart-3"></i>
@@ -384,15 +402,15 @@ $html = <<<'HTML'
           <h3 class="card-title">Dashboard</h3>
         </div>
       </div>
-      <p class="card-description">Xem tổng quan và thống kê doanh số</p>
+      <p class="card-description">View analytics and sales statistics</p>
       <div class="card-action">
-        <span>Xem dashboard</span>
+        <span>View dashboard</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- My Contacts Card -->
-    <a href="/crm/my-contacts" class="crm-card">
+    <a href="/crm/my-contacts" class="crm-card" style="--card-color: #10b981;">
       <div class="card-header">
         <div class="card-icon green">
           <i data-lucide="users"></i>
@@ -402,15 +420,15 @@ $html = <<<'HTML'
           <h3 class="card-title">My Contacts</h3>
         </div>
       </div>
-      <p class="card-description">Quản lý danh sách khách hàng của bạn</p>
+      <p class="card-description">Manage your customer contact list</p>
       <div class="card-action">
-        <span>Xem danh sách</span>
+        <span>View contacts</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- Sales Pipeline Card -->
-    <a href="/crm/my-pipeline" class="crm-card">
+    <a href="/crm/my-pipeline" class="crm-card" style="--card-color: #8b5cf6;">
       <div class="card-header">
         <div class="card-icon purple">
           <i data-lucide="git-branch"></i>
@@ -420,15 +438,15 @@ $html = <<<'HTML'
           <h3 class="card-title">Sales Pipeline</h3>
         </div>
       </div>
-      <p class="card-description">Quản lý deals với Kanban board</p>
+      <p class="card-description">Manage deals with Kanban board</p>
       <div class="card-action">
-        <span>Mở pipeline</span>
+        <span>Open pipeline</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- My Activities Card -->
-    <a href="/crm/my-activities" class="crm-card">
+    <a href="/crm/my-activities" class="crm-card" style="--card-color: #f59e0b;">
       <div class="card-header">
         <div class="card-icon orange">
           <i data-lucide="calendar"></i>
@@ -438,15 +456,15 @@ $html = <<<'HTML'
           <h3 class="card-title">My Activities</h3>
         </div>
       </div>
-      <p class="card-description">Lịch làm việc và công việc cần làm</p>
+      <p class="card-description">Work schedule and tasks to do</p>
       <div class="card-action">
-        <span>Xem lịch</span>
+        <span>View calendar</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- My Organizations Card -->
-    <a href="/crm/my-organizations" class="crm-card">
+    <a href="/crm/my-organizations" class="crm-card" style="--card-color: #ec4899;">
       <div class="card-header">
         <div class="card-icon pink">
           <i data-lucide="building-2"></i>
@@ -456,15 +474,15 @@ $html = <<<'HTML'
           <h3 class="card-title">My Organizations</h3>
         </div>
       </div>
-      <p class="card-description">Danh sách công ty của bạn</p>
+      <p class="card-description">Your company list</p>
       <div class="card-action">
-        <span>Xem công ty</span>
+        <span>View companies</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- My Deals Card -->
-    <a href="/crm/my-deals" class="crm-card">
+    <a href="/crm/my-deals" class="crm-card" style="--card-color: #14b8a6;">
       <div class="card-header">
         <div class="card-icon teal">
           <i data-lucide="dollar-sign"></i>
@@ -474,15 +492,15 @@ $html = <<<'HTML'
           <h3 class="card-title">My Deals</h3>
         </div>
       </div>
-      <p class="card-description">Danh sách deals đang quản lý</p>
+      <p class="card-description">List of deals you manage</p>
       <div class="card-action">
-        <span>Xem deals</span>
+        <span>View deals</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- Import Data Card -->
-    <a href="/admin/content/import" class="crm-card">
+    <a href="/admin/content/import" class="crm-card" style="--card-color: #06b6d4;">
       <div class="card-header">
         <div class="card-icon cyan">
           <i data-lucide="upload"></i>
@@ -492,15 +510,15 @@ $html = <<<'HTML'
           <h3 class="card-title">Import Data</h3>
         </div>
       </div>
-      <p class="card-description">Nhập hàng loạt từ file CSV</p>
+      <p class="card-description">Bulk import from CSV file</p>
       <div class="card-action">
-        <span>Nhập dữ liệu</span>
+        <span>Import data</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
     
     <!-- All Content Card -->
-    <a href="/admin/content" class="crm-card">
+    <a href="/admin/content" class="crm-card" style="--card-color: #6b7280;">
       <div class="card-header">
         <div class="card-icon gray">
           <i data-lucide="database"></i>
@@ -510,9 +528,9 @@ $html = <<<'HTML'
           <h3 class="card-title">All Content</h3>
         </div>
       </div>
-      <p class="card-description">Quản lý tất cả nội dung trong hệ thống</p>
+      <p class="card-description">Manage all content in the system</p>
       <div class="card-action">
-        <span>Xem tất cả</span>
+        <span>View all</span>
         <i data-lucide="arrow-right"></i>
       </div>
     </a>
@@ -562,11 +580,11 @@ $html = <<<'HTML'
       
       // Update links for admin to show ALL data
       const updates = [
-        { selector: 'a[href="/crm/my-contacts"]', href: '/crm/all-contacts', title: 'All Contacts', label: 'All Contacts', desc: 'Xem tất cả khách hàng trong hệ thống', action: 'Xem tất cả' },
-        { selector: 'a[href="/crm/my-deals"]', href: '/crm/all-deals', title: 'All Deals', label: 'All Deals', desc: 'Xem tất cả deals trong hệ thống', action: 'Xem tất cả' },
-        { selector: 'a[href="/crm/my-organizations"]', href: '/crm/all-organizations', title: 'All Organizations', label: 'All Organizations', desc: 'Xem tất cả công ty trong hệ thống', action: 'Xem tất cả' },
-        { selector: 'a[href="/crm/my-activities"]', href: '/crm/all-activities', title: 'All Activities', label: 'All Activities', desc: 'Xem tất cả hoạt động trong hệ thống', action: 'Xem tất cả' },
-        { selector: 'a[href="/crm/my-pipeline"]', href: '/crm/all-pipeline', title: 'All Pipeline', label: 'All Pipeline', desc: 'Xem tất cả deals trong pipeline', action: 'Xem tất cả' }
+        { selector: 'a[href="/crm/my-contacts"]', href: '/crm/all-contacts', title: 'All Contacts', label: 'All Contacts', desc: 'View all customers in the system', action: 'View all' },
+        { selector: 'a[href="/crm/my-deals"]', href: '/crm/all-deals', title: 'All Deals', label: 'All Deals', desc: 'View all deals in the system', action: 'View all' },
+        { selector: 'a[href="/crm/my-organizations"]', href: '/crm/all-organizations', title: 'All Organizations', label: 'All Organizations', desc: 'View all companies in the system', action: 'View all' },
+        { selector: 'a[href="/crm/my-activities"]', href: '/crm/all-activities', title: 'All Activities', label: 'All Activities', desc: 'View all activities in the system', action: 'View all' },
+        { selector: 'a[href="/crm/my-pipeline"]', href: '/crm/all-pipeline', title: 'All Pipeline', label: 'All Pipeline', desc: 'View all deals in pipeline', action: 'View all' }
       ];
       
       let updatedCount = 0;
@@ -592,14 +610,20 @@ $html = <<<'HTML'
       console.log(`Updated ${updatedCount} cards for admin view`);
       
       // Update page header for admin
-      const pageTitle = document.querySelector('.page-header h1');
+      const pageHeaderIcon = document.querySelector('.page-header-icon');
+      if (pageHeaderIcon) {
+        pageHeaderIcon.setAttribute('data-lucide', 'crown');
+        lucide.createIcons();
+        console.log('✓ Updated page icon to crown');
+      }
+      const pageTitle = document.querySelector('.page-header-content h1');
       if (pageTitle) {
-        pageTitle.innerHTML = '👑 Admin Dashboard';
+        pageTitle.textContent = 'Admin Dashboard';
         console.log('✓ Updated page title to Admin Dashboard');
       }
-      const pageSubtitle = document.querySelector('.page-header p');
+      const pageSubtitle = document.querySelector('.page-header-content p');
       if (pageSubtitle) {
-        pageSubtitle.textContent = 'Quản lý toàn bộ hệ thống CRM - Xem tất cả dữ liệu';
+        pageSubtitle.textContent = 'Manage all CRM data and system-wide operations';
         console.log('✓ Updated page subtitle');
       }
     } else {
