@@ -86,14 +86,24 @@
 !/scripts/
 !/scripts/**
 
-# Ignore generated/test scripts
+# Ignore production scripts folder (one-time setup scripts)
+scripts/production/
+
+# Ignore generated/test/verification scripts
 scripts/*test*.php
 scripts/*test*.sh
 scripts/*debug*.php
+scripts/*debug*.sh
 scripts/*audit*.php
+scripts/*audit*.sh
 scripts/*check*.php
+scripts/*check*.sh
 scripts/*fix*.php
 scripts/*fix*.sh
+scripts/*verify*.php
+scripts/*verify*.sh
+scripts/*enable*.sh
+scripts/*add_inline*.sh
 
 # ========== Fixtures & Sample Data (KEEP) ==========
 !/fixtures/
@@ -105,7 +115,7 @@ scripts/*fix*.sh
 !/recipes/**
 
 # ========== Documentation ==========
-# Keep essential docs
+# Keep essential docs ONLY
 !README.md
 !LICENSE.txt
 !COMPLETE_GUIDE.md
@@ -116,6 +126,23 @@ scripts/*fix*.sh
 !DATA_IMPORT_GUIDE.md
 !DATA_STORAGE_EXPLANATION.md
 !CUSTOM_MODULES_API_DOCS.md
+
+# Ignore temporary audit & report files
+*AUDIT*.md
+*REPORT*.md
+*VERIFICATION*.md
+*FIXES*.md
+*CHECKLIST*.md
+*CLEANUP*.md
+*REFACTORING*.md
+*UPDATE*.md
+*_REPORT.md
+*_AUDIT.md
+*_GUIDE.md
+CRITICAL_*.md
+FINAL_*.md
+MY_*.md
+UI_*.md
 
 # Keep docs folder
 !/docs/
@@ -243,8 +270,25 @@ test-*.html
 # Sample data CSVs
 sample_*.csv
 
-# Backup gitignore
+# Backup files
 .gitignore.old
+*.backup
+*_backup.*
+*_old.*
+
+# Patch files
+*.patch
+*.diff
+
+# ========== Development Artifacts ==========
+# PHP debugging
+*.php_cs.cache
+.php_cs.cache
+.php-cs-fixer.cache
+
+# Drupal specific artifacts
+web/sites/*/php/
+web/.htaccess.txt
 
 # ========== Core Test Fixtures (Keep) ==========
 # Don't ignore core test fixtures
