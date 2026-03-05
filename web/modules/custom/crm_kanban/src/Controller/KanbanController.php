@@ -935,44 +935,6 @@ class KanbanController extends ControllerBase {
     }
   </style>
   
-  <!-- CRM Toolbar -->
-  <div class="crm-toolbar">
-    <div class="crm-toolbar-lining clearfix">
-      <div class="crm-toolbar-menu">
-        <a href="/crm/dashboard" class="crm-toolbar-brand">
-          <i data-lucide="layout-dashboard" width="18" height="18"></i>
-          <span>CRM</span>
-        </a>
-        <a href="/crm/dashboard" class="crm-toolbar-item">
-          <i data-lucide="home"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="/crm/pipeline" class="crm-toolbar-item active">
-          <i data-lucide="kanban-square"></i>
-          <span>Pipeline</span>
-        </a>
-        <a href="/crm/my-contacts" class="crm-toolbar-item">
-          <i data-lucide="users"></i>
-          <span>Contacts</span>
-        </a>
-        <a href="/crm/my-deals" class="crm-toolbar-item">
-          <i data-lucide="briefcase"></i>
-          <span>Deals</span>
-        </a>
-        <a href="/crm/my-activities" class="crm-toolbar-item">
-          <i data-lucide="activity"></i>
-          <span>Activities</span>
-        </a>
-      </div>
-      <div class="crm-toolbar-actions">
-        <a href="/node/add/deal" class="crm-toolbar-btn">
-          <i data-lucide="plus"></i>
-          <span>New Deal</span>
-        </a>
-      </div>
-    </div>
-  </div>
-  
   <!-- Deal Closing Modal -->
   <div class="deal-modal-overlay" id="dealClosingModal">
     <div class="deal-modal">

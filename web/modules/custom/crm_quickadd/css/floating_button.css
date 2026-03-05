@@ -14,26 +14,31 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border: none;
+  background: white;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .crm-fab-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+  background: #eff6ff;
+  color: #3b82f6;
+  border-color: #3b82f6;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
 }
 
 .crm-fab-button.active {
-  transform: rotate(45deg);
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  transform: rotate(45deg) scale(1.05);
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #ef4444;
 }
 
 .crm-fab-menu {
@@ -58,26 +63,30 @@
   gap: 12px;
   padding: 12px 20px;
   background: white;
+  border: 1.5px solid #e2e8f0;
   border-radius: 28px;
   color: #1e293b;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
   white-space: nowrap;
   min-width: 200px;
 }
 
 .crm-fab-menu-item:hover {
-  background: #f8fafc;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
   transform: translateX(-4px);
 }
 
 .crm-fab-menu-item i {
   color: #3b82f6;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
 
 .crm-fab-menu-item[data-type="contact"] i {

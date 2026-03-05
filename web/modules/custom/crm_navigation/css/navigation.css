@@ -105,16 +105,16 @@
 }
 
 .crm-nav-link:hover {
-  background: #3b82f6;
+  background: #eff6ff;
   border-color: #3b82f6;
-  color: #ffffff;
+  color: #3b82f6;
   text-decoration: none;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: none;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.15);
 }
 
 .crm-nav-link:hover i {
-  stroke: #ffffff;
+  stroke: #3b82f6;
 }
 
 /* Current page highlight */
@@ -312,7 +312,7 @@ input[type="submit"]:hover {
   color: #6c757d;
 }
 
-/* Context menu for quick actions */
+/* Context menu for quick actions - Updated to clean minimal style */
 .crm-context-menu {
   position: fixed;
   bottom: 2rem;
@@ -324,10 +324,10 @@ input[type="submit"]:hover {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #5b6cff;
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 12px rgba(91, 108, 255, 0.4);
+  background: white;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
   cursor: pointer;
   font-size: 1.5rem;
   display: flex;
@@ -337,7 +337,9 @@ input[type="submit"]:hover {
 }
 
 .crm-fab-button:hover {
-  background: #4959ff;
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(91, 108, 255, 0.5);
+  background: #eff6ff;
+  color: #3b82f6;
+  border-color: #3b82f6;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
 }

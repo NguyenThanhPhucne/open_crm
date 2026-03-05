@@ -189,25 +189,43 @@ body.path-login .region {
   height: 40px;
   padding: 10px 16px;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.5;
-  color: hsl(var(--primary-foreground));
-  background: hsl(var(--primary));
-  border: none;
+  color: #3b82f6 !important;
+  background: white;
+  border: 1.5px solid #3b82f6;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   outline: none;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .btn-auth-submit:hover:not(:disabled) {
-  background: hsl(var(--primary) / 0.9);
+  background: #eff6ff;
+  color: #3b82f6 !important;
+  border-color: #3b82f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-auth-submit:active:not(:disabled) {
+  background: #dbeafe;
+  color: #2563eb !important;
+  border-color: #2563eb;
+}
+
+.btn-auth-submit:focus:not(:disabled) {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .btn-auth-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background: #f3f4f6;
+  color: #9ca3af !important;
+  border-color: #d1d5db;
 }
 
 .auth-link {

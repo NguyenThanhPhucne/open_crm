@@ -12,6 +12,7 @@ dependencies:
     - node.type.deal
     - system.menu.main
   module:
+    - crm_edit
     - datetime
     - node
 id: my_deals
@@ -90,6 +91,52 @@ display:
           type: entity_reference_label
           settings:
             link: true
+        crm_edit_link:
+          id: crm_edit_link
+          table: node_field_data
+          field: crm_edit_link
+          plugin_id: crm_edit_link
+          label: Actions
+          exclude: false
+          alter:
+            alter_text: false
+            text: ""
+            make_link: false
+            path: ""
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ""
+            rel: ""
+            link_class: ""
+            prefix: ""
+            suffix: ""
+            target: ""
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ""
+            more_link_path: ""
+            strip_tags: false
+            trim: false
+            preserve_tags: ""
+            html: false
+          element_type: ""
+          element_class: ""
+          element_label_type: ""
+          element_label_class: ""
+          element_label_colon: false
+          element_wrapper_type: ""
+          element_wrapper_class: ""
+          element_default_classes: false
+          empty: ""
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
       pager:
         type: full
         options:
@@ -215,7 +262,7 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: white;\n          color: #8b5cf6;\n          text-decoration: none;\n          border-radius: 8px;\n          border: 1.5px solid #8b5cf6;\n          font-weight: 600;\n          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);\n          transition: all 0.2s ease;\n        \" onmouseover=\"this.style.background='#f5f3ff'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'\" onmouseout=\"this.style.background='white'; this.style.boxShadow='0 1px 2px rgba(0, 0, 0, 0.05)'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
+            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: white;\n          color: #3b82f6;\n          text-decoration: none;\n          border-radius: 8px;\n          border: 1.5px solid #3b82f6;\n          font-weight: 600;\n          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);\n          transition: all 0.2s ease;\n        \" onmouseover=\"this.style.background='#eff6ff'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'\" onmouseout=\"this.style.background='white'; this.style.boxShadow='0 1px 2px rgba(0, 0, 0, 0.05)'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
       path: crm/my-deals

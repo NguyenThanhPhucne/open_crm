@@ -177,22 +177,28 @@ class TeamsManagementController extends ControllerBase {
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid transparent;
       color: #64748b;
       text-decoration: none;
-      border-radius: 8px;
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s;
     }
     
     .crm-nav-item:hover {
-      background: #f1f5f9;
-      color: #1e293b;
+      background: #eff6ff;
+      color: #3b82f6;
+      border-color: #3b82f6;
+      text-decoration: none;
     }
     
     .crm-nav-item.active {
-      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      background: white;
       color: #3b82f6;
+      border: 1.5px solid #3b82f6;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(59, 130, 246, 0.1);
     }
     
     .crm-nav-actions {
@@ -1254,7 +1260,7 @@ class TeamsManagementController extends ControllerBase {
           <i data-lucide="layout-dashboard" width="18" height="18"></i>
           <span>Dashboard</span>
         </a>
-        <a href="/crm/kanban" class="crm-nav-item">
+        <a href="/crm/my-deals" class="crm-nav-item">
           <i data-lucide="trello" width="18" height="18"></i>
           <span>Deals</span>
         </a>
