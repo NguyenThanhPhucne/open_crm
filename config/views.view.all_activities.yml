@@ -1,22 +1,26 @@
-uuid: 008a509f-586e-4453-b487-8355f2b6b281
+uuid: 2e83c5d9-f6e3-4b2c-c8d4-8e5d3a9f7b02
 langcode: en
 status: true
 dependencies:
   config:
+    - field.storage.node.field_assigned_to
     - field.storage.node.field_contact
     - field.storage.node.field_datetime
     - field.storage.node.field_deal
     - field.storage.node.field_type
     - node.type.activity
     - system.menu.main
+    - user.role.administrator
+    - user.role.sales_manager
   module:
     - crm_edit
     - datetime
     - node
-id: my_activities
-label: "My Activities"
+    - user
+id: all_activities
+label: "All Activities"
 module: views
-description: "Hoạt động của tôi"
+description: "All activities in the system (Admin/Manager view)"
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -27,7 +31,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "My Activities"
+      title: "All Activities"
       fields:
         title:
           id: title
@@ -38,6 +42,15 @@ display:
           type: string
           settings:
             link_to_entity: true
+        field_assigned_to:
+          id: field_assigned_to
+          table: node__field_assigned_to
+          field: field_assigned_to
+          plugin_id: field
+          label: "Assigned To"
+          type: entity_reference_label
+          settings:
+            link: true
         field_contact:
           id: field_contact
           table: node__field_contact
@@ -77,46 +90,6 @@ display:
           field: crm_edit_link
           plugin_id: crm_edit_link
           label: Actions
-          exclude: false
-          alter:
-            alter_text: false
-            text: ""
-            make_link: false
-            path: ""
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ""
-            rel: ""
-            link_class: ""
-            prefix: ""
-            suffix: ""
-            target: ""
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ""
-            more_link_path: ""
-            strip_tags: false
-            trim: false
-            preserve_tags: ""
-            html: false
-          element_type: ""
-          element_class: ""
-          element_label_type: ""
-          element_label_class: ""
-          element_label_colon: false
-          element_wrapper_type: ""
-          element_wrapper_class: ""
-          element_default_classes: false
-          empty: ""
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
       pager:
         type: full
         options:
@@ -132,21 +105,6 @@ display:
           field: field_datetime_value
           plugin_id: date
           order: DESC
-      arguments:
-        field_assigned_to_target_id:
-          id: field_assigned_to_target_id
-          table: node__field_assigned_to
-          field: field_assigned_to_target_id
-          plugin_id: numeric
-          default_action: default
-          default_argument_type: current_user
-          summary:
-            sort_order: asc
-            number_of_records: 0
-            format: default_summary
-          specify_validation: true
-          validate:
-            type: none
       filters:
         status:
           id: status
@@ -161,8 +119,34 @@ display:
           plugin_id: bundle
           value:
             activity: activity
+        field_type_target_id:
+          id: field_type_target_id
+          table: node__field_type
+          field: field_type_target_id
+          plugin_id: taxonomy_index_tid
+          vid: activity_type
+          operator: or
+          value: {}
+          exposed: true
+          expose:
+            operator_id: field_type_target_id_op
+            label: "Activity Type"
+            description: "Filter by activity type"
+            use_operator: false
+            operator: field_type_target_id_op
+            identifier: type
+            required: false
+            remember: false
+            multiple: true
+            reduce: false
       style:
         type: table
+      access:
+        type: role
+        options:
+          role:
+            administrator: administrator
+            sales_manager: sales_manager
       display_extenders: {}
     cache_metadata:
       max-age: -1
@@ -172,8 +156,9 @@ display:
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - user.roles
       tags:
+        - "config:field.storage.node.field_assigned_to"
         - "config:field.storage.node.field_datetime"
         - "config:field.storage.node.field_deal"
         - "config:field.storage.node.field_type"
@@ -196,7 +181,7 @@ display:
             value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/activity\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Activity\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
-      path: crm/my-activities
+      path: crm/all-activities
     cache_metadata:
       max-age: -1
       contexts:
@@ -205,8 +190,9 @@ display:
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - user.roles
       tags:
+        - "config:field.storage.node.field_assigned_to"
         - "config:field.storage.node.field_datetime"
         - "config:field.storage.node.field_deal"
         - "config:field.storage.node.field_type"

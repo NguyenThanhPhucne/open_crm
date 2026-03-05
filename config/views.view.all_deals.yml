@@ -1,4 +1,4 @@
-uuid: 0b61c4d3-108f-4459-be31-205b98453af6
+uuid: 1f72b3c8-d5e2-4a1f-b7e3-9d4c2b8f6a01
 langcode: en
 status: true
 dependencies:
@@ -7,18 +7,22 @@ dependencies:
     - field.storage.node.field_closing_date
     - field.storage.node.field_contact
     - field.storage.node.field_organization
+    - field.storage.node.field_owner
     - field.storage.node.field_probability
     - field.storage.node.field_stage
     - node.type.deal
     - system.menu.main
+    - user.role.administrator
+    - user.role.sales_manager
   module:
     - crm_edit
     - datetime
     - node
-id: my_deals
-label: "My Deals"
+    - user
+id: all_deals
+label: "All Deals"
 module: views
-description: "Danh sách cơ hội của tôi"
+description: "All deals in the system (Admin/Manager view)"
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -29,7 +33,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "My Pipeline"
+      title: "All Deals"
       fields:
         title:
           id: title
@@ -40,6 +44,15 @@ display:
           type: string
           settings:
             link_to_entity: true
+        field_owner:
+          id: field_owner
+          table: node__field_owner
+          field: field_owner
+          plugin_id: field
+          label: Owner
+          type: entity_reference_label
+          settings:
+            link: true
         field_amount:
           id: field_amount
           table: node__field_amount
@@ -97,46 +110,6 @@ display:
           field: crm_edit_link
           plugin_id: crm_edit_link
           label: Actions
-          exclude: false
-          alter:
-            alter_text: false
-            text: ""
-            make_link: false
-            path: ""
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ""
-            rel: ""
-            link_class: ""
-            prefix: ""
-            suffix: ""
-            target: ""
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ""
-            more_link_path: ""
-            strip_tags: false
-            trim: false
-            preserve_tags: ""
-            html: false
-          element_type: ""
-          element_class: ""
-          element_label_type: ""
-          element_label_class: ""
-          element_label_colon: false
-          element_wrapper_type: ""
-          element_wrapper_class: ""
-          element_default_classes: false
-          empty: ""
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
       pager:
         type: full
         options:
@@ -155,21 +128,6 @@ display:
           field: field_close_date_value
           plugin_id: date
           order: ASC
-      arguments:
-        uid:
-          id: uid
-          table: node__field_owner
-          field: field_owner_target_id
-          plugin_id: numeric
-          default_action: default
-          default_argument_type: current_user
-          summary:
-            sort_order: asc
-            number_of_records: 0
-            format: default_summary
-          specify_validation: true
-          validate:
-            type: none
       filters:
         status:
           id: status
@@ -202,15 +160,38 @@ display:
             required: false
             remember: false
             placeholder: "Enter deal name..."
+        field_stage_target_id:
+          id: field_stage_target_id
+          table: node__field_stage
+          field: field_stage_target_id
+          plugin_id: taxonomy_index_tid
+          vid: pipeline_stage
+          operator: or
+          value: {}
+          exposed: true
+          expose:
+            operator_id: field_stage_target_id_op
+            label: Stage
+            description: "Filter by pipeline stage"
+            use_operator: false
+            operator: field_stage_target_id_op
+            identifier: stage
+            required: false
+            remember: false
+            multiple: true
+            reduce: false
       style:
         type: table
         options:
-          grouping:
-            - field: field_stage
-              rendered: true
-              rendered_strip: false
+          grouping: {}
           row_class: ""
           default_row_class: true
+      access:
+        type: role
+        options:
+          role:
+            administrator: administrator
+            sales_manager: sales_manager
       display_extenders: {}
     cache_metadata:
       max-age: -1
@@ -220,12 +201,13 @@ display:
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - user.roles
       tags:
         - "config:field.storage.node.field_amount"
         - "config:field.storage.node.field_closing_date"
         - "config:field.storage.node.field_contact"
         - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_owner"
         - "config:field.storage.node.field_probability"
         - "config:field.storage.node.field_stage"
   page_1:
@@ -241,10 +223,10 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\" style=\"\n          display: inline-flex;\n          align-items: center;\n          gap: 8px;\n          padding: 10px 20px;\n          background: white;\n          color: #3b82f6;\n          text-decoration: none;\n          border-radius: 8px;\n          border: 1.5px solid #3b82f6;\n          font-weight: 600;\n          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);\n          transition: all 0.2s ease;\n        \" onmouseover=\"this.style.background='#eff6ff'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'\" onmouseout=\"this.style.background='white'; this.style.boxShadow='0 1px 2px rgba(0, 0, 0, 0.05)'\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
+            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
-      path: crm/my-deals
+      path: crm/all-deals
     cache_metadata:
       max-age: -1
       contexts:
@@ -253,11 +235,12 @@ display:
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - user.roles
       tags:
         - "config:field.storage.node.field_amount"
         - "config:field.storage.node.field_closing_date"
         - "config:field.storage.node.field_contact"
         - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_owner"
         - "config:field.storage.node.field_probability"
         - "config:field.storage.node.field_stage"

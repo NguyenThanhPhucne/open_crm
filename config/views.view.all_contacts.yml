@@ -1,4 +1,4 @@
-uuid: db4ad027-d342-45f9-84e3-9c98ae9015d3
+uuid: af9c3d14-c8e1-4f2a-a3d1-4e8b9c7fa012
 langcode: en
 status: true
 dependencies:
@@ -6,17 +6,21 @@ dependencies:
     - field.storage.node.field_customer_type
     - field.storage.node.field_email
     - field.storage.node.field_organization
+    - field.storage.node.field_owner
     - field.storage.node.field_phone
     - field.storage.node.field_source
     - node.type.contact
     - system.menu.main
+    - user.role.administrator
+    - user.role.sales_manager
   module:
     - crm_edit
     - node
-id: my_contacts
-label: "My Contacts"
+    - user
+id: all_contacts
+label: "All Contacts"
 module: views
-description: "Danh sách khách hàng của tôi"
+description: "All contacts in the system (Admin/Manager view)"
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -27,7 +31,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "My Contacts"
+      title: "All Contacts"
       fields:
         title:
           id: title
@@ -38,6 +42,15 @@ display:
           type: string
           settings:
             link_to_entity: true
+        field_owner:
+          id: field_owner
+          table: node__field_owner
+          field: field_owner
+          plugin_id: field
+          label: Owner
+          type: entity_reference_label
+          settings:
+            link: true
         field_organization:
           id: field_organization
           table: node__field_organization
@@ -79,46 +92,6 @@ display:
           field: crm_edit_link
           plugin_id: crm_edit_link
           label: Actions
-          exclude: false
-          alter:
-            alter_text: false
-            text: ""
-            make_link: false
-            path: ""
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ""
-            rel: ""
-            link_class: ""
-            prefix: ""
-            suffix: ""
-            target: ""
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ""
-            more_link_path: ""
-            strip_tags: false
-            trim: false
-            preserve_tags: ""
-            html: false
-          element_type: ""
-          element_class: ""
-          element_label_type: ""
-          element_label_class: ""
-          element_label_colon: false
-          element_wrapper_type: ""
-          element_wrapper_class: ""
-          element_default_classes: false
-          empty: ""
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
       pager:
         type: full
         options:
@@ -134,21 +107,6 @@ display:
           expose_sort_order: true
           sort_asc_label: Asc
           sort_desc_label: Desc
-      arguments:
-        uid:
-          id: uid
-          table: node__field_owner
-          field: field_owner_target_id
-          plugin_id: numeric
-          default_action: default
-          default_argument_type: current_user
-          summary:
-            sort_order: asc
-            number_of_records: 0
-            format: default_summary
-          specify_validation: true
-          validate:
-            type: none
       filters:
         status:
           id: status
@@ -217,12 +175,25 @@ display:
             required: false
             remember: false
             placeholder: "Enter phone..."
+      sorts:
+        created:
+          id: created
+          table: node_field_data
+          field: created
+          plugin_id: date
+          order: DESC
       style:
         type: table
         options:
           grouping: {}
           row_class: ""
           default_row_class: true
+      access:
+        type: role
+        options:
+          role:
+            administrator: administrator
+            sales_manager: sales_manager
       display_extenders: {}
     cache_metadata:
       max-age: -1
@@ -232,11 +203,12 @@ display:
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - user.roles
       tags:
         - "config:field.storage.node.field_customer_type"
         - "config:field.storage.node.field_email"
         - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_owner"
         - "config:field.storage.node.field_phone"
         - "config:field.storage.node.field_source"
   page_1:
@@ -255,7 +227,7 @@ display:
             value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/contact\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Contact\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
-      path: crm/my-contacts
+      path: crm/all-contacts
     cache_metadata:
       max-age: -1
       contexts:
@@ -264,10 +236,11 @@ display:
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - user.roles
       tags:
         - "config:field.storage.node.field_customer_type"
         - "config:field.storage.node.field_email"
         - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_owner"
         - "config:field.storage.node.field_phone"
         - "config:field.storage.node.field_source"
