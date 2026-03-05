@@ -9,6 +9,7 @@
 
 .crm-nav-container {
   max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -169,25 +170,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .crm-nav-container {
-    padding: 0 16px;
-    gap: 16px;
-  }
-
-  .crm-nav-brand span {
-    display: none;
-  }
-
-  .crm-nav-item span {
-    display: none;
-  }
-
-  .crm-quick-add-btn span {
-    display: none;
   }
 }
 
@@ -393,7 +375,8 @@ a.button--danger:active {
 }
 
 .layout-container {
-  max-width: 1600px;
+  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -432,23 +415,29 @@ a.button--danger:active {
 }
 
 .views-exposed-form {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  align-items: flex-end;
-  max-width: 1400px;
-  margin: 0 auto;
+  align-items: end;
+  width: 100%;
 }
 
 .views-exposed-form__item {
-  flex: 1;
-  min-width: 200px;
   margin: 0 !important;
 }
 
 .views-exposed-form__item--actions {
-  flex: 0 0 auto;
-  min-width: auto;
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+@media (min-width: 768px) {
+  .views-exposed-form__item--actions {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
 }
 
 .views-exposed-form .form-item__label {
@@ -772,18 +761,24 @@ a.button--danger:active {
   letter-spacing: 0.5px;
 }
 
-/* Responsive Design */
+/* Responsive Design - Mobile First */
+@media (min-width: 640px) {
+  .crm-nav-container {
+    gap: 24px;
+  }
+}
+
 @media (max-width: 1024px) {
+  .layout-container {
+    padding: 0 20px;
+  }
+
   .view-filters {
     padding: 20px;
   }
 
   .views-exposed-form {
     gap: 12px;
-  }
-
-  .views-exposed-form__item {
-    min-width: 180px;
   }
 
   .views-table thead th,
@@ -803,22 +798,43 @@ a.button--danger:active {
 }
 
 @media (max-width: 768px) {
+  .layout-container {
+    padding: 0 16px;
+  }
+
+  .page-content {
+    padding: 24px 0;
+  }
+
+  .crm-nav-container {
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  .crm-nav-brand span {
+    display: none;
+  }
+
+  .crm-nav-item span {
+    display: none;
+  }
+
+  .crm-quick-add-btn span {
+    display: none;
+  }
+
   .view-filters {
     padding: 16px;
   }
 
   .views-exposed-form {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 16px;
-  }
-
-  .views-exposed-form__item {
-    width: 100%;
-    min-width: 100%;
   }
 
   .views-exposed-form__item--actions {
     width: 100%;
+    grid-column: 1 / -1;
   }
 
   .views-exposed-form .button {
@@ -860,15 +876,27 @@ a.button--danger:active {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 639px) {
+  .layout-container {
+    padding: 0 12px;
+  }
+
+  .page-content {
+    padding: 20px 0;
+  }
+
   .view-all-organizations,
-  .view-my-activities {
-    border-radius: 0;
+  .view-my-activities,
+  .view-my-contacts,
+  .view-my-deals,
+  .view-my-organizations {
+    border-radius: 8px;
     margin: 0 0 16px 0;
   }
 
   .view-filters {
     padding: 12px;
+    border-radius: 8px 8px 0 0;
   }
 
   .views-table thead th {

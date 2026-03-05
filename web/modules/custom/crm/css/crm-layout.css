@@ -1,0 +1,194 @@
+/**
+ * CRM Full-Width Layout Override
+ * Removes Drupal's default narrow container constraints for CRM pages
+ */
+
+/* Override Drupal's default container classes for CRM pages */
+body.path-user .layout-container,
+body.path-crm .layout-container,
+[data-crm-page] .layout-container {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.path-user .region-content,
+body.path-crm .region-content,
+[data-crm-page] .region-content {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body.path-user .container,
+body.path-crm .container,
+[data-crm-page] .container {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.path-user .container--narrow,
+body.path-crm .container--narrow,
+[data-crm-page] .container--narrow {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Ensure main content area is full-width */
+body.path-user #main-content,
+body.path-crm #main-content,
+[data-crm-page] #main-content {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.path-user .layout-content,
+body.path-crm .layout-content,
+[data-crm-page] .layout-content {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Remove default padding from layout wrappers */
+body.path-user .layout-container > .container,
+body.path-crm .layout-container > .container,
+[data-crm-page] .layout-container > .container {
+  padding: 0 !important;
+}
+
+/* Sidebar + Main Content Layout */
+body.path-user .layout-main-wrapper,
+body.path-crm .layout-main-wrapper,
+[data-crm-page] .layout-main-wrapper {
+  display: flex;
+  width: 100%;
+  max-width: none;
+}
+
+body.path-user .layout-sidebar,
+body.path-crm .layout-sidebar,
+[data-crm-page] .layout-sidebar {
+  flex: 0 0 auto;
+  max-width: 280px;
+}
+
+body.path-user .layout-main,
+body.path-crm .layout-main,
+[data-crm-page] .layout-main {
+  flex: 1 1 auto;
+  max-width: none;
+  width: 100%;
+}
+
+/* Override any theme-specific container classes */
+body.path-user main,
+body.path-crm main,
+[data-crm-page] main {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Target specific Drupal themes */
+/* Olivero theme */
+body.path-user .grid-full,
+body.path-crm .grid-full,
+[data-crm-page] .grid-full {
+  grid-template-columns: 1fr !important;
+  max-width: none !important;
+}
+
+/* Claro/Classy theme */
+body.path-user .block-system-main-block,
+body.path-crm .block-system-main-block,
+[data-crm-page] .block-system-main-block {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Views full-width override */
+body.path-user .view,
+body.path-crm .view,
+[data-crm-page] .view {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Ensure tables and view content expand */
+body.path-user .views-table,
+body.path-crm .views-table,
+[data-crm-page] .views-table {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Modern CRM spacing system */
+body.path-user,
+body.path-crm,
+[data-crm-page] {
+  --crm-spacing-xs: 8px;
+  --crm-spacing-sm: 12px;
+  --crm-spacing-md: 16px;
+  --crm-spacing-lg: 24px;
+  --crm-spacing-xl: 32px;
+  --crm-spacing-2xl: 48px;
+  --crm-spacing-3xl: 64px;
+
+  --crm-border-radius: 12px;
+  --crm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --crm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --crm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+/* Responsive Layout for Sidebar Navigation */
+
+/* Mobile: Sidebar collapses or hides */
+@media (max-width: 639px) {
+  body.path-user .layout-main-wrapper,
+  body.path-crm .layout-main-wrapper,
+  [data-crm-page] .layout-main-wrapper {
+    flex-direction: column;
+  }
+
+  body.path-user .layout-sidebar,
+  body.path-crm .layout-sidebar,
+  [data-crm-page] .layout-sidebar {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  body.path-user .layout-main,
+  body.path-crm .layout-main,
+  [data-crm-page] .layout-main {
+    width: 100%;
+  }
+}
+
+/* Tablet: Reduced sidebar width */
+@media (min-width: 640px) and (max-width: 1023px) {
+  body.path-user .layout-sidebar,
+  body.path-crm .layout-sidebar,
+  [data-crm-page] .layout-sidebar {
+    flex: 0 0 auto;
+    max-width: 200px;
+    min-width: 200px;
+  }
+}
+
+/* Desktop: Full sidebar */
+@media (min-width: 1024px) {
+  body.path-user .layout-sidebar,
+  body.path-crm .layout-sidebar,
+  [data-crm-page] .layout-sidebar {
+    flex: 0 0 auto;
+    max-width: 280px;
+    min-width: 280px;
+  }
+
+  body.path-user .layout-main,
+  body.path-crm .layout-main,
+  [data-crm-page] .layout-main {
+    flex: 1 1 auto;
+    max-width: none;
+    width: 100%;
+  }
+}

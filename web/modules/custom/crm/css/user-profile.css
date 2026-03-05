@@ -1,5 +1,6 @@
 .crm-user-profile {
-  max-width: 1200px;
+  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   padding: 24px;
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
@@ -225,7 +226,7 @@
   box-shadow: 0 0 0 3px rgba(203, 213, 225, 0.15);
 }
 
-/* Statistics Cards Grid */
+/* Statistics Cards Grid - Responsive */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -360,11 +361,18 @@
   font-weight: 500;
 }
 
-/* Content Grid - Recent Sections */
+/* Content Grid - Recent Sections - Responsive */
 .content-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
+}
+
+/* On larger screens, make Activities wider than Deals */
+@media (min-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 2fr 1fr;
+  }
 }
 
 .content-card {
@@ -529,20 +537,59 @@
   stroke: #3b82f6;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
+/* Responsive Design - Mobile First Approach */
+
+/* Mobile: < 640px (default styles above) */
+
+/* Tablet: 640px - 1024px */
+@media (min-width: 640px) {
+  .crm-user-profile {
+    padding: 20px;
+  }
+
+  .profile-header-card {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .profile-actions {
+    flex-direction: row;
+  }
+
+  .btn {
+    width: auto;
+  }
+}
+
+/* Desktop: > 1024px */
+@media (min-width: 1024px) {
+  .crm-user-profile {
+    padding: 24px;
+  }
+
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .profile-header-card,
+  .content-card {
+    padding: 28px;
   }
 }
 
-@media (max-width: 968px) {
-  .content-grid {
-    grid-template-columns: 1fr;
+/* Large Desktop: > 1400px */
+@media (min-width: 1400px) {
+  .crm-user-profile {
+    padding: 32px;
+  }
+
+  .stats-grid {
+    gap: 28px;
   }
 }
 
-@media (max-width: 768px) {
+/* Mobile-specific overrides: < 640px */
+@media (max-width: 639px) {
   .crm-user-profile {
     padding: 16px;
   }
@@ -551,6 +598,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 20px;
+    padding: 20px;
   }
 
   .profile-header-content {
@@ -559,22 +607,15 @@
 
   .profile-actions {
     width: 100%;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .btn {
+    width: 100%;
+    justify-content: center;
   }
 
-  .profile-name {
-    font-size: 24px;
-  }
-
-  .stat-value {
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 480px) {
   .profile-avatar,
   .profile-avatar-placeholder {
     width: 64px;
@@ -589,16 +630,23 @@
     font-size: 20px;
   }
 
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .profile-actions {
-    flex-direction: column;
+  .stat-value {
+    font-size: 24px;
   }
 
   .metadata-item {
     font-size: 13px;
+  }
+
+  .content-card {
+    padding: 20px;
+  }
+
+  .stats-grid {
+    gap: 16px;
+  }
+
+  .content-grid {
+    gap: 16px;
   }
 }

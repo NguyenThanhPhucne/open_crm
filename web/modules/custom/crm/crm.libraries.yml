@@ -8,3 +8,12 @@ user_profile_styles:
     js/user-profile.js: {}
   dependencies:
     - core/drupal
+    - crm/crm_layout
+
+crm_layout:
+  version: 1.0
+  css:
+    theme:
+      css/crm-layout.css: {}
+  dependencies:
+    - core/drupal

@@ -338,3 +338,39 @@ function crm_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_m
       return $output;
   }
 }
+
+/**
+ * Implements hook_page_attachments().
+ * 
+ * Attaches full-width layout CSS to all CRM pages.
+ */
+function crm_page_attachments(array &$attachments) {
+  // Get the current route.
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
+  
+  // List of CRM route prefixes that should have full-width layout.
+  $crm_routes = [
+    'crm.',
+    'entity.user.',
+    'user.',
+  ];
+  
+  // Check if current route matches any CRM routes.
+  foreach ($crm_routes as $prefix) {
+    if (strpos($route_name, $prefix) === 0) {
+      $attachments['#attached']['library'][] = 'crm/crm_layout';
+      break;
+    }
+  }
+  
+  // Also attach to specific view pages.
+  if (strpos($route_name, 'view.') === 0) {
+    $view_id = $route_match->getParameter('view_id');
+    $crm_views = ['my_contacts', 'my_deals', 'my_organizations', 'my_activities', 'my_projects'];
+    
+    if (in_array($view_id, $crm_views)) {
+      $attachments['#attached']['library'][] = 'crm/crm_layout';
+    }
+  }
+}
