@@ -1,3 +1,38 @@
+{{ attach_library('crm/user_profile_styles') }}
+
+<!-- Global Navigation Bar -->
+<nav class="crm-global-nav">
+  <div class="crm-nav-container">
+    <a href="/crm/dashboard" class="crm-nav-brand">
+      <i data-lucide="layout-dashboard" width="20" height="20"></i>
+      <span>CRM System</span>
+    </a>
+    
+    <div class="crm-nav-items">
+      <a href="/crm/dashboard" class="crm-nav-item">
+        <i data-lucide="layout-dashboard" width="18" height="18"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/crm/my-deals" class="crm-nav-item">
+        <i data-lucide="trello" width="18" height="18"></i>
+        <span>Deals</span>
+      </a>
+      <a href="/crm/my-contacts" class="crm-nav-item">
+        <i data-lucide="users" width="18" height="18"></i>
+        <span>Contacts</span>
+      </a>
+      <a href="/admin/crm/teams" class="crm-nav-item">
+        <i data-lucide="users-group" width="18" height="18"></i>
+        <span>Teams</span>
+      </a>
+      <a href="/crm/activities" class="crm-nav-item">
+        <i data-lucide="calendar" width="18" height="18"></i>
+        <span>Activities</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
 <div class="crm-user-profile">
   <!-- Navigation Breadcrumb -->
   <div class="profile-breadcrumb">
@@ -10,7 +45,7 @@
           </a>
         </li>
         <li class="breadcrumb-item">
-          <a href="/crm/teams" class="breadcrumb-link">
+          <a href="/admin/crm/teams" class="breadcrumb-link">
             <span>Teams</span>
           </a>
         </li>
@@ -19,30 +54,6 @@
         </li>
       </ol>
     </nav>
-  </div>
-
-  <!-- Quick Navigation Links -->
-  <div class="profile-quick-nav">
-    <a href="/" class="quick-nav-btn quick-nav-back" title="Back to Home">
-      <i data-lucide="chevron-left" width="18" height="18"></i>
-      <span>Back to Home</span>
-    </a>
-    <a href="/crm" class="quick-nav-link" title="Go to Dashboard">
-      <i data-lucide="layout-dashboard" width="16" height="16"></i>
-      <span>Dashboard</span>
-    </a>
-    <a href="/crm/my-contacts" class="quick-nav-link" title="View Contacts">
-      <i data-lucide="users" width="16" height="16"></i>
-      <span>Contacts</span>
-    </a>
-    <a href="/crm/my-deals" class="quick-nav-link" title="View Deals">
-      <i data-lucide="briefcase" width="16" height="16"></i>
-      <span>Deals</span>
-    </a>
-    <a href="/crm/teams" class="quick-nav-link" title="View Teams">
-      <i data-lucide="users-group" width="16" height="16"></i>
-      <span>Teams</span>
-    </a>
   </div>
 
   <!-- Profile Header Card -->
