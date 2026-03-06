@@ -1,4 +1,50 @@
 <div class="crm-user-profile">
+  <!-- Navigation Breadcrumb -->
+  <div class="profile-breadcrumb">
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+      <ol class="breadcrumb-list">
+        <li class="breadcrumb-item">
+          <a href="/" class="breadcrumb-link">
+            <i data-lucide="home" width="16" height="16"></i>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="/crm/teams" class="breadcrumb-link">
+            <span>Teams</span>
+          </a>
+        </li>
+        <li class="breadcrumb-item active">
+          <span>{{ user_name }}</span>
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Quick Navigation Links -->
+  <div class="profile-quick-nav">
+    <a href="/" class="quick-nav-btn quick-nav-back" title="Back to Home">
+      <i data-lucide="chevron-left" width="18" height="18"></i>
+      <span>Back to Home</span>
+    </a>
+    <a href="/crm" class="quick-nav-link" title="Go to Dashboard">
+      <i data-lucide="layout-dashboard" width="16" height="16"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="/crm/my-contacts" class="quick-nav-link" title="View Contacts">
+      <i data-lucide="users" width="16" height="16"></i>
+      <span>Contacts</span>
+    </a>
+    <a href="/crm/my-deals" class="quick-nav-link" title="View Deals">
+      <i data-lucide="briefcase" width="16" height="16"></i>
+      <span>Deals</span>
+    </a>
+    <a href="/crm/teams" class="quick-nav-link" title="View Teams">
+      <i data-lucide="users-group" width="16" height="16"></i>
+      <span>Teams</span>
+    </a>
+  </div>
+
   <!-- Profile Header Card -->
   <div class="profile-header-card">
     <div class="profile-avatar-wrapper">
