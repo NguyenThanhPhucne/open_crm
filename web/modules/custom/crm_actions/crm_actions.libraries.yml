@@ -3,6 +3,7 @@ global_nav:
   css:
     theme:
       css/crm_actions.css: {}
+      css/views-table-improvements.css: {}
   js:
     js/crm_actions.js: {}
     https://unpkg.com/lucide@latest: { type: external, minified: true }

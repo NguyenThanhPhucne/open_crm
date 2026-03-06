@@ -1,0 +1,512 @@
+/**
+ * @file
+ * Enhanced Views Table Styling - Fixes and Improvements
+ * * Ensures table headers are always visible and properly labeled
+ * Improves mobile responsiveness
+ * Enhances accessibility and guarantees readability on light themes
+ */
+
+/* ============================================
+   TABLE HEADER FIXES - Always Visible & Clear
+   ============================================ */
+
+/* Ensure thead is never hidden */
+.views-table thead {
+  display: table-header-group !important;
+  visibility: visible !important;
+}
+
+/* Ensure all th elements are visible */
+.views-table thead th {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure header text is always rendered */
+.views-table thead th::before,
+.views-table thead th::after {
+  display: inline;
+}
+
+/* ============================================
+   ENHANCED TABLE HEADER STYLING
+   ============================================ */
+
+/* Professional Header with Better Contrast for Light Background */
+.views-table thead {
+  background: #f8fafc !important; /* Đổi sang nền xám nhạt */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.views-table thead tr {
+  display: table-row;
+  height: auto;
+}
+
+.views-table thead th {
+  padding: 16px 24px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 13px;
+  color: #475569 !important; /* Chữ xám đậm dễ đọc */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0 !important;
+  white-space: normal;
+  word-wrap: break-word;
+  vertical-align: middle;
+  line-height: 1.4;
+  text-shadow: none; /* Bỏ đổ bóng để chữ sắc nét */
+}
+
+/* Improve header readability */
+.views-table thead th a {
+  color: #475569 !important;
+  text-decoration: none;
+}
+
+.views-table thead th a:hover {
+  color: #0f172a !important;
+  text-decoration: underline;
+}
+
+/* Sort indicator visibility */
+.views-table thead th .sort-indicator {
+  margin-left: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* ============================================
+   ENHANCED BODY TABLE STYLING
+   ============================================ */
+
+.views-table tbody {
+  display: table-row-group;
+}
+
+.views-table tbody tr {
+  display: table-row;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #ffffff;
+}
+
+.views-table tbody tr:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.views-table tbody tr:last-child {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.views-table tbody td {
+  display: table-cell;
+  padding: 18px 24px;
+  color: #334155 !important; /* Ép chữ màu xám đen để luôn hiện rõ */
+  font-size: 14px;
+  vertical-align: middle;
+  height: auto;
+  transition: color 0.15s ease;
+  line-height: 1.5;
+}
+
+.views-table tbody td:first-child {
+  padding-left: 24px;
+  font-weight: 600;
+  color: #0f172a !important;
+}
+
+.views-table tbody tr:hover td {
+  color: #0f172a !important;
+}
+
+.views-table tbody tr:hover td:first-child {
+  color: #000000 !important;
+}
+
+.views-table tbody td:last-child {
+  padding-right: 24px;
+}
+
+/* ============================================
+   LABEL VISIBILITY ENHANCEMENTS
+   ============================================ */
+
+/* Ensure field labels are always visible */
+.views-field {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.views-field-label {
+  font-weight: 600;
+  margin-right: 8px;
+  color: #475569;
+}
+
+/* Mobile: Show labels for each field (Mobile First) */
+@media (max-width: 767px) {
+  /* Show data attributes with field labels */
+  .views-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+    font-size: 12px;
+    color: #475569; /* Sửa màu label mobile cho dễ đọc */
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE TABLE DESIGN
+   ============================================ */
+
+/* Tablet: Adjust padding */
+@media (max-width: 1024px) {
+  .views-table thead th {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .views-table thead th:first-child {
+    padding-left: 16px;
+  }
+
+  .views-table thead th:last-child {
+    padding-right: 16px;
+  }
+
+  .views-table tbody td {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .views-table tbody td:first-child {
+    padding-left: 16px;
+  }
+
+  .views-table tbody td:last-child {
+    padding-right: 16px;
+  }
+}
+
+/* Mobile: Stack table vertically with labels */
+@media (max-width: 767px) {
+  .gin-table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .views-table {
+    min-width: 100%;
+    font-size: 13px;
+  }
+
+  .views-table thead {
+    display: none; /* Hide header on mobile */
+  }
+
+  .views-table tbody {
+    display: block;
+  }
+
+  .views-table tbody tr {
+    display: block;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .views-table tbody tr:hover {
+    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .views-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: none;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .views-table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  .views-table tbody td::before {
+    font-size: 11px;
+    margin-bottom: 0;
+    margin-right: 12px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .views-table tbody td .field-content {
+    flex: 1 1 auto;
+    text-align: right;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .views-table {
+    min-width: 100%;
+  }
+
+  .gin-table-scroll-wrapper {
+    overflow-x: auto;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .views-table tbody td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .views-table tbody td::before {
+    font-size: 10px;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Ensure proper focus states */
+.views-table a:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .views-table thead {
+    background: #ffffff !important;
+  }
+
+  .views-table thead th {
+    color: #000000 !important;
+    border-bottom: 4px solid #0066ff !important;
+  }
+
+  .views-table tbody tr:hover {
+    background: #f0f0f0;
+    outline: 2px solid #0066ff;
+  }
+}
+
+/* Motion preference - reduce animations if user prefers */
+@media (prefers-reduced-motion: reduce) {
+  .views-table tbody tr {
+    transition: none;
+  }
+
+  .views-table tbody tr:hover {
+    transform: none;
+  }
+}
+
+/* ============================================
+   SPECIFIC FIELD STYLING
+   ============================================ */
+
+/* Email field styling */
+.views-field-field-email {
+  white-space: normal;
+  word-break: break-all;
+}
+
+.views-field-field-email a {
+  color: #2563eb !important; /* Đảm bảo link màu xanh hiển thị rõ */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.views-field-field-email a:hover {
+  text-decoration: underline;
+}
+
+/* Phone field styling */
+.views-field-field-phone {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 500;
+  color: #059669 !important; /* Xanh lá cây đậm */
+  white-space: nowrap;
+}
+
+/* Organization field styling */
+.views-field-field-organization a {
+  color: #2563eb !important;
+  font-weight: 500;
+}
+
+/* Owner field styling */
+.views-field-field-owner a {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  color: #0369a1 !important; /* Xanh tối dễ đọc */
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.views-field-field-owner a:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #0c4a6e !important;
+}
+
+/* Customer type badge */
+.views-field-field-customer-type {
+  white-space: nowrap;
+}
+
+.views-field-field-customer-type .field-content {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #dbeafe;
+  color: #1e3a8a !important;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Source field styling */
+.views-field-field-source {
+  white-space: nowrap;
+}
+
+.views-field-field-source .field-content {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #fef3c7;
+  color: #92400e !important;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* ============================================
+   ACTIONS COLUMN STYLING
+   ============================================ */
+
+.views-field-crm-edit-link {
+  text-align: right;
+  padding-right: 24px;
+}
+
+.views-field-crm-edit-link .crm-action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ============================================
+   EMPTY STATE STYLING
+   ============================================ */
+
+.view-empty {
+  padding: 60px 24px;
+  text-align: center;
+  background: #f8fafc; /* Bỏ gradient để sạch sẽ hơn */
+  border-radius: 8px;
+  margin: 0;
+}
+
+.view-empty p {
+  font-size: 16px;
+  color: #475569;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ============================================
+   TABLE WRAPPER STYLING
+   ============================================ */
+
+.gin-table-scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  margin: 0;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+.views-view-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Alternative table styling - Striped rows */
+.views-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.views-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.views-table tbody tr:nth-child(even):hover {
+  background: #f1f5f9;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .views-table {
+    width: 100%;
+    font-size: 11px;
+    border-collapse: collapse;
+  }
+
+  .views-table thead {
+    background: #ffffff !important;
+    border: 2px solid #000000;
+  }
+
+  .views-table thead th {
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    padding: 8px;
+    text-transform: none;
+  }
+
+  .views-table tbody td {
+    border: 1px solid #000000;
+    padding: 6px;
+    color: #000000 !important;
+  }
+
+  .views-table tbody tr:hover {
+    background: #ffffff;
+  }
+
+  .views-field-crm-edit-link {
+    display: none;
+  }
+}
