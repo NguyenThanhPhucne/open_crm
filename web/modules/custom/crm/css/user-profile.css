@@ -3,125 +3,13 @@
   width: 100%;
   margin: 0 auto;
   padding: 24px;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  min-height: 100vh;
+  background: #ffffff;
+  min-height: calc(100vh - 60px);
 }
 
-/* ========================================
-   BREADCRUMB NAVIGATION
-   ======================================== */
-
+/* Remove breadcrumb - relying on crm-global-nav */
 .profile-breadcrumb {
-  margin-bottom: 24px;
-}
-
-.breadcrumb-nav {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.breadcrumb-list {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 8px;
-  align-items: center;
-}
-
-.breadcrumb-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.breadcrumb-item.active {
-  color: #475569;
-  font-weight: 600;
-}
-
-.breadcrumb-item:not(.active)::after {
-  content: "/";
-  color: #cbd5e1;
-  margin-left: 8px;
-}
-
-.breadcrumb-link {
-  color: #2563eb;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.2s ease;
-  font-weight: 500;
-}
-
-.breadcrumb-link:hover {
-  color: #0d47a1;
-  text-decoration: underline;
-}
-
-/* ========================================
-   QUICK NAVIGATION
-   ======================================== */
-
-.profile-quick-nav {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.quick-nav-btn,
-.quick-nav-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.quick-nav-btn {
-  background: #2563eb;
-  color: white;
-  border: 1px solid #2563eb;
-}
-
-.quick-nav-btn:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-}
-
-.quick-nav-link {
-  background: white;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.quick-nav-link:hover {
-  background: #f8fafc;
-  color: #2563eb;
-  border-color: #2563eb;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
-}
-
-.quick-nav-back {
-  margin-right: auto;
+  display: none;
 }
 
 /* Profile Header Card */
@@ -765,28 +653,5 @@
 
   .content-grid {
     gap: 16px;
-  }
-
-  .profile-breadcrumb {
-    margin-bottom: 16px;
-  }
-
-  .breadcrumb-list {
-    gap: 12px;
-  }
-
-  .breadcrumb-link {
-    font-size: 12px;
-  }
-
-  .profile-quick-nav {
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  .quick-nav-btn,
-  .quick-nav-link {
-    padding: 8px 12px;
-    font-size: 12px;
   }
 }
