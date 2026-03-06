@@ -7,11 +7,6 @@
   min-height: calc(100vh - 60px);
 }
 
-/* Remove breadcrumb - relying on crm-global-nav */
-.profile-breadcrumb {
-  display: none;
-}
-
 /* Profile Header Card */
 .profile-header-card {
   background: white;

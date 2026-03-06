@@ -9,7 +9,6 @@ user_profile_styles:
   dependencies:
     - core/drupal
     - crm/crm_layout
-    - crm_actions/crm_actions
 
 crm_layout:
   version: 1.0

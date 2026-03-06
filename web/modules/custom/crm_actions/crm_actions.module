@@ -29,8 +29,9 @@ function crm_actions_page_top(array &$page_top) {
   if ($current_user->isAuthenticated()) {
     $current_path = \Drupal::request()->getRequestUri();
     
-    // Show on CRM pages
+    // Show on CRM pages, user profiles, and content pages
     if (str_contains($current_path, '/crm/') || 
+        str_contains($current_path, '/user/') ||
         str_contains($current_path, '/node/') ||
         str_contains($current_path, '/app/')) {
       
