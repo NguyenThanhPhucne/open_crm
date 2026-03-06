@@ -54,41 +54,44 @@ $html = <<<'HTML'
   }
   
   .welcome-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 40px;
-    gap: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 32px 0;
+    margin-bottom: 32px;
+    box-shadow: none;
+    border-bottom: 1px solid #e2e8f0;
   }
   
   .banner-content h1 {
     font-size: 28px;
     font-weight: 700;
-    color: white;
+    color: #0f172a;
     margin-bottom: 8px;
+    letter-spacing: -0.02em;
   }
   
   .banner-content p {
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 1.6;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 20px;
   }
   
   .banner-actions {
     display: flex;
     gap: 12px;
     flex-shrink: 0;
+    margin-left: auto;
+    align-items: center;
   }
   
   .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 10px 18px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
@@ -96,36 +99,51 @@ $html = <<<'HTML'
     transition: all 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
+    border: 1.5px solid transparent;
   }
   
   .btn i {
     width: 16px;
     height: 16px;
+    stroke-width: 2;
   }
   
   .btn-primary {
     background: white;
-    color: #667eea;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #3b82f6;
+    border-color: #3b82f6;
+  }
+  
+  .btn-primary i {
+    color: #3b82f6;
   }
   
   .btn-primary:hover {
-    background: #f8f9ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: #eff6ff;
+    border-color: #3b82f6;
+    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.12);
+  }
+  
+  .btn-primary:active {
+    background: #dbeafe;
+    border-color: #2563eb;
+  }
+  
+  .btn-primary:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
   }
   
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
+    background: transparent;
+    color: #64748b;
+    border-color: #e2e8f0;
+    display: none;
   }
   
   .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #f8fafc;
+    border-color: #cbd5e1;
   }
   
   .page-header {
@@ -325,19 +343,26 @@ $html = <<<'HTML'
     }
     
     .welcome-banner {
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 20px;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      padding: 0 0 20px 0 !important;
+      gap: 16px !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    
+    .banner-content h1 {
+      font-size: 22px;
     }
     
     .banner-actions {
       width: 100%;
-      flex-direction: column;
+      margin-left: 0;
+      justify-content: flex-start;
     }
     
     .btn {
-      width: 100%;
-      justify-content: center;
+      padding: 10px 16px;
+      font-size: 13px;
     }
     
     .page-header h1 {
@@ -364,20 +389,19 @@ $html = <<<'HTML'
 </style>
 
 <div class="quick-access-container">
-  <!-- Welcome Banner -->
-  <div class="welcome-banner">
+  <!-- Minimal Header Section (shown only for non-logged-in users) -->
+  <div class="welcome-banner" style="display: flex; align-items: center; gap: 24px; margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #e2e8f0;">
     <div class="banner-content">
       <h1>Welcome to Open CRM</h1>
-      <p>Manage customers, deals and business activities professionally. Login to get started.</p>
+      <p>Manage customers, deals and business activities in one place.</p>
     </div>
     <div class="banner-actions">
-      <a href="/user/login" class="btn btn-primary">
+      <a href="/user/login" class="btn btn-primary" title="Login to your account">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
         <span>Login</span>
-        <i data-lucide="arrow-right"></i>
-      </a>
-      <a href="/user/register" class="btn btn-secondary">
-        <i data-lucide="user-plus"></i>
-        <span>Register</span>
       </a>
     </div>
   </div>
@@ -538,36 +562,31 @@ $html = <<<'HTML'
 </div>
 
 <script>
-  // Initialize Lucide icons first
-  lucide.createIcons();
+  // Initialize Lucide icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
   
-  // Wait a bit to ensure DOM is fully rendered, then apply role-based logic
+  // Wait a bit to ensure DOM is fully rendered
   setTimeout(function() {
-    console.log('=== CRM Homepage Role-Based Routing Debug ===');
+    console.log('=== CRM Homepage Initialization ===');
     
-    // Check if user is logged in
+    // Check if user is logged in and hide welcome banner for authenticated users
     const isLoggedIn = document.body.classList.contains('user-logged-in');
     console.log('Is Logged In:', isLoggedIn);
     
-    // Hide welcome banner for logged in users
     if (isLoggedIn) {
       const banner = document.querySelector('.welcome-banner');
       if (banner) {
         banner.style.display = 'none';
-        console.log('Welcome banner hidden for logged in user');
+        console.log('✓ Welcome banner hidden for logged in user');
       }
+    } else {
+      console.log('ℹ️ User not logged in - Welcome banner is visible');
     }
     
-    // Role-based routing: Admin sees ALL data, regular users see MY data
+    // Check for admin role
     const bodyClasses = document.body.className;
-    console.log('Body classes:', bodyClasses);
-    
-    // Check Drupal settings for user info
-    if (window.drupalSettings && window.drupalSettings.user) {
-      console.log('Drupal user settings:', window.drupalSettings.user);
-    }
-    
-    // Check multiple possible admin detection methods
     const isAdmin = bodyClasses.includes('role--administrator') || 
                     bodyClasses.includes('role-administrator') ||
                     bodyClasses.includes('user--admin') ||
@@ -575,7 +594,7 @@ $html = <<<'HTML'
     
     console.log('Is Admin:', isAdmin);
     
-    if (isAdmin) {
+    if (isAdmin && isLoggedIn) {
       console.log('✅ Admin detected - updating links to ALL views');
       
       // Update links for admin to show ALL data
@@ -602,12 +621,10 @@ $html = <<<'HTML'
           const cardAction = card.querySelector('.card-action span');
           if (cardAction && update.action) cardAction.textContent = update.action;
           updatedCount++;
-        } else {
-          console.log('✗ Card not found:', update.selector);
         }
       });
       
-      console.log(`Updated ${updatedCount} cards for admin view`);
+      console.log(`✓ Updated ${updatedCount} cards for admin view`);
       
       // Update page header for admin
       const pageHeaderIcon = document.querySelector('.page-header-icon');
@@ -626,11 +643,11 @@ $html = <<<'HTML'
         pageSubtitle.textContent = 'Manage all CRM data and system-wide operations';
         console.log('✓ Updated page subtitle');
       }
-    } else {
+    } else if (isLoggedIn) {
       console.log('ℹ️ Regular user - keeping MY views');
     }
     
-    console.log('=== End Debug ===');
+    console.log('=== Initialization Complete ===');
   }, 100); // Small delay to ensure DOM is ready
 </script>
 HTML;
