@@ -475,4 +475,82 @@ class DataValidationService {
     ];
   }
 
+  /**
+   * Comprehensive activity validation.
+   *
+   * @param array $data
+   *   Activity data to validate.
+   *
+   * @return array
+   *   Validation result with 'valid' boolean and 'errors' array.
+   */
+  public function validateActivity(array $data) {
+    $errors = [];
+
+    // Required: Title.
+    $title_validation = $this->validateRequired($data['title'] ?? '', 'Tiêu đề hoạt động');
+    if (!$title_validation['valid']) {
+      $errors['title'] = $title_validation['message'];
+    }
+
+    // Required: Activity type.
+    $type_validation = $this->validateRequired($data['type'] ?? '', 'Loại hoạt động');
+    if (!$type_validation['valid']) {
+      $errors['type'] = $type_validation['message'];
+    }
+
+    // Required: Assigned to user.
+    if (empty($data['assigned_to'])) {
+      $errors['assigned_to'] = 'Người phụ trách không được để trống';
+    }
+
+    // CRITICAL: Must have Contact OR Deal.
+    $has_contact = !empty($data['contact']);
+    $has_deal = !empty($data['deal']);
+
+    if (!$has_contact && !$has_deal) {
+      $errors['contact_deal'] = 'Hoạt động phải liên kết với Khách hàng hoặc Deal';
+    }
+
+    // Validate contact reference if provided.
+    if ($has_contact) {
+      $contact_validation = $this->validateNodeReference($data['contact'], 'contact');
+      if (!$contact_validation['valid']) {
+        $errors['contact'] = $contact_validation['message'];
+      }
+    }
+
+    // Validate deal reference if provided.
+    if ($has_deal) {
+      $deal_validation = $this->validateNodeReference($data['deal'], 'deal');
+      if (!$deal_validation['valid']) {
+        $errors['deal'] = $deal_validation['message'];
+      }
+    }
+
+    // Optional: Due date (validate format if provided).
+    if (!empty($data['due_date'])) {
+      $date_validation = $this->validateDate($data['due_date']);
+      if (!$date_validation['valid']) {
+        $errors['due_date'] = $date_validation['message'];
+      }
+    }
+
+    // Optional: Priority.
+    if (!empty($data['priority'])) {
+      $valid_priorities = ['low', 'normal', 'high', 'urgent'];
+      if (!in_array(strtolower($data['priority']), $valid_priorities)) {
+        $errors['priority'] = sprintf(
+          'Mức độ ưu tiên không hợp lệ. Chọn: %s',
+          implode(', ', $valid_priorities)
+        );
+      }
+    }
+
+    return [
+      'valid' => empty($errors),
+      'errors' => $errors,
+    ];
+  }
+
 }

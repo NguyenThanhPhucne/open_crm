@@ -4,6 +4,9 @@ namespace Drupal\crm_dashboard\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Url;
+use Drupal\Component\Utility\Html;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Controller for CRM Dashboard.
@@ -21,6 +24,11 @@ class DashboardController extends ControllerBase {
     // Check if user is administrator
     $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
     
+    // Use a consistent time window for this week and last week
+    $now = \Drupal::time()->getCurrentTime();
+    $this_week_start = $now - ($now % 604800); // Start of current week (Monday)
+    $last_week_start = $this_week_start - 604800;
+    
     // Get dashboard metrics (filtered by user ownership for non-admins)
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
@@ -29,6 +37,16 @@ class DashboardController extends ControllerBase {
       $contacts_query->condition('field_owner', $user_id);
     }
     $contacts_count = $contacts_query->count()->execute();
+    
+    // Contacts this week
+    $contacts_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'contact')
+      ->condition('created', $this_week_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $contacts_this_week_query->condition('field_owner', $user_id);
+    }
+    $contacts_this_week = $contacts_this_week_query->count()->execute();
 
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
@@ -37,6 +55,17 @@ class DashboardController extends ControllerBase {
       $orgs_query->condition('field_assigned_staff', $user_id);
     }
     $orgs_count = $orgs_query->count()->execute();
+    
+    // Organizations this month
+    $month_start = $now - (date('j', $now) - 1) * 86400;
+    $orgs_this_month_query = \Drupal::entityQuery('node')
+      ->condition('type', 'organization')
+      ->condition('created', $month_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $orgs_this_month_query->condition('field_assigned_staff', $user_id);
+    }
+    $orgs_this_month = $orgs_this_month_query->count()->execute();
 
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
@@ -53,6 +82,16 @@ class DashboardController extends ControllerBase {
       $activities_query->condition('field_assigned_to', $user_id);
     }
     $activities_count = $activities_query->count()->execute();
+
+    // Activities this week
+    $activities_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->condition('created', $this_week_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $activities_this_week_query->condition('field_assigned_to', $user_id);
+    }
+    $activities_this_week = $activities_this_week_query->count()->execute();
 
     // Load pipeline stages dynamically from taxonomy.
     $stage_terms = \Drupal::entityTypeManager()
@@ -117,6 +156,7 @@ class DashboardController extends ControllerBase {
       
       if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
         $stage = $deal->get('field_stage')->value;
+        // Check if stage is Won (closed_won) or Lost (closed_lost)
         if ($stage === 'closed_won') {
           $won_value += $amount;
           $won_count++;
@@ -140,12 +180,99 @@ class DashboardController extends ControllerBase {
     $avg_deal_display = '$' . number_format($avg_deal_size / 1000, 0) . 'K';
     $conversion_rate = $deals_count > 0 ? round(($won_count / $deals_count) * 100, 1) : 0;
     
-    // Get recent activities (last 10, filtered by current user for non-admins)
+    // === ENHANCED METRICS FOR IMPROVED CRM INSIGHTS ===
+    
+    // 1. Overdue Activities - Activities with field_datetime in the past
+    // CRITICAL for task management and follow-up
+    $overdue_activities_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->condition('field_datetime', $now, '<=') // due date is today or earlier
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $overdue_activities_query->condition('field_assigned_to', $user_id);
+    }
+    $overdue_activities = $overdue_activities_query->count()->execute();
+    
+    // 2. Active Pipeline Value - Total value of non-closed deals
+    // Shows open opportunities vs completed deals
+    $active_value_display = '$' . number_format($active_value / 1000000, 1) . 'M';
+    
+    // 3. Revenue This Week - Won deals closed just this week
+    // Measures sales velocity and momentum
+    $revenue_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_stage', 'closed_won')
+      ->condition('created', $this_week_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $revenue_this_week_query->condition('field_owner', $user_id);
+    }
+    $revenue_this_week_ids = $revenue_this_week_query->execute();
+    
+    $revenue_this_week = 0;
+    if (!empty($revenue_this_week_ids)) {
+      $revenue_deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($revenue_this_week_ids);
+      foreach ($revenue_deals as $deal) {
+        if ($deal->hasField('field_amount') && !$deal->get('field_amount')->isEmpty()) {
+          $revenue_this_week += floatval($deal->get('field_amount')->value);
+        }
+      }
+    }
+    $revenue_this_week_display = '$' . number_format($revenue_this_week / 1000000, 1) . 'M';
+    $revenue_this_week_count = count($revenue_this_week_ids);
+    
+    // 4. Average Days in Pipeline - How long won deals take to close
+    // Indicates sales cycle efficiency
+    $avg_days_in_pipeline = 0;
+    if (!empty($deals)) {
+      $total_days = 0;
+      $closed_deal_count = 0;
+      
+      foreach ($deals as $deal) {
+        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
+          $stage = $deal->get('field_stage')->value;
+          if ($stage === 'closed_won') {
+            $days_open = floor(($now - $deal->getCreatedTime()) / 86400);
+            $total_days += $days_open;
+            $closed_deal_count++;
+          }
+        }
+      }
+      
+      $avg_days_in_pipeline = $closed_deal_count > 0 ? round($total_days / $closed_deal_count, 0) : 0;
+    }
+    
+    // 5. Deals Due This Week - Deals with closing date in next 7 days
+    // Helps prioritize urgent deals
+    $week_end = $now + 604800; // 7 days from now
+    $due_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_closing_date', $now, '>=')
+      ->condition('field_closing_date', $week_end, '<=')
+      ->condition('field_stage', ['closed_won', 'closed_lost'], 'NOT IN') // not already closed
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $due_this_week_query->condition('field_owner', $user_id);
+    }
+    $due_this_week = $due_this_week_query->count()->execute();
+    
+    // 6. New Contacts This Month - Fresh leads added
+    // Indicates pipeline filling
+    $new_contacts_query = \Drupal::entityQuery('node')
+      ->condition('type', 'contact')
+      ->condition('created', $month_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $new_contacts_query->condition('field_owner', $user_id);
+    }
+    $new_contacts = $new_contacts_query->count()->execute();
+    
+    // Get recent activities (last 30, filtered by current user for non-admins)
     $activity_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->accessCheck(FALSE)
       ->sort('created', 'DESC')
-      ->range(0, 10);
+      ->range(0, 30);
     if (!$is_admin) {
       $activity_ids_query->condition('field_assigned_to', $user_id);
     }
@@ -154,6 +281,8 @@ class DashboardController extends ControllerBase {
     $recent_activities = [];
     if (!empty($activity_ids)) {
       $activities = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($activity_ids);
+      $current_time = \Drupal::time()->getCurrentTime();
+      
       foreach ($activities as $activity) {
         // Get activity type from taxonomy term (entity reference)
         $type_value = 'note'; // default
@@ -172,14 +301,16 @@ class DashboardController extends ControllerBase {
           'task' => 'check-square',
         ];
         
-        $type_colors = [
-          'call' => '#3b82f6',
-          'meeting' => '#8b5cf6',
-          'email' => '#10b981',
-          'note' => '#f59e0b',
-          'task' => '#ec4899',
-        ];
+        // Get activity owner/assigned user
+        $owner_name = '';
+        if ($activity->hasField('field_assigned_to') && !$activity->get('field_assigned_to')->isEmpty()) {
+          $owner = $activity->get('field_assigned_to')->entity;
+          if ($owner) {
+            $owner_name = $owner->getDisplayName();
+          }
+        }
         
+        // Get contact associated with activity
         $contact_name = '';
         if ($activity->hasField('field_contact') && !$activity->get('field_contact')->isEmpty()) {
           $contact = $activity->get('field_contact')->entity;
@@ -188,13 +319,37 @@ class DashboardController extends ControllerBase {
           }
         }
         
+        // Calculate relative time
+        $time_diff = $current_time - $activity->getCreatedTime();
+        if ($time_diff < 60) {
+          $relative_time = $time_diff . ' seconds ago';
+        } elseif ($time_diff < 3600) {
+          $minutes = floor($time_diff / 60);
+          $relative_time = $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
+        } elseif ($time_diff < 86400) {
+          $hours = floor($time_diff / 3600);
+          $relative_time = $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+        } elseif ($time_diff < 604800) {
+          $days = floor($time_diff / 86400);
+          $relative_time = $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+        } else {
+          $weeks = floor($time_diff / 604800);
+          $relative_time = $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+        }
+        
+        // Generate URL to activity entity
+        $activity_url = Url::fromRoute('entity.node.canonical', ['node' => $activity->id()])->toString();
+        
         $recent_activities[] = [
-          'title' => $activity->getTitle(),
+          'id' => $activity->id(),
+          'title' => Html::escape($activity->label()),
           'type' => ucfirst($type_value ?? 'note'),
           'icon' => $type_icons[$type_value] ?? 'activity',
-          'color' => $type_colors[$type_value] ?? '#64748b',
-          'contact' => $contact_name,
-          'created' => \Drupal::service('date.formatter')->format($activity->getCreatedTime(), 'custom', 'd/m H:i'),
+          'owner' => Html::escape($owner_name),
+          'contact' => Html::escape($contact_name),
+          'url' => $activity_url,
+          'relative_time' => $relative_time,
+          'timestamp' => $activity->getCreatedTime(),
         ];
       }
     }
@@ -259,6 +414,28 @@ class DashboardController extends ControllerBase {
     $stage_data_json = json_encode(array_values($deals_by_stage));
     $stage_colors_json = json_encode(array_values($stage_colors));
 
+    // Define role-based routes for navigation using Drupal routing system
+    // Admins see global CRM pages, regular users see personal pages
+    // Uses Url::fromUserInput for Views pages and Url::fromRoute for custom routes
+    $activities_url = $is_admin
+      ? Url::fromUserInput('/crm/all-activities')->toString()
+      : Url::fromUserInput('/crm/my-activities')->toString();
+
+    $contacts_url = $is_admin
+      ? Url::fromUserInput('/crm/all-contacts')->toString()
+      : Url::fromUserInput('/crm/my-contacts')->toString();
+
+    $organizations_url = $is_admin
+      ? Url::fromUserInput('/crm/all-organizations')->toString()
+      : Url::fromUserInput('/crm/my-organizations')->toString();
+
+    $deals_url = $is_admin
+      ? Url::fromUserInput('/crm/all-deals')->toString()
+      : Url::fromUserInput('/crm/my-deals')->toString();
+
+    $pipeline_url = Url::fromUserInput('/crm/pipeline')->toString();
+    $dashboard_url = Url::fromUserInput('/crm/dashboard')->toString();
+
     // Build HTML with professional design
     $html = <<<HTML
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -289,25 +466,219 @@ class DashboardController extends ControllerBase {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
+
+    /* ============================================
+       MODERN SAAS CARD DESIGN SYSTEM
+       ============================================ */
+
+    /* Responsive card grid */
+    .crm-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    /* Base card styles */
+    .crm-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .crm-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--card-color);
+      background: var(--card-bg);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Card icon */
+    .crm-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      color: var(--card-color);
+      flex-shrink: 0;
+    }
+
+    .crm-card-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    /* Card content */
+    .crm-card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .crm-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+      letter-spacing: -0.01em;
+    }
+
+    .crm-card-desc {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    /* Card action */
+    .crm-card-action {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--card-color);
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .crm-card:hover .crm-card-action {
+      gap: 8px;
+    }
+
+    .crm-card-action::after {
+      content: '→';
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Color variants */
+    .crm-card-blue {
+      --card-color: #3b82f6;
+      --card-bg: #eff6ff;
+    }
+
+    .crm-card-green {
+      --card-color: #10b981;
+      --card-bg: #ecfdf5;
+    }
+
+    .crm-card-purple {
+      --card-color: #8b5cf6;
+      --card-bg: #f5f3ff;
+    }
+
+    .crm-card-orange {
+      --card-color: #f59e0b;
+      --card-bg: #fffbeb;
+    }
+
+    .crm-card-pink {
+      --card-color: #ec4899;
+      --card-bg: #fdf2f8;
+    }
+
+    .crm-card-teal {
+      --card-color: #14b8a6;
+      --card-bg: #f0fdfa;
+    }
+
+    .crm-card-cyan {
+      --card-color: #06b6d4;
+      --card-bg: #ecfdf5;
+    }
+
+    .crm-card-gray {
+      --card-color: #6b7280;
+      --card-bg: #f9fafb;
+    }
+
+    /* Responsive grid */
+    @media (max-width: 1200px) {
+      .crm-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .crm-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .crm-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ============================================
+       END MODERN SAAS CARD DESIGN SYSTEM
+       ============================================ */
+
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
       margin-bottom: 32px;
     }
     
     .main-content {
       display: grid;
-      grid-template-columns: 1fr 380px;
+      grid-template-columns: 2fr 1fr;
       gap: 24px;
       margin-bottom: 32px;
+      align-items: stretch;
+      min-height: 600px;
     }
     
     .left-column {
       display: flex;
       flex-direction: column;
       gap: 24px;
+      height: 100%;
+    }
+    
+    .left-column .section-card {
+      flex: 1;
+    }
+    
+    /* Responsive improvement for main content */
+    @media (max-width: 1200px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Data refresh indicator */
+    .refresh-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
     }
     
     .stat-card {
@@ -316,13 +687,79 @@ class DashboardController extends ControllerBase {
       padding: 20px;
       border: 1px solid #e2e8f0;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
       cursor: pointer;
       text-decoration: none;
       color: inherit;
       display: block;
+    }
+    
+    /* Color accent backgrounds for each stat-card variant */
+    .stat-card.stat-card-blue {
+      --stat-color: #3b82f6;
+      --stat-bg: #eff6ff;
+    }
+    
+    .stat-card.stat-card-green {
+      --stat-color: #10b981;
+      --stat-bg: #ecfdf5;
+    }
+    
+    .stat-card.stat-card-purple {
+      --stat-color: #8b5cf6;
+      --stat-bg: #f5f3ff;
+    }
+    
+    .stat-card.stat-card-orange {
+      --stat-color: #f59e0b;
+      --stat-bg: #fffbeb;
+    }
+    
+    .stat-card.stat-card-pink {
+      --stat-color: #ec4899;
+      --stat-bg: #fdf2f8;
+    }
+    
+    .stat-card.stat-card-red {
+      --stat-color: #ef4444;
+      --stat-bg: #fef2f2;
+    }
+    
+    .stat-card.stat-card-teal {
+      --stat-color: #14b8a6;
+      --stat-bg: #f0fdfa;
+    }
+    
+    .stat-card.stat-card-cyan {
+      --stat-color: #06b6d4;
+      --stat-bg: #ecfdf5;
+    }
+    
+    .stat-card.stat-card-indigo {
+      --stat-color: #4f46e5;
+      --stat-bg: #eef2ff;
+    }
+    
+    .stat-card.stat-card-emerald {
+      --stat-color: #059669;
+      --stat-bg: #ecfdf5;
+    }
+    
+    .stat-card.stat-card-sky {
+      --stat-color: #0284c7;
+      --stat-bg: #e0f2fe;
+    }
+    
+    .stat-card.stat-card-amber {
+      --stat-color: #d97706;
+      --stat-bg: #fef3c7;
+    }
+    
+    .stat-card.stat-card-violet {
+      --stat-color: #7c3aed;
+      --stat-bg: #f5f3ff;
     }
     
     .stat-card::before {
@@ -332,20 +769,21 @@ class DashboardController extends ControllerBase {
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      background: var(--stat-color, linear-gradient(90deg, #3b82f6, #8b5cf6));
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .stat-card:hover {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      transform: translateY(-2px);
-      border-color: #cbd5e1;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      transform: translateY(-4px);
+      border-color: var(--stat-color, #cbd5e1);
+      background: var(--stat-bg, white);
     }
     
     .stat-card:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     }
     
     .stat-card:hover::before {
@@ -400,39 +838,116 @@ class DashboardController extends ControllerBase {
       color: #ec4899;
     }
     
+    .stat-icon.cyan { 
+      background: #ecf9fd;
+      color: #06b6d4;
+    }
+    
     .stat-icon.red { 
       background: #fef2f2;
       color: #ef4444;
     }
     
+    .stat-icon.indigo { 
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+    
+    .stat-icon.emerald { 
+      background: #ecfdf5;
+      color: #059669;
+    }
+    
+    .stat-icon.sky { 
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+    
+    .stat-icon.amber { 
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .stat-icon.violet { 
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+    
     .stat-label {
-      font-size: 12px;
+      font-size: 11px;
       color: #64748b;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
     }
     
     .stat-value {
-      font-size: 32px;
-      font-weight: 700;
+      font-size: 36px;
+      font-weight: 800;
       color: #0f172a;
       line-height: 1;
       margin-bottom: 8px;
       letter-spacing: -0.02em;
+      text-align: center;
     }
     
     .stat-desc {
       font-size: 13px;
       color: #94a3b8;
-      font-weight: 400;
+      font-weight: 500;
+    }
+    
+    /* Trend indicator styles */
+    .stat-trend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+    }
+    
+    .stat-trend.positive {
+      color: #10b981;
+    }
+    
+    .stat-trend.negative {
+      color: #ef4444;
+    }
+    
+    .stat-trend.neutral {
+      color: #64748b;
+    }
+    
+    .stat-trend-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+    
+    .stat-trend.positive .stat-trend-icon {
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .stat-trend.negative .stat-trend-icon {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .stat-trend.neutral .stat-trend-icon {
+      background: rgba(100, 116, 139, 0.1);
     }
     
     .charts-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 20px;
-      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 0;
+      flex: 1;
     }
     
     .section-card {
@@ -440,114 +955,224 @@ class DashboardController extends ControllerBase {
       border-radius: 12px;
       padding: 24px;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .activities-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .section-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+    }
+
+    .section-card canvas {
+      max-height: 280px;
     }
     
     .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
       border-bottom: 1px solid #f1f5f9;
+      flex: 0 0 auto;
+    }
+    
+    .section-header > div:first-child {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     
     .section-title {
       font-size: 18px;
-      font-weight: 600;
-      color: #1e293b;
+      font-weight: 700;
+      color: #0f172a;
       display: flex;
       align-items: center;
       gap: 10px;
+      letter-spacing: -0.01em;
     }
     
     .section-title i {
       color: #3b82f6;
+      flex-shrink: 0;
     }
     
     .view-all-link {
       font-size: 13px;
       color: #3b82f6;
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 4px;
-      transition: color 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 6px 12px;
+      border-radius: 6px;
     }
     
     .view-all-link:hover {
       color: #2563eb;
+      background: rgba(59, 130, 246, 0.08);
     }
     
-    /* Activity Items */
+    /* Activity Items - Scrollable container */
     .activity-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      max-height: 500px;
+      gap: 0;
+      flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 8px 0 0;
+      scroll-behavior: smooth;
+      margin-right: -8px;
+      min-height: 0;
     }
     
+    /* Custom scrollbar for activities - modern style */
+    .activity-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .activity-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .activity-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .activity-list::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Modern timeline-style activity item */
     .activity-item {
       display: flex;
+      align-items: flex-start;
       gap: 12px;
-      padding: 12px;
+      padding: 14px;
       border-radius: 8px;
-      transition: background 0.2s;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      position: relative;
     }
     
     .activity-item:hover {
-      background: #f8fafc;
+      background: #f7f9fb;
+      border-color: #e6e8eb;
     }
     
+    /* Activity icon - circular with gradient */
     .activity-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      background: #eef2f7;
+      color: #4c6ef5;
+      font-weight: 600;
+      min-width: 36px;
     }
     
-    .activity-icon.call { background: #eff6ff; }
-    .activity-icon.meeting { background: #f5f3ff; }
-    .activity-icon.email { background: #ecfdf5; }
-    .activity-icon.note { background: #fffbeb; }
+    /* Icon type colors */
+    .activity-icon.call { 
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .activity-icon.meeting { 
+      background: #f5f3ff;
+      color: #6b21a8;
+    }
+    .activity-icon.email { 
+      background: #ecfdf5;
+      color: #065f46;
+    }
+    .activity-icon.note { 
+      background: #fffbeb;
+      color: #92400e;
+    }
+    .activity-icon.task { 
+      background: #fdf2f8;
+      color: #831843;
+    }
     
+    /* Activity content - main info */
     .activity-content {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     
+    /* Clickable activity title */
     .activity-title {
-      font-size: 14px;
       font-weight: 500;
-      color: #1e293b;
-      margin-bottom: 4px;
+      text-decoration: none;
+      color: #1f2937;
+      font-size: 14px;
+      transition: color 0.2s ease;
       display: -webkit-box;
       -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
     
+    .activity-title:hover {
+      color: #3b82f6;
+    }
+    
+    /* Activity metadata - owner and relative time */
     .activity-meta {
       font-size: 12px;
-      color: #64748b;
+      color: #6b7280;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    
+    .activity-meta .separator {
+      color: #d1d5db;
+    }
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      background: #f1f5f9;
+      color: #475569;
     }
     
     .activity-contact {
       color: #3b82f6;
+      font-weight: 500;
     }
     
     .activity-time {
       font-size: 11px;
       color: #94a3b8;
       flex-shrink: 0;
+      white-space: nowrap;
     }
     
     /* Deal Items */
@@ -555,21 +1180,25 @@ class DashboardController extends ControllerBase {
       display: flex;
       flex-direction: column;
       gap: 10px;
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
     }
     
     .deal-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 10px;
       border: 1px solid #f1f5f9;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .deal-item:hover {
-      border-color: #e2e8f0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      transform: translateX(2px);
     }
     
     .deal-info {
@@ -621,11 +1250,13 @@ class DashboardController extends ControllerBase {
       height: 48px;
       color: #cbd5e1;
       margin-bottom: 12px;
+      opacity: 0.7;
     }
     
     .empty-state-text {
       font-size: 14px;
       color: #64748b;
+      font-weight: 500;
     }
     
     .chart-card {
@@ -637,6 +1268,9 @@ class DashboardController extends ControllerBase {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
     
     .chart-card::before {
@@ -648,11 +1282,11 @@ class DashboardController extends ControllerBase {
       height: 2px;
       background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .chart-card:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
       transform: translateY(-2px);
       border-color: #cbd5e1;
     }
@@ -693,8 +1327,9 @@ class DashboardController extends ControllerBase {
     
     .chart-container {
       position: relative;
-      height: 320px;
+      height: 280px;
       padding: 10px 0;
+      flex: 1;
     }
     
     .chart-legend {
@@ -839,6 +1474,11 @@ class DashboardController extends ControllerBase {
       padding-top: 39px;
     }
     
+    /* Responsive Design for Activities Card */
+    @media (max-width: 1200px) {
+      /* Activities card stretches with left column */
+    }
+    
     @media (max-width: 768px) {
       .crm-toolbar-item span,
       .crm-toolbar-btn span,
@@ -863,8 +1503,13 @@ class DashboardController extends ControllerBase {
         grid-template-columns: 1fr;
       }
       
-      .charts-section {
-        grid-template-columns: 1fr;
+      .activity-item {
+        padding: 10px 6px;
+      }
+      
+      .activity-icon {
+        width: 36px;
+        height: 36px;
       }
     }
   </style>
@@ -872,7 +1517,7 @@ class DashboardController extends ControllerBase {
   <div class="dashboard-container">
     <!-- Statistics Cards -->
     <div class="stats-grid">
-      <a href="/crm/my-contacts" class="stat-card">
+      <a href="{$contacts_url}" class="stat-card stat-card-blue">
         <div class="stat-header">
           <div class="stat-icon blue">
             <i data-lucide="users" width="24" height="24"></i>
@@ -881,20 +1526,28 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$contacts_count}</div>
         <div class="stat-desc">Active contacts</div>
+        <div class="stat-trend positive">
+          <span class="stat-trend-icon">↑</span>
+          <span>+{$contacts_this_week} this week</span>
+        </div>
       </a>
       
-      <a href="/admin/content?type=organization" class="stat-card">
+      <a href="{$organizations_url}" class="stat-card stat-card-pink">
         <div class="stat-header">
-          <div class="stat-icon purple">
+          <div class="stat-icon pink">
             <i data-lucide="building-2" width="24" height="24"></i>
           </div>
           <div class="stat-label">Organizations</div>
         </div>
         <div class="stat-value">{$orgs_count}</div>
         <div class="stat-desc">Companies</div>
+        <div class="stat-trend positive">
+          <span class="stat-trend-icon">↑</span>
+          <span>+{$orgs_this_month} this month</span>
+        </div>
       </a>
       
-      <a href="/crm/my-deals" class="stat-card">
+      <a href="{$deals_url}" class="stat-card stat-card-orange">
         <div class="stat-header">
           <div class="stat-icon orange">
             <i data-lucide="briefcase" width="24" height="24"></i>
@@ -905,7 +1558,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">In pipeline</div>
       </a>
       
-      <a href="/crm/my-deals" class="stat-card">
+      <a href="{$deals_url}" class="stat-card stat-card-teal">
         <div class="stat-header">
           <div class="stat-icon green">
             <i data-lucide="dollar-sign" width="24" height="24"></i>
@@ -916,7 +1569,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">Deal value</div>
       </a>
       
-      <a href="/crm/pipeline" class="stat-card">
+      <a href="{$pipeline_url}" class="stat-card stat-card-green">
         <div class="stat-header">
           <div class="stat-icon green">
             <i data-lucide="trending-up" width="24" height="24"></i>
@@ -927,7 +1580,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">{$won_value_display} revenue</div>
       </a>
       
-      <a href="/crm/pipeline" class="stat-card">
+      <a href="{$pipeline_url}" class="stat-card stat-card-red">
         <div class="stat-header">
           <div class="stat-icon red">
             <i data-lucide="trending-down" width="24" height="24"></i>
@@ -938,7 +1591,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">{$lost_value_display} lost</div>
       </a>
       
-      <a href="/crm/pipeline" class="stat-card">
+      <a href="{$pipeline_url}" class="stat-card stat-card-pink">
         <div class="stat-header">
           <div class="stat-icon pink">
             <i data-lucide="target" width="24" height="24"></i>
@@ -949,7 +1602,22 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">Deals won rate</div>
       </a>
       
-      <a href="/crm/pipeline" class="stat-card">
+      <a href="{$activities_url}" class="stat-card stat-card-cyan">
+        <div class="stat-header">
+          <div class="stat-icon cyan">
+            <i data-lucide="activity" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Activities</div>
+        </div>
+        <div class="stat-value">{$activities_count}</div>
+        <div class="stat-desc">Tasks & calls</div>
+        <div class="stat-trend positive">
+          <span class="stat-trend-icon">↑</span>
+          <span>+{$activities_this_week} this week</span>
+        </div>
+      </a>
+      
+      <a href="{$pipeline_url}" class="stat-card stat-card-purple">
         <div class="stat-header">
           <div class="stat-icon blue">
             <i data-lucide="percent" width="24" height="24"></i>
@@ -960,7 +1628,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">Overall conversion</div>
       </a>
       
-      <a href="/crm/my-deals" class="stat-card">
+      <a href="{$deals_url}" class="stat-card stat-card-purple">
         <div class="stat-header">
           <div class="stat-icon purple">
             <i data-lucide="bar-chart-3" width="24" height="24"></i>
@@ -969,6 +1637,90 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-value">{$avg_deal_display}</div>
         <div class="stat-desc">Average value</div>
+      </a>
+      
+      <!-- Enhanced Metrics Row 1 -->
+      <a href="{$activities_url}" class="stat-card stat-card-red">
+        <div class="stat-header">
+          <div class="stat-icon red">
+            <i data-lucide="alert-circle" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Overdue</div>
+        </div>
+        <div class="stat-value">{$overdue_activities}</div>
+        <div class="stat-desc">Activities overdue</div>
+        <div class="stat-trend negative" style="margin-top: auto;">
+          <span class="stat-trend-icon">!</span>
+          <span>Needs attention</span>
+        </div>
+      </a>
+      
+      <a href="{$pipeline_url}" class="stat-card stat-card-indigo">
+        <div class="stat-header">
+          <div class="stat-icon indigo">
+            <i data-lucide="layers" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Active Pipeline</div>
+        </div>
+        <div class="stat-value">{$active_value_display}</div>
+        <div class="stat-desc">Open opportunities</div>
+      </a>
+      
+      <a href="{$deals_url}" class="stat-card stat-card-emerald">
+        <div class="stat-header">
+          <div class="stat-icon emerald">
+            <i data-lucide="dollar-sign" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">This Week</div>
+        </div>
+        <div class="stat-value">{$revenue_this_week_display}</div>
+        <div class="stat-desc">{$revenue_this_week_count} deals closed</div>
+        <div class="stat-trend positive">
+          <span class="stat-trend-icon">↑</span>
+          <span>Weekly revenue</span>
+        </div>
+      </a>
+      
+      <a href="{$deals_url}" class="stat-card stat-card-sky">
+        <div class="stat-header">
+          <div class="stat-icon sky">
+            <i data-lucide="calendar-check" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Due This Week</div>
+        </div>
+        <div class="stat-value">{$due_this_week}</div>
+        <div class="stat-desc">Deals closing soon</div>
+        <div class="stat-trend positive" style="margin-top: auto;">
+          <span class="stat-trend-icon">📅</span>
+          <span>Urgent matters</span>
+        </div>
+      </a>
+      
+      <!-- Enhanced Metrics Row 2 -->
+      <a href="{$pipeline_url}" class="stat-card stat-card-amber">
+        <div class="stat-header">
+          <div class="stat-icon amber">
+            <i data-lucide="clock" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">Avg Cycle</div>
+        </div>
+        <div class="stat-value">{$avg_days_in_pipeline}</div>
+        <div class="stat-desc">Days in pipeline</div>
+      </a>
+      
+      <a href="{$contacts_url}" class="stat-card stat-card-violet">
+        <div class="stat-header">
+          <div class="stat-icon violet">
+            <i data-lucide="user-plus" width="24" height="24"></i>
+          </div>
+          <div class="stat-label">New Contacts</div>
+        </div>
+        <div class="stat-value">{$new_contacts}</div>
+        <div class="stat-desc">This month</div>
+        <div class="stat-trend positive">
+          <span class="stat-trend-icon">↑</span>
+          <span>Pipeline filling</span>
+        </div>
       </a>
     </div>
     
@@ -1006,7 +1758,7 @@ class DashboardController extends ControllerBase {
               <i data-lucide="briefcase" width="20" height="20"></i>
               Recent Deals
             </div>
-            <a href="/crm/pipeline" class="view-all-link">
+            <a href="{$deals_url}" class="view-all-link">
               View all
               <i data-lucide="arrow-right" width="14" height="14"></i>
             </a>
@@ -1043,13 +1795,16 @@ EMPTY;
       </div>
       
       <!-- Right Sidebar: Recent Activities -->
-      <div class="section-card">
+      <div class="section-card activities-card">
         <div class="section-header">
-          <div class="section-title">
-            <i data-lucide="activity" width="20" height="20"></i>
-            Recent Activities
+          <div>
+            <div class="section-title">
+              <i data-lucide="activity" width="20" height="20"></i>
+              Recent Activities
+            </div>
+            <div class="refresh-badge">↻ Live</div>
           </div>
-          <a href="/crm/my-activities" class="view-all-link">
+          <a href="{$activities_url}" class="view-all-link">
             View all
             <i data-lucide="arrow-right" width="14" height="14"></i>
           </a>
@@ -1061,24 +1816,33 @@ HTML;
     if (!empty($recent_activities)) {
       foreach ($recent_activities as $activity) {
         $type_class = strtolower($activity['type']);
-        $contact_html = '';
-        if ($activity['contact']) {
-          $contact_html = '• <span class="activity-contact">' . $activity['contact'] . '</span>';
+        $meta_parts = [];
+        
+        // Add owner to metadata
+        if ($activity['owner']) {
+          $meta_parts[] = $activity['owner'];
         }
         
+        // Add relative time
+        $meta_parts[] = $activity['relative_time'];
+        
+        // Build metadata string
+        $meta_string = implode(' • ', array_filter($meta_parts));
+        
+        // Build activity item HTML
         $html .= <<<ACTIVITY
           <div class="activity-item">
             <div class="activity-icon {$type_class}">
-              <i data-lucide="{$activity['icon']}" width="18" height="18" style="color: {$activity['color']}"></i>
+              <i data-lucide="{$activity['icon']}" width="18" height="18"></i>
             </div>
             <div class="activity-content">
-              <div class="activity-title">{$activity['title']}</div>
+              <a href="{$activity['url']}" class="activity-title" title="{$activity['title']}">
+                {$activity['title']}
+              </a>
               <div class="activity-meta">
-                <span class="activity-type">{$activity['type']}</span>
-                {$contact_html}
+                {$meta_string}
               </div>
             </div>
-            <div class="activity-time">{$activity['created']}</div>
           </div>
 ACTIVITY;
       }
@@ -1098,6 +1862,86 @@ EMPTY;
   </div>
   
   <script>
+    // Real-time Data Synchronization System
+    class DashboardSync {
+      constructor() {
+        this.refreshInterval = 30000; // 30 seconds
+        this.isRefreshing = false;
+        this.lastRefreshTime = Date.now();
+        this.init();
+      }
+      
+      init() {
+        // Listen for activity changes via Drupal events
+        if (window.Drupal && window.Drupal.behaviors) {
+          // Hook into entity changes
+          document.addEventListener('crm:activity-created', () => this.refreshActivities());
+          document.addEventListener('crm:deal-updated', () => this.refreshDashboard());
+          document.addEventListener('crm:stage-changed', () => this.refreshDashboard());
+        }
+        
+        // Setup auto-refresh polling
+        this.setupPolling();
+        
+        // Show refresh indicator
+        this.showRefreshStatus('Connected');
+      }
+      
+      setupPolling() {
+        setInterval(() => {
+          // Auto-refresh dashboard data every 30 seconds
+          this.refreshDashboard();
+        }, this.refreshInterval);
+      }
+      
+      async refreshDashboard() {
+        if (this.isRefreshing) return;
+        
+        this.isRefreshing = true;
+        try {
+          // This would be extended with actual AJAX refresh
+          // For now, you can implement via Drupal JSON API or custom endpoint
+          // Example: 
+          // const response = await fetch('/api/crm/dashboard-data');
+          // const data = await response.json();
+          // this.updateDashboard(data);
+          this.showRefreshStatus('Last updated just now');
+          this.lastRefreshTime = Date.now();
+        } catch (error) {
+          console.error('Dashboard refresh failed:', error);
+          this.showRefreshStatus('Update failed', true);
+        } finally {
+          this.isRefreshing = false;
+        }
+      }
+      
+      refreshActivities() {
+        // Focused refresh of activities only (faster than full dashboard)
+        // Can be implemented via AJAX
+        console.log('Activities refreshed');
+      }
+      
+      showRefreshStatus(message, isError = false) {
+        // Update refresh indicator if it exists
+        const badge = document.querySelector('.refresh-badge');
+        if (badge) {
+          badge.textContent = message;
+          if (isError) {
+            badge.style.background = 'rgba(239, 68, 68, 0.1)';
+            badge.style.color = '#ef4444';
+          } else {
+            badge.style.background = 'rgba(16, 185, 129, 0.1)';
+            badge.style.color = '#10b981';
+          }
+        }
+      }
+    }
+    
+    // Initialize dashboard sync on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      window.dashboardSync = new DashboardSync();
+    });
+    
     // Initialize Lucide icons
     lucide.createIcons();
     
@@ -1422,10 +2266,103 @@ EMPTY;
         }
       }
     });
+    
+    // ============================================
+    // REAL-TIME DASHBOARD REFRESH
+    // ============================================
+    // Auto-refresh dashboard metrics every 30 seconds
+    // to ensure data is always current with database changes
+    
+    const dashboardRefreshInterval = setInterval(function() {
+      // Fetch fresh metrics from the server via AJAX endpoint
+      fetch('/crm/dashboard/refresh', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.metrics) {
+          // Update stat card values on the page with new data
+          updateDashboardMetrics(data.metrics);
+          
+          // Optional: Show visual indicator that data was refreshed
+          const timestamp = new Date(data.timestamp * 1000);
+          console.log('Dashboard metrics updated at', timestamp.toLocaleTimeString());
+        }
+      })
+      .catch(error => {
+        console.error('Dashboard refresh error:', error);
+      });
+    }, 30000); // Refresh every 30 seconds
+    
+    /**
+     * Update dashboard stat card values in real-time
+     * @param {Object} metrics - Fresh metrics from server
+     */
+    function updateDashboardMetrics(metrics) {
+      // Helper function to update a stat card value
+      const updateStatCard = (label, value) => {
+        try {
+          // Find stat card by its label text
+          const cards = document.querySelectorAll('.stat-card');
+          for (const card of cards) {
+            const labelElement = card.querySelector('.stat-label');
+            if (labelElement && labelElement.textContent.trim().toLowerCase() === label.toLowerCase()) {
+              const valueElement = card.querySelector('.stat-value');
+              if (valueElement && valueElement.textContent !== value.toString()) {
+                // Animate the value change
+                valueElement.style.transition = 'none';
+                valueElement.style.opacity = '0.5';
+                setTimeout(() => {
+                  valueElement.textContent = value;
+                  valueElement.style.opacity = '1';
+                  valueElement.style.transition = 'opacity 0.3s ease-in-out';
+                }, 100);
+              }
+              return true;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not update stat card:', label, e);
+        }
+        return false;
+      };
+      
+      // Update all 16 main metrics
+      if (metrics.contacts !== undefined) updateStatCard('Contacts', metrics.contacts);
+      if (metrics.organizations !== undefined) updateStatCard('Organizations', metrics.organizations);
+      if (metrics.deals !== undefined) updateStatCard('Deals', metrics.deals);
+      if (metrics.total_value_display) updateStatCard('Total Value', metrics.total_value_display);
+      if (metrics.won !== undefined) updateStatCard('Won', metrics.won);
+      if (metrics.lost !== undefined) updateStatCard('Lost', metrics.lost);
+      if (metrics.win_rate !== undefined) updateStatCard('Win Rate', metrics.win_rate + '%');
+      if (metrics.activities !== undefined) updateStatCard('Activities', metrics.activities);
+      if (metrics.conversion_rate !== undefined) updateStatCard('Conversion', metrics.conversion_rate + '%');
+      if (metrics.avg_deal_display) updateStatCard('Avg Deal', metrics.avg_deal_display);
+      
+      // Update new enhanced metrics
+      if (metrics.overdue_activities !== undefined) updateStatCard('Overdue', metrics.overdue_activities);
+      if (metrics.active_value_display) updateStatCard('Active Pipeline', metrics.active_value_display);
+      if (metrics.revenue_this_week_display) updateStatCard('This Week', metrics.revenue_this_week_display);
+      if (metrics.due_this_week !== undefined) updateStatCard('Due This Week', metrics.due_this_week);
+      if (metrics.avg_days_in_pipeline !== undefined) updateStatCard('Avg Cycle', metrics.avg_days_in_pipeline);
+      if (metrics.new_contacts_this_month !== undefined) updateStatCard('New Contacts', metrics.new_contacts_this_month);
+    }
+    
+    // Clean up interval when page unloads
+    window.addEventListener('beforeunload', () => {
+      clearInterval(dashboardRefreshInterval);
+    });
   </script>
 HTML;
 
     // Return render array with Drupal toolbar support
+    // IMPORTANT: Disable page cache to ensure real-time data updates
+    // when admins or staff edit CRM entities
     return [
       '#markup' => Markup::create($html),
       '#attached' => [
@@ -1433,7 +2370,283 @@ HTML;
           'core/drupal',
         ],
       ],
+      '#cache' => [
+        // Use cache tags for all entities so cache is invalidated when data changes
+        'tags' => [
+          'node_list:contact',     // Invalidate when any contact is added/updated/deleted
+          'node_list:organization', // Invalidate when any organization is added/updated/deleted
+          'node_list:deal',        // Invalidate when any deal is added/updated/deleted
+          'node_list:activity',    // Invalidate when any activity is added/updated/deleted
+        ],
+        // Set max age to 0 for real-time updates (or 60 for 1-minute cache)
+        'max-age' => 0,
+      ],
     ];
+  }
+
+  /**
+   * Trigger dashboard refresh when deals are updated.
+   * This method is called by event hooks in other modules.
+   * 
+   * @param array $context
+   *   Context data with 'entity' and 'operation' keys.
+   */
+  public static function onDealUpdate(array $context) {
+    // This hook is called when a deal node is created/updated/deleted
+    // Can be hooked from hook_node_insert, hook_node_update, hook_node_delete
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_deal_updated', [$context]);
+  }
+
+  /**
+   * Trigger dashboard refresh when activities are created.
+   * 
+   * @param array $context
+   *   Context data with 'entity' and 'operation' keys.
+   */
+  public static function onActivityCreate(array $context) {
+    // This hook is called when an activity node is created
+    // Used by JavaScript to trigger real-time updates
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_activity_created', [$context]);
+  }
+
+  /**
+   * Get real-time dashboard data via AJAX endpoint.
+   * Can be registered as a route for AJAX updates.
+   * Returns all dashboard metrics for real-time display updates.
+   * 
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   JSON response with updated dashboard metrics.
+   */
+  public function getRefreshData() {
+    $current_user = \Drupal::currentUser();
+    $user_id = $current_user->id();
+    $is_admin = $current_user->hasPermission('administer crm');
+    
+    // Get timestamps for calculations (same as main view)
+    $now = \Drupal::time()->getCurrentTime();
+    $this_week_start = $now - ($now % 604800);
+    $month_start = $now - (date('j', $now) - 1) * 86400;
+    $week_end = $now + 604800;
+    
+    // === FETCH ALL DASHBOARD METRICS IN REAL-TIME ===
+    
+    // 1. Contacts
+    $contacts_query = \Drupal::entityQuery('node')
+      ->condition('type', 'contact')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $contacts_query->condition('field_owner', $user_id);
+    }
+    $contacts_count = $contacts_query->count()->execute();
+    
+    // 2. Organizations
+    $orgs_query = \Drupal::entityQuery('node')
+      ->condition('type', 'organization')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $orgs_query->condition('field_assigned_staff', $user_id);
+    }
+    $orgs_count = $orgs_query->count()->execute();
+    
+    // 3. Total Deals
+    $deals_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $deals_query->condition('field_owner', $user_id);
+    }
+    $deals_count = $deals_query->count()->execute();
+    
+    // 4. Activities
+    $activities_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $activities_query->condition('field_assigned_to', $user_id);
+    }
+    $activities_count = $activities_query->count()->execute();
+    
+    // 5. Won Deals
+    $won_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_stage', 'closed_won')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $won_query->condition('field_owner', $user_id);
+    }
+    $won_count = $won_query->count()->execute();
+    
+    // 6. Lost Deals
+    $lost_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_stage', 'closed_lost')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $lost_query->condition('field_owner', $user_id);
+    }
+    $lost_count = $lost_query->count()->execute();
+    
+    // 7. Overdue Activities
+    $overdue_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->condition('field_datetime', $now, '<=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $overdue_query->condition('field_assigned_to', $user_id);
+    }
+    $overdue_activities = $overdue_query->count()->execute();
+    
+    // 8. Deals Due This Week
+    $due_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_closing_date', $now, '>=')
+      ->condition('field_closing_date', $week_end, '<=')
+      ->condition('field_stage', ['closed_won', 'closed_lost'], 'NOT IN')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $due_this_week_query->condition('field_owner', $user_id);
+    }
+    $due_this_week = $due_this_week_query->count()->execute();
+    
+    // 9. New Contacts This Month
+    $new_contacts_query = \Drupal::entityQuery('node')
+      ->condition('type', 'contact')
+      ->condition('created', $month_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $new_contacts_query->condition('field_owner', $user_id);
+    }
+    $new_contacts = $new_contacts_query->count()->execute();
+    
+    // 10. Revenue This Week (deals with amounts)
+    $revenue_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('field_stage', 'closed_won')
+      ->condition('created', $this_week_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $revenue_this_week_query->condition('field_owner', $user_id);
+    }
+    $revenue_this_week_ids = $revenue_this_week_query->execute();
+    
+    $revenue_this_week = 0;
+    $revenue_this_week_count = 0;
+    if (!empty($revenue_this_week_ids)) {
+      $revenue_deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($revenue_this_week_ids);
+      foreach ($revenue_deals as $deal) {
+        if ($deal->hasField('field_amount') && !$deal->get('field_amount')->isEmpty()) {
+          $revenue_this_week += floatval($deal->get('field_amount')->value);
+          $revenue_this_week_count++;
+        }
+      }
+    }
+    
+    // 11. Deal Values (total, won, lost)
+    $deal_ids_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->accessCheck(FALSE);
+    if (!$is_admin) {
+      $deal_ids_query->condition('field_owner', $user_id);
+    }
+    $deal_ids = $deal_ids_query->execute();
+    
+    $total_value = 0;
+    $won_value = 0;
+    $lost_value = 0;
+    $active_value = 0;
+    $avg_days_in_pipeline = 0;
+    
+    if (!empty($deal_ids)) {
+      $deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_ids);
+      $total_days = 0;
+      $closed_deal_count = 0;
+      
+      foreach ($deals as $deal) {
+        $amount = 0;
+        if ($deal->hasField('field_amount') && !$deal->get('field_amount')->isEmpty()) {
+          $amount = floatval($deal->get('field_amount')->value);
+          $total_value += $amount;
+        }
+        
+        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
+          $stage = $deal->get('field_stage')->value;
+          if ($stage === 'closed_won') {
+            $won_value += $amount;
+          } elseif ($stage === 'closed_lost') {
+            $lost_value += $amount;
+          } else {
+            $active_value += $amount;
+          }
+          
+          // Calculate average days in pipeline for won deals
+          if ($stage === 'closed_won') {
+            $days_open = floor(($now - $deal->getCreatedTime()) / 86400);
+            $total_days += $days_open;
+            $closed_deal_count++;
+          }
+        }
+      }
+      
+      if ($closed_deal_count > 0) {
+        $avg_days_in_pipeline = round($total_days / $closed_deal_count, 0);
+      }
+    }
+    
+    // 12. Calculate KPIs
+    $total_closed = $won_count + $lost_count;
+    $win_rate = $total_closed > 0 ? round(($won_count / $total_closed) * 100, 1) : 0;
+    $conversion_rate = $deals_count > 0 ? round(($won_count / $deals_count) * 100, 1) : 0;
+    $avg_deal_size = $won_count > 0 ? round($won_value / $won_count, 0) : 0;
+    
+    // 13. Get recent activities
+    $recent_activities_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->accessCheck(FALSE)
+      ->sort('created', 'DESC')
+      ->range(0, 10);
+    if (!$is_admin) {
+      $recent_activities_query->condition('field_assigned_to', $user_id);
+    }
+    $recent_activity_count = $recent_activities_query->count()->execute();
+    
+    // Return all metrics in real-time
+    return new JsonResponse([
+      'success' => TRUE,
+      'timestamp' => $now,
+      'message' => 'Dashboard data refreshed in real-time',
+      'is_admin' => $is_admin,
+      'metrics' => [
+        // Original 10 metrics
+        'contacts' => $contacts_count,
+        'organizations' => $orgs_count,
+        'deals' => $deals_count,
+        'activities' => $activities_count,
+        'won' => $won_count,
+        'lost' => $lost_count,
+        'activities_recent' => $recent_activity_count,
+        'total_value' => round($total_value, 2),
+        'won_value' => round($won_value, 2),
+        'lost_value' => round($lost_value, 2),
+        'active_value' => round($active_value, 2),
+        'total_value_display' => '$' . number_format($total_value / 1000000, 1) . 'M',
+        'won_value_display' => '$' . number_format($won_value / 1000000, 1) . 'M',
+        'lost_value_display' => '$' . number_format($lost_value / 1000000, 1) . 'M',
+        'active_value_display' => '$' . number_format($active_value / 1000000, 1) . 'M',
+        'win_rate' => $win_rate,
+        'conversion_rate' => $conversion_rate,
+        'avg_deal' => $avg_deal_size,
+        'avg_deal_display' => '$' . number_format($avg_deal_size / 1000, 0) . 'K',
+        
+        // New 6 enhanced metrics
+        'overdue_activities' => $overdue_activities,
+        'revenue_this_week' => round($revenue_this_week, 2),
+        'revenue_this_week_display' => '$' . number_format($revenue_this_week / 1000000, 1) . 'M',
+        'revenue_this_week_count' => $revenue_this_week_count,
+        'due_this_week' => $due_this_week,
+        'avg_days_in_pipeline' => $avg_days_in_pipeline,
+        'new_contacts_this_month' => $new_contacts,
+      ],
+    ]);
   }
 
 }

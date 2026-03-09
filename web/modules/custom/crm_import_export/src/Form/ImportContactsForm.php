@@ -4,8 +4,11 @@ namespace Drupal\crm_import_export\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\node\Entity\Node;
 use Drupal\file\Entity\File;
+use Drupal\crm_import_export\Service\DataValidationService;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for importing contacts from CSV.
@@ -16,7 +19,33 @@ use Drupal\file\Entity\File;
  *
  * @package Drupal\crm_import_export\Form
  */
-class ImportContactsForm extends FormBase {
+class ImportContactsForm extends FormBase implements ContainerInjectionInterface {
+
+  /**
+   * The data validation service.
+   *
+   * @var \Drupal\crm_import_export\Service\DataValidationService
+   */
+  protected $validationService;
+
+  /**
+   * Constructs ImportContactsForm.
+   *
+   * @param \Drupal\crm_import_export\Service\DataValidationService $validation_service
+   *   The data validation service.
+   */
+  public function __construct(DataValidationService $validation_service) {
+    $this->validationService = $validation_service;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('crm_import_export.data_validation')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -347,10 +376,30 @@ Jane Smith,jane@example.com,0987654321,CEO,XYZ Corporation,Referral,contacted
   protected function process_contact_row(array $row, array $options, array &$results) {
     $name = $row['name'] ?? $row['title'] ?? '';
     $email = $row['email'] ?? '';
+    $phone = $row['phone'] ?? '';
 
     if (empty($name) || empty($email)) {
       $results['errors']++;
       return;
+    }
+
+    // Validate contact data before processing
+    $contact_data = [
+      'name' => $name,
+      'email' => $email,
+      'phone' => $phone,
+      'organization' => $row['organization'] ?? NULL,
+    ];
+
+    $validation = $this->validationService->validateContact($contact_data);
+    if (!$validation['valid']) {
+      // Log validation errors but continue with import (warnings, not blocking)
+      $error_msg = implode('; ', $validation['errors']);
+      \Drupal::logger('crm_import_export')->warning(
+        'Contact row validation warning: @errors',
+        ['@errors' => $error_msg]
+      );
+      // Continue with import unless critical (phone/name missing are already checked above)
     }
 
     $existing = $this->find_existing_contact($email);

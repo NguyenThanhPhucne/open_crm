@@ -4,6 +4,7 @@ namespace Drupal\crm_kanban\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Cache\Cache;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -135,16 +136,19 @@ class KanbanController extends ControllerBase {
     }
     
     .kanban-container {
-      padding: 24px;
-      padding-top: 24px;
-      overflow-x: auto;
+      padding: 12px;
+      padding-top: 12px;
+      overflow-x: hidden;
       overflow-y: hidden;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
+      width: 100%;
+      height: calc(100vh - 60px);
+      display: flex;
     }
     
     .kanban-container::-webkit-scrollbar {
-      height: 8px;
+      height: 0px;
     }
     
     .kanban-container::-webkit-scrollbar-track {
@@ -163,80 +167,112 @@ class KanbanController extends ControllerBase {
     
     .kanban-board {
       display: flex;
-      gap: 16px;
+      flex-wrap: nowrap;
+      gap: 8px;
+      padding-bottom: 12px;
       width: 100%;
-      padding-bottom: 24px;
-      justify-content: stretch;
+      align-items: stretch;
     }
     
     .kanban-column {
       background: #f1f5f9;
       border-radius: 12px;
-      flex: 1 1 0;
-      min-width: 200px;
-      max-width: 340px;
       display: flex;
       flex-direction: column;
-      max-height: calc(100vh - 140px);
+      height: calc(100vh - 140px);
+      overflow: hidden;
+      flex: 1 1 0;
+      min-width: 0;
     }
     
     .column-header {
-      padding: 16px;
+      padding: 8px 6px;
       border-bottom: 2px solid;
       background: white;
       border-radius: 12px 12px 0 0;
+      text-align: center;
     }
     
     .column-title {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
+      justify-content: center;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+      gap: 2px;
     }
     
     .column-title h3 {
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
+      word-break: break-word;
     }
     
     .column-count {
       background: #f1f5f9;
       color: #64748b;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
+      padding: 1px 4px;
+      border-radius: 10px;
+      font-size: 10px;
       font-weight: 600;
+      white-space: nowrap;
     }
     
     .column-total {
-      font-size: 18px;
+      font-size: 12px;
       font-weight: 700;
-      margin-top: 4px;
+      margin-top: 2px;
+      word-break: break-word;
+      text-align: center;
     }
     
     .column-cards {
-      padding: 12px;
+      padding: 4px 4px;
       flex: 1;
       overflow-y: auto;
-      min-height: 100px;
+      overflow-x: hidden;
+      min-height: 80px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .column-cards::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .column-cards::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .column-cards::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 2px;
+    }
+    
+    .column-cards::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
     
     .deal-card {
       background: white;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
+      border-radius: 6px;
+      padding: 6px;
+      margin-bottom: 4px;
       cursor: move;
-      border-left: 3px solid;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 2px solid;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       transition: all 0.2s ease;
+      box-sizing: border-box;
+      width: 100%;
+      overflow: hidden;
+      text-align: center;
     }
     
     .deal-card:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      transform: translateY(-2px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
     }
     
     .deal-card.sortable-ghost {
@@ -246,39 +282,51 @@ class KanbanController extends ControllerBase {
     
     .deal-card.sortable-drag {
       opacity: 0.8;
-      transform: rotate(3deg);
+      transform: rotate(2deg);
     }
     
     .deal-title {
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 600;
       color: #1e293b;
-      margin-bottom: 8px;
-      line-height: 1.4;
+      margin-bottom: 2px;
+      line-height: 1.2;
+      word-break: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
     
     .deal-value {
-      font-size: 18px;
+      font-size: 13px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 3px;
+      word-break: break-word;
     }
     
     .deal-meta {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      font-size: 13px;
+      gap: 1px;
+      font-size: 10px;
       color: #64748b;
+      align-items: center;
     }
     
     .deal-meta-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     
     .deal-meta-row i {
       flex-shrink: 0;
+      font-size: 10px;
     }
     
     /* Stage colors */
@@ -570,228 +618,304 @@ class KanbanController extends ControllerBase {
     
     /* Responsive Design */
     
-    /* Large Laptop / Desktop (1440px+) */
-    @media (min-width: 1441px) {
+    /* Large Desktop (1900px+) */
+    @media (min-width: 1900px) {
       .kanban-container {
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 32px 40px;
-      }
-      
-      .kanban-column {
-        min-width: 220px;
-        max-width: 360px;
-        max-height: calc(100vh - 160px);
-      }
-      
-      .deal-modal {
-        max-width: 600px;
+        padding: 20px;
       }
       
       .kanban-board {
-        gap: 18px;
+        grid-auto-columns: minmax(300px, 1fr);
+        gap: 14px;
       }
       
-      .deal-card {
-        padding: 18px;
-        margin-bottom: 14px;
+      .kanban-column {
+        height: calc(100vh - 140px);
       }
       
       .column-header {
-        padding: 18px;
+        padding: 16px;
+      }
+      
+      .column-cards {
+        padding: 12px;
+      }
+      
+      .deal-card {
+        padding: 16px;
+        margin-bottom: 12px;
       }
       
       .deal-title {
         font-size: 15px;
       }
       
-      .deal-amount {
-        font-size: 19px;
+      .deal-value {
+        font-size: 18px;
+      }
+      
+      .deal-meta {
+        font-size: 13px;
       }
     }
     
-    /* Standard Laptop (1280px - 1440px) */
-    @media (min-width: 1281px) and (max-width: 1440px) {
+    /* Standard Desktop (1400px - 1900px) */
+    @media (max-width: 1899px) and (min-width: 1400px) {
       .kanban-container {
-        padding: 28px 32px;
-      }
-      
-      .kanban-column {
-        min-width: 200px;
-        max-width: 340px;
-        max-height: calc(100vh - 160px);
+        padding: 18px;
       }
       
       .kanban-board {
-        gap: 16px;
-      }
-      
-      .deal-modal {
-        max-width: 560px;
-      }
-      
-      .column-cards {
-        max-height: calc(100vh - 220px);
-      }
-      
-      .deal-card {
-        padding: 16px;
-        margin-bottom: 13px;
-      }
-    }
-    
-    /* Small Laptop (1024px - 1280px) */
-    @media (min-width: 1025px) and (max-width: 1280px) {
-      .kanban-container {
-        padding: 24px;
-      }
-      
-      .kanban-column {
-        min-width: 180px;
-        max-width: 300px;
-        max-height: calc(100vh - 150px);
-      }
-      
-      .kanban-board {
+        grid-auto-columns: minmax(270px, 1fr);
         gap: 12px;
       }
       
+      .column-header {
+        padding: 15px;
+      }
+      
+      .column-cards {
+        padding: 11px;
+      }
+      
       .deal-card {
-        padding: 13px;
+        padding: 15px;
         margin-bottom: 11px;
+      }
+      
+      .deal-title {
+        font-size: 14px;
+      }
+      
+      .deal-value {
+        font-size: 17px;
+      }
+      
+      .deal-meta {
+        font-size: 12.5px;
+      }
+    }
+    
+    /* Laptop (1024px - 1400px) */
+    @media (max-width: 1399px) and (min-width: 1024px) {
+      .kanban-container {
+        padding: 16px;
+      }
+      
+      .kanban-board {
+        grid-auto-columns: minmax(250px, 1fr);
+        gap: 12px;
+      }
+      
+      .column-header {
+        padding: 14px;
+      }
+      
+      .column-cards {
+        padding: 10px;
+      }
+      
+      .deal-card {
+        padding: 14px;
+        margin-bottom: 10px;
+      }
+      
+      .deal-title {
+        font-size: 13.5px;
+        margin-bottom: 7px;
+      }
+      
+      .deal-value {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      
+      .deal-meta {
+        font-size: 12px;
+      }
+      
+      .column-total {
+        font-size: 17px;
+        margin-top: 3px;
+      }
+    }
+    
+    /* Tablet Landscape (768px - 1024px) */
+    @media (max-width: 1023px) and (min-width: 768px) {
+      .kanban-container {
+        padding: 14px;
+        height: calc(100vh - 50px);
+      }
+      
+      .kanban-board {
+        grid-auto-columns: minmax(230px, 1fr);
+        gap: 11px;
+      }
+      
+      .kanban-column {
+        height: calc(100vh - 120px);
       }
       
       .column-header {
         padding: 13px;
       }
       
+      .column-cards {
+        padding: 9px;
+      }
+      
+      .deal-card {
+        padding: 13px;
+        margin-bottom: 9px;
+      }
+      
+      .deal-title {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      
+      .deal-value {
+        font-size: 15px;
+        margin-bottom: 9px;
+      }
+      
+      .deal-meta {
+        font-size: 11.5px;
+        gap: 5px;
+      }
+      
       .column-title h3 {
         font-size: 13px;
       }
       
-      .deal-modal {
-        max-width: 520px;
+      .column-count {
+        font-size: 11px;
+        padding: 2px 7px;
       }
       
-      .column-cards {
-        max-height: calc(100vh - 200px);
-      }
-      
-      .deal-amount {
-        font-size: 17px;
-      }
-      
-      .deal-title {
-        font-size: 14px;
-      }
-      
-      .deal-meta {
-        font-size: 12px;
+      .column-total {
+        font-size: 16px;
+        margin-top: 3px;
       }
     }
     
-    /* Tablet Landscape (768px - 1024px) */
-    @media (max-width: 1024px) {
-      .kanban-column {
-        width: 280px;
+    /* Mobile Landscape / Small Tablet (480px - 768px) */
+    @media (max-width: 767px) and (min-width: 480px) {
+      .kanban-container {
+        padding: 12px;
+        height: calc(100vh - 40px);
       }
       
       .kanban-board {
-        gap: 14px;
-      }
-      
-      .kanban-container {
-        padding: 20px;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .kanban-container {
-        padding: 16px;
+        grid-auto-columns: minmax(200px, 1fr);
+        gap: 10px;
       }
       
       .kanban-column {
-        width: 260px;
+        height: calc(100vh - 100px);
       }
       
-      .region-sticky__items {
-        padding: 12px 16px;
-      }
-      
-      .page-title {
-        font-size: 22px;
-      }
-      
-      .gin-breadcrumb-wrapper {
-        padding: 10px 16px;
-      }
-    }
-    
-    @media (max-width: 640px) {
-      .kanban-board {
-        flex-direction: column;
-        min-width: 100%;
-      }
-      
-      .kanban-column {
-        width: 100%;
-        max-height: 400px;
-      }
-      
-      .kanban-container {
+      .column-header {
         padding: 12px;
       }
       
-      .page-title {
-        font-size: 20px;
-        gap: 8px;
-      }
-      
-      .deal-modal {
-        width: 95%;
-        max-width: 95%;
-        margin: 10px;
-      }
-      
-      .modal-header h2 {
-        font-size: 18px;
-      }
-      
-      .form-group {
-        margin-bottom: 16px;
-      }
-      
-      .modal-actions {
-        flex-direction: column-reverse;
-      }
-      
-      .modal-actions .btn {
-        width: 100%;
-        justify-content: center;
+      .column-cards {
+        padding: 8px;
       }
       
       .deal-card {
         padding: 12px;
+        margin-bottom: 8px;
       }
       
       .deal-title {
+        font-size: 12.5px;
+        margin-bottom: 5px;
+      }
+      
+      .deal-value {
         font-size: 14px;
+        margin-bottom: 8px;
       }
       
-      .deal-amount {
-        font-size: 16px;
+      .deal-meta {
+        font-size: 11px;
+        gap: 4px;
       }
       
-      .region-sticky {
-        top: 50px;
+      .column-title h3 {
+        font-size: 12px;
       }
       
-      .sticky-shadow {
-        top: 120px;
+      .column-count {
+        font-size: 10px;
+        padding: 2px 6px;
+      }
+      
+      .column-total {
+        font-size: 15px;
+        margin-top: 2px;
       }
     }
     
-    /* CRM Navigation Bar - Drupal Toolbar Style */
+    /* Mobile Portrait (< 480px) */
+    @media (max-width: 479px) {
+      .kanban-container {
+        padding: 10px;
+        height: calc(100vh - 30px);
+      }
+      
+      .kanban-board {
+        grid-auto-columns: minmax(180px, 1fr);
+        gap: 8px;
+      }
+      
+      .kanban-column {
+        height: calc(100vh - 80px);
+      }
+      
+      .column-header {
+        padding: 11px;
+      }
+      
+      .column-cards {
+        padding: 7px;
+      }
+      
+      .deal-card {
+        padding: 11px;
+        margin-bottom: 7px;
+      }
+      
+      .deal-title {
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+      
+      .deal-value {
+        font-size: 13px;
+        margin-bottom: 7px;
+      }
+      
+      .deal-meta {
+        font-size: 10px;
+        gap: 3px;
+      }
+      
+      .column-title h3 {
+        font-size: 11px;
+      }
+      
+      .column-count {
+        font-size: 9px;
+        padding: 1px 5px;
+      }
+      
+      .column-total {
+        font-size: 14px;
+        margin-top: 2px;
+      }
+    }
     .crm-toolbar {
       background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
       border-bottom: 2px solid #3b82f6;
@@ -905,41 +1029,6 @@ class KanbanController extends ControllerBase {
       height: 16px;
       stroke-width: 2.5;
     }
-    
-    .kanban-container {
-      padding-top: 39px;
-    }
-    
-    @media (max-width: 768px) {
-      .crm-toolbar-item span,
-      .crm-toolbar-btn span,
-      .crm-toolbar-brand span {
-        display: none;
-      }
-      
-      .crm-toolbar-item,
-      .crm-toolbar-btn {
-        padding: 0 10px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .kanban-column {
-        max-height: 350px;
-      }
-      
-      .column-header {
-        padding: 12px;
-      }
-      
-      .column-title h3 {
-        font-size: 12px;
-      }
-      
-      .page-title {
-        font-size: 18px;
-      }
-    }
   </style>
   
   <!-- Deal Closing Modal -->
@@ -959,7 +1048,7 @@ class KanbanController extends ControllerBase {
         
         <form id="dealClosingForm">
           <input type="hidden" name="deal_id" id="modalDealId">
-          <input type="hidden" name="stage_id" value="5">
+          <input type="hidden" name="stage_id" value="closed_won">
           
           <div class="form-group">
             <label class="form-label">
@@ -972,17 +1061,17 @@ class KanbanController extends ControllerBase {
           <div class="form-group">
             <label class="form-label">
               <i data-lucide="file-text" width="16" height="16" style="vertical-align: middle;"></i>
-              Hợp đồng đính kèm <span class="required">*</span>
+              Hợp đồng đính kèm <span style="color: #94a3b8; font-size: 13px;">(tùy chọn)</span>
             </label>
             <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('contractFile').click()">
               <div class="file-icon">
                 <i data-lucide="upload" width="24" height="24"></i>
               </div>
-              <div class="file-instructions">Click để chọn file hợp đồng</div>
+              <div class="file-instructions">Click để chọn file hợp đồng (không bắt buộc)</div>
               <div class="file-hint">PDF, DOC, DOCX (tối đa 10MB)</div>
               <div class="file-name" id="fileName" style="display: none;"></div>
             </div>
-            <input type="file" id="contractFile" name="contract" accept=".pdf,.doc,.docx" style="display: none;" required>
+            <input type="file" id="contractFile" name="contract" accept=".pdf,.doc,.docx" style="display: none;">
           </div>
           
           <div class="error-message" id="errorMessage">
@@ -1134,15 +1223,8 @@ HTML;
         return;
       }
       
-      if (!contractFile) {
-        errorText.textContent = 'Vui lòng upload file hợp đồng';
-        errorMsg.classList.add('show');
-        lucide.createIcons();
-        return;
-      }
-      
-      // File size validation (10MB)
-      if (contractFile.size > 10 * 1024 * 1024) {
+      // File size validation (only if file is selected)
+      if (contractFile && contractFile.size > 10 * 1024 * 1024) {
         errorText.textContent = 'File vượt quá 10MB. Vui lòng chọn file nhỏ hơn.';
         errorMsg.classList.add('show');
         lucide.createIcons();
@@ -1158,9 +1240,13 @@ HTML;
         // Create FormData for file upload
         const formData = new FormData();
         formData.append('deal_id', dealId);
-        formData.append('stage_id', '5');
+        formData.append('stage_id', 'closed_won');
         formData.append('closing_date', closingDate);
-        formData.append('contract', contractFile);
+        
+        // Only append contract if file is selected
+        if (contractFile) {
+          formData.append('contract', contractFile);
+        }
         
         const response = await fetch('/crm/pipeline/update-stage', {
           method: 'POST',
@@ -1184,7 +1270,8 @@ HTML;
           lucide.createIcons();
           
           setTimeout(() => {
-            window.location.reload();
+            // Redirect to dashboard to see updated stats
+            window.location.href = '/crm/dashboard';
           }, 1500);
         } else {
           errorText.textContent = result.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
@@ -1316,26 +1403,45 @@ HTML;
    * AJAX endpoint to update deal stage.
    */
   public function updateStage(Request $request) {
-    // Check if this is a file upload (multipart/form-data)
-    $is_file_upload = $request->files->count() > 0;
+    // Check if this is a form submission (multipart/form-data or application/x-www-form-urlencoded)
+    $content_type = $request->headers->get('Content-Type', '');
+    $is_form_submission = strpos($content_type, 'form') !== FALSE || 
+                          strpos($content_type, 'multipart') !== FALSE;
     
-    if ($is_file_upload) {
-      // Handle Won stage with file upload
-      $deal_id = $request->request->get('deal_id');
+    if ($is_form_submission) {
+      // Handle form submission (with or without file)
+      $deal_id = (int)$request->request->get('deal_id');
       $stage_id = $request->request->get('stage_id');
       $closing_date = $request->request->get('closing_date');
       $file = $request->files->get('contract');
     } else {
       // Handle regular JSON stage update
       $data = json_decode($request->getContent(), TRUE);
-      $deal_id = $data['deal_id'] ?? NULL;
-      $stage_id = $data['stage_id'] ?? NULL;
+      $deal_id = isset($data['deal_id']) ? (int)$data['deal_id'] : NULL;
+      $stage_id = isset($data['stage_id']) ? $data['stage_id'] : NULL;
       $closing_date = NULL;
       $file = NULL;
     }
     
     if (!$deal_id || !$stage_id) {
-      return new JsonResponse(['success' => FALSE, 'message' => 'Missing parameters'], 400);
+      return new JsonResponse(['success' => FALSE, 'message' => 'Missing parameters: deal_id=' . $deal_id . ', stage_id=' . $stage_id], 400);
+    }
+    
+    // Validate and map stage value (accept both numeric term IDs and string values)
+    $valid_stages = ['qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
+    $stage_mapping = [1 => 'qualified', 2 => 'proposal', 3 => 'negotiation', 5 => 'closed_won', 6 => 'closed_lost'];
+    
+    // Convert numeric term ID to string value if needed
+    if (is_numeric($stage_id)) {
+      if (!isset($stage_mapping[$stage_id])) {
+        return new JsonResponse(['success' => FALSE, 'message' => 'Invalid stage ID: ' . $stage_id], 400);
+      }
+      $stage_id = $stage_mapping[$stage_id];
+    }
+    
+    // Validate string stage value
+    if (!in_array($stage_id, $valid_stages)) {
+      return new JsonResponse(['success' => FALSE, 'message' => 'Invalid stage value: ' . $stage_id], 400);
     }
     
     try {
@@ -1345,46 +1451,75 @@ HTML;
         return new JsonResponse(['success' => FALSE, 'message' => 'Deal not found'], 404);
       }
       
-      // If moving to Won (stage 5) with file upload
-      if ($stage_id == 5 && $file) {
+      // If moving to Won (closed_won)
+      if ($stage_id === 'closed_won') {
         // Validate closing date
         if (!$closing_date) {
           return new JsonResponse(['success' => FALSE, 'message' => 'Closing date is required'], 400);
         }
         
-        // Validate and save file
-        $validators = [
-          'file_validate_extensions' => ['pdf doc docx xls xlsx'],
-          'file_validate_size' => [10 * 1024 * 1024], // 10MB
-        ];
-        
-        $file_entity = file_save_upload('contract', $validators, 'private://contracts', 0, \Drupal\Core\File\FileSystemInterface::EXISTS_RENAME);
-        
-        if (!$file_entity) {
-          return new JsonResponse(['success' => FALSE, 'message' => 'File upload failed. Please check file type and size.'], 400);
+        // Update deal with closing date (if field exists)
+        if ($deal->hasField('field_closing_date')) {
+          $deal->set('field_closing_date', $closing_date);
         }
         
-        // Make file permanent
-        $file_entity->setPermanent();
-        $file_entity->save();
-        
-        // Update deal with closing date and contract
-        $deal->set('field_closing_date', $closing_date);
-        $deal->set('field_contract', [
-          'target_id' => $file_entity->id(),
-          'description' => 'Contract signed on ' . $closing_date,
-        ]);
-        
-        // Log activity
-        \Drupal::logger('crm_kanban')->notice('Deal @deal_id closed with contract @file', [
-          '@deal_id' => $deal_id,
-          '@file' => $file_entity->getFilename(),
-        ]);
+        // Handle optional file upload
+        if ($file) {
+          try {
+            // Validate and save file
+            $validators = [
+              'file_validate_extensions' => ['pdf doc docx xls xlsx'],
+              'file_validate_size' => [10 * 1024 * 1024], // 10MB
+            ];
+            
+            $file_entity = file_save_upload('contract', $validators, 'private://contracts', 0, \Drupal\Core\File\FileSystemInterface::EXISTS_RENAME);
+            
+            if (!$file_entity) {
+              return new JsonResponse(['success' => FALSE, 'message' => 'File upload failed. Please check file type and size.'], 400);
+            }
+            
+            // Make file permanent
+            $file_entity->setPermanent();
+            $file_entity->save();
+            
+            // Update deal with contract if field exists
+            if ($deal->hasField('field_contract')) {
+              $deal->set('field_contract', [
+                'target_id' => $file_entity->id(),
+                'description' => 'Contract signed on ' . $closing_date,
+              ]);
+            }
+            
+            // Log activity
+            \Drupal::logger('crm_kanban')->notice('Deal @deal_id closed with contract @file', [
+              '@deal_id' => $deal_id,
+              '@file' => $file_entity->getFilename(),
+            ]);
+          } catch (\Exception $file_error) {
+            \Drupal::logger('crm_kanban')->warning('File upload error for deal @deal_id: @error', [
+              '@deal_id' => $deal_id,
+              '@error' => $file_error->getMessage(),
+            ]);
+            // Continue without file - it's optional anyway
+          }
+        } else {
+          // Log activity without contract
+          \Drupal::logger('crm_kanban')->notice('Deal @deal_id closed without contract on @date', [
+            '@deal_id' => $deal_id,
+            '@date' => $closing_date,
+          ]);
+        }
       }
       
-      // Update stage
-      $deal->set('field_stage', $stage_id);
+      // Update stage (keep as string value for consistency)
+      if ($deal->hasField('field_stage')) {
+        $deal->set('field_stage', $stage_id);
+      }
       $deal->save();
+      
+      // Clear entity cache so dashboard shows updated data
+      \Drupal::entityTypeManager()->getStorage('node')->resetCache([$deal_id]);
+      \Drupal\Core\Cache\Cache::invalidateTags(['node:' . $deal_id]);
       
       // TODO: Send email notification to manager when deal is won
       // Can be implemented using Drupal's Mail API or Rules module

@@ -1,0 +1,15 @@
+services:
+  crm.data_integrity_service:
+    class: Drupal\crm\Service\DataIntegrityService
+    arguments:
+      - "@entity_type.manager"
+      - "@logger.factory"
+
+  crm.drush_commands:
+    class: Drupal\crm\Commands\DataIntegrityCommands
+    arguments:
+      - "@crm.data_integrity_service"
+      - "@entity_type.manager"
+      - "@logger.factory"
+    tags:
+      - { name: drush.command }

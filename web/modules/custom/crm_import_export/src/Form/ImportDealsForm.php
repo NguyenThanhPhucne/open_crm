@@ -4,8 +4,11 @@ namespace Drupal\crm_import_export\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\node\Entity\Node;
 use Drupal\file\Entity\File;
+use Drupal\crm_import_export\Service\DataValidationService;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for importing deals from CSV.
@@ -13,12 +16,38 @@ use Drupal\file\Entity\File;
  * Provides functionality to import deals through CSV upload with options for
  * handling duplicates, creating missing contacts, and setting default stages.
  */
-class ImportDealsForm extends FormBase {
+class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
 
   /**
    * Date format constant for Drupal datetime fields.
    */
   private const DATE_FORMAT = 'Y-m-d\TH:i:s';
+
+  /**
+   * The data validation service.
+   *
+   * @var \Drupal\crm_import_export\Service\DataValidationService
+   */
+  protected $validationService;
+
+  /**
+   * Constructs ImportDealsForm.
+   *
+   * @param \Drupal\crm_import_export\Service\DataValidationService $validation_service
+   *   The data validation service.
+   */
+  public function __construct(DataValidationService $validation_service) {
+    $this->validationService = $validation_service;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('crm_import_export.data_validation')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -404,6 +433,23 @@ Your Deal Title 3,[Amount],[Contact Email],[Organization Name],[Stage ID or Name
       $title = $row['title'] ?? $row['name'] ?? '';
 
       if (empty($title)) {
+        $this->log_import_error($row_number, 'Missing required field: title');
+        $results['errors']++;
+        return;
+      }
+
+      // Validate deal data before processing
+      $deal_data = [
+        'title' => $title,
+        'amount' => $row['amount'] ?? $row['value'] ?? 0,
+        'stage' => $row['stage'] ?? NULL,
+        'contact' => $row['contact'] ?? NULL,
+      ];
+
+      $validation = $this->validationService->validateDeal($deal_data);
+      if (!$validation['valid']) {
+        $error_msg = implode('; ', $validation['errors']);
+        $this->log_import_error($row_number, 'Validation failed: ' . $error_msg);
         $results['errors']++;
         return;
       }

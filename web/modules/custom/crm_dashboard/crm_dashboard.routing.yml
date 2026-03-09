@@ -21,3 +21,11 @@ crm_dashboard.test:
     _title: "NEW Dashboard Test"
   requirements:
     _permission: "access content"
+
+crm_dashboard.refresh:
+  path: "/crm/dashboard/refresh"
+  defaults:
+    _controller: '\Drupal\crm_dashboard\Controller\DashboardController::getRefreshData'
+  requirements:
+    _permission: "access content"
+    _method: "GET|POST"

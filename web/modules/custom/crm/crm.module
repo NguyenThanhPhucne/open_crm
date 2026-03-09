@@ -187,36 +187,108 @@ function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 /**
  * Implements hook_node_presave().
  *
- * Ensures owner is set when saving CRM content.
+ * Comprehensive validation for CRM entities:
+ * - Ensures owner/assignment fields are set
+ * - Validates stage format and values
+ * - Validates deal amounts are non-negative
+ * - Ensures entity relationships are valid
+ * - Prevents orphaned entities
  */
 function crm_node_presave(NodeInterface $node) {
-  $crm_types = ['contact', 'deal'];
-  
-  // Check if this is CRM content.
-  if (!in_array($node->bundle(), $crm_types) && $node->bundle() !== 'activity' && $node->bundle() !== 'organization') {
-    return;
+  $bundle = $node->bundle();
+  $current_user = \Drupal::currentUser();
+  $valid_stages = ['qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
+
+  // DEALS - Comprehensive validation
+  if ($bundle === 'deal') {
+    // Requirement 1: Deal must have owner
+    if ($node->get('field_owner')->isEmpty()) {
+      if ($current_user->id() > 0) {
+        $node->set('field_owner', $current_user->id());
+        \Drupal::logger('crm')->info('Auto-assigned deal #@id to user @user', 
+          ['@id' => $node->id() ?: 'new', '@user' => $current_user->getDisplayName()]);
+      }
+    }
+
+    // Requirement 2: Stage must be valid string format
+    if (!$node->get('field_stage')->isEmpty()) {
+      $stage = $node->get('field_stage')->value;
+      
+      // Handle legacy numeric stage IDs and convert to string
+      if (is_numeric($stage)) {
+        $stage_map = [1 => 'qualified', 2 => 'proposal', 3 => 'negotiation', 5 => 'closed_won', 6 => 'closed_lost'];
+        if (isset($stage_map[$stage])) {
+          $stage = $stage_map[$stage];
+          $node->set('field_stage', $stage);
+        }
+      }
+      
+      // Validate stage value
+      if (!in_array($stage, $valid_stages)) {
+        throw new \InvalidArgumentException(
+          sprintf('Invalid stage: %s. Must be one of: %s', $stage, implode(', ', $valid_stages))
+        );
+      }
+    }
+
+    // Requirement 3: Amount must be non-negative
+    if (!$node->get('field_amount')->isEmpty()) {
+      $amount = floatval($node->get('field_amount')->value);
+      if ($amount < 0) {
+        throw new \InvalidArgumentException('Deal amount cannot be negative. Amount: ' . $amount);
+      }
+    }
+
+    // Requirement 4: Deal must reference Contact OR Organization (at least one)
+    $has_contact = !$node->get('field_contact')->isEmpty();
+    $has_org = !$node->get('field_organization')->isEmpty();
+    
+    if (!$has_contact && !$has_org) {
+      throw new \InvalidArgumentException(
+        'Deal must reference at least one: Contact or Organization'
+      );
+    }
   }
 
-  $current_user = \Drupal::currentUser();
+  // ACTIVITIES - Comprehensive validation
+  if ($bundle === 'activity') {
+    // Requirement 1: Activity must be assigned to user
+    if ($node->get('field_assigned_to')->isEmpty()) {
+      if ($current_user->id() > 0) {
+        $node->set('field_assigned_to', $current_user->id());
+        \Drupal::logger('crm')->info('Auto-assigned activity #@id to user @user',
+          ['@id' => $node->id() ?: 'new', '@user' => $current_user->getDisplayName()]);
+      }
+    }
 
-  // Set owner for Contact and Deal if empty.
-  if (in_array($node->bundle(), $crm_types)) {
-    if ($node->hasField('field_owner') && $node->get('field_owner')->isEmpty()) {
+    // Requirement 2: Activity must reference Contact OR Deal (at least one)
+    $has_contact = !$node->get('field_contact')->isEmpty();
+    $has_deal = !$node->get('field_deal')->isEmpty();
+    
+    if (!$has_contact && !$has_deal) {
+      throw new \InvalidArgumentException(
+        'Activity must reference at least one: Contact or Deal'
+      );
+    }
+  }
+
+  // CONTACTS - Validation
+  if ($bundle === 'contact') {
+    if ($node->get('field_phone')->isEmpty()) {
+      throw new \InvalidArgumentException('Phone number is required for contacts');
+    }
+    
+    // Set owner if empty
+    if ($node->get('field_owner')->isEmpty() && $current_user->id() > 0) {
       $node->set('field_owner', $current_user->id());
     }
   }
 
-  // Set assigned_staff for Organization if empty.
-  if ($node->bundle() === 'organization') {
-    if ($node->hasField('field_assigned_staff') && $node->get('field_assigned_staff')->isEmpty()) {
+  // ORGANIZATIONS - Validation
+  if ($bundle === 'organization') {
+    // Set assigned_staff if empty
+    if ($node->get('field_assigned_staff')->isEmpty() && $current_user->id() > 0) {
       $node->set('field_assigned_staff', $current_user->id());
-    }
-  }
-
-  // Set assigned_to for Activity if empty.
-  if ($node->bundle() === 'activity') {
-    if ($node->hasField('field_assigned_to') && $node->get('field_assigned_to')->isEmpty()) {
-      $node->set('field_assigned_to', $current_user->id());
     }
   }
 }

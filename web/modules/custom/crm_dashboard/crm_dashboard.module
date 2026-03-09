@@ -1,0 +1,155 @@
+<?php
+
+/**
+ * @file
+ * CRM Dashboard module - Professional SaaS dashboard with real-time data sync.
+ */
+
+/**
+ * Implements hook_node_insert().
+ * 
+ * Trigger dashboard refresh when activities or deals are created.
+ */
+function crm_dashboard_node_insert($node) {
+  if ($node->bundle() === 'activity') {
+    // Trigger real-time activity refresh
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_activity_created', [
+      'entity' => $node,
+      'operation' => 'insert',
+    ]);
+    
+    // Store cache tag for invalidation
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:recent_activities']);
+  }
+  
+  if ($node->bundle() === 'deal') {
+    // Trigger dashboard refresh when deals are created
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_deal_updated', [
+      'entity' => $node,
+      'operation' => 'insert',
+    ]);
+    
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:pipeline', 'crm_dashboard:metrics']);
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * 
+ * Trigger dashboard refresh when activities or deals are modified.
+ */
+function crm_dashboard_node_update($node) {
+  if ($node->bundle() === 'activity') {
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_activity_updated', [
+      'entity' => $node,
+      'operation' => 'update',
+    ]);
+    
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:recent_activities']);
+  }
+  
+  if ($node->bundle() === 'deal') {
+    // Check if stage has changed - this is critical for pipeline refresh
+    $original_stage = $node->original->get('field_stage')->value ?? null;
+    $new_stage = $node->get('field_stage')->value ?? null;
+    
+    if ($original_stage !== $new_stage) {
+      // Stage changed - refresh entire pipeline view
+      \Drupal::moduleHandler()->invokeAll('crm_dashboard_stage_changed', [
+        'entity' => $node,
+        'old_stage' => $original_stage,
+        'new_stage' => $new_stage,
+      ]);
+    }
+    
+    // Always invalidate dashboard cache on deal update
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_deal_updated', [
+      'entity' => $node,
+      'operation' => 'update',
+    ]);
+    
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:pipeline', 'crm_dashboard:metrics']);
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ * 
+ * Trigger dashboard refresh when activities or deals are deleted.
+ */
+function crm_dashboard_node_delete($node) {
+  if ($node->bundle() === 'activity') {
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_activity_deleted', [
+      'entity' => $node,
+      'operation' => 'delete',
+    ]);
+    
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:recent_activities']);
+  }
+  
+  if ($node->bundle() === 'deal') {
+    \Drupal::moduleHandler()->invokeAll('crm_dashboard_deal_updated', [
+      'entity' => $node,
+      'operation' => 'delete',
+    ]);
+    
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:pipeline', 'crm_dashboard:metrics']);
+  }
+}
+
+/**
+ * Hook definition: crm_dashboard_activity_created.
+ * 
+ * Invoked when a new activity is created.
+ * 
+ * @param array $context
+ *   Array containing:
+ *   - entity: The activity node entity
+ *   - operation: 'insert'
+ */
+
+/**
+ * Hook definition: crm_dashboard_activity_updated.
+ * 
+ * Invoked when an activity is updated.
+ * 
+ * @param array $context
+ *   Array containing:
+ *   - entity: The activity node entity
+ *   - operation: 'update'
+ */
+
+/**
+ * Hook definition: crm_dashboard_activity_deleted.
+ * 
+ * Invoked when an activity is deleted.
+ * 
+ * @param array $context
+ *   Array containing:
+ *   - entity: The activity node entity
+ *   - operation: 'delete'
+ */
+
+/**
+ * Hook definition: crm_dashboard_deal_updated.
+ * 
+ * Invoked when a deal is created, updated, or deleted.
+ * 
+ * @param array $context
+ *   Array containing:
+ *   - entity: The deal node entity
+ *   - operation: 'insert', 'update', or 'delete'
+ */
+
+/**
+ * Hook definition: crm_dashboard_stage_changed.
+ * 
+ * Invoked when a deal's pipeline stage changes (update operation).
+ * This is a specialized hook for critical pipeline changes.
+ * 
+ * @param array $context
+ *   Array containing:
+ *   - entity: The deal node entity
+ *   - old_stage: Previous stage value/ID
+ *   - new_stage: New stage value/ID
+ */
