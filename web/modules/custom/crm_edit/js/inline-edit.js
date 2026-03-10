@@ -187,12 +187,12 @@ window.CRMInlineEdit = {
 
     const messageHtml = `
       <div class="crm-toast crm-toast-${type}">
+        <svg class="crm-toast-icon" data-lucide="${icon}"></svg>
         <div class="crm-toast-content">
-          <svg class="crm-toast-icon" data-lucide="${icon}" width="20" height="20"></svg>
-          <span class="crm-toast-message">${message}</span>
+          <p class="crm-toast-message">${message}</p>
         </div>
         <button class="crm-toast-close" type="button" aria-label="Close notification">
-          <svg data-lucide="x" width="16" height="16"></svg>
+          <svg data-lucide="x"></svg>
         </button>
       </div>
     `;
@@ -218,15 +218,14 @@ window.CRMInlineEdit = {
         if (toastEl.parentNode) {
           toastEl.remove();
         }
-      }, 1000); // 1s to match closing animation duration
+      }, 300);
     };
 
     closeBtn.addEventListener("click", removeToast);
 
-    // Auto dismiss after 2 seconds
-    const dismissTime = 2000;
+    // Auto dismiss after 3 seconds
     setTimeout(() => {
-      if (toastEl.parentNode) {
+      if (toastEl && toastEl.parentNode) {
         removeToast();
       }
     }, dismissTime);

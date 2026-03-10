@@ -231,9 +231,13 @@ class AIAutoCompleteController extends ControllerBase {
         ]
       );
 
+      // Get the provider that was used
+      $provider = \Drupal::config('crm_ai_autocomplete.settings')->get('ai_provider') ?? 'mock';
+
       return new JsonResponse([
         'success' => TRUE,
         'message' => 'Entity created successfully with AI!',
+        'provider' => $provider,
         'entity_id' => $entity->id(),
         'entity_type' => $entity_type,
         'entity_url' => $entity->toUrl('canonical')->toString(),

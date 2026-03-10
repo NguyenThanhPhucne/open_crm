@@ -37,3 +37,8 @@ services:
       - "@crm_ai_autocomplete.entity_autocomplete_service"
       - "@entity_type.manager"
       - "@logger.factory"
+
+  crm_ai_autocomplete.access_denied_subscriber:
+    class: Drupal\crm_ai_autocomplete\EventSubscriber\AccessDeniedSubscriber
+    tags:
+      - { name: event_subscriber }

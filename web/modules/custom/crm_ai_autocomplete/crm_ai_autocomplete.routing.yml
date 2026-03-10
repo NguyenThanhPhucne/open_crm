@@ -10,6 +10,8 @@ crm_ai_autocomplete.autocomplete_endpoint:
   options:
     _auth:
       - cookie
+    _format: json
+    no_cache: true
 
 crm_ai_autocomplete.auto_create_entity:
   path: "/api/crm/ai/auto-create"
@@ -23,6 +25,8 @@ crm_ai_autocomplete.auto_create_entity:
   options:
     _auth:
       - cookie
+    _format: json
+    no_cache: true
 
 crm_ai_autocomplete.config_form:
   path: "/admin/config/crm/ai"

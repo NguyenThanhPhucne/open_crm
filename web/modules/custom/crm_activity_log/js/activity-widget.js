@@ -9,20 +9,26 @@
       }
 
       // Log Call Form Handler
-      $("#log-call-form", context)
-        .once("log-call")
-        .on("submit", function (e) {
-          e.preventDefault();
-          submitActivityForm("log-call", $(this));
-        });
+      $("#log-call-form", context).each(function () {
+        if (!$(this).data("log-call-attached")) {
+          $(this).data("log-call-attached", true);
+          $(this).on("submit", function (e) {
+            e.preventDefault();
+            submitActivityForm("log-call", $(this));
+          });
+        }
+      });
 
       // Schedule Meeting Form Handler
-      $("#schedule-meeting-form", context)
-        .once("schedule-meeting")
-        .on("submit", function (e) {
-          e.preventDefault();
-          submitActivityForm("schedule-meeting", $(this));
-        });
+      $("#schedule-meeting-form", context).each(function () {
+        if (!$(this).data("schedule-meeting-attached")) {
+          $(this).data("schedule-meeting-attached", true);
+          $(this).on("submit", function (e) {
+            e.preventDefault();
+            submitActivityForm("schedule-meeting", $(this));
+          });
+        }
+      });
 
       /**
        * Submit activity form via AJAX
@@ -149,23 +155,25 @@
       }
 
       // Smooth scroll animations
-      $(".activity-item", context)
-        .once("activity-animate")
-        .each(function (index) {
-          $(this)
-            .css({
-              opacity: "0",
-              transform: "translateY(20px)",
-            })
-            .delay(index * 50)
-            .animate(
-              {
-                opacity: "1",
-              },
-              300,
-            )
-            .css("transform", "translateY(0)");
-        });
+      $(".activity-item", context).each(function (index) {
+        if ($(this).data("activity-animate-attached")) {
+          return;
+        }
+        $(this).data("activity-animate-attached", true);
+        $(this)
+          .css({
+            opacity: "0",
+            transform: "translateY(20px)",
+          })
+          .delay(index * 50)
+          .animate(
+            {
+              opacity: "1",
+            },
+            300,
+          )
+          .css("transform", "translateY(0)");
+      });
     },
   };
 })(jQuery, Drupal, drupalSettings);

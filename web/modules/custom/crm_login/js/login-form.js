@@ -6,19 +6,21 @@
 
   Drupal.behaviors.crmLoginForm = {
     attach: function (context, settings) {
-      var $form = $(".crm-login-form", context).once("crm-login-form");
+      var $form = $(".crm-login-form", context);
+      $form.each(function () {
+        if ($(this).data("crm-login-form-attached")) {
+          return;
+        }
+        $(this).data("crm-login-form-attached", true);
 
-      if ($form.length === 0) {
-        return;
-      }
+        // Add loading state on submit
+        $(this).on("submit", function () {
+          $(this).find(".auth-form-column").addClass("is-loading");
+        });
 
-      // Add loading state on submit
-      $form.on("submit", function () {
-        $(this).find(".auth-form-column").addClass("is-loading");
+        // Auto-focus username field
+        $(this).find('input[name="username"]').focus();
       });
-
-      // Auto-focus username field
-      $form.find('input[name="username"]').focus();
     },
   };
 })(jQuery, Drupal);

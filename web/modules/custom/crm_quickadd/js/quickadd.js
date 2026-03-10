@@ -9,61 +9,79 @@
       }
 
       // Contact Form Handler
-      $("#quickadd-contact-form", context)
-        .once("quickadd-contact")
-        .on("submit", function (e) {
-          e.preventDefault();
-          submitForm("contact", $(this));
-        });
+      $("#quickadd-contact-form", context).each(function () {
+        if (!$(this).data("quickadd-contact-attached")) {
+          $(this).data("quickadd-contact-attached", true);
+          $(this).on("submit", function (e) {
+            e.preventDefault();
+            submitForm("contact", $(this));
+          });
+        }
+      });
 
       // Deal Form Handler
-      $("#quickadd-deal-form", context)
-        .once("quickadd-deal")
-        .on("submit", function (e) {
-          e.preventDefault();
-          submitForm("deal", $(this));
-        });
+      $("#quickadd-deal-form", context).each(function () {
+        if (!$(this).data("quickadd-deal-attached")) {
+          $(this).data("quickadd-deal-attached", true);
+          $(this).on("submit", function (e) {
+            e.preventDefault();
+            submitForm("deal", $(this));
+          });
+        }
+      });
 
       // Organization Form Handler
-      $("#quickadd-organization-form", context)
-        .once("quickadd-organization")
-        .on("submit", function (e) {
-          e.preventDefault();
-          submitForm("organization", $(this));
-        });
+      $("#quickadd-organization-form", context).each(function () {
+        if (!$(this).data("quickadd-organization-attached")) {
+          $(this).data("quickadd-organization-attached", true);
+          $(this).on("submit", function (e) {
+            e.preventDefault();
+            submitForm("organization", $(this));
+          });
+        }
+      });
 
       // Show/hide inline organization fields
-      $("#contact-organization", context)
-        .once("org-toggle")
-        .on("change", function () {
-          if ($(this).val() === "__new__") {
-            $("#inline-org-fields").slideDown(200);
-            $("#inline-org-name").prop("required", true);
-          } else {
-            $("#inline-org-fields").slideUp(200);
-            $("#inline-org-name").prop("required", false);
-          }
-        });
+      $("#contact-organization", context).each(function () {
+        if (!$(this).data("org-toggle-attached")) {
+          $(this).data("org-toggle-attached", true);
+          $(this).on("change", function () {
+            if ($(this).val() === "__new__") {
+              $("#inline-org-fields").slideDown(200);
+              $("#inline-org-name").prop("required", true);
+            } else {
+              $("#inline-org-fields").slideUp(200);
+              $("#inline-org-name").prop("required", false);
+            }
+          });
+        }
+      });
 
       // Real-time validation for phone
-      $("#contact-phone", context)
-        .once("phone-validate")
-        .on("blur", function () {
-          const phone = $(this).val();
-          if (phone.length > 0) {
-            checkDuplicate("field_phone", phone, "#phone-validation");
-          }
-        });
+      $("#contact-phone", context).each(function () {
+        if (!$(this).data("phone-validate-attached")) {
+          $(this).data("phone-validate-attached", true);
+          $(this).on("blur", function () {
+            const phone = $(this).val();
+            if (phone.length > 0) {
+              checkDuplicate("field_phone", phone, "#phone-validation");
+            }
+          });
+        }
+      });
 
       // Real-time validation for email
-      $("#contact-email", context)
-        .once("email-validate")
-        .on("blur", function () {
-          const email = $(this).val();
-          if (email.length > 0) {
-            checkDuplicate("field_email", email, "#email-validation");
-          }
-        });
+      $("#contact-email", context).each(function () {
+        if (!$(this).data("email-validate-attached")) {
+          $(this).data("email-validate-attached", true);
+          $(this).on("blur", function () {
+            const email = $(this).val();
+            if (email.length > 0) {
+              checkDuplicate("field_email", email, "#email-validation");
+            }
+          });
+        }
+      });
 
       /**
        * Submit form via AJAX

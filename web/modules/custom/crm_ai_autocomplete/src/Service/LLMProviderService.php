@@ -50,7 +50,7 @@ class LLMProviderService {
    * Call LLM provider.
    *
    * @param string $provider
-   *   Provider name (openai, anthropic, mock).
+   *   Provider name (groq, openai, anthropic, mock).
    * @param string $prompt
    *   Prompt for LLM.
    * @param array $options
@@ -61,6 +61,9 @@ class LLMProviderService {
    */
   public function callLLM($provider, $prompt, array $options = []) {
     switch ($provider) {
+      case 'groq':
+        return $this->callGroq($prompt, $options);
+
       case 'openai':
         return $this->callOpenAI($prompt, $options);
 
@@ -70,6 +73,76 @@ class LLMProviderService {
       case 'mock':
       default:
         return $this->callMock($prompt, $options);
+    }
+  }
+
+  /**
+   * Call Groq API.
+   *
+   * @param string $prompt
+   *   Prompt text.
+   * @param array $options
+   *   Groq options.
+   *
+   * @return array
+   *   Parsed response.
+   */
+  protected function callGroq($prompt, array $options) {
+    try {
+      $config = $this->configFactory->get('crm_ai_autocomplete.settings');
+      $api_key = $config->get('groq_api_key');
+      $model = $config->get('groq_model') ?? 'llama-3.1-8b-instant';
+
+      if (!$api_key) {
+        $this->loggerFactory->get('crm_ai_autocomplete')->warning('Groq API key not configured, falling back to mock');
+        return $this->callMock($prompt, $options);
+      }
+
+      $response = $this->httpClient->post('https://api.groq.com/openai/v1/chat/completions', [
+        'headers' => [
+          'Authorization' => "Bearer {$api_key}",
+          'Content-Type' => 'application/json',
+        ],
+        'json' => [
+          'model' => $model,
+          'messages' => [
+            ['role' => 'system', 'content' => 'You are a CRM assistant. Generate realistic and varied contact data. Respond with valid JSON only.'],
+            ['role' => 'user', 'content' => $prompt],
+          ],
+          'temperature' => $options['temperature'] ?? 0.7,
+          'max_tokens' => 500,
+        ],
+        'timeout' => 30,
+      ]);
+
+      $body = $response->getBody()->getContents();
+      $data = json_decode($body, TRUE);
+
+      if (!$data) {
+        // If response is not JSON, log error and fallback to mock
+        $this->loggerFactory->get('crm_ai_autocomplete')->error('Groq API returned invalid JSON: @body', ['@body' => substr($body, 0, 100)]);
+        return $this->callMock($prompt, $options);
+      }
+
+      if (isset($data['choices'][0]['message']['content'])) {
+        $content = $data['choices'][0]['message']['content'];
+        // Try to extract JSON from response.
+        $json_match = [];
+        if (preg_match('/\{.*\}/s', $content, $json_match)) {
+          $result = json_decode($json_match[0], TRUE);
+          if (is_array($result)) {
+            $this->loggerFactory->get('crm_ai_autocomplete')->info('Groq API call successful');
+            return $result;
+          }
+        }
+      }
+
+      // If we can't extract valid data, fallback to mock
+      $this->loggerFactory->get('crm_ai_autocomplete')->warning('Could not parse Groq response, falling back to mock');
+      return $this->callMock($prompt, $options);
+    } catch (GuzzleException $e) {
+      $this->loggerFactory->get('crm_ai_autocomplete')->error('Groq API error: @message. Falling back to mock.', ['@message' => $e->getMessage()]);
+      return $this->callMock($prompt, $options);
     }
   }
 
@@ -193,21 +266,41 @@ class LLMProviderService {
    *   Options (unused).
    *
    * @return array
-   *   Mock suggestions.
+   *   Mock suggestions with random data.
    */
   protected function callMock($prompt, array $options) {
-    // Return realistic mock data for testing.
+    // Generate random data for each call
+    $first_names = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Jessica', 'James', 'Lisa', 'William', 'Jennifer', 'Richard', 'Patricia', 'Charles', 'Barbara'];
+    $last_names = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Rodriguez', 'Garcia', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas'];
+    $companies = ['Tech Solutions Inc.', 'Digital Innovations Ltd.', 'Cloud Systems Corp.', 'Data Analytics Pro', 'Software House LLC', 'Innovation Labs', 'Digital Ventures', 'Tech Startup Inc.', 'Web Services Co.', 'Mobile Solutions'];
+    $industries = ['Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Education', 'Real Estate', 'Telecommunications', 'Entertainment', 'Transportation'];
+    $sources = ['Website', 'LinkedIn', 'Referral', 'Cold Call', 'Email Campaign', 'Trade Show', 'Partner', 'Direct Purchase'];
+    $customer_types = ['Enterprise', 'SMB', 'Startup', 'Individual', 'Non-Profit', 'Government'];
+    
+    $first_name = $first_names[array_rand($first_names)];
+    $last_name = $last_names[array_rand($last_names)];
+    $company = $companies[array_rand($companies)];
+    $industry = $industries[array_rand($industries)];
+    $source = $sources[array_rand($sources)];
+    $customer_type = $customer_types[array_rand($customer_types)];
+    
+    $value = rand(10000, 500000);
+    $probability = rand(20, 95);
+    $phone = '+1 (' . rand(200, 999) . ') ' . rand(100, 999) . '-' . rand(1000, 9999);
+    $email = strtolower(str_replace(' ', '.', $first_name . '.' . $last_name)) . '@' . strtolower(str_replace(' ', '', $company)) . '.com';
+    
+    // Return realistic mock data with random values
     return [
-      'field_company' => 'Tech Solutions Inc.',
-      'field_email' => 'contact@example.com',
-      'field_phone' => '+1 (555) 123-4567',
-      'field_source' => 'Website',
-      'field_customer_type' => 'Enterprise',
-      'title' => 'John Smith',
-      'field_value' => '50000',
-      'field_probability' => '75',
-      'field_industry' => 'Technology',
-      'body' => 'Meeting discussed project requirements and timeline',
+      'field_company' => $company,
+      'field_email' => $email,
+      'field_phone' => $phone,
+      'field_source' => $source,
+      'field_customer_type' => $customer_type,
+      'title' => $first_name . ' ' . $last_name,
+      'field_value' => (string)$value,
+      'field_probability' => (string)$probability,
+      'field_industry' => $industry,
+      'body' => 'Generated contact via AI autocomplete on ' . date('Y-m-d H:i:s'),
     ];
   }
 

@@ -110,8 +110,14 @@ class AIEntityAutoCompleteService {
   public function autoCompleteEntity($entity_type, array $provided_fields, $nid = NULL) {
     try {
       // Get configuration.
-      $config = $this->configFactory->get('crm_ai.settings');
-      $provider = $config->get('llm_provider') ?? 'mock';
+      $config = $this->configFactory->get('crm_ai_autocomplete.settings');
+      $provider = $config->get('ai_provider') ?? 'mock';
+
+      // Log which provider is being used (for debugging)
+      $this->loggerFactory->get('crm_ai_autocomplete')->info(
+        'Using AI provider: @provider',
+        ['@provider' => $provider]
+      );
 
       // Identify empty fields that can be auto-completed.
       $entity_bundle = $provided_fields['type'] ?? 'contact';
