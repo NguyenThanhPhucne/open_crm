@@ -104,6 +104,15 @@ display:
           type: entity_reference_label
           settings:
             link: true
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          plugin_id: date
+          label: Updated
+          date_format: custom
+          custom_date_format: c
+          element_class: crm-time-ago
         crm_edit_link:
           id: crm_edit_link
           table: node_field_data
@@ -122,12 +131,12 @@ display:
           reset_button: true
           reset_button_label: Reset
       sorts:
-        field_close_date_value:
-          id: field_close_date_value
-          table: node__field_close_date
-          field: field_close_date_value
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
           plugin_id: date
-          order: ASC
+          order: DESC
       filters:
         status:
           id: status
@@ -166,6 +175,7 @@ display:
           field: field_stage_target_id
           plugin_id: taxonomy_index_tid
           vid: pipeline_stage
+          type: select
           operator: or
           value: []
           exposed: true
@@ -178,7 +188,7 @@ display:
             identifier: stage
             required: false
             remember: false
-            multiple: true
+            multiple: false
             reduce: false
       style:
         type: table
@@ -186,6 +196,92 @@ display:
           grouping: {}
           row_class: ""
           default_row_class: true
+          columns:
+            title: title
+            field_owner: field_owner
+            field_amount: field_amount
+            field_stage: field_stage
+            field_probability: field_probability
+            field_closing_date: field_closing_date
+            field_contact: field_contact
+            field_organization: field_organization
+            changed: changed
+            crm_edit_link: crm_edit_link
+          info:
+            title:
+              sortable: true
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_owner:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_amount:
+              sortable: true
+              default_sort_order: desc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_stage:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_probability:
+              sortable: true
+              default_sort_order: desc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_closing_date:
+              sortable: true
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_contact:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_organization:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            changed:
+              sortable: true
+              default_sort_order: desc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            crm_edit_link:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+          override: true
+          sticky: false
+          summary: ""
+          empty_table: false
       access:
         type: role
         options:

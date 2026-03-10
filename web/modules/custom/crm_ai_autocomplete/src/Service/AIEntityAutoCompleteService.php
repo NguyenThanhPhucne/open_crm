@@ -216,23 +216,66 @@ class AIEntityAutoCompleteService {
    *   Formatted prompt for LLM.
    */
   protected function buildAIPrompt($bundle, array $provided_fields, array $empty_fields) {
-    $field_descriptions = [];
+    // Per-field descriptions with strict instructions.
+    $field_instructions = [
+      // Contact fields
+      'title' => [
+        'contact'      => 'Full person name — first name + last name only (e.g., "James Carter", "Linda Park"). NEVER use Mr./Ms./Dr./Prof. NEVER use job titles or category words.',
+        'deal'         => 'DEAL/PROJECT name only — a short business opportunity title (e.g., "Enterprise SaaS License Q3", "Cloud Migration Package", "Annual Support Contract", "ERP Upgrade Phase 2", "Marketing Automation Setup"). NEVER a person name. NEVER a company name alone.',
+        'organization' => 'Company name (e.g., "Apex Solutions", "BrightWave Technologies"). NOT a person name.',
+        'activity'     => 'Short action description (e.g., "Follow-up call with client", "Proposal sent to Acme").',
+      ],
+      'field_email'          => 'Work email address (e.g., "james.carter@techcorp.com"). Must match the contact name.',
+      'field_phone'          => 'Business phone in format +1 (XXX) XXX-XXXX.',
+      'field_position'       => 'Job title at a company (e.g., "VP of Sales", "Head of Engineering", "CFO").',
+      'field_source'         => 'Lead source — one of: Website, LinkedIn, Referral, Cold Call, Email Campaign, Trade Show, Partner, Direct.',
+      'field_customer_type'  => 'Account category — one of: Enterprise, SMB, Startup, Individual, Non-Profit, Government.',
+      'field_amount'         => 'Deal value as a plain number without currency symbol (e.g., "45000").',
+      'field_probability'    => 'Win probability as integer 1–99 (e.g., "65").',
+      'field_industry'       => 'Industry sector (e.g., "Technology", "Healthcare", "Finance", "Retail", "Manufacturing").',
+      'field_employees_count'=> 'Number of employees as integer (e.g., "250").',
+      'field_annual_revenue' => 'Annual revenue as plain number without symbol (e.g., "4500000").',
+      'field_outcome'        => 'Brief outcome description (e.g., "Deal closed successfully", "Meeting scheduled").',
+      'field_type'           => 'Activity type — one of: Call, Email, Meeting, Demo, Follow-up.',
+    ];
 
+    $field_descriptions = [];
     foreach ($empty_fields as $field_name => $info) {
-      $field_descriptions[] = "- {$info['label']} ({$field_name}): {$info['type']}";
+      if (isset($field_instructions[$field_name])) {
+        $instr = $field_instructions[$field_name];
+        // Support per-bundle overrides (e.g., title differs by bundle).
+        if (is_array($instr)) {
+          $instr = $instr[$bundle] ?? $instr['contact'] ?? json_encode($instr);
+        }
+        $field_descriptions[] = "\"$field_name\": $instr";
+      }
+      else {
+        $field_descriptions[] = "\"$field_name\": {$info['label']} ({$info['type']})";
+      }
     }
 
     $context = [];
     foreach ($provided_fields as $key => $value) {
       if (!empty($value) && $key !== 'type') {
-        $context[] = "{$key}: {$value}";
+        $context[] = "  $key: $value";
       }
     }
 
-    $prompt = "You are a CRM assistant. Based on the following information:\n\n";
-    $prompt .= "Context:\n" . implode("\n", $context) . "\n\n";
-    $prompt .= "Please fill in the following fields:\n" . implode("\n", $field_descriptions) . "\n\n";
-    $prompt .= "Return a JSON object with field names as keys and suggested values as values. Use realistic data.";
+    $fieldList = implode(",\n  ", $field_descriptions);
+    $contextStr = $context ? implode("\n", $context) : '  (none)';
+
+    $prompt = "Generate a realistic CRM $bundle record. Return ONLY a valid JSON object with these fields:\n";
+    $prompt .= "{\n  $fieldList\n}\n\n";
+    $prompt .= "RULES:\n";
+    $prompt .= "- \"title\" for a contact MUST be a realistic Western or Asian person name (First Last). No honorifics (Mr./Ms./Dr.) ever.\n";
+    $prompt .= "- \"title\" for a deal MUST be a project/opportunity/product name like \"Cloud ERP Migration Q2\" or \"Annual SaaS License Renewal\". NEVER a person name.\n";
+    $prompt .= "- \"field_customer_type\" MUST be one of: Enterprise, SMB, Startup, Individual, Non-Profit, Government.\n";
+    $prompt .= "- \"field_source\" MUST be one of: Website, LinkedIn, Referral, Cold Call, Email Campaign, Trade Show, Partner, Direct.\n";
+    $prompt .= "- All names must be fully random and different each time. Do NOT reuse examples.\n";
+    if ($context) {
+      $prompt .= "\nExisting context (use for coherence):\n$contextStr\n";
+    }
+    $prompt .= "\nRespond with a JSON object only. No explanation, no markdown.";
 
     return $prompt;
   }

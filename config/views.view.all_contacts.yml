@@ -86,6 +86,15 @@ display:
           plugin_id: field
           label: "Customer Type"
           type: entity_reference_label
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          plugin_id: date
+          label: Updated
+          date_format: custom
+          custom_date_format: c
+          element_class: crm-time-ago
         crm_edit_link:
           id: crm_edit_link
           table: node_field_data
@@ -176,10 +185,10 @@ display:
             remember: false
             placeholder: "Enter phone..."
       sorts:
-        created:
-          id: created
+        changed:
+          id: changed
           table: node_field_data
-          field: created
+          field: changed
           plugin_id: date
           order: DESC
       style:
@@ -188,6 +197,84 @@ display:
           grouping: {}
           row_class: ""
           default_row_class: true
+          columns:
+            title: title
+            field_owner: field_owner
+            field_organization: field_organization
+            field_phone: field_phone
+            field_email: field_email
+            field_source: field_source
+            field_customer_type: field_customer_type
+            changed: changed
+            crm_edit_link: crm_edit_link
+          info:
+            title:
+              sortable: true
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_owner:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_organization:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_phone:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_email:
+              sortable: true
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_source:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            field_customer_type:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            changed:
+              sortable: true
+              default_sort_order: desc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+            crm_edit_link:
+              sortable: false
+              default_sort_order: asc
+              align: ""
+              separator: ""
+              empty_column: false
+              responsive: ""
+          override: true
+          sticky: false
+          summary: ""
+          empty_table: false
       access:
         type: role
         options:

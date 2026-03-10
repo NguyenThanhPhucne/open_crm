@@ -82,40 +82,59 @@ function crm_ai_autocomplete_page_attachments_alter(array &$attachments) {
 }
 
 /**
- * Implements hook_preprocess_views_view().
+ * Implements hook_form_views_exposed_form_alter().
  *
- * Add buttons to view header.
+ * Injects Add and Generate buttons into the exposed filter toolbar so they
+ * appear in the same row as the Search button (right-aligned). This follows
+ * the standard CRM pattern: filters on the left, action buttons on the right.
  */
-function crm_ai_autocomplete_preprocess_views_view(&$variables) {
+function crm_ai_autocomplete_form_views_exposed_form_alter(&$form, FormStateInterface $form_state) {
   $account = \Drupal::currentUser();
-
-  // Check permissions.
   if (!$account->hasPermission('use crm ai autocomplete')) {
     return;
   }
 
-  $view = $variables['view'];
-  
-  // Only for specific views and displays
-  if (($view->id() === 'all_contacts' || $view->id() === 'my_contacts') && 
-      ($view->current_display === 'page_1')) {
-    
-    // Create header HTML markup with professional icons
-    $html = '<div style="text-align: right; margin-bottom: 20px;">' .
-            '<a href="/node/add/contact" class="button button--action button--primary">' .
-            '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' .
-            '<path d="M12 5v14M5 12h14"></path></svg> Add Contact' .
-            '</a>' .
-            '<button type="button" id="crm-ai-generate-btn" class="button button--action button--primary" style="margin-left: 10px;">' .
-            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">' .
-            '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>' .
-            'Generate data' .
-            '</button>' .
-            '</div>';
-    
-    // Add markup to the view  
-    $variables['view_array']['#prefix'] = Markup::create($html);
+  $view = $form_state->get('view');
+  if (!$view) {
+    return;
   }
+
+  $view_map = [
+    'all_contacts' => ['/node/add/contact', 'Add Contact', 'contact'],
+    'my_contacts'  => ['/node/add/contact', 'Add Contact', 'contact'],
+    'all_deals'    => ['/node/add/deal', 'Add Deal', 'deal'],
+  ];
+
+  if (!isset($view_map[$view->id()])) {
+    return;
+  }
+
+  [$add_url, $add_label, $entity_type] = $view_map[$view->id()];
+
+  if (!isset($form['actions'])) {
+    $form['actions'] = ['#type' => 'actions'];
+  }
+
+  $icon = 'width:16px;height:16px;vertical-align:middle;margin-right:5px;';
+
+  // "Add Contact" / "Add Deal" — rendered as <button> so height/padding
+  // matches Search and Generate data exactly (avoids <a> vs <input> sizing gap).
+  $form['actions']['crm_add'] = [
+    '#markup' => Markup::create(
+      '<button type="button" class="button crm-add-btn" onclick="window.location=\'' . $add_url . '\'">' .
+      '<i data-lucide="plus" style="' . $icon . '"></i>' . $add_label . '</button>'
+    ),
+    '#weight' => 10,
+  ];
+
+  // "Generate data" — JS-driven, must be type=button to avoid form submit.
+  $form['actions']['crm_generate'] = [
+    '#markup' => Markup::create(
+      '<button type="button" id="crm-ai-generate-btn" data-entity-type="' . $entity_type . '" class="button crm-generate-btn">' .
+      '<i data-lucide="sparkles" style="' . $icon . '"></i>Generate data</button>'
+    ),
+    '#weight' => 11,
+  ];
 }
 
 

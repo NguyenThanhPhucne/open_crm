@@ -6,7 +6,7 @@
 
   {# Breadcrumb #}
   <nav class="detail-breadcrumb">
-    <a href="/crm/contacts"><i data-lucide="users"></i> Contacts</a>
+    <a href="/crm/all-contacts"><i data-lucide="users"></i> Contacts</a>
     <i data-lucide="chevron-right"></i>
     <span>{{ title }}</span>
   </nav>
@@ -75,7 +75,7 @@
         <a href="/node/{{ nid }}/edit" class="btn-primary">
           <i data-lucide="edit-2"></i> Edit
         </a>
-        <a href="/crm/contacts" class="btn-secondary">
+        <a href="/crm/all-contacts" class="btn-secondary">
           <i data-lucide="arrow-left"></i> Back
         </a>
       </div>
@@ -190,7 +190,7 @@
         <div class="content-card-title">
           <i data-lucide="trending-up"></i> Deals
         </div>
-        <a href="/crm/deals?contact={{ nid }}" style="font-size:0.78rem;color:#3b82f6;text-decoration:none;">View all</a>
+        <a href="/crm/all-deals" style="font-size:0.78rem;color:#3b82f6;text-decoration:none;">View all</a>
       </div>
       <div class="content-card-body">
         {% if deals %}

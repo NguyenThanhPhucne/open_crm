@@ -322,15 +322,222 @@ class AIAutoCompleteController extends ControllerBase {
       $entity->set('uid', $account->id());
     }
 
+    // Assign random taxonomy terms for entity reference fields.
+    $this->assignRandomTaxonomyFields($entity, $actual_bundle);
+
+    // Assign bundle-specific entity references.
+    if ($actual_bundle === 'contact') {
+      $this->assignRandomOrganization($entity);
+    }
+    if ($actual_bundle === 'deal') {
+      $this->assignRandomDealReferences($entity);
+    }
+
     // Mark as published if applicable.
     if ($entity->hasField('status')) {
       $entity->set('status', 1);
+    }
+
+    // Safety net: ensure node title is never null before saving.
+    if ($entity instanceof \Drupal\node\NodeInterface && empty(trim((string) $entity->label()))) {
+      $entity->set('title', ucfirst($actual_bundle) . ' ' . date('Y-m-d H:i'));
     }
 
     // Save entity.
     $entity->save();
 
     return $entity;
+  }
+
+  /**
+   * Assign random taxonomy terms for entity reference fields.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to update.
+   * @param string $bundle
+   *   The entity bundle.
+   */
+  protected function assignRandomTaxonomyFields($entity, $bundle) {
+    $vocab_map = [
+      'contact' => [
+        'field_source'        => 'crm_source',
+        'field_customer_type' => 'crm_customer_type',
+      ],
+    ];
+
+    if (!isset($vocab_map[$bundle])) {
+      return;
+    }
+
+    foreach ($vocab_map[$bundle] as $field_name => $vid) {
+      if (!$entity->hasField($field_name)) {
+        continue;
+      }
+      $terms = $this->entityTypeManager
+        ->getStorage('taxonomy_term')
+        ->loadByProperties(['vid' => $vid]);
+      if (!empty($terms)) {
+        $keys = array_keys($terms);
+        $random_tid = $keys[array_rand($keys)];
+        $entity->set($field_name, $random_tid);
+      }
+    }
+  }
+
+  /**
+   * Assign random contact + organization + pipeline stage to a deal node.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The deal entity.
+   */
+  protected function assignRandomDealReferences($entity) {
+    $storage = $this->entityTypeManager->getStorage('node');
+
+    // Fallback deal title if AI left it empty or generated a person name.
+    $title = $entity->label();
+    $is_person_name = (bool) preg_match('/^[A-Z][a-z]+\s[A-Z][a-z]+$/', trim((string) $title));
+    if (empty($title) || $is_person_name) {
+      $deal_titles = [
+        'Enterprise SaaS License Q%d', 'Cloud Migration Package %d', 'Annual Support Contract',
+        'ERP Upgrade Phase %d', 'Marketing Automation Setup', 'Data Analytics Platform',
+        'Security Suite Enterprise', 'CRM Implementation Project', 'DevOps Automation Bundle',
+        'Digital Transformation Package', 'API Integration Services', 'Infrastructure Modernization',
+        'Business Intelligence Suite', 'Managed Services Contract', 'Software Development Retainer',
+      ];
+      $picked = $deal_titles[array_rand($deal_titles)];
+      $entity->set('title', sprintf($picked, mt_rand(1, 4)));
+    }
+
+    // Assign a random contact.
+    if ($entity->hasField('field_contact')) {
+      $nids = $storage->getQuery()
+        ->condition('type', 'contact')
+        ->condition('status', 1)
+        ->range(0, 50)
+        ->accessCheck(FALSE)
+        ->execute();
+      if (!empty($nids)) {
+        $nids = array_values($nids);
+        $entity->set('field_contact', $nids[array_rand($nids)]);
+      }
+    }
+
+    // Assign a random organization.
+    if ($entity->hasField('field_organization')) {
+      $nids = $storage->getQuery()
+        ->condition('type', 'organization')
+        ->condition('status', 1)
+        ->range(0, 50)
+        ->accessCheck(FALSE)
+        ->execute();
+      if (!empty($nids)) {
+        $nids = array_values($nids);
+        $entity->set('field_organization', $nids[array_rand($nids)]);
+      }
+    }
+
+    // Assign a random pipeline stage (exclude Won/Lost for new deals).
+    $stage_tid = NULL;
+    if ($entity->hasField('field_stage')) {
+      $terms = $this->entityTypeManager
+        ->getStorage('taxonomy_term')
+        ->loadByProperties(['vid' => 'pipeline_stage']);
+      // Prefer active stages (New, Qualified, Proposal, Negotiation).
+      $active = array_filter($terms, function ($t) {
+        return !in_array($t->getName(), ['Won', 'Lost']);
+      });
+      $pool = !empty($active) ? $active : $terms;
+      if (!empty($pool)) {
+        $keys = array_keys($pool);
+        $stage_tid = $keys[array_rand($keys)];
+        $entity->set('field_stage', $stage_tid);
+      }
+    }
+
+    // Assign deal amount — varied random ranges to reflect deal size.
+    if ($entity->hasField('field_amount')) {
+      // Pick a random tier: micro / small / medium / large / enterprise.
+      $amount_ranges = [
+        [1000, 9999],       // micro deals
+        [10000, 49999],     // small deals
+        [50000, 149999],    // medium deals
+        [150000, 499999],   // large deals
+        [500000, 1500000],  // enterprise deals
+      ];
+      // Weight toward small/medium (indices 0-2 get higher chance).
+      $weights = [15, 35, 30, 15, 5];
+      $rand = mt_rand(1, 100);
+      $cumulative = 0;
+      $range = $amount_ranges[1];
+      foreach ($weights as $i => $w) {
+        $cumulative += $w;
+        if ($rand <= $cumulative) {
+          $range = $amount_ranges[$i];
+          break;
+        }
+      }
+      // Round to nearest 500 for realism.
+      $raw_amount = mt_rand($range[0], $range[1]);
+      $amount = round($raw_amount / 500) * 500;
+      $entity->set('field_amount', $amount);
+    }
+
+    // Assign probability correlated with pipeline stage.
+    if ($entity->hasField('field_probability')) {
+      // TID 1=New, 2=Qualified, 3=Proposal, 4=Negotiation (5=Won, 6=Lost excluded).
+      $prob_ranges = [
+        1 => [5,  25],   // New
+        2 => [25, 50],   // Qualified
+        3 => [50, 70],   // Proposal
+        4 => [70, 90],   // Negotiation
+      ];
+      $range = isset($stage_tid, $prob_ranges[$stage_tid]) ? $prob_ranges[$stage_tid] : [20, 80];
+      $entity->set('field_probability', mt_rand($range[0], $range[1]));
+    }
+
+    // Assign closing date correlated with pipeline stage.
+    if ($entity->hasField('field_closing_date')) {
+      // Further stages have closer close dates.
+      $day_ranges = [
+        1 => [120, 365],  // New: 4-12 months out
+        2 => [60,  240],  // Qualified: 2-8 months out
+        3 => [30,  120],  // Proposal: 1-4 months out
+        4 => [14,   60],  // Negotiation: 2 weeks to 2 months out
+      ];
+      $range = isset($stage_tid, $day_ranges[$stage_tid]) ? $day_ranges[$stage_tid] : [30, 180];
+      $days_out = mt_rand($range[0], $range[1]);
+      // Round to next Monday for realism.
+      $close_ts = strtotime("+$days_out days");
+      $dow = (int) date('N', $close_ts); // 1=Mon, 7=Sun
+      if ($dow > 5) {
+        $close_ts = strtotime('+' . (8 - $dow) . ' days', $close_ts);
+      }
+      $entity->set('field_closing_date', date('Y-m-d', $close_ts));
+    }
+  }
+
+  /**
+   * Assign a random existing organization to a contact node.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The contact entity.
+   */
+  protected function assignRandomOrganization($entity) {
+    if (!$entity->hasField('field_organization')) {
+      return;
+    }
+    $nids = $this->entityTypeManager
+      ->getStorage('node')
+      ->getQuery()
+      ->condition('type', 'organization')
+      ->condition('status', 1)
+      ->range(0, 50)
+      ->accessCheck(FALSE)
+      ->execute();
+    if (!empty($nids)) {
+      $nids = array_values($nids);
+      $entity->set('field_organization', $nids[array_rand($nids)]);
+    }
   }
 
   /**

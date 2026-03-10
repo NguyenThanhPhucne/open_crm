@@ -1,5 +1,29 @@
 /* AI Generate Button Loading States */
 
+/* Suppress any Gin ::before pseudo-content on CRM buttons */
+#crm-ai-generate-btn::before,
+.crm-add-btn::before,
+.crm-generate-btn::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* ── CRM action buttons in the filter toolbar ───────────────────────────────
+ * All three (Search / Add / Generate) are now the same element type <button>
+ * or <input> and share identical Gin base styles. We only add a left gap to
+ * visually separate the action buttons from the Search button.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.views-exposed-form #edit-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.views-exposed-form .crm-add-btn {
+  margin-left: 16px;
+}
+
 /* Loading spinner animation */
 @keyframes ai-spin {
   from {

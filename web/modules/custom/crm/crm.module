@@ -164,24 +164,23 @@ function crm_node_presave(NodeInterface $node) {
       }
     }
 
-    // Requirement 2: Stage must be valid string format
+    // Requirement 2: Stage must be a valid pipeline_stage taxonomy term.
     if (!$node->get('field_stage')->isEmpty()) {
-      $stage = $node->get('field_stage')->value;
-      
-      // Handle legacy numeric stage IDs and convert to string
-      if (is_numeric($stage)) {
-        $stage_map = [1 => 'qualified', 2 => 'proposal', 3 => 'negotiation', 5 => 'closed_won', 6 => 'closed_lost'];
-        if (isset($stage_map[$stage])) {
-          $stage = $stage_map[$stage];
-          $node->set('field_stage', $stage);
+      // field_stage is an entity_reference to pipeline_stage; read target_id.
+      $stage_tid = (int) $node->get('field_stage')->target_id;
+
+      // Map known taxonomy term IDs to stage key strings for validation.
+      $stage_map = [1 => 'qualified', 2 => 'qualified', 3 => 'proposal', 4 => 'negotiation', 5 => 'closed_won', 6 => 'closed_lost'];
+
+      if (!isset($stage_map[$stage_tid])) {
+        // Unknown TID — verify it actually belongs to pipeline_stage vocab.
+        $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($stage_tid);
+        if (!$term || $term->bundle() !== 'pipeline_stage') {
+          throw new \InvalidArgumentException(
+            sprintf('Invalid stage term ID: %d. Must reference a valid pipeline_stage term.', $stage_tid)
+          );
         }
-      }
-      
-      // Validate stage value
-      if (!in_array($stage, $valid_stages)) {
-        throw new \InvalidArgumentException(
-          sprintf('Invalid stage: %s. Must be one of: %s', $stage, implode(', ', $valid_stages))
-        );
+        // Term exists in vocab but not in map — allow it.
       }
     }
 

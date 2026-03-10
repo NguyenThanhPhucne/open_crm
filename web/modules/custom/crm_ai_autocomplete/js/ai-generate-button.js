@@ -86,12 +86,13 @@
   });
 
   // Function to show loading modal (center screen)
-  function showLoadingModal() {
+  function showLoadingModal(entityType) {
+    const label = entityType === "deal" ? "deal" : "contact";
     const loadingHtml = `
       <div class="crm-loading-overlay">
         <div class="crm-loading-modal">
           <div class="crm-loading-ring"></div>
-          <div class="crm-loading-text with-dots">Generating new contact</div>
+          <div class="crm-loading-text with-dots">Generating new ${label}</div>
         </div>
       </div>
     `;
@@ -254,6 +255,17 @@
 
     if (!button) return;
 
+    // Render Lucide <i data-lucide="..."> icons inside the button.
+    // Use a small delay to ensure the external Lucide script is fully evaluated.
+    function initLucideIcons() {
+      if (window.lucide) {
+        lucide.createIcons();
+      } else {
+        setTimeout(initLucideIcons, 100);
+      }
+    }
+    initLucideIcons();
+
     button.addEventListener("click", function (e) {
       e.preventDefault();
       crmAIGenerateSimple(button);
@@ -261,6 +273,24 @@
   }
 
   function crmAIGenerateSimple(button) {
+    // Detect entity type from data attribute (set by #prefix buttons) or from the current URL.
+    function detectEntityType() {
+      if (button.dataset && button.dataset.entityType) {
+        return button.dataset.entityType;
+      }
+      const path = window.location.pathname;
+      if (path.includes("all-deals") || path.includes("my-deals"))
+        return "deal";
+      if (
+        path.includes("all-organizations") ||
+        path.includes("my-organizations")
+      )
+        return "organization";
+      if (path.includes("all-activities") || path.includes("my-activities"))
+        return "activity";
+      return "contact";
+    }
+    const entityType = detectEntityType();
     const originalText = button.textContent;
     const originalHTML = button.innerHTML;
     button.disabled = true;
@@ -278,7 +308,7 @@
     button.innerHTML = loadingHTML;
 
     // Show loading modal (center screen)
-    const loadingOverlay = showLoadingModal();
+    const loadingOverlay = showLoadingModal(entityType);
 
     // Get CSRF token from meta tag or from Drupal settings
     let csrfToken = "";
@@ -296,8 +326,8 @@
         "X-CSRF-Token": csrfToken,
       },
       body: JSON.stringify({
-        entityType: "contact",
-        bundle: "contact",
+        entityType: entityType,
+        bundle: entityType,
       }),
     })
       .then((response) => {
@@ -335,10 +365,11 @@
           );
 
           // Hide loading modal with fade-out, then redirect
+          const entityLabel = entityType === "deal" ? "deal" : "contact";
           localStorage.setItem(
             "crmToast",
             JSON.stringify({
-              message: `New contact created successfully! (Provider: ${provider})`,
+              message: `New ${entityLabel} created successfully! (Provider: ${provider})`,
               type: "success",
             }),
           );
@@ -380,4 +411,56 @@
   } else {
     initAIGenerateButton();
   }
+
+  // ── Time-ago renderer for the "Updated" column in deal/contact list views ──
+  function applyTimeAgo() {
+    // Drupal renders the date field as:
+    //   <td class="crm-time-ago views-field-changed">
+    //     <time datetime="2026-03-11T02:47:12+07:00">Wed, 11 Mar 2026 - 02:47</time>
+    //   </td>
+    // We find each <time datetime> inside the changed field cells.
+    var timeEls = document.querySelectorAll(
+      "td.crm-time-ago time[datetime], .views-field-changed time[datetime]",
+    );
+    if (!timeEls.length) return;
+    var now = Date.now();
+    timeEls.forEach(function (timeEl) {
+      // Use data-iso on first run to preserve original value across setInterval calls.
+      var iso =
+        timeEl.getAttribute("data-iso") || timeEl.getAttribute("datetime");
+      if (!iso) return;
+      var ts = Date.parse(iso);
+      if (isNaN(ts)) return;
+      if (!timeEl.hasAttribute("data-iso")) {
+        timeEl.setAttribute("data-iso", iso);
+      }
+      var diff = Math.floor((now - ts) / 1000); // seconds
+      var label;
+      if (diff < 5) {
+        label = "just now";
+      } else if (diff < 60) {
+        label = diff + "s ago";
+      } else if (diff < 3600) {
+        label = Math.floor(diff / 60) + "m ago";
+      } else if (diff < 86400) {
+        label = Math.floor(diff / 3600) + "h ago";
+      } else if (diff < 2592000) {
+        label = Math.floor(diff / 86400) + "d ago";
+      } else if (diff < 31536000) {
+        label = Math.floor(diff / 2592000) + "mo ago";
+      } else {
+        label = Math.floor(diff / 31536000) + "y ago";
+      }
+      timeEl.textContent = label;
+      timeEl.title = new Date(ts).toLocaleString();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyTimeAgo);
+  } else {
+    applyTimeAgo();
+  }
+  // Refresh every 30 s so the label stays live.
+  setInterval(applyTimeAgo, 30000);
 })();

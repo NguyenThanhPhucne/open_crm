@@ -61,31 +61,23 @@ class EntitySchemaService {
     $auto_completable = [
       'contact' => [
         'title',
-        'field_company',
         'field_email',
         'field_phone',
-        'field_source',
-        'field_customer_type',
+        'field_position',
       ],
       'deal' => [
         'title',
-        'field_company',
-        'field_value',
-        'field_probability',
-        'field_close_date',
       ],
       'organization' => [
         'title',
         'field_industry',
-        'field_website',
-        'field_size',
-        'field_year_founded',
+        'field_employees_count',
+        'field_annual_revenue',
       ],
       'activity' => [
         'title',
-        'body',
         'field_outcome',
-        'field_duration',
+        'field_type',
       ],
     ];
 

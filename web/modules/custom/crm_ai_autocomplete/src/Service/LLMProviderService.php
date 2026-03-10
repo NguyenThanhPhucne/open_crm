@@ -106,7 +106,7 @@ class LLMProviderService {
         'json' => [
           'model' => $model,
           'messages' => [
-            ['role' => 'system', 'content' => 'You are a CRM assistant. Generate realistic and varied CRM data. You MUST respond with a valid JSON object only — no markdown, no code blocks, no explanation. Just the raw JSON object.'],
+            ['role' => 'system', 'content' => 'You are a CRM data generator. Rules: (1) Respond with a single valid JSON object only — no markdown, no code blocks, no explanation. (2) Contact "title" must be a realistic full person name like "James Carter" — NEVER use Mr./Ms./Dr./Eng. prefixes, NEVER use category words like "Potential Client" or "New Lead" as names. (3) Use varied, realistic names from diverse backgrounds each time. (4) All values must be plausible for a real business CRM.'],
             ['role' => 'user', 'content' => $prompt],
           ],
           'temperature' => $options['temperature'] ?? 0.7,
