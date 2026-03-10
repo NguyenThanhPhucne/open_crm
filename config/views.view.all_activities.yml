@@ -126,7 +126,7 @@ display:
           plugin_id: taxonomy_index_tid
           vid: activity_type
           operator: or
-          value: {}
+          value: []
           exposed: true
           expose:
             operator_id: field_type_target_id_op

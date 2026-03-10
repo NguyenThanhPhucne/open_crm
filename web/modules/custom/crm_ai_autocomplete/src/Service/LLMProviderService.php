@@ -106,11 +106,12 @@ class LLMProviderService {
         'json' => [
           'model' => $model,
           'messages' => [
-            ['role' => 'system', 'content' => 'You are a CRM assistant. Generate realistic and varied contact data. Respond with valid JSON only.'],
+            ['role' => 'system', 'content' => 'You are a CRM assistant. Generate realistic and varied CRM data. You MUST respond with a valid JSON object only — no markdown, no code blocks, no explanation. Just the raw JSON object.'],
             ['role' => 'user', 'content' => $prompt],
           ],
           'temperature' => $options['temperature'] ?? 0.7,
-          'max_tokens' => 500,
+          'max_tokens' => 600,
+          'response_format' => ['type' => 'json_object'],
         ],
         'timeout' => 30,
       ]);
@@ -126,11 +127,42 @@ class LLMProviderService {
 
       if (isset($data['choices'][0]['message']['content'])) {
         $content = $data['choices'][0]['message']['content'];
-        // Try to extract JSON from response.
-        $json_match = [];
-        if (preg_match('/\{.*\}/s', $content, $json_match)) {
-          $result = json_decode($json_match[0], TRUE);
-          if (is_array($result)) {
+
+        // 1. Try direct json_decode first.
+        $result = json_decode($content, TRUE);
+        if (is_array($result) && !empty($result)) {
+          $this->loggerFactory->get('crm_ai_autocomplete')->info('Groq API call successful');
+          return $result;
+        }
+
+        // 2. Strip markdown code blocks (```json ... ``` or ``` ... ```).
+        $stripped = preg_replace('/```(?:json)?\s*([\s\S]*?)\s*```/', '$1', $content);
+        $result = json_decode(trim($stripped), TRUE);
+        if (is_array($result) && !empty($result)) {
+          $this->loggerFactory->get('crm_ai_autocomplete')->info('Groq API call successful');
+          return $result;
+        }
+
+        // 3. Extract first JSON object using balanced brace matching.
+        $start = strpos($stripped, '{');
+        if ($start !== FALSE) {
+          $depth = 0;
+          $end = $start;
+          for ($i = $start; $i < strlen($stripped); $i++) {
+            if ($stripped[$i] === '{') {
+              $depth++;
+            }
+            elseif ($stripped[$i] === '}') {
+              $depth--;
+              if ($depth === 0) {
+                $end = $i;
+                break;
+              }
+            }
+          }
+          $json_str = substr($stripped, $start, $end - $start + 1);
+          $result = json_decode($json_str, TRUE);
+          if (is_array($result) && !empty($result)) {
             $this->loggerFactory->get('crm_ai_autocomplete')->info('Groq API call successful');
             return $result;
           }

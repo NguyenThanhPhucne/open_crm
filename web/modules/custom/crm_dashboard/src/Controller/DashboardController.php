@@ -433,7 +433,7 @@ class DashboardController extends ControllerBase {
       ? Url::fromUserInput('/crm/all-deals')->toString()
       : Url::fromUserInput('/crm/my-deals')->toString();
 
-    $pipeline_url = Url::fromUserInput('/crm/pipeline')->toString();
+    $pipeline_url = Url::fromUserInput('/crm/my-pipeline')->toString();
     $dashboard_url = Url::fromUserInput('/crm/dashboard')->toString();
 
     // Build HTML with professional design

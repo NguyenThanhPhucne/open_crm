@@ -99,10 +99,18 @@
     return document.querySelector(".crm-loading-overlay:last-child");
   }
 
-  // Function to hide loading modal
-  function hideLoadingModal(loadingOverlay) {
+  // Function to hide loading modal with fade-out animation
+  function hideLoadingModal(loadingOverlay, callback) {
     if (loadingOverlay && loadingOverlay.parentNode) {
-      loadingOverlay.remove();
+      loadingOverlay.classList.add("crm-loading-hide");
+      setTimeout(() => {
+        if (loadingOverlay.parentNode) {
+          loadingOverlay.remove();
+        }
+        if (callback) callback();
+      }, 400);
+    } else if (callback) {
+      callback();
     }
   }
 
@@ -326,9 +334,7 @@
             "*** ALLOW 5 SECONDS TO READ THIS OUTPUT BEFORE REDIRECT ***",
           );
 
-          // Hide loading modal before redirect
-          hideLoadingModal(loadingOverlay);
-
+          // Hide loading modal with fade-out, then redirect
           localStorage.setItem(
             "crmToast",
             JSON.stringify({
@@ -336,31 +342,35 @@
               type: "success",
             }),
           );
-          setTimeout(() => {
-            window.location.href = data.entity_url;
-          }, 1500); // 1.5 second delay for debug panel visibility
+          hideLoadingModal(loadingOverlay, () => {
+            setTimeout(() => {
+              window.location.href = data.entity_url;
+            }, 800);
+          });
         } else {
-          // Hide loading modal on error
-          hideLoadingModal(loadingOverlay);
+          // Hide loading modal with fade-out on error
+          hideLoadingModal(loadingOverlay, () => {
+            // Restore button on error
+            button.disabled = false;
+            button.classList.remove("ai-generating");
+            button.innerHTML = originalHTML;
+            showToast(
+              "Error: " + (data.message || "Failed to generate contact"),
+              "error",
+            );
+          });
+        }
+      })
+      .catch((error) => {
+        // Hide loading modal with fade-out on error
+        hideLoadingModal(loadingOverlay, () => {
           // Restore button on error
           button.disabled = false;
           button.classList.remove("ai-generating");
           button.innerHTML = originalHTML;
-          showToast(
-            "Error: " + (data.message || "Failed to generate contact"),
-            "error",
-          );
-        }
-      })
-      .catch((error) => {
-        // Hide loading modal on error
-        hideLoadingModal(loadingOverlay);
-        // Restore button on error
-        button.disabled = false;
-        button.classList.remove("ai-generating");
-        button.innerHTML = originalHTML;
-        console.error("AI generation error:", error);
-        showToast("Error: " + error.message, "error");
+          console.error("AI generation error:", error);
+          showToast("Error: " + error.message, "error");
+        });
       });
   }
 

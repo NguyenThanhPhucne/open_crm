@@ -1248,7 +1248,7 @@ HTML;
           formData.append('contract', contractFile);
         }
         
-        const response = await fetch('/crm/pipeline/update-stage', {
+        const response = await fetch('/crm/my-pipeline/update-stage', {
           method: 'POST',
           body: formData
         });
@@ -1358,7 +1358,7 @@ HTML;
             
             // Otherwise, update immediately
             try {
-              const response = await fetch('/crm/pipeline/update-stage', {
+              const response = await fetch('/crm/my-pipeline/update-stage', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

@@ -233,7 +233,7 @@ class QuickAddController extends ControllerBase {
         'status' => 'success',
         'message' => 'Đã tạo cơ hội thành công: ' . $data['title'],
         'entity_id' => $deal->id(),
-        'redirect' => '/crm/pipeline',
+        'redirect' => '/crm/my-pipeline',
       ]);
 
     } catch (\Exception $e) {

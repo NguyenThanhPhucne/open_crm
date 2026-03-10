@@ -1,5 +1,5 @@
 crm_kanban.pipeline:
-  path: "/crm/pipeline"
+  path: "/crm/my-pipeline"
   defaults:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::view'
     _title: "Sales Pipeline"
@@ -15,7 +15,7 @@ crm_kanban.all_pipeline:
     _permission: "access content"
 
 crm_kanban.update_stage:
-  path: "/crm/pipeline/update-stage"
+  path: "/crm/my-pipeline/update-stage"
   defaults:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::updateStage'
   requirements:

@@ -83,10 +83,10 @@ function _crm_actions_build_navbar() {
       'active' => str_contains($current_path, '/crm/my-deals') || str_contains($current_path, '/crm/all-deals'),
     ],
     [
-      'url' => $is_admin ? '/crm/all-pipeline' : '/crm/pipeline',
+      'url' => $is_admin ? '/crm/all-pipeline' : '/crm/my-pipeline',
       'label' => $is_admin ? 'All Pipeline' : 'Pipeline',
       'icon' => 'kanban-square',
-      'active' => str_contains($current_path, '/crm/pipeline') || str_contains($current_path, '/crm/all-pipeline'),
+      'active' => str_contains($current_path, '/crm/my-pipeline') || str_contains($current_path, '/crm/all-pipeline'),
     ],
     [
       'url' => $is_admin ? '/crm/all-activities' : '/crm/my-activities',

@@ -167,7 +167,7 @@ display:
           plugin_id: taxonomy_index_tid
           vid: pipeline_stage
           operator: or
-          value: {}
+          value: []
           exposed: true
           expose:
             operator_id: field_stage_target_id_op
