@@ -1,0 +1,254 @@
+{#
+  crm-node-organization.html.twig
+  Professional organization detail page
+#}
+<div class="crm-node-detail">
+
+  {# Breadcrumb #}
+  <nav class="detail-breadcrumb">
+    <a href="/crm/organizations"><i data-lucide="building-2"></i> Organizations</a>
+    <i data-lucide="chevron-right"></i>
+    <span>{{ title }}</span>
+  </nav>
+
+  {# ─── Header Card ──────────────────────────────────── #}
+  <div class="detail-card detail-header-card">
+    <div class="detail-avatar org">
+      {% if has_logo %}
+        <img src="{{ logo_url }}" alt="{{ title }}">
+      {% else %}
+        {{ initial }}
+      {% endif %}
+    </div>
+
+    <div class="detail-header-info">
+      <h1>{{ title }}</h1>
+
+      <p class="detail-subtitle">
+        {% if industry %}
+          <i data-lucide="briefcase" style="width:13px;height:13px;"></i>
+          <span>{{ industry }}</span>
+        {% endif %}
+        {% if website %}
+          {% if industry %}<span style="color:#cbd5e1;">·</span>{% endif %}
+          <i data-lucide="globe" style="width:13px;height:13px;"></i>
+          <a href="{{ website }}" target="_blank" rel="noopener noreferrer">{{ website_display ?: website }}</a>
+        {% endif %}
+      </p>
+
+      <div class="detail-meta-row">
+        {% if employees_count %}
+          <div class="detail-meta-item">
+            <i data-lucide="users"></i>
+            {{ employees_count }} employees
+          </div>
+        {% endif %}
+        {% if annual_revenue %}
+          <div class="detail-meta-item">
+            <i data-lucide="bar-chart-2"></i>
+            ${{ annual_revenue|number_format(0) }} revenue
+          </div>
+        {% endif %}
+        {% if staff_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="user-check"></i>
+            Managed by: <a href="{{ staff_url }}">{{ staff_name }}</a>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if tags %}
+        <div class="tags-row" style="margin-top:0.75rem;">
+          {% for tag in tags %}
+            <span class="tag-chip">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if can_edit %}
+      <div class="detail-header-actions">
+        <a href="/node/{{ nid }}/edit" class="btn-primary">
+          <i data-lucide="edit-2"></i> Edit
+        </a>
+        <a href="/crm/organizations" class="btn-secondary">
+          <i data-lucide="arrow-left"></i> Back
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ─── Stats Row ────────────────────────────────────── #}
+  <div class="stats-grid">
+    <div class="stat-card stat-card-blue">
+      <div class="stat-icon"><i data-lucide="users"></i></div>
+      <div class="stat-number">{{ contacts_count }}</div>
+      <div class="stat-label">Contacts</div>
+    </div>
+    <div class="stat-card stat-card-purple">
+      <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+      <div class="stat-number">{{ deals_count }}</div>
+      <div class="stat-label">Deals</div>
+    </div>
+    {% if employees_count %}
+      <div class="stat-card stat-card-green">
+        <div class="stat-icon"><i data-lucide="user-2"></i></div>
+        <div class="stat-number">{{ employees_count }}</div>
+        <div class="stat-label">Employees</div>
+      </div>
+    {% endif %}
+    {% if annual_revenue %}
+      <div class="stat-card stat-card-orange">
+        <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+        <div class="stat-number" style="font-size:1.1rem;">${{ annual_revenue|number_format(0) }}</div>
+        <div class="stat-label">Annual Revenue</div>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ─── Details Panel ────────────────────────────────── #}
+  <div class="details-panel">
+    <div class="details-panel-title">
+      <i data-lucide="info"></i> Organization Details
+    </div>
+    <div class="fields-grid">
+      <div class="field-item">
+        <div class="field-label">Organization Name</div>
+        <div class="field-value">{{ title }}</div>
+      </div>
+      {% if industry %}
+        <div class="field-item">
+          <div class="field-label">Industry</div>
+          <div class="field-value">{{ industry }}</div>
+        </div>
+      {% endif %}
+      {% if website %}
+        <div class="field-item">
+          <div class="field-label">Website</div>
+          <div class="field-value">
+            <a href="{{ website }}" target="_blank" rel="noopener noreferrer">{{ website_display ?: website }}</a>
+          </div>
+        </div>
+      {% endif %}
+      {% if employees_count %}
+        <div class="field-item">
+          <div class="field-label">Employees</div>
+          <div class="field-value">{{ employees_count }}</div>
+        </div>
+      {% endif %}
+      {% if annual_revenue %}
+        <div class="field-item">
+          <div class="field-label">Annual Revenue</div>
+          <div class="field-value amount">${{ annual_revenue|number_format(0) }}</div>
+        </div>
+      {% endif %}
+      {% if staff_name %}
+        <div class="field-item">
+          <div class="field-label">Assigned Staff</div>
+          <div class="field-value"><a href="{{ staff_url }}">{{ staff_name }}</a></div>
+        </div>
+      {% endif %}
+      <div class="field-item">
+        <div class="field-label">Created</div>
+        <div class="field-value">{{ created|date('M j, Y') }}</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">Last Updated</div>
+        <div class="field-value">{{ changed|date('M j, Y') }}</div>
+      </div>
+    </div>
+  </div>
+
+  {# ─── Notes ────────────────────────────────────────── #}
+  {% if notes %}
+    <div class="notes-panel">
+      <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
+      <div class="notes-panel-text">{{ notes }}</div>
+    </div>
+  {% endif %}
+
+  {# ─── Content Grid ─────────────────────────────────── #}
+  <div class="content-grid">
+
+    {# Contacts #}
+    <div class="content-card">
+      <div class="content-card-header">
+        <div class="content-card-title">
+          <i data-lucide="users"></i> Contacts
+          {% if contacts_count > contacts|length %}
+            <span style="font-size:0.75rem;color:#94a3b8;text-transform:none;font-weight:400;">(showing {{ contacts|length }} of {{ contacts_count }})</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="content-card-body">
+        {% if contacts %}
+          <ul class="detail-list">
+            {% for contact in contacts %}
+              <li class="detail-list-item">
+                <div class="detail-list-avatar">{{ contact.initial }}</div>
+                <div class="detail-list-info">
+                  <div class="detail-list-title"><a href="{{ contact.url }}">{{ contact.title }}</a></div>
+                  <div class="detail-list-sub">
+                    {% if contact.position %}<span>{{ contact.position }}</span>{% endif %}
+                    {% if contact.email %}<span>· {{ contact.email }}</span>{% endif %}
+                  </div>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <i data-lucide="users"></i>
+            <p>No contacts yet</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Deals #}
+    <div class="content-card">
+      <div class="content-card-header">
+        <div class="content-card-title">
+          <i data-lucide="trending-up"></i> Deals
+        </div>
+      </div>
+      <div class="content-card-body">
+        {% if active_deals %}
+          <ul class="detail-list">
+            {% for deal in active_deals %}
+              <li class="detail-list-item">
+                <div class="detail-list-avatar" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:8px;">
+                  <i data-lucide="dollar-sign" style="width:16px;height:16px;color:#fff;"></i>
+                </div>
+                <div class="detail-list-info">
+                  <div class="detail-list-title"><a href="{{ deal.url }}">{{ deal.title }}</a></div>
+                  <div class="detail-list-sub">
+                    {% if deal.stage %}
+                      <span class="badge stage-badge stage-{{ deal.stage|lower|replace({' ':'-'}) }}">{{ deal.stage }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if deal.amount %}
+                  <div class="detail-list-amount">${{ deal.amount }}</div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <i data-lucide="trending-up"></i>
+            <p>No deals yet</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>{# /.content-grid #}
+
+</div>{# /.crm-node-detail #}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) { lucide.createIcons(); }
+  });
+</script>

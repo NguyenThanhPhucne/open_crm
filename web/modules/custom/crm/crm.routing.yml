@@ -24,6 +24,19 @@ crm.user_profile_canonical:
       user:
         type: entity:user
 
+crm.node_detail_canonical:
+  path: "/node/{node}"
+  defaults:
+    _controller: '\Drupal\crm\Controller\NodeDetailController::view'
+    _title_callback: '\Drupal\crm\Controller\NodeDetailController::getTitle'
+  requirements:
+    _custom_access: '\Drupal\crm\Controller\NodeDetailController::access'
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"
   defaults:

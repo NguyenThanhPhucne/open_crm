@@ -279,6 +279,56 @@ function crm_theme($existing, $type, $theme, $path) {
       ],
       'template' => 'crm-contacts-list',
     ],
+    'crm_node_contact' => [
+      'variables' => [
+        'node' => NULL, 'nid' => NULL, 'title' => NULL, 'initial' => NULL,
+        'email' => NULL, 'phone' => NULL, 'position' => NULL, 'source' => NULL,
+        'linkedin' => NULL, 'notes' => NULL, 'created' => NULL, 'changed' => NULL,
+        'org_name' => NULL, 'org_url' => NULL, 'owner_name' => NULL, 'owner_url' => NULL,
+        'deals' => [], 'activities' => [], 'customer_type' => NULL,
+        'tags' => [], 'last_contacted' => NULL, 'can_edit' => FALSE,
+      ],
+      'template' => 'crm-node-contact',
+    ],
+    'crm_node_deal' => [
+      'variables' => [
+        'node' => NULL, 'nid' => NULL, 'title' => NULL,
+        'stage_name' => NULL, 'stage_class' => NULL, 'amount' => NULL,
+        'probability' => NULL, 'close_date' => NULL, 'source' => NULL,
+        'lost_reason' => NULL, 'notes' => NULL,
+        'contact_name' => NULL, 'contact_url' => NULL,
+        'org_name' => NULL, 'org_url' => NULL,
+        'owner_name' => NULL, 'owner_url' => NULL,
+        'activities' => [], 'created' => NULL, 'changed' => NULL, 'can_edit' => FALSE,
+      ],
+      'template' => 'crm-node-deal',
+    ],
+    'crm_node_organization' => [
+      'variables' => [
+        'node' => NULL, 'nid' => NULL, 'title' => NULL, 'initial' => NULL,
+        'logo_url' => NULL, 'has_logo' => FALSE, 'industry' => NULL,
+        'website' => NULL, 'website_display' => NULL,
+        'annual_revenue' => NULL, 'employees_count' => NULL, 'notes' => NULL,
+        'staff_name' => NULL, 'staff_url' => NULL,
+        'contacts' => [], 'contacts_count' => 0,
+        'deals_count' => 0, 'active_deals' => [],
+        'tags' => [], 'created' => NULL, 'changed' => NULL, 'can_edit' => FALSE,
+      ],
+      'template' => 'crm-node-organization',
+    ],
+    'crm_node_activity' => [
+      'variables' => [
+        'node' => NULL, 'nid' => NULL, 'title' => NULL,
+        'activity_type' => NULL, 'activity_date' => NULL,
+        'status' => NULL, 'status_class' => NULL,
+        'outcome' => NULL, 'notes' => NULL,
+        'assigned_name' => NULL, 'assigned_url' => NULL,
+        'contact_name' => NULL, 'contact_url' => NULL,
+        'deal_name' => NULL, 'deal_url' => NULL,
+        'created' => NULL, 'changed' => NULL, 'can_edit' => FALSE,
+      ],
+      'template' => 'crm-node-activity',
+    ],
   ];
 }
 

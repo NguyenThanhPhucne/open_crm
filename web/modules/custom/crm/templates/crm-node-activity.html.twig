@@ -1,0 +1,178 @@
+{#
+  crm-node-activity.html.twig
+  Professional activity detail page
+#}
+<div class="crm-node-detail">
+
+  {# Breadcrumb #}
+  <nav class="detail-breadcrumb">
+    <a href="/crm/activities"><i data-lucide="activity"></i> Activities</a>
+    <i data-lucide="chevron-right"></i>
+    <span>{{ title }}</span>
+  </nav>
+
+  {# ─── Header Card ──────────────────────────────────── #}
+  <div class="detail-card detail-header-card">
+    <div class="detail-avatar activity">
+      <i data-lucide="calendar-check" style="color:#fff;width:32px;height:32px;"></i>
+    </div>
+
+    <div class="detail-header-info">
+      <h1>{{ title }}</h1>
+
+      <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.4rem;flex-wrap:wrap;">
+        {% if activity_type %}
+          <span class="badge type-badge">{{ activity_type }}</span>
+        {% endif %}
+        {% if status %}
+          <span class="badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
+        {% endif %}
+      </div>
+
+      <div class="detail-meta-row" style="margin-top:0.75rem;">
+        {% if activity_date %}
+          <div class="detail-meta-item">
+            <i data-lucide="calendar"></i>
+            {{ activity_date|date('F j, Y g:i A') }}
+          </div>
+        {% endif %}
+        {% if assigned_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="user"></i>
+            <a href="{{ assigned_url }}">{{ assigned_name }}</a>
+          </div>
+        {% endif %}
+        {% if contact_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="user-circle"></i>
+            Contact: <a href="{{ contact_url }}">{{ contact_name }}</a>
+          </div>
+        {% endif %}
+        {% if deal_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="trending-up"></i>
+            Deal: <a href="{{ deal_url }}">{{ deal_name }}</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if can_edit %}
+      <div class="detail-header-actions">
+        <a href="/node/{{ nid }}/edit" class="btn-primary">
+          <i data-lucide="edit-2"></i> Edit
+        </a>
+        <a href="/crm/activities" class="btn-secondary">
+          <i data-lucide="arrow-left"></i> Back
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ─── Details Panel ────────────────────────────────── #}
+  <div class="details-panel">
+    <div class="details-panel-title">
+      <i data-lucide="info"></i> Activity Details
+    </div>
+    <div class="fields-grid">
+      <div class="field-item">
+        <div class="field-label">Title</div>
+        <div class="field-value">{{ title }}</div>
+      </div>
+      {% if activity_type %}
+        <div class="field-item">
+          <div class="field-label">Type</div>
+          <div class="field-value">
+            <span class="badge type-badge">{{ activity_type }}</span>
+          </div>
+        </div>
+      {% endif %}
+      {% if status %}
+        <div class="field-item">
+          <div class="field-label">Status</div>
+          <div class="field-value">
+            <span class="badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
+          </div>
+        </div>
+      {% endif %}
+      {% if activity_date %}
+        <div class="field-item">
+          <div class="field-label">Date &amp; Time</div>
+          <div class="field-value">{{ activity_date|date('F j, Y') }} at {{ activity_date|date('g:i A') }}</div>
+        </div>
+      {% endif %}
+      {% if assigned_name %}
+        <div class="field-item">
+          <div class="field-label">Assigned To</div>
+          <div class="field-value"><a href="{{ assigned_url }}">{{ assigned_name }}</a></div>
+        </div>
+      {% endif %}
+      {% if contact_name %}
+        <div class="field-item">
+          <div class="field-label">Related Contact</div>
+          <div class="field-value"><a href="{{ contact_url }}">{{ contact_name }}</a></div>
+        </div>
+      {% endif %}
+      {% if deal_name %}
+        <div class="field-item">
+          <div class="field-label">Related Deal</div>
+          <div class="field-value"><a href="{{ deal_url }}">{{ deal_name }}</a></div>
+        </div>
+      {% endif %}
+      <div class="field-item">
+        <div class="field-label">Logged</div>
+        <div class="field-value">{{ created|date('M j, Y') }}</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">Last Updated</div>
+        <div class="field-value">{{ changed|date('M j, Y') }}</div>
+      </div>
+    </div>
+  </div>
+
+  {# ─── Outcome ──────────────────────────────────────── #}
+  {% if outcome %}
+    <div class="notes-panel" style="background:#f0fdf4;border-color:#bbf7d0;">
+      <div class="notes-panel-label" style="color:#15803d;">
+        <i data-lucide="check-circle"></i> Outcome
+      </div>
+      <div class="notes-panel-text" style="color:#166534;">{{ outcome }}</div>
+    </div>
+  {% endif %}
+
+  {# ─── Notes ────────────────────────────────────────── #}
+  {% if notes %}
+    <div class="notes-panel">
+      <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
+      <div class="notes-panel-text">{{ notes }}</div>
+    </div>
+  {% endif %}
+
+  {# ─── Quick Links ──────────────────────────────────── #}
+  {% if contact_name or deal_name %}
+    <div class="details-panel" style="margin-top:1.5rem;">
+      <div class="details-panel-title">
+        <i data-lucide="link"></i> Related Records
+      </div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        {% if contact_name %}
+          <a href="{{ contact_url }}" class="btn-secondary">
+            <i data-lucide="user-circle"></i> {{ contact_name }}
+          </a>
+        {% endif %}
+        {% if deal_name %}
+          <a href="{{ deal_url }}" class="btn-secondary">
+            <i data-lucide="trending-up"></i> {{ deal_name }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>{# /.crm-node-detail #}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) { lucide.createIcons(); }
+  });
+</script>

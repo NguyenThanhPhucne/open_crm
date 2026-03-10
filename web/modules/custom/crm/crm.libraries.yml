@@ -59,3 +59,14 @@ contacts_list:
     - core/jquery
     - core/once
     - core/drupal.dialog
+
+node_detail_styles:
+  version: 1.0
+  css:
+    theme:
+      css/node-detail.css: {}
+  js:
+    https://unpkg.com/lucide@latest: { type: external, minified: true }
+  dependencies:
+    - core/drupal
+    - crm/crm_layout

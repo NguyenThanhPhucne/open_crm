@@ -1,0 +1,240 @@
+{#
+  crm-node-deal.html.twig
+  Professional deal detail page
+#}
+<div class="crm-node-detail">
+
+  {# Breadcrumb #}
+  <nav class="detail-breadcrumb">
+    <a href="/crm/deals"><i data-lucide="trending-up"></i> Deals</a>
+    <i data-lucide="chevron-right"></i>
+    <span>{{ title }}</span>
+  </nav>
+
+  {# ─── Header Card ──────────────────────────────────── #}
+  <div class="detail-card detail-header-card">
+    <div class="detail-avatar deal">
+      <i data-lucide="dollar-sign" style="color:#fff;width:36px;height:36px;"></i>
+    </div>
+
+    <div class="detail-header-info">
+      <h1>{{ title }}</h1>
+
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.35rem;flex-wrap:wrap;">
+        {% if stage_name %}
+          <span class="badge stage-badge stage-{{ stage_class }}">{{ stage_name }}</span>
+        {% endif %}
+        {% if probability %}
+          <span class="badge" style="background:#f0f9ff;color:#0369a1;">{{ probability }}% probability</span>
+        {% endif %}
+      </div>
+
+      {% if amount %}
+        <div class="deal-amount-hero">
+          <span class="deal-amount-value">${{ amount|number_format(0, '.', ',') }}</span>
+        </div>
+      {% endif %}
+
+      <div class="detail-meta-row" style="margin-top:0.75rem;">
+        {% if contact_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="user"></i>
+            <a href="{{ contact_url }}">{{ contact_name }}</a>
+          </div>
+        {% endif %}
+        {% if org_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="building-2"></i>
+            <a href="{{ org_url }}">{{ org_name }}</a>
+          </div>
+        {% endif %}
+        {% if close_date %}
+          <div class="detail-meta-item">
+            <i data-lucide="calendar"></i>
+            Close: {{ close_date|date('M j, Y') }}
+          </div>
+        {% endif %}
+        {% if owner_name %}
+          <div class="detail-meta-item">
+            <i data-lucide="user-check"></i>
+            Owner: <a href="{{ owner_url }}">{{ owner_name }}</a>
+          </div>
+        {% endif %}
+        {% if source %}
+          <div class="detail-meta-item">
+            <i data-lucide="zap"></i>
+            {{ source }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if can_edit %}
+      <div class="detail-header-actions">
+        <a href="/node/{{ nid }}/edit" class="btn-primary">
+          <i data-lucide="edit-2"></i> Edit
+        </a>
+        <a href="/crm/deals" class="btn-secondary">
+          <i data-lucide="arrow-left"></i> Back
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ─── Stats Row ────────────────────────────────────── #}
+  <div class="stats-grid">
+    {% if amount %}
+      <div class="stat-card stat-card-green">
+        <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+        <div class="stat-number" style="font-size:1.4rem;">${{ amount|number_format(0, '.', ',') }}</div>
+        <div class="stat-label">Deal Value</div>
+      </div>
+    {% endif %}
+    {% if probability %}
+      <div class="stat-card stat-card-blue">
+        <div class="stat-icon"><i data-lucide="percent"></i></div>
+        <div class="stat-number">{{ probability }}%</div>
+        <div class="stat-label">Win Probability</div>
+      </div>
+    {% endif %}
+    <div class="stat-card stat-card-purple">
+      <div class="stat-icon"><i data-lucide="activity"></i></div>
+      <div class="stat-number">{{ activities|length }}</div>
+      <div class="stat-label">Activities</div>
+    </div>
+    {% if close_date %}
+      <div class="stat-card stat-card-orange">
+        <div class="stat-icon"><i data-lucide="calendar"></i></div>
+        <div class="stat-number" style="font-size:1rem;">{{ close_date|date('M j, Y') }}</div>
+        <div class="stat-label">Close Date</div>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ─── Details Panel ────────────────────────────────── #}
+  <div class="details-panel">
+    <div class="details-panel-title">
+      <i data-lucide="info"></i> Deal Details
+    </div>
+    <div class="fields-grid">
+      <div class="field-item">
+        <div class="field-label">Deal Name</div>
+        <div class="field-value">{{ title }}</div>
+      </div>
+      {% if stage_name %}
+        <div class="field-item">
+          <div class="field-label">Stage</div>
+          <div class="field-value">
+            <span class="badge stage-badge stage-{{ stage_class }}">{{ stage_name }}</span>
+          </div>
+        </div>
+      {% endif %}
+      {% if amount %}
+        <div class="field-item">
+          <div class="field-label">Amount</div>
+          <div class="field-value amount">${{ amount|number_format(0, '.', ',') }}</div>
+        </div>
+      {% endif %}
+      {% if probability %}
+        <div class="field-item">
+          <div class="field-label">Win Probability</div>
+          <div class="field-value">{{ probability }}%</div>
+        </div>
+      {% endif %}
+      {% if contact_name %}
+        <div class="field-item">
+          <div class="field-label">Contact</div>
+          <div class="field-value"><a href="{{ contact_url }}">{{ contact_name }}</a></div>
+        </div>
+      {% endif %}
+      {% if org_name %}
+        <div class="field-item">
+          <div class="field-label">Organization</div>
+          <div class="field-value"><a href="{{ org_url }}">{{ org_name }}</a></div>
+        </div>
+      {% endif %}
+      {% if owner_name %}
+        <div class="field-item">
+          <div class="field-label">Owner</div>
+          <div class="field-value"><a href="{{ owner_url }}">{{ owner_name }}</a></div>
+        </div>
+      {% endif %}
+      {% if close_date %}
+        <div class="field-item">
+          <div class="field-label">Expected Close Date</div>
+          <div class="field-value">{{ close_date|date('F j, Y') }}</div>
+        </div>
+      {% endif %}
+      {% if source %}
+        <div class="field-item">
+          <div class="field-label">Source</div>
+          <div class="field-value">{{ source }}</div>
+        </div>
+      {% endif %}
+      {% if lost_reason %}
+        <div class="field-item">
+          <div class="field-label">Lost Reason</div>
+          <div class="field-value" style="color:#ef4444;">{{ lost_reason }}</div>
+        </div>
+      {% endif %}
+      <div class="field-item">
+        <div class="field-label">Created</div>
+        <div class="field-value">{{ created|date('M j, Y') }}</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">Last Updated</div>
+        <div class="field-value">{{ changed|date('M j, Y') }}</div>
+      </div>
+    </div>
+  </div>
+
+  {# ─── Notes ────────────────────────────────────────── #}
+  {% if notes %}
+    <div class="notes-panel">
+      <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
+      <div class="notes-panel-text">{{ notes }}</div>
+    </div>
+  {% endif %}
+
+  {# ─── Activities ───────────────────────────────────── #}
+  <div class="content-card" style="margin-top:0;">
+    <div class="content-card-header">
+      <div class="content-card-title">
+        <i data-lucide="activity"></i> Activity Timeline
+      </div>
+    </div>
+    <div class="content-card-body">
+      {% if activities %}
+        <ul class="detail-list">
+          {% for act in activities %}
+            <li class="detail-list-item">
+              <div class="timeline-dot {{ act.status|lower|replace({' ':'-'}) }}"></div>
+              <div class="detail-list-info">
+                <div class="detail-list-title"><a href="{{ act.url }}">{{ act.title }}</a></div>
+                <div class="detail-list-sub">
+                  {% if act.type %}<span>{{ act.type }}</span>{% endif %}
+                  {% if act.date %}<span>· {{ act.date|date('M j, Y') }}</span>{% endif %}
+                </div>
+              </div>
+              {% if act.status %}
+                <span class="badge status-badge status-{{ act.status|lower|replace({' ':'-'}) }}">{{ act.status }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state">
+          <i data-lucide="activity"></i>
+          <p>No activities yet for this deal</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>{# /.crm-node-detail #}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) { lucide.createIcons(); }
+  });
+</script>
