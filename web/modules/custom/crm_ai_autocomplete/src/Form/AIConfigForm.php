@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\crm_ai\Form;
+namespace Drupal\crm_ai_autocomplete\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;

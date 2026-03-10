@@ -1,0 +1,7 @@
+crm_ai_autocomplete.generate_contact:
+  title: "✨ Generate data"
+  route_name: "view.all_contacts.page_1"
+  appears_on:
+    - "view.all_contacts.page_1"
+    - "view.my_contacts.page_1"
+  class: Drupal\crm_ai_autocomplete\Plugin\Menu\LocalAction\GenerateContactAction

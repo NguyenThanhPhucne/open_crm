@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\crm_ai\Service;
+namespace Drupal\crm_ai_autocomplete\Service;
 
 /**
  * Service for validating and formatting field values.

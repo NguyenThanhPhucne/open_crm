@@ -1,0 +1,39 @@
+services:
+  crm_ai_autocomplete.entity_autocomplete_service:
+    class: Drupal\crm_ai_autocomplete\Service\AIEntityAutoCompleteService
+    arguments:
+      - "@config.factory"
+      - "@entity_type.manager"
+      - "@http_client"
+      - "@logger.factory"
+      - "@crm_ai_autocomplete.entity_schema_service"
+      - "@crm_ai_autocomplete.llm_provider_service"
+      - "@crm_ai_autocomplete.field_validator_service"
+      - "@messenger"
+    tags:
+      - { name: logger_channel, channel: crm_ai_autocomplete }
+
+  crm_ai_autocomplete.entity_schema_service:
+    class: Drupal\crm_ai_autocomplete\Service\EntitySchemaService
+    arguments:
+      - "@entity_field.manager"
+      - "@entity_type.manager"
+
+  crm_ai_autocomplete.llm_provider_service:
+    class: Drupal\crm_ai_autocomplete\Service\LLMProviderService
+    arguments:
+      - "@config.factory"
+      - "@http_client"
+      - "@logger.factory"
+    tags:
+      - { name: logger_channel, channel: crm_ai_autocomplete }
+
+  crm_ai_autocomplete.field_validator_service:
+    class: Drupal\crm_ai_autocomplete\Service\FieldValidatorService
+
+  crm_ai_autocomplete.controller.autocomplete:
+    class: Drupal\crm_ai_autocomplete\Controller\AIAutoCompleteController
+    arguments:
+      - "@crm_ai_autocomplete.entity_autocomplete_service"
+      - "@entity_type.manager"
+      - "@logger.factory"

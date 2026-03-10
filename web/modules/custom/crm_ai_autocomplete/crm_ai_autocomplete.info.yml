@@ -12,4 +12,4 @@ dependencies:
   - crm:crm
 
 config_devel:
-  - crm_ai.settings
+  - crm_ai_autocomplete.settings

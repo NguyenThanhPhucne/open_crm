@@ -1,8 +1,6 @@
 crm-design-system:
   version: 1.0
-  css:
-    base:
-      css/crm-design-system.css: {}
+  css: {}
   dependencies:
     - core/drupal
 
@@ -24,7 +22,6 @@ crm_layout:
   css:
     theme:
       css/crm-layout.css: {}
-      css/crm-design-system.css: {}
   dependencies:
     - core/drupal
 

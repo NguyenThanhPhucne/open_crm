@@ -20,6 +20,15 @@ ai-field-highlighter:
     - core/drupal
     - core/jquery
 
+ai-generate-button:
+  js:
+    js/ai-generate-button.js: {}
+  css:
+    component:
+      css/ai-generate-button.css: {}
+  dependencies:
+    - core/drupal
+
 ai-autocomplete:
   js:
     js/ai-complete-button.js: {}

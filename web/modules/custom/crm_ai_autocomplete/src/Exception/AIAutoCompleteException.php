@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\crm_ai\Exception;
+namespace Drupal\crm_ai_autocomplete\Exception;
 
 /**
  * Exception class for AI AutoComplete errors.

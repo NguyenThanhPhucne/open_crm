@@ -19,9 +19,14 @@
   Drupal.behaviors.contactsListDelete = {
     attach: function (context) {
       // Delete button click handler.
-      jQuery(".crm-contact__delete-btn", context)
-        .once("delete-initialized")
-        .on("click", function (e) {
+      jQuery(".crm-contact__delete-btn", context).each(function () {
+        // Skip if already processed
+        if (jQuery(this).data("delete-initialized")) {
+          return;
+        }
+        jQuery(this).data("delete-initialized", true);
+
+        jQuery(this).on("click", function (e) {
           e.preventDefault();
           const nid = jQuery(this).data("nid");
           const contactName = jQuery(this)
@@ -32,6 +37,7 @@
           // Show confirmation modal.
           showDeleteConfirmation(nid, contactName);
         });
+      });
 
       // Initialize relative time formatting.
       updateRelativeTimes();

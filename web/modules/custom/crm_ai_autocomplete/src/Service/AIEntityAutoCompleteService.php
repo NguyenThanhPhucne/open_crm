@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\crm_ai\Service;
+namespace Drupal\crm_ai_autocomplete\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -46,21 +46,21 @@ class AIEntityAutoCompleteService {
   /**
    * Entity schema service.
    *
-   * @var \Drupal\crm_ai\Service\EntitySchemaService
+   * @var \Drupal\crm_ai_autocomplete\Service\EntitySchemaService
    */
   protected $schemaService;
 
   /**
    * LLM provider service.
    *
-   * @var \Drupal\crm_ai\Service\LLMProviderService
+   * @var \Drupal\crm_ai_autocomplete\Service\LLMProviderService
    */
   protected $llmService;
 
   /**
    * Field validator service.
    *
-   * @var \Drupal\crm_ai\Service\FieldValidatorService
+   * @var \Drupal\crm_ai_autocomplete\Service\FieldValidatorService
    */
   protected $validatorService;
 

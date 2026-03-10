@@ -8,9 +8,9 @@
 /**
  * Implements hook_install().
  */
-function crm_ai_install() {
+function crm_ai_autocomplete_install() {
   // Set default configuration.
-  $config = \Drupal::configFactory()->getEditable('crm_ai.settings');
+  $config = \Drupal::configFactory()->getEditable('crm_ai_autocomplete.settings');
   
   if (empty($config->get('llm_provider'))) {
     $config->set('llm_provider', 'mock')
@@ -28,7 +28,7 @@ function crm_ai_install() {
 /**
  * Implements hook_uninstall().
  */
-function crm_ai_uninstall() {
+function crm_ai_autocomplete_uninstall() {
   // Clean up configuration.
-  \Drupal::configFactory()->getEditable('crm_ai.settings')->delete();
+  \Drupal::configFactory()->getEditable('crm_ai_autocomplete.settings')->delete();
 }

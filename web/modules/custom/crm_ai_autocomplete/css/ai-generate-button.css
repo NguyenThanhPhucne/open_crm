@@ -1,0 +1,99 @@
+/* AI Generate Button Loading States */
+
+/* Loading spinner animation */
+@keyframes ai-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fade in animation for loading state */
+@keyframes ai-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Success checkmark animation */
+@keyframes ai-scale-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Button generating state */
+#crm-ai-generate-btn.ai-generating {
+  position: relative;
+  color: #0066cc;
+  background-color: #f0f4ff;
+  border-color: #0066cc;
+}
+
+#crm-ai-generate-btn.ai-generating:hover {
+  background-color: #e6f0ff;
+}
+
+/* Loading spinner styling */
+.ai-loading-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  animation: ai-fade-in 0.3s ease-out;
+}
+
+.ai-spinner-icon {
+  display: inline-block;
+  animation: ai-spin 1.5s linear infinite;
+  color: #0066cc;
+}
+
+.ai-loading-text {
+  font-weight: 500;
+  color: #0066cc;
+  letter-spacing: 0.3px;
+}
+
+/* Success state styling */
+#crm-ai-generate-btn.ai-success {
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+  color: #2e7d32;
+}
+
+.ai-success-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  animation: ai-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ai-success-icon {
+  display: inline-block;
+  color: #4caf50;
+}
+
+/* Ensure proper button layout during loading */
+#crm-ai-generate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+/* SVG icon styling */
+#crm-ai-generate-btn svg {
+  vertical-align: middle;
+}

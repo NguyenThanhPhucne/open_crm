@@ -162,7 +162,7 @@ display:
           field: field_owner_target_id
           plugin_id: numeric
           default_action: default
-          default_argument_type: current_user
+          default_argument_type: none
           summary:
             sort_order: asc
             number_of_records: 0

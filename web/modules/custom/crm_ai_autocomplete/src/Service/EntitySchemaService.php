@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\crm_ai\Service;
+namespace Drupal\crm_ai_autocomplete\Service;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -105,7 +105,7 @@ class EntitySchemaService {
    */
   public function getFieldLabel($bundle, $field_name) {
     $definitions = $this->getFieldDefinitions($bundle);
-    return $definitions[$field_name]->getLabel() ?? ucfirst($field_name);
+    return isset($definitions[$field_name]) ? $definitions[$field_name]->getLabel() : ucfirst($field_name);
   }
 
   /**
@@ -121,7 +121,7 @@ class EntitySchemaService {
    */
   public function getFieldType($bundle, $field_name) {
     $definitions = $this->getFieldDefinitions($bundle);
-    return $definitions[$field_name]->getType() ?? 'string';
+    return isset($definitions[$field_name]) ? $definitions[$field_name]->getType() : 'string';
   }
 
   /**

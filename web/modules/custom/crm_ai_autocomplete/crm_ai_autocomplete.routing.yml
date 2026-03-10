@@ -1,0 +1,33 @@
+crm_ai_autocomplete.autocomplete_endpoint:
+  path: "/api/crm/ai/autocomplete"
+  defaults:
+    _controller: '\Drupal\crm_ai_autocomplete\Controller\AIAutoCompleteController::autoCompleteEndpoint'
+    _title: "AI Autocomplete"
+  requirements:
+    _custom_access: '\Drupal\crm_ai_autocomplete\Controller\AIAutoCompleteController::accessAutoComplete'
+  methods:
+    - POST
+  options:
+    _auth:
+      - cookie
+
+crm_ai_autocomplete.auto_create_entity:
+  path: "/api/crm/ai/auto-create"
+  defaults:
+    _controller: '\Drupal\crm_ai_autocomplete\Controller\AIAutoCompleteController::autoCreateEntity'
+    _title: "Auto-Create Entity with AI"
+  requirements:
+    _custom_access: '\Drupal\crm_ai_autocomplete\Controller\AIAutoCompleteController::accessAutoCreate'
+  methods:
+    - POST
+  options:
+    _auth:
+      - cookie
+
+crm_ai_autocomplete.config_form:
+  path: "/admin/config/crm/ai"
+  defaults:
+    _form: '\Drupal\crm_ai_autocomplete\Form\AIConfigForm'
+    _title: "CRM AI AutoComplete Settings"
+  requirements:
+    _admin_permission: "administer crm ai"

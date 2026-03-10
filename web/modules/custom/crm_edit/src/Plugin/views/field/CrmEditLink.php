@@ -57,8 +57,9 @@ class CrmEditLink extends FieldPluginBase {
     if ($can_edit) {
       $buttons .= '
         <button 
-          class="crm-action-btn crm-edit-btn" 
-          onclick="CRMInlineEdit.openModal(' . $nid . ', \'' . $bundle . '\')"
+          class="crm-action-btn crm-edit-btn crm-edit-action" 
+          data-nid="' . $nid . '" 
+          data-bundle="' . $bundle . '"
           title="Quick Edit"
           type="button">
           <i data-lucide="edit-2"></i>
@@ -69,8 +70,10 @@ class CrmEditLink extends FieldPluginBase {
     if ($can_delete) {
       $buttons .= '
         <button 
-          class="crm-action-btn crm-delete-btn" 
-          onclick="CRMInlineEdit.confirmDelete(' . $nid . ', \'' . $bundle . '\', \'' . $title . '\')"
+          class="crm-action-btn crm-delete-btn crm-delete-action" 
+          data-nid="' . $nid . '" 
+          data-bundle="' . $bundle . '"
+          data-title="' . $title . '"
           title="Delete"
           type="button">
           <i data-lucide="trash-2"></i>

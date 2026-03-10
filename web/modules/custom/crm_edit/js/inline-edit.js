@@ -3,6 +3,23 @@
  * Inline Edit JavaScript for CRM entities.
  */
 
+// Check if there's a pending toast from a previous page reload
+window.addEventListener("DOMContentLoaded", function () {
+  const pendingToast = localStorage.getItem("crmToast");
+  if (pendingToast) {
+    try {
+      const toastData = JSON.parse(pendingToast);
+      localStorage.removeItem("crmToast");
+      // Show the toast after page is fully loaded
+      setTimeout(() => {
+        window.CRMInlineEdit.showMessage(toastData.message, toastData.type);
+      }, 300);
+    } catch (e) {
+      console.error("Error parsing toast data:", e);
+    }
+  }
+});
+
 // Global CRMInlineEdit object for modal functionality
 window.CRMInlineEdit = {
   openModal: function (nid, type) {
@@ -128,14 +145,20 @@ window.CRMInlineEdit = {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          // Show success message
-          this.showMessage("Changes saved successfully!", "success");
+          // Save toast message to localStorage and reload
+          localStorage.setItem(
+            "crmToast",
+            JSON.stringify({
+              message: "Changes saved successfully!",
+              type: "success",
+            }),
+          );
           this.closeModal();
 
-          // Reload the page to show updated data
-          setTimeout(() => location.reload(), 500);
+          // Reload page immediately to show updated data
+          setTimeout(() => location.reload(), 100);
         } else {
-          // Show error message
+          // Show error message (don't reload if there's an error)
           this.showMessage(data.message || "Error saving changes", "error");
           if (modal) {
             modal.classList.remove("is-saving");
@@ -152,18 +175,61 @@ window.CRMInlineEdit = {
   },
 
   showMessage: function (message, type) {
-    const messageHtml = `<div class="crm-message crm-message-${type}">${message}</div>`;
+    // Determine icon based on message type
+    const iconMap = {
+      success: "check-circle",
+      error: "alert-circle",
+      warning: "alert-triangle",
+      info: "info",
+    };
+
+    const icon = iconMap[type] || "info";
+
+    const messageHtml = `
+      <div class="crm-toast crm-toast-${type}">
+        <div class="crm-toast-content">
+          <svg class="crm-toast-icon" data-lucide="${icon}" width="20" height="20"></svg>
+          <span class="crm-toast-message">${message}</span>
+        </div>
+        <button class="crm-toast-close" type="button" aria-label="Close notification">
+          <svg data-lucide="x" width="16" height="16"></svg>
+        </button>
+      </div>
+    `;
     document.body.insertAdjacentHTML("beforeend", messageHtml);
 
-    const messageEl = document.querySelector(".crm-message:last-child");
+    const toastEl = document.querySelector(".crm-toast:last-child");
+
+    // Initialize Lucide icons in toast
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+
+    // Trigger animation
     setTimeout(() => {
-      messageEl.classList.add("show");
+      toastEl.classList.add("show");
     }, 10);
 
+    // Close button handler
+    const closeBtn = toastEl.querySelector(".crm-toast-close");
+    const removeToast = () => {
+      toastEl.classList.add("closing");
+      setTimeout(() => {
+        if (toastEl.parentNode) {
+          toastEl.remove();
+        }
+      }, 1000); // 1s to match closing animation duration
+    };
+
+    closeBtn.addEventListener("click", removeToast);
+
+    // Auto dismiss after 2 seconds
+    const dismissTime = 2000;
     setTimeout(() => {
-      messageEl.classList.remove("show");
-      setTimeout(() => messageEl.remove(), 300);
-    }, 3000);
+      if (toastEl.parentNode) {
+        removeToast();
+      }
+    }, dismissTime);
   },
 
   confirmDelete: function (nid, type, title) {
@@ -460,7 +526,14 @@ window.CRMInlineEdit = {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          this.showMessage(data.message || "Deleted successfully!", "success");
+          // Save toast message to localStorage and reload
+          localStorage.setItem(
+            "crmToast",
+            JSON.stringify({
+              message: data.message || "Deleted successfully!",
+              type: "success",
+            }),
+          );
 
           // Close delete modal
           const overlay =
@@ -471,8 +544,8 @@ window.CRMInlineEdit = {
             overlay.remove();
           }
 
-          // Reload page after short delay
-          setTimeout(() => location.reload(), 800);
+          // Reload page immediately to show updated data
+          setTimeout(() => location.reload(), 100);
         } else {
           this.showMessage(data.message || "Error deleting", "error");
           if (modal) {
@@ -620,13 +693,16 @@ window.CRMInlineEdit = {
             }
           }
 
-          // Show success message
-          this.showMessage(
-            result.message || "Created successfully!",
-            "success",
+          // Save toast message to localStorage and redirect
+          localStorage.setItem(
+            "crmToast",
+            JSON.stringify({
+              message: result.message || "Created successfully!",
+              type: "success",
+            }),
           );
 
-          // Close modal and redirect
+          // Close modal and redirect immediately
           setTimeout(() => {
             this.closeModal();
             if (result.nid) {
@@ -635,7 +711,7 @@ window.CRMInlineEdit = {
             } else {
               location.reload();
             }
-          }, 1000);
+          }, 100);
         } else {
           // Show error
           if (statusDiv) {
@@ -672,7 +748,7 @@ window.CRMInlineEdit = {
         }
       })
       .catch((error) => {
-        console.error("Save error:", error);
+        console.error("Create error:", error);
         if (statusDiv) {
           statusDiv.className = "save-status error";
           statusDiv.innerHTML =
@@ -681,13 +757,9 @@ window.CRMInlineEdit = {
             lucide.createIcons();
           }
         }
-
         // Restore button
         saveBtn.innerHTML = originalBtnHtml;
         saveBtn.disabled = false;
-        if (typeof lucide !== "undefined") {
-          lucide.createIcons();
-        }
       });
   },
 };
@@ -705,34 +777,62 @@ window.CRMInlineEdit = {
         }, 100);
       }
 
+      // Event delegation for CRM action buttons
+      $(context).on("click", ".crm-edit-action", function () {
+        const nid = $(this).data("nid");
+        const bundle = $(this).data("bundle");
+        if (window.CRMInlineEdit && window.CRMInlineEdit.openModal) {
+          window.CRMInlineEdit.openModal(nid, bundle);
+        }
+      });
+
+      $(context).on("click", ".crm-delete-action", function () {
+        const nid = $(this).data("nid");
+        const bundle = $(this).data("bundle");
+        const title = $(this).data("title");
+        if (window.CRMInlineEdit && window.CRMInlineEdit.confirmDelete) {
+          window.CRMInlineEdit.confirmDelete(nid, bundle, title);
+        }
+      });
+
       // Auto-save functionality (optional)
       $(
         ".crm-edit-form input, .crm-edit-form select, .crm-edit-form textarea",
         context,
-      )
-        .once("crm-autosave")
-        .on("change", function () {
+      ).each(function () {
+        // Skip if already processed
+        if ($(this).data("crm-autosave")) {
+          return;
+        }
+        $(this).data("crm-autosave", true);
+
+        $(this).on("change", function () {
           // Mark form as dirty
           $(this).closest("form").addClass("has-changes");
         });
+      });
 
       // Warn before leaving with unsaved changes
-      $(".crm-edit-form", context)
-        .once("crm-leave-warning")
-        .each(function () {
-          const form = this;
+      $(".crm-edit-form", context).each(function () {
+        // Skip if already processed
+        if ($(this).data("crm-leave-warning")) {
+          return;
+        }
+        $(this).data("crm-leave-warning", true);
 
-          window.addEventListener("beforeunload", function (e) {
-            if (
-              $(form).hasClass("has-changes") &&
-              !$(form).hasClass("is-saving")
-            ) {
-              e.preventDefault();
-              e.returnValue = "";
-              return "You have unsaved changes. Are you sure you want to leave?";
-            }
-          });
+        const form = this;
+
+        window.addEventListener("beforeunload", function (e) {
+          if (
+            $(form).hasClass("has-changes") &&
+            !$(form).hasClass("is-saving")
+          ) {
+            e.preventDefault();
+            e.returnValue = "";
+            return "You have unsaved changes. Are you sure you want to leave?";
+          }
         });
+      });
     },
   };
 })(jQuery, Drupal, drupalSettings);
