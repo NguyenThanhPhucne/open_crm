@@ -1,0 +1,46 @@
+crm_ai.settings:
+  type: config_object
+  label: 'CRM AI AutoComplete Settings'
+  mapping:
+    llm_provider:
+      type: string
+      label: 'LLM Provider'
+      default: 'mock'
+    llm_api_key:
+      type: string
+      label: 'LLM API Key'
+    openai_api_key:
+      type: string
+      label: 'OpenAI API Key'
+    openai_model:
+      type: string
+      label: 'OpenAI Model'
+      default: 'gpt-3.5-turbo'
+    anthropic_api_key:
+      type: string
+      label: 'Anthropic API Key'
+    anthropic_model:
+      type: string
+      label: 'Anthropic Model'
+      default: 'claude-3-haiku-20240307'
+    llm_temperature:
+      type: float
+      label: 'LLM Temperature'
+      default: 0.7
+    llm_model:
+      type: string
+      label: 'Default LLM Model'
+      default: 'gpt-3.5-turbo'
+    cache_suggestions:
+      type: boolean
+      label: 'Cache Suggestions'
+      default: true
+    rate_limit_per_hour:
+      type: integer
+      label: 'Rate Limit Per Hour'
+      default: 10
+    enabled_entities:
+      type: sequence
+      label: 'Enabled Entity Types'
+      sequence:
+        type: string

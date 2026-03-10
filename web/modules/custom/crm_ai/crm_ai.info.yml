@@ -1,0 +1,15 @@
+name: 'CRM AI AutoComplete'
+description: 'AI-powered autocomplete for CRM entity fields using LLM providers'
+type: module
+core_version_requirement: '>=11'
+version: '1.0.0'
+package: CRM
+
+dependencies:
+  - drupal:node
+  - drupal:rest
+  - drupal:jsonapi
+  - crm:crm
+
+config_devel:
+  - crm_ai.settings

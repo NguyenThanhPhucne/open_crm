@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Install hooks for CRM AI AutoComplete module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function crm_ai_install() {
+  // Set default configuration.
+  $config = \Drupal::configFactory()->getEditable('crm_ai.settings');
+  
+  if (empty($config->get('llm_provider'))) {
+    $config->set('llm_provider', 'mock')
+      ->set('llm_model', 'gpt-3.5-turbo')
+      ->set('llm_temperature', 0.7)
+      ->set('cache_suggestions', TRUE)
+      ->set('rate_limit_per_hour', 10)
+      ->set('enabled_entities', ['contact', 'deal', 'organization', 'activity'])
+      ->save();
+  }
+
+  \Drupal::messenger()->addStatus(t('CRM AI AutoComplete module installed successfully!'));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function crm_ai_uninstall() {
+  // Clean up configuration.
+  \Drupal::configFactory()->getEditable('crm_ai.settings')->delete();
+}

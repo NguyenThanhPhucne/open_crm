@@ -1,0 +1,35 @@
+ai-complete-button:
+  js:
+    js/ai-complete-button.js: {}
+  css:
+    component:
+      css/ai-complete.css: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupal.ajax
+
+ai-field-highlighter:
+  js:
+    js/ai-field-highlighter.js: {}
+  css:
+    component:
+      css/ai-field-highlight.css: {}
+      css/ai-loading.css: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+
+ai-autocomplete:
+  js:
+    js/ai-complete-button.js: {}
+    js/ai-field-highlighter.js: {}
+  css:
+    component:
+      css/ai-complete.css: {}
+      css/ai-field-highlight.css: {}
+      css/ai-loading.css: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupal.ajax

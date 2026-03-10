@@ -1,0 +1,8 @@
+'use crm ai autocomplete':
+  title: 'Use CRM AI AutoComplete'
+  description: 'Allow users to use AI autocomplete for entity fields'
+
+'administer crm ai':
+  title: 'Administer CRM AI'
+  description: 'Configure AI settings and manage AI features'
+  restrict access: true
