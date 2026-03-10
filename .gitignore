@@ -1,19 +1,13 @@
 # ============================================
 # Drupal CRM Project - .gitignore
 # ============================================
-# Only commit custom code and essential config
-# Exclude vendor, core, contrib, and generated files
-# ============================================
 
 # ========== Composer Dependencies ==========
 /vendor/
-
-# Keep composer files to rebuild dependencies
 !composer.json
 !composer.lock
 
-# ========== Drupal Core ==========
-# Drupal core is installed via Composer
+# ========== Drupal Core (installed via Composer) ==========
 /web/core/
 /web/.csslintrc
 /web/.editorconfig
@@ -31,194 +25,105 @@
 /web/example.gitignore
 
 # ========== Contributed Modules & Themes ==========
-# Install from composer - don't commit
 /web/modules/contrib/
 /web/themes/contrib/
 /web/profiles/contrib/
 /web/libraries/
 
-# ========== Custom Code (COMMIT THESE!) ==========
-# Custom modules - KEEP
+# ========== Custom Code (ALWAYS COMMIT) ==========
 !/web/modules/custom/
 !/web/modules/custom/**
-
-# Custom themes - KEEP
 !/web/themes/custom/
 !/web/themes/custom/**
-
-# Custom profiles - KEEP if exists
 !/web/profiles/custom/
 !/web/profiles/custom/**
 
-# ========== Test & Debug Scripts (LOCAL ONLY) ==========
-# Don't commit test/debug scripts - run locally only
-/test*.php
-/verify*.php
-/*_test.php
-/*_debug.php
-/debug*.php
-/audit*.php
-/check*.php
-/analyze*.php
-/validate*.php
-
-# ========== Configuration (COMMIT!) ==========
-# Config directory - KEEP ALL YML FILES
+# ========== Configuration (ALWAYS COMMIT) ==========
 !/config/
-!/config/**/*.yml
+!/config/**
 
-# ========== Settings & Credentials ==========
-# Ignore settings files (contain DB credentials)
+# ========== Settings & Credentials (NEVER COMMIT) ==========
 /web/sites/*/settings.php
 /web/sites/*/settings.local.php
 /web/sites/*/settings.ddev.php
-/web/sites/*/services*.yml
-
-# Keep default settings template
+/web/sites/*/services.yml
 !/web/sites/*/default.settings.php
 
 # ========== User Uploaded Files ==========
-# Ignore all uploaded files
 /web/sites/*/files/
 /web/sites/*/private/
-
-# Exception: Keep directory structure with .htaccess
 !/web/sites/default/files/.htaccess
 
 # ========== Cache & Generated Files ==========
-/web/sites/*/files/css/
-/web/sites/*/files/js/
-/web/sites/*/files/php/
-/web/sites/*/files/styles/
-/web/sites/*/files/languages/
 /web/sites/simpletest/
 
-# ========== Scripts ==========
-# Keep essential scripts
+# ========== Scripts (COMMIT ALL) ==========
 !/scripts/
 !/scripts/**
 
-# Ignore production scripts folder (one-time setup scripts)
-scripts/production/
-
-# Ignore generated/test/verification scripts
-scripts/*test*.php
-scripts/*test*.sh
-scripts/*debug*.php
-scripts/*debug*.sh
-scripts/*audit*.php
-scripts/*audit*.sh
-scripts/*check*.php
-scripts/*check*.sh
-scripts/*fix*.php
-scripts/*fix*.sh
-scripts/*verify*.php
-scripts/*verify*.sh
-scripts/*enable*.sh
-scripts/*add_inline*.sh
-
-# ========== Fixtures & Sample Data (KEEP) ==========
+# ========== Fixtures & Recipes (COMMIT) ==========
 !/fixtures/
-!/fixtures/**/*.yml
-!/fixtures/**/*.php
-
-# ========== Recipes (KEEP) ==========
+!/fixtures/**
 !/recipes/
 !/recipes/**
 
-# ========== Documentation ==========
-# Keep essential docs ONLY
-!README.md
-!LICENSE.txt
-!COMPLETE_GUIDE.md
-!CONTENT_TYPES.md
-!FEATURES_GUIDE.md
-!TEAM_PERMISSIONS_GUIDE.md
-!PRODUCTION_READINESS.md
-!DATA_IMPORT_GUIDE.md
-!DATA_STORAGE_EXPLANATION.md
-!CUSTOM_MODULES_API_DOCS.md
+# ========== DDEV Config (COMMIT) ==========
+# Keep full DDEV config for reproducible environment
+!.ddev/
+!.ddev/**
+# Ignore DDEV internal generated files only
+.ddev/.dbimageBuild/
+.ddev/.webimageBuild/
+.ddev/.ddev-docker-compose-base.yaml
+.ddev/.ddev-docker-compose-full.yaml
+.ddev/mutagen/.start-synced
 
-# Ignore temporary audit & report files
-*AUDIT*.md
-*REPORT*.md
-*VERIFICATION*.md
-*FIXES*.md
-*CHECKLIST*.md
-*CLEANUP*.md
-*REFACTORING*.md
-*UPDATE*.md
-*_REPORT.md
-*_AUDIT.md
-*_GUIDE.md
-CRITICAL_*.md
-FINAL_*.md
-MY_*.md
-UI_*.md
+# ========== Database Files (NEVER COMMIT) ==========
+*.sql
+*.sql.gz
+*.mysql
+*.dump
+*.sqlite
+*.db
+/backups/
+/database/
 
-# Keep docs folder
-!/docs/
-!/docs/**/*.md
+# ========== Logs ==========
+*.log
+/logs/
+/log/
+/web/sites/*/logs/
 
 # ========== IDE & Editor Files ==========
-# PhpStorm / IntelliJ IDEA
 .idea/
 *.iml
 *.ipr
 *.iws
-
-# VS Code
 .vscode/
 *.code-workspace
-
-# Sublime Text
 *.sublime-project
 *.sublime-workspace
-
-# NetBeans
 nbproject/
-
-# Eclipse
 .project
 .buildpath
 .settings/
 
-# Vim
-*.swp
-*.swo
-*~
-
 # ========== OS Files ==========
-# macOS
 .DS_Store
 .AppleDouble
 .LSOverride
 ._*
 .Spotlight-V100
 .Trashes
-
-# Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 *.lnk
-
-# Linux
 .directory
 .fuse_hidden*
 
-# ========== Development Tools ==========
-# DDEV - keep main config
-.ddev/
-!.ddev/config.yaml
-!.ddev/config.*.yaml
-
-# Docker
-docker-compose.override.yml
-.docker/
-
-# Node.js (if frontend build exists)
+# ========== Node.js ==========
 node_modules/
 npm-debug.log
 yarn-error.log
@@ -229,85 +134,47 @@ yarn.lock
 /build/
 /dist/
 
-# ========== Database Files ==========
-# Don't commit database exports/backups
-*.sql
-*.sql.gz
-*.mysql
-*.dump
-*.sqlite
-*.db
-db_backup*.sql.gz
-db_export*.sql.gz
-/backups/
-/database/
-
-# ========== Logs ==========
-*.log
-/logs/
-/log/
-/web/sites/*/logs/
-
 # ========== Testing ==========
-/tests/
 /phpunit.xml
 /behat.yml
 /.phpunit.result.cache
 
-# ========== Other Tools ==========
-# Drush
-/.drush/
-/drush/contrib/
-/drush/Commands/
-
-# Drupal Console
-/.console/
-/.drupal-console/
-
-# DrupalVM
-.vagrant/
-Vagrantfile.local
-
-# ========== Temporary & Backup Files ==========
-*.bak
+# ========== Temporary Files ==========
 *.swp
+*.swo
 *~
-*.orig
 *.tmp
 /tmp/
 /temp/
 
-# Test HTML files
-*.test.html
-test-*.html
-*-test.html
+# ========== One-off Debug/Test Scripts at root ==========
+# (Keep scripts/ folder but ignore root-level throwaway scripts)
+/test*.php
+/debug*.php
+/verify*.php
+/check*.php
+/analyze*.php
+/audit*.php
+/validate*.php
+/fix_*.php
 
-# Sample data CSVs
-sample_*.csv
-
-# Backup files
-.gitignore.old
+# ========== Backup & Generated Artifacts ==========
+*.bak
 *.backup
-*_backup.*
-*_old.*
+*.orig
+.gitignore.old
+web/sites/*/php/
 
-# Patch files
-*.patch
-*.diff
-
-# ========== Development Artifacts ==========
-# PHP debugging
+# ========== PHP Code Style Cache ==========
 *.php_cs.cache
 .php_cs.cache
 .php-cs-fixer.cache
 
-# Drupal specific artifacts
-web/sites/*/php/
-web/.htaccess.txt
-
-# ========== Documentation Files ==========
-# Don't commit markdown documentation files
-*.md
+# ========== Docker ==========
+docker-compose.override.yml
+.docker/
+.vagrant/
+Vagrantfile.local
 !README.md
 !CONTRIBUTING.md
 !CODE_OF_CONDUCT.md
