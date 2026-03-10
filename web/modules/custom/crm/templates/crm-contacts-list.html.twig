@@ -1,0 +1,138 @@
+{#
+/**
+ * @file
+ * Modern Contacts List Template
+ *
+ * Displays contacts with:
+ * - Sorted by recently updated/created (newest first)
+ * - Badges for "New" and "Recently Updated"
+ * - Relative timestamps
+ * - Delete/Edit actions with AJAX handling
+ * - Responsive design
+ */
+#}
+
+<div class="crm-contacts-wrapper">
+  {# Header with title and action buttons #}
+  <div class="crm-contacts-header">
+    <h1>{{ 'Contacts'|t }}</h1>
+    
+    <div class="crm-contacts-actions">
+      <a href="{{ path('node.add', {'node_type': 'contact'}) }}" class="button button--primary">
+        ➕ {{ 'Add Contact'|t }}
+      </a>
+      
+      {% if ai_autocomplete_enabled %}
+        <a href="{{ path('crm_ai_autocomplete.generate_contact') }}" class="button button--secondary">
+          ✨ {{ 'Generate Contact with AI'|t }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Contacts table #}
+  {% if contacts|length > 0 %}
+    <table class="crm-contacts-table">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'Contact Name'|t }}</th>
+          <th scope="col">{{ 'Company'|t }}</th>
+          <th scope="col">{{ 'Email'|t }}</th>
+          <th scope="col">{{ 'Owner'|t }}</th>
+          <th scope="col">{{ 'Last Updated'|t }}</th>
+          <th scope="col" style="text-align: right;">{{ 'Actions'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contact in contacts %}
+          <tr class="crm-row" data-nid="{{ contact.nid }}">
+            {# Contact name #}
+            <td>
+              <a href="{{ path('entity.node.canonical', {'node': contact.nid}) }}" class="crm-contact-link">
+                {{ contact.name }}
+              </a>
+            </td>
+            
+            {# Organization/Company #}
+            <td>{{ contact.organization }}</td>
+            
+            {# Email #}
+            <td>{{ contact.email }}</td>
+            
+            {# Owner #}
+            <td>{{ contact.owner }}</td>
+            
+            {# Last Updated with badges #}
+            <td>
+              <div class="crm-timestamp-wrapper">
+                <span class="crm-timestamp">{{ contact.changed_relative }}</span>
+                
+                {% if contact.is_new %}
+                  <span class="crm-badge crm-badge-new" title="{{ 'Created within 10 minutes'|t }}">
+                    ✨ {{ 'New'|t }}
+                  </span>
+                {% endif %}
+                
+                {% if contact.is_updated %}
+                  <span class="crm-badge crm-badge-recent" title="{{ 'Updated within 10 minutes'|t }}">
+                    ⚡ {{ 'Updated'|t }}
+                  </span>
+                {% endif %}
+              </div>
+            </td>
+            
+            {# Actions (Edit, Delete) #}
+            <td style="text-align: right;">
+              <div class="crm-actions">
+                <a href="{{ path('entity.node.edit_form', {'node': contact.nid}) }}" 
+                   class="button button--small button--edit" 
+                   title="{{ 'Edit contact'|t }}">
+                  {{ 'Edit'|t }}
+                </a>
+                
+                <button type="button" 
+                        class="button button--small button--danger crm-contact__delete-btn"
+                        data-nid="{{ contact.nid }}"
+                        data-name="{{ contact.name }}"
+                        title="{{ 'Delete contact'|t }}">
+                  {{ 'Delete'|t }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="crm-empty-state">
+      <p>{{ 'No contacts found.'|t }}</p>
+      <a href="{{ path('node.add', {'node_type': 'contact'}) }}" class="button button--primary">
+        ➕ {{ 'Create your first contact'|t }}
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{# Modal for delete confirmation #}
+<div id="crm-delete-modal" class="crm-modal" style="display: none;">
+  <div class="crm-modal-content">
+    <div class="crm-modal-header">
+      <h2>{{ 'Confirm Delete'|t }}</h2>
+      <button type="button" class="crm-modal-close" aria-label="{{ 'Close modal'|t }}">×</button>
+    </div>
+    
+    <div class="crm-modal-body">
+      <p>{{ 'Are you sure you want to delete:'|t }} <strong id="delete-contact-name"></strong>?</p>
+      <p class="crm-modal-warning">{{ 'This action cannot be undone.'|t }}</p>
+    </div>
+    
+    <div class="crm-modal-footer">
+      <button type="button" class="button button--secondary crm-modal-cancel">
+        {{ 'Cancel'|t }}
+      </button>
+      <button type="button" class="button button--danger crm-modal-delete">
+        {{ 'Delete'|t }}
+      </button>
+    </div>
+  </div>
+</div>

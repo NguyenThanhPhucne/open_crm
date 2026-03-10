@@ -1,0 +1,634 @@
+/**
+ * @file
+ * Contacts List Styles
+ *
+ * Includes:
+ * - Table styling with hover effects
+ * - Badges for "New" and "Recently Updated"
+ * - Delete modal styling
+ * - Notification styling
+ * - Animations
+ * - Responsive design
+ */
+
+/* ========== CONTACTS TABLE ========== */
+
+.crm-contacts-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.crm-contacts-table thead {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.crm-contacts-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.crm-contacts-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+}
+
+.crm-contacts-table tbody tr:hover {
+  background-color: #fafafa;
+  box-shadow: inset 0 0 0 1px #e8f4ff;
+}
+
+.crm-contacts-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.crm-contacts-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* ========== CONTACT NAME COLUMN ========== */
+
+.crm-contact__name {
+  font-weight: 500;
+  color: #1a73e8;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.crm-contact__name:hover {
+  color: #1557b0;
+  text-decoration: underline;
+}
+
+/* ========== BADGES ========== */
+
+.crm-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  animation: slideInFade 0.3s ease-out;
+}
+
+.crm-badge-new {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.crm-badge-recent {
+  background-color: #fff3e0;
+  color: #e65100;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ========== TIMESTAMP DISPLAY ========== */
+
+.crm-contact__timestamp {
+  color: #999;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.crm-contact-row--recently-updated .crm-contact__timestamp {
+  color: #e65100;
+  font-weight: 500;
+}
+
+/* ========== ACTIONS COLUMN ========== */
+
+.crm-contact__actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.crm-contacts-table tbody tr:hover .crm-contact__actions {
+  opacity: 1;
+}
+
+.crm-contact__action-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.crm-contact__action-btn:hover {
+  border-color: #bbb;
+  background-color: #f9f9f9;
+}
+
+.crm-contact__action-btn--edit:hover {
+  color: #1a73e8;
+  border-color: #1a73e8;
+}
+
+.crm-contact__action-btn--delete:hover {
+  color: #d32f2f;
+  border-color: #d32f2f;
+  background-color: #fff5f5;
+}
+
+.crm-contact__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Delete button icon */
+.crm-contact__delete-btn::before {
+  content: "🗑️ ";
+  margin-right: 4px;
+}
+
+/* Edit button icon */
+.crm-contact__edit-btn::before {
+  content: "✏️ ";
+  margin-right: 4px;
+}
+
+/* ========== CONTACT ROW STATES ========== */
+
+.crm-contact--deleting {
+  opacity: 0.5;
+  pointer-events: none;
+  animation: slideOutFade 0.3s ease-out;
+}
+
+@keyframes slideOutFade {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes slideInFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== AVATAR ========== */
+
+.crm-contact__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  display: inline-block;
+  border: 2px solid #e0e0e0;
+  transition: border-color 0.2s ease;
+}
+
+.crm-contacts-table tbody tr:hover .crm-contact__avatar {
+  border-color: #1a73e8;
+}
+
+/* ========== MODAL ========== */
+
+.crm-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+.crm-modal.crm-modal--visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.crm-modal__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.crm-modal__content {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  z-index: 1001;
+  animation: modalContentSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalContentSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.crm-modal__header {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.crm-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.crm-modal--danger .crm-modal__title {
+  color: #d32f2f;
+}
+
+.crm-modal__close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.crm-modal__close-btn:hover {
+  color: #333;
+}
+
+.crm-modal__body {
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.crm-modal__body p {
+  margin: 0 0 12px 0;
+}
+
+.crm-modal__body p:last-child {
+  margin-bottom: 0;
+}
+
+.text-secondary {
+  color: #999;
+}
+
+.text-sm {
+  font-size: 13px;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.crm-modal__footer {
+  padding: 16px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid #e0e0e0;
+}
+
+.crm-modal__footer button {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.crm-modal__cancel-btn {
+  background: #f5f5f5;
+  border-color: #ddd;
+  color: #666;
+}
+
+.crm-modal__cancel-btn:hover {
+  background: #efefef;
+  border-color: #bbb;
+}
+
+.crm-modal__confirm-btn {
+  background: #d32f2f;
+  border-color: #d32f2f;
+  color: white;
+}
+
+.crm-modal__confirm-btn:hover:not(:disabled) {
+  background: #b71c1c;
+  border-color: #b71c1c;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.crm-modal__confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ========== NOTIFICATIONS ========== */
+
+.crm-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  max-width: 400px;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: notificationSlideIn 0.3s ease-out;
+}
+
+@keyframes notificationSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(400px) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+.crm-notification--success {
+  border-left: 4px solid #4caf50;
+  background: #f1f8e9;
+}
+
+.crm-notification--error {
+  border-left: 4px solid #d32f2f;
+  background: #ffebee;
+}
+
+.crm-notification--warning {
+  border-left: 4px solid #ff9800;
+  background: #fff3e0;
+}
+
+.crm-notification--info {
+  border-left: 4px solid #2196f3;
+  background: #e3f2fd;
+}
+
+.crm-notification__icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  line-height: 1;
+  min-width: 20px;
+}
+
+.crm-notification--success .crm-notification__icon {
+  color: #4caf50;
+}
+
+.crm-notification--error .crm-notification__icon {
+  color: #d32f2f;
+}
+
+.crm-notification--warning .crm-notification__icon {
+  color: #ff9800;
+}
+
+.crm-notification--info .crm-notification__icon {
+  color: #2196f3;
+}
+
+.crm-notification__content {
+  flex: 1;
+}
+
+.crm-notification__title {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.crm-notification__message {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.crm-notification__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #999;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.crm-notification__close:hover {
+  color: #333;
+}
+
+/* ========== EMPTY STATE ========== */
+
+.crm-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px dashed #e0e0e0;
+}
+
+.crm-empty-state__icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.crm-empty-state__title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.crm-empty-state__message {
+  margin: 0 0 24px 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.crm-empty-state__cta {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #1a73e8;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.crm-empty-state__cta:hover {
+  background: #1557b0;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+  .crm-contacts-table {
+    font-size: 13px;
+  }
+
+  .crm-contacts-table th,
+  .crm-contacts-table td {
+    padding: 10px 12px;
+  }
+
+  .crm-contact__actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .crm-notification {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    bottom: 10px;
+  }
+
+  .crm-modal__content {
+    width: 95%;
+  }
+
+  /* Hide certain columns on mobile */
+  .crm-contact__avatar {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .crm-contacts-table {
+    font-size: 12px;
+  }
+
+  .crm-contacts-table th,
+  .crm-contacts-table td {
+    padding: 8px;
+  }
+
+  .crm-badge {
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+
+  .crm-contact__timestamp {
+    font-size: 12px;
+  }
+
+  .crm-contact__action-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+/* ========== ACCESSIBILITY ========== */
+
+.crm-modal__close-btn:focus,
+.crm-modal__cancel-btn:focus,
+.crm-modal__confirm-btn:focus,
+.crm-contact__action-btn:focus,
+.crm-empty-state__cta:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+.crm-notification__close:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .crm-contacts-table tbody tr,
+  .crm-badge,
+  .crm-contact__action-btn,
+  .crm-contact--deleting,
+  .crm-modal,
+  .crm-notification {
+    animation: none !important;
+    transition: none !important;
+  }
+}

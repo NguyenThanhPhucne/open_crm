@@ -23,3 +23,17 @@ crm.user_profile_canonical:
     parameters:
       user:
         type: entity:user
+
+crm.contact_delete_ajax:
+  path: "/api/contacts/{nid}/delete"
+  defaults:
+    _controller: '\Drupal\crm\Controller\ContactsListController::deleteContact'
+    _title: "Delete Contact"
+  requirements:
+    _custom_access: '\Drupal\crm\Controller\ContactsListController::accessDeleteContact'
+    nid: \d+
+  methods:
+    - POST
+  options:
+    _auth:
+      - cookie

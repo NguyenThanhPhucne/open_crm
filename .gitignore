@@ -50,6 +50,18 @@
 !/web/profiles/custom/
 !/web/profiles/custom/**
 
+# ========== Test & Debug Scripts (LOCAL ONLY) ==========
+# Don't commit test/debug scripts - run locally only
+/test*.php
+/verify*.php
+/*_test.php
+/*_debug.php
+/debug*.php
+/audit*.php
+/check*.php
+/analyze*.php
+/validate*.php
+
 # ========== Configuration (COMMIT!) ==========
 # Config directory - KEEP ALL YML FILES
 !/config/
@@ -218,12 +230,15 @@ yarn.lock
 /dist/
 
 # ========== Database Files ==========
+# Don't commit database exports/backups
 *.sql
 *.sql.gz
 *.mysql
 *.dump
 *.sqlite
 *.db
+db_backup*.sql.gz
+db_export*.sql.gz
 /backups/
 /database/
 
@@ -289,6 +304,15 @@ sample_*.csv
 # Drupal specific artifacts
 web/sites/*/php/
 web/.htaccess.txt
+
+# ========== Documentation Files ==========
+# Don't commit markdown documentation files
+*.md
+!README.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!/web/INSTALL.txt
+!/web/README.md
 
 # ========== Core Test Fixtures (Keep) ==========
 # Don't ignore core test fixtures

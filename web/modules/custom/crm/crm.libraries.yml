@@ -1,3 +1,11 @@
+crm-design-system:
+  version: 1.0
+  css:
+    base:
+      css/crm-design-system.css: {}
+  dependencies:
+    - core/drupal
+
 user_profile_styles:
   version: 1.0
   css:
@@ -9,11 +17,48 @@ user_profile_styles:
   dependencies:
     - core/drupal
     - crm/crm_layout
+    - crm/crm-design-system
 
 crm_layout:
   version: 1.0
   css:
     theme:
       css/crm-layout.css: {}
+      css/crm-design-system.css: {}
   dependencies:
     - core/drupal
+
+error_pages:
+  version: 1.0
+  css:
+    theme:
+      css/crm-error-pages.css: {}
+  js:
+    js/crm-error-pages.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
+empty_states:
+  version: 1.0
+  css:
+    theme:
+      css/crm-empty-states.css: {}
+  js:
+    js/crm-empty-states.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
+contacts_list:
+  version: 1.0
+  css:
+    theme:
+      css/crm-contacts-list.css: {}
+  js:
+    js/crm-contacts-list.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+    - core/drupal.dialog

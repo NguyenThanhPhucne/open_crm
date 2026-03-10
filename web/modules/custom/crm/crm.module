@@ -13,13 +13,13 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Implements hook_node_access().
  *
- * UNIFIED ACCESS CONTROL - Controls access based on:
- * 1. Owner-based access (field_owner, field_assigned_to, field_assigned_staff)
- * 2. Team-based access (field_team on users) - OPTIONAL
+ * UNIFIED ACCESS CONTROL using centralized CRMAccessService.
  * 
+ * Access Model:
  * - Administrators: Full access
- * - Sales Managers (or users with 'bypass crm team access'): View all team content
- * - Sales Representatives: Can only view/edit their own content OR same team content
+ * - Sales Managers: Access to all team content
+ * - Sales Representatives: Access to own content + same team content
+ * - Anonymous: No access to CRM data
  */
 function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
   $crm_types = ['contact', 'deal', 'activity', 'organization'];
@@ -29,108 +29,62 @@ function crm_node_access(NodeInterface $node, $op, AccountInterface $account) {
     return AccessResult::neutral();
   }
 
-  // Administrators and users with bypass permission: full access.
-  if ($account->hasRole('administrator') || 
-      $account->hasPermission('bypass crm team access') ||
-      $account->hasRole('sales_manager')) {
-    return AccessResult::neutral();
+  // Use the centralized access service.
+  $access_service = \Drupal::service('crm.access_service');
+
+  // Delegate to service based on operation.
+  $allowed = match ($op) {
+    'view' => $access_service->canUserViewEntity($node, $account),
+    'update' => $access_service->canUserEditEntity($node, $account),
+    'delete' => $access_service->canUserDeleteEntity($node, $account),
+    default => TRUE, // Unknown operation, return neutral.
+  };
+
+  if ($allowed) {
+    return AccessResult::allowed()
+      ->cachePerUser()
+      ->addCacheableDependency($node);
+  } else {
+    return AccessResult::forbidden('You do not have permission to access this record')
+      ->cachePerUser()
+      ->addCacheableDependency($node);
   }
-
-  // Sales representatives: check ownership AND team.
-  if ($account->hasRole('sales_rep')) {
-    // Determine the ownership field based on content type.
-    if ($node->bundle() === 'activity') {
-      $owner_field = 'field_assigned_to';
-    } elseif ($node->bundle() === 'organization') {
-      $owner_field = 'field_assigned_staff';
-    } else {
-      $owner_field = 'field_owner';
-    }
-
-    if (!$node->hasField($owner_field)) {
-      return AccessResult::neutral();
-    }
-
-    $owner_id = $node->get($owner_field)->target_id;
-
-    // Check operations.
-    if (in_array($op, ['view', 'update', 'delete'])) {
-      // Check 1: Is current user the owner?
-      $is_owner = ($owner_id == $account->id());
-      
-      // Check 2: Same team? (Optional - only if field_team exists)
-      $same_team = _crm_check_same_team($account->id(), $owner_id);
-      
-      // Allow if owner OR same team.
-      if ($is_owner || $same_team) {
-        return AccessResult::allowed()
-          ->cachePerUser()
-          ->addCacheableDependency($node);
-      }
-      else {
-        return AccessResult::forbidden('You can only access your own content or same team content')
-          ->cachePerUser()
-          ->addCacheableDependency($node);
-      }
-    }
-  }
-
-  return AccessResult::neutral();
 }
 
 /**
  * Implements hook_query_TAG_alter() for 'node_access'.
  *
- * Automatically filters node queries for sales representatives
- * to show only their own content OR same team content in views and entity queries.
+ * Automatically filters node queries to respect role-based access control.
+ * This applies to Views, entity queries, and other database queries tagged with 'node_access'.
+ *
+ * Filtering strategy:
+ * - Admins: No filtering (see all records)
+ * - Sales Managers: No filtering (see all records)
+ * - Sales Reps: Filter by ownership and team
+ * - Anonymous: Deny all CRM data
  */
 function crm_query_node_access_alter(\Drupal\Core\Database\Query\AlterableInterface $query) {
   $account = \Drupal::currentUser();
+  $access_service = \Drupal::service('crm.access_service');
 
-  // Skip for admins, managers, and users with bypass permission.
-  if ($account->hasRole('administrator') || 
-      $account->hasRole('sales_manager') ||
-      $account->hasPermission('bypass crm team access')) {
-    return;
-  }
-
-  // Only filter for sales representatives.
-  if (!$account->hasRole('sales_rep')) {
-    return;
-  }
-
-  // Add owner filter + team filter.
+  // Find the node_field_data table in the query.
   $tables = $query->getTables();
+  $node_table_alias = NULL;
+
   foreach ($tables as $table) {
     if (isset($table['table']) && $table['table'] === 'node_field_data') {
-      $alias = $table['alias'];
-
-      // Left join with field_owner, field_assigned_to, and field_assigned_staff.
-      $query->leftJoin('node__field_owner', 'crm_owner', "$alias.nid = crm_owner.entity_id");
-      $query->leftJoin('node__field_assigned_to', 'crm_assigned', "$alias.nid = crm_assigned.entity_id");
-      $query->leftJoin('node__field_assigned_staff', 'crm_staff', "$alias.nid = crm_staff.entity_id");
-
-      // Build condition: current user is owner OR assigned_to OR assigned_staff.
-      $or = $query->orConditionGroup()
-        ->condition('crm_owner.field_owner_target_id', $account->id(), '=')
-        ->condition('crm_assigned.field_assigned_to_target_id', $account->id(), '=')
-        ->condition('crm_staff.field_assigned_staff_target_id', $account->id(), '=');
-      
-      // Optional: Add team-based filtering if field_team exists.
-      $user_team_id = _crm_get_user_team($account->id());
-      if (!empty($user_team_id)) {
-        // Join to owner's user to check their team.
-        $query->leftJoin('users_field_data', 'crm_node_owner', "$alias.uid = crm_node_owner.uid");
-        $query->leftJoin('user__field_team', 'crm_owner_team', "crm_node_owner.uid = crm_owner_team.entity_id");
-        
-        // Also allow if owner is in same team.
-        $or->condition('crm_owner_team.field_team_target_id', $user_team_id, '=');
-      }
-
-      $query->condition($or);
+      $node_table_alias = $table['alias'];
       break;
     }
   }
+
+  // If no node table found, skip filtering.
+  if (!$node_table_alias) {
+    return;
+  }
+
+  // Apply access filtering using the centralized service.
+  $access_service->applyAccessFiltering($query, $account, $node_table_alias);
 }
 
 /**
@@ -317,6 +271,14 @@ function crm_theme($existing, $type, $theme, $path) {
       ],
       'template' => 'crm-user-profile',
     ],
+    'crm_contacts_list' => [
+      'variables' => [
+        'contacts' => [],
+        'account' => NULL,
+        'ai_autocomplete_enabled' => FALSE,
+      ],
+      'template' => 'crm-contacts-list',
+    ],
   ];
 }
 
@@ -439,10 +401,15 @@ function crm_page_attachments(array &$attachments) {
   // Also attach to specific view pages.
   if (strpos($route_name, 'view.') === 0) {
     $view_id = $route_match->getParameter('view_id');
-    $crm_views = ['my_contacts', 'my_deals', 'my_organizations', 'my_activities', 'my_projects'];
+    $crm_views = ['my_contacts', 'my_deals', 'my_organizations', 'my_activities', 'my_projects', 'all_contacts'];
     
     if (in_array($view_id, $crm_views)) {
       $attachments['#attached']['library'][] = 'crm/crm_layout';
+    }
+    
+    // Attach contacts_list library specifically for all_contacts view
+    if ($view_id === 'all_contacts') {
+      $attachments['#attached']['library'][] = 'crm/contacts_list';
     }
   }
 }

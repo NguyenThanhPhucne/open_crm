@@ -1,4 +1,18 @@
 services:
+  crm.access_service:
+    class: Drupal\crm\Service\CRMAccessService
+    arguments:
+      - "@database"
+      - "@logger.factory"
+      - "@entity_type.manager"
+
+  crm.dashboard_security_service:
+    class: Drupal\crm\Service\CRMDashboardSecurityService
+    arguments:
+      - "@entity_type.manager"
+      - "@logger.factory"
+      - "@crm.access_service"
+
   crm.data_integrity_service:
     class: Drupal\crm\Service\DataIntegrityService
     arguments:

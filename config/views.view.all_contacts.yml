@@ -224,7 +224,7 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/contact\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Contact\n        </a>\n      </div>"
+            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/contact\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Contact\n        </a>\n        <a href=\"/crm/ai-generate-contact\" class=\"button button--secondary\" style=\"margin-left: 10px;\">\n          ✨ Generate Contact with AI\n        </a>\n      </div>"
             format: full_html
       display_extenders: {}
       path: crm/all-contacts
