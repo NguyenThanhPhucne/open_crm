@@ -82,15 +82,15 @@ class AllContactsController extends ControllerBase {
     $contacts = !empty($ids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids) : [];
 
     // ── Format rows ───────────────────────────────────────────────────────────
-    $avatar_colors = [
-      'A' => '#3b82f6', 'B' => '#3b82f6', 'C' => '#3b82f6', 'D' => '#3b82f6',
-      'E' => '#8b5cf6', 'F' => '#8b5cf6', 'G' => '#8b5cf6',
-      'H' => '#10b981', 'I' => '#10b981', 'J' => '#10b981', 'K' => '#10b981',
-      'L' => '#f59e0b', 'M' => '#f59e0b', 'N' => '#f59e0b',
-      'O' => '#ec4899', 'P' => '#ec4899', 'Q' => '#ec4899',
-      'R' => '#14b8a6', 'S' => '#14b8a6', 'T' => '#14b8a6',
-      'U' => '#ef4444', 'V' => '#ef4444', 'W' => '#ef4444',
-      'X' => '#6366f1', 'Y' => '#6366f1', 'Z' => '#6366f1',
+    $avatar_pairs = [
+      'A' => ['#dbeafe','#2563eb'], 'B' => ['#dbeafe','#2563eb'], 'C' => ['#dbeafe','#2563eb'], 'D' => ['#dbeafe','#2563eb'],
+      'E' => ['#ede9fe','#6d28d9'], 'F' => ['#ede9fe','#6d28d9'], 'G' => ['#ede9fe','#6d28d9'],
+      'H' => ['#dcfce7','#059669'], 'I' => ['#dcfce7','#059669'], 'J' => ['#dcfce7','#059669'], 'K' => ['#dcfce7','#059669'],
+      'L' => ['#fef9c3','#b45309'], 'M' => ['#fef9c3','#b45309'], 'N' => ['#fef9c3','#b45309'],
+      'O' => ['#fce7f3','#be185d'], 'P' => ['#fce7f3','#be185d'], 'Q' => ['#fce7f3','#be185d'],
+      'R' => ['#ccfbf1','#0d9488'], 'S' => ['#ccfbf1','#0d9488'], 'T' => ['#ccfbf1','#0d9488'],
+      'U' => ['#fee2e2','#dc2626'], 'V' => ['#fee2e2','#dc2626'], 'W' => ['#fee2e2','#dc2626'],
+      'X' => ['#e0e7ff','#4338ca'], 'Y' => ['#e0e7ff','#4338ca'], 'Z' => ['#e0e7ff','#4338ca'],
     ];
 
     $rows = [];
@@ -98,7 +98,8 @@ class AllContactsController extends ControllerBase {
       $cid   = $contact->id();
       $name  = $contact->getTitle();
       $initial = strtoupper(mb_substr($name, 0, 1));
-      $av_color = $avatar_colors[$initial] ?? '#64748b';
+      $av_pair  = $avatar_pairs[$initial] ?? ['#f1f5f9', '#64748b'];
+      $av_style = "background:linear-gradient(135deg,{$av_pair[0]} 0%,#fff 80%);color:{$av_pair[1]};border-color:{$av_pair[1]}4d";
       $contact_url = Url::fromRoute('entity.node.canonical', ['node' => $cid])->toString();
 
       $org_name = ''; $org_url = '';
@@ -151,7 +152,7 @@ class AllContactsController extends ControllerBase {
         'id'           => $cid,
         'name'         => Html::escape($name),
         'initial'      => $initial,
-        'av_color'     => $av_color,
+        'av_style'     => $av_style,
         'url'          => $contact_url,
         'org_name'     => Html::escape($org_name),
         'org_url'      => $org_url,
@@ -289,7 +290,7 @@ class AllContactsController extends ControllerBase {
   .contacts-table .col-actions{width:76px}
   /* Name cell */
   .td-name{display:flex;align-items:center;gap:9px}
-  .contact-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+  .contact-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;border:1.5px solid transparent;box-shadow:0 2px 8px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.85)}
   .contact-name-block{display:flex;flex-direction:column;gap:1px;min-width:0;overflow:hidden}
   .contact-name-link{font-weight:600;color:#0f172a;text-decoration:none;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
   .contact-name-link:hover{color:#3b82f6;text-decoration:underline}
@@ -487,7 +488,7 @@ EMPTY;
 
         $html .= '<tr id="contact-row-' . $r['id'] . '">'
           . '<td><div class="td-name">'
-          . '<div class="contact-avatar" style="background:' . $r['av_color'] . '">' . $r['initial'] . '</div>'
+          . '<div class="contact-avatar" style="' . $r['av_style'] . '">' . $r['initial'] . '</div>'
           . '<div class="contact-name-block">'
           . '<a href="' . $r['url'] . '" class="contact-name-link" title="' . $r['name'] . '">' . $r['name'] . '</a>'
           . ($r['position'] ? '<span class="contact-position">' . $r['position'] . '</span>' : '')
