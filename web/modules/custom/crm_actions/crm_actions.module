@@ -24,9 +24,14 @@ function crm_actions_help($route_name, RouteMatchInterface $route_match) {
  */
 function crm_actions_page_top(array &$page_top) {
   $current_user = \Drupal::currentUser();
+
+  // Only show the nav bar to authenticated users.
+  if ($current_user->isAnonymous()) {
+    return;
+  }
+
   $current_path = \Drupal::request()->getRequestUri();
 
-  // Show navbar on CRM pages for ALL users (including anonymous read-only viewers).
   if (str_contains($current_path, '/crm/') ||
       str_contains($current_path, '/user/') ||
       str_contains($current_path, '/node/') ||
@@ -117,11 +122,10 @@ function _crm_actions_build_navbar() {
 
   $nav_html .= '</div>';
 
-  // Right side: show "View Only" badge + Login button for anonymous; user info for authenticated.
+  // Right side: show user info for authenticated users.
   $nav_html .= '<div class="crm-nav-right">';
   if ($is_anonymous) {
-    $nav_html .= '<span class="crm-view-only-badge">';
-    $nav_html .= '<i data-lucide="eye" width="14" height="14"></i><span>View Only</span></span>';
+    // This branch is no longer reachable — hook_page_top guards anonymous out.
     $nav_html .= '<a href="/user/login" class="crm-login-btn">';
     $nav_html .= '<i data-lucide="log-in" width="14" height="14"></i><span>Login</span></a>';
   }

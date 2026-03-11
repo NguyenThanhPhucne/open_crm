@@ -27,3 +27,11 @@ services:
       - "@logger.factory"
     tags:
       - { name: drush.command }
+
+  crm.access_denied_subscriber:
+    class: Drupal\crm\EventSubscriber\CrmAccessDeniedSubscriber
+    arguments:
+      - "@current_user"
+      - "@current_route_match"
+    tags:
+      - { name: event_subscriber }
