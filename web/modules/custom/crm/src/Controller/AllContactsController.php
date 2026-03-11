@@ -222,22 +222,8 @@ class AllContactsController extends ControllerBase {
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b}
 
-  /* ── Toolbar ── */
-  .crm-toolbar{background:linear-gradient(180deg,#fff 0%,#f8f9fa 100%);border-bottom:2px solid #3b82f6;box-shadow:0 2px 6px rgba(59,130,246,.15);height:42px;margin:-20px -20px 24px}
-  .crm-toolbar-lining{display:flex;align-items:center;justify-content:space-between;height:100%;padding:0 1rem;max-width:100%}
-  .crm-toolbar-menu{display:flex;align-items:center;gap:0;height:100%}
-  .crm-toolbar-brand{display:flex;align-items:center;gap:8px;padding:0 16px;font-size:14px;font-weight:600;color:#333;text-decoration:none;height:100%;border-right:1px solid #e5e7eb}
-  .crm-toolbar-brand:hover{background:rgba(0,0,0,.03);color:#0969da}
-  .crm-toolbar-item{display:flex;align-items:center;gap:6px;padding:0 14px;height:100%;font-size:13px;font-weight:500;color:#4b5563;text-decoration:none;border-right:1px solid #f3f4f6;transition:all .15s ease;white-space:nowrap}
-  .crm-toolbar-item:hover{background:rgba(59,130,246,.08);color:#2563eb}
-  .crm-toolbar-item.active{color:#1e40af;font-weight:700;border-bottom:2px solid #3b82f6}
-  .crm-toolbar-item svg,.crm-toolbar-item i{width:16px;height:16px}
-  .crm-toolbar-btn{display:flex;align-items:center;gap:6px;padding:0 12px;height:100%;font-size:13px;font-weight:600;color:#fff;text-decoration:none;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;cursor:pointer;transition:all .2s ease;border-left:1px solid rgba(255,255,255,.1)}
-  .crm-toolbar-btn:hover{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
-  .crm-toolbar-btn svg,.crm-toolbar-btn i{width:16px;height:16px}
-
   /* ── Page shell ── */
-  .contacts-page{max-width:1400px;margin:0 auto;padding-top:42px;animation:fadeIn .3s ease}
+  .contacts-page{max-width:1400px;margin:0 auto;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* ── Stats bar ── */
@@ -344,30 +330,13 @@ class AllContactsController extends ControllerBase {
   @media(max-width:1280px){.contacts-table .col-source,.contacts-table th.th-source,.contacts-table td.td-source-cell{display:none}}
   @media(max-width:1100px){.contacts-table .col-owner,.contacts-table th.th-owner,.contacts-table td.td-owner-cell{display:none}}
   @media(max-width:900px){.contacts-table .col-email,.contacts-table th.th-email,.contacts-table td.td-email-cell{display:none}}
-  @media(max-width:700px){.contacts-table .col-phone,.contacts-table th.th-phone,.contacts-table td.td-phone-cell{display:none}.crm-toolbar-item span{display:none}}
+  @media(max-width:700px){.contacts-table .col-phone,.contacts-table th.th-phone,.contacts-table td.td-phone-cell{display:none}}
   .contacts-table th,.contacts-table td{box-sizing:border-box}
 </style>
 HTML;
 
-    // ── Toolbar ───────────────────────────────────────────────────────────────
+    // ── Page content ──────────────────────────────────────────────────────────
     $html .= <<<HTML
-<div class="crm-toolbar">
-  <div class="crm-toolbar-lining">
-    <div class="crm-toolbar-menu">
-      <a href="{$dashboard_url}" class="crm-toolbar-brand">
-        <i data-lucide="zap" width="16" height="16"></i>
-        <span>CRM</span>
-      </a>
-      <a href="{$dashboard_url}" class="crm-toolbar-item"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-      <a href="{$contacts_url}" class="crm-toolbar-item active"><i data-lucide="users"></i><span>Contacts</span></a>
-      <a href="{$organizations_url}" class="crm-toolbar-item"><i data-lucide="building-2"></i><span>Organizations</span></a>
-      <a href="{$deals_url}" class="crm-toolbar-item"><i data-lucide="briefcase"></i><span>Deals</span></a>
-      <a href="{$activities_url}" class="crm-toolbar-item"><i data-lucide="activity"></i><span>Activities</span></a>
-      <a href="{$pipeline_url}" class="crm-toolbar-item"><i data-lucide="git-branch"></i><span>Pipeline</span></a>
-    </div>
-  </div>
-</div>
-
 <div class="contacts-page">
 
   <!-- Stats bar -->
