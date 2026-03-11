@@ -316,7 +316,7 @@ class AIAutoCompleteController extends ControllerBase {
     }
 
     // Assign owner - CRITICAL: Always from current session.
-    // Always set uid (node authorship) so the node is never owned by Anonymous.
+    // Whoever clicks "Generate data" becomes the owner of the entity.
     if ($entity->hasField('uid')) {
       $entity->set('uid', $account->id());
     }
@@ -325,6 +325,10 @@ class AIAutoCompleteController extends ControllerBase {
     }
     if ($entity->hasField('field_assigned_staff')) {
       $entity->set('field_assigned_staff', $account->id());
+    }
+    // Activities: Assigned To = the user who clicked Generate data.
+    if ($entity->hasField('field_assigned_to')) {
+      $entity->set('field_assigned_to', $account->id());
     }
 
     // Assign random taxonomy terms for entity reference fields.
@@ -444,21 +448,6 @@ class AIAutoCompleteController extends ControllerBase {
       $this->loggerFactory->get('crm_ai_autocomplete')->warning(
         'Cannot assign activity references: no contact or deal nodes exist yet.'
       );
-    }
-
-    // Assign a random active staff member to field_assigned_to.
-    if ($entity->hasField('field_assigned_to')) {
-      $uids = $this->entityTypeManager->getStorage('user')
-        ->getQuery()
-        ->condition('status', 1)
-        ->condition('uid', 0, '>')
-        ->accessCheck(FALSE)
-        ->range(0, 20)
-        ->execute();
-      if (!empty($uids)) {
-        $uids = array_values($uids);
-        $entity->set('field_assigned_to', $uids[array_rand($uids)]);
-      }
     }
 
     // Set a realistic activity datetime if the AI did not supply one.

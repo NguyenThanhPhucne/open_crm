@@ -289,7 +289,7 @@ class DashboardController extends ControllerBase {
     $activity_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->accessCheck(FALSE)
-      ->sort('created', 'DESC')
+      ->sort('changed', 'DESC')
       ->range(0, 30);
     if (!$is_admin && $user_id > 0) {
       $activity_ids_query->condition('field_assigned_to', $user_id);
@@ -2687,7 +2687,7 @@ HTML;
     $recent_activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->accessCheck(FALSE)
-      ->sort('created', 'DESC')
+      ->sort('changed', 'DESC')
       ->range(0, 10);
     if (!$is_admin && $user_id > 0) {
       $recent_activities_query->condition('field_assigned_to', $user_id);

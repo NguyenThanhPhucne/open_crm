@@ -31,6 +31,11 @@ function crm_dashboard_node_insert($node) {
     
     \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:pipeline', 'crm_dashboard:metrics']);
   }
+
+  // Invalidate metrics when contacts or organizations are added.
+  if (in_array($node->bundle(), ['contact', 'organization'])) {
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:metrics']);
+  }
 }
 
 /**
@@ -46,6 +51,11 @@ function crm_dashboard_node_update($node) {
     ]);
     
     \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:recent_activities']);
+  }
+
+  // Invalidate metrics when contacts or organizations change.
+  if (in_array($node->bundle(), ['contact', 'organization'])) {
+    \Drupal\Core\Cache\Cache::invalidateTags(['crm_dashboard:metrics']);
   }
   
   if ($node->bundle() === 'deal') {
