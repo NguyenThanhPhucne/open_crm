@@ -56,7 +56,8 @@ class KanbanController extends ControllerBase {
         ->condition('type', 'deal')
         ->condition('field_stage', $stage_id)
         ->accessCheck(FALSE)
-        ->sort('created', 'DESC');
+        ->sort('created', 'DESC')
+        ->range(0, 200);
       
       // Only filter by owner for non-admin, authenticated users.
       if (!$is_admin && !$current_user->isAnonymous()) {
@@ -110,6 +111,11 @@ class KanbanController extends ControllerBase {
         'library' => [
           'core/drupal',
         ],
+      ],
+      '#cache' => [
+        'contexts' => ['user'],
+        'tags'     => ['node_list:deal'],
+        'max-age'  => 300,
       ],
     ];
   }

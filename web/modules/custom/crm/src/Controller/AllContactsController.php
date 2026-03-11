@@ -580,8 +580,9 @@ JS;
         ],
       ],
       '#cache' => [
-        'tags'    => ['node_list:contact'],
-        'max-age' => 0,
+        'contexts' => ['user', 'url.query_args'],
+        'tags'     => ['node_list:contact'],
+        'max-age'  => 300,
       ],
     ];
   }

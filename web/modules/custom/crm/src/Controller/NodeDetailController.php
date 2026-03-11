@@ -155,7 +155,7 @@ class NodeDetailController extends ControllerBase {
       '#tags' => $tags,
       '#last_contacted' => $last_contacted,
       '#can_edit' => $can_edit,
-      '#cache' => ['max-age' => 0, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
+      '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
   }
@@ -260,7 +260,7 @@ class NodeDetailController extends ControllerBase {
       '#created'     => $created,
       '#changed'     => $changed,
       '#can_edit'    => $can_edit,
-      '#cache' => ['max-age' => 0, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
+      '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
   }
@@ -358,7 +358,7 @@ class NodeDetailController extends ControllerBase {
       '#created'         => $created,
       '#changed'         => $changed,
       '#can_edit'        => $can_edit,
-      '#cache' => ['max-age' => 0, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
+      '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
   }
@@ -460,7 +460,7 @@ class NodeDetailController extends ControllerBase {
       '#created'       => $created,
       '#changed'       => $changed,
       '#can_edit'      => $can_edit,
-      '#cache' => ['max-age' => 0, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
+      '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
   }

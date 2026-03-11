@@ -141,7 +141,7 @@ class UserProfileController extends ControllerBase {
       '#current_user_id' => \Drupal::currentUser()->id(),
       '#is_own_profile' => $is_own_profile,
       '#cache' => [
-        'max-age' => 0,
+        'max-age' => 300,
         'contexts' => ['user'],
         'tags' => ['user:' . $uid],
       ],

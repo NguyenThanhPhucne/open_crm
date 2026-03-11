@@ -145,42 +145,28 @@ class DashboardController extends ControllerBase {
     $lost_term_id = $stage_id_by_name['lost'] ?? null;
 
     // Get total deal value and won/lost deals (filtered by current user for non-admins)
-    // NOTE: loadByProperties() does NOT work with entity reference fields like field_owner!
-    // Must use entityQuery instead.
-    $deal_ids_query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->accessCheck(FALSE);
+    // Use a single DB aggregate query instead of loading all deal entities into memory.
+    $won_id  = (int) ($won_term_id  ?? 0);
+    $lost_id = (int) ($lost_term_id ?? 0);
+    $agg = \Drupal::database()->select('node_field_data', 'n');
+    $agg->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
+    $agg->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
+    $agg->condition('n.type', 'deal');
+    $agg->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
+    $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
+    $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
+    $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN 1 ELSE 0 END), 0)", 'won_count');
+    $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN 1 ELSE 0 END), 0)", 'lost_count');
     if (!$is_admin && $user_id > 0) {
-      $deal_ids_query->condition('field_owner', $user_id);
+      $agg->leftJoin('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
+      $agg->condition('fo.field_owner_target_id', $user_id);
     }
-    $deal_ids = $deal_ids_query->execute();
-    
-    $deals = !empty($deal_ids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_ids) : [];
-    
-    $total_value = 0;
-    $won_value = 0;
-    $lost_value = 0;
-    $won_count = 0;
-    $lost_count = 0;
-
-    foreach ($deals as $deal) {
-      $amount = 0;
-      if ($deal->hasField('field_amount') && !$deal->get('field_amount')->isEmpty()) {
-        $amount = floatval($deal->get('field_amount')->value);
-        $total_value += $amount;
-      }
-      
-      if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-        $stage_tid = (int) $deal->get('field_stage')->target_id;
-        if ($won_term_id && $stage_tid === (int) $won_term_id) {
-          $won_value += $amount;
-          $won_count++;
-        } elseif ($lost_term_id && $stage_tid === (int) $lost_term_id) {
-          $lost_value += $amount;
-          $lost_count++;
-        }
-      }
-    }
+    $totals     = $agg->execute()->fetchObject();
+    $total_value = (float) ($totals->total_value ?? 0);
+    $won_value   = (float) ($totals->won_value   ?? 0);
+    $lost_value  = (float) ($totals->lost_value  ?? 0);
+    $won_count   = (int)   ($totals->won_count   ?? 0);
+    $lost_count  = (int)   ($totals->lost_count  ?? 0);
 
     // Format values for display
     $total_value_display = '$' . number_format($total_value / 1000000, 1) . 'M';
@@ -2783,15 +2769,14 @@ HTML;
         ],
       ],
       '#cache' => [
-        // Use cache tags for all entities so cache is invalidated when data changes
+        'contexts' => ['user'],
         'tags' => [
-          'node_list:contact',     // Invalidate when any contact is added/updated/deleted
-          'node_list:organization', // Invalidate when any organization is added/updated/deleted
-          'node_list:deal',        // Invalidate when any deal is added/updated/deleted
-          'node_list:activity',    // Invalidate when any activity is added/updated/deleted
+          'node_list:contact',
+          'node_list:organization',
+          'node_list:deal',
+          'node_list:activity',
         ],
-        // Set max age to 0 for real-time updates (or 60 for 1-minute cache)
-        'max-age' => 0,
+        'max-age' => 300,
       ],
     ];
   }
@@ -2966,56 +2951,29 @@ HTML;
       }
     }
     
-    // 11. Deal Values (total, won, lost)
-    $deal_ids_query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->accessCheck(FALSE);
+    // 11. Deal Values — single DB aggregate query, no entity loading.
+    $won_id2  = (int) ($won_term_id  ?? 0);
+    $lost_id2 = (int) ($lost_term_id ?? 0);
+    $agg2 = \Drupal::database()->select('node_field_data', 'n');
+    $agg2->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
+    $agg2->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
+    $agg2->condition('n.type', 'deal');
+    $agg2->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
+    $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id2  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
+    $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id2 THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
+    $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id NOT IN ($won_id2, $lost_id2) OR fs.field_stage_target_id IS NULL THEN fa.field_amount_value ELSE 0 END), 0)", 'active_value');
+    // Average days in pipeline for won deals
+    $agg2->addExpression("AVG(CASE WHEN fs.field_stage_target_id = $won_id2 THEN (UNIX_TIMESTAMP() - n.created) / 86400.0 END)", 'avg_days_won');
     if (!$is_admin && $user_id > 0) {
-      $deal_ids_query->condition('field_owner', $user_id);
+      $agg2->leftJoin('node__field_owner', 'fo2', 'fo2.entity_id = n.nid AND fo2.deleted = 0');
+      $agg2->condition('fo2.field_owner_target_id', $user_id);
     }
-    $deal_ids = $deal_ids_query->execute();
-    
-    $total_value = 0;
-    $won_value = 0;
-    $lost_value = 0;
-    $active_value = 0;
-    $avg_days_in_pipeline = 0;
-    
-    if (!empty($deal_ids)) {
-      $deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($deal_ids);
-      $total_days = 0;
-      $closed_deal_count = 0;
-      
-      foreach ($deals as $deal) {
-        $amount = 0;
-        if ($deal->hasField('field_amount') && !$deal->get('field_amount')->isEmpty()) {
-          $amount = floatval($deal->get('field_amount')->value);
-          $total_value += $amount;
-        }
-        
-        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-          $stage_tid = (int) $deal->get('field_stage')->target_id;
-          if ($won_term_id && $stage_tid === (int) $won_term_id) {
-            $won_value += $amount;
-          } elseif ($lost_term_id && $stage_tid === (int) $lost_term_id) {
-            $lost_value += $amount;
-          } else {
-            $active_value += $amount;
-          }
-          
-          // Calculate average days in pipeline for won deals
-          if ($won_term_id && $stage_tid === (int) $won_term_id) {
-            $days_open = floor(($now - $deal->getCreatedTime()) / 86400);
-            $total_days += $days_open;
-            $closed_deal_count++;
-          }
-        }
-      }
-      
-      if ($closed_deal_count > 0) {
-        $avg_days_in_pipeline = round($total_days / $closed_deal_count, 0);
-      }
-    }
+    $totals2            = $agg2->execute()->fetchObject();
+    $total_value        = (float) ($totals2->total_value  ?? 0);
+    $won_value          = (float) ($totals2->won_value    ?? 0);
+    $lost_value         = (float) ($totals2->lost_value   ?? 0);
+    $active_value       = (float) ($totals2->active_value ?? 0);
+    $avg_days_in_pipeline = (int) round((float) ($totals2->avg_days_won ?? 0));
     
     // 12. Calculate KPIs
     $total_closed = $won_count + $lost_count;
