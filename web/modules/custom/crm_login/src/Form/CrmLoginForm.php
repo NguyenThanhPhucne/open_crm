@@ -91,7 +91,7 @@ class CrmLoginForm extends FormBase {
       '#title' => $this->t('Tên đăng nhập'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'john.nguyen',
+        'placeholder' => 'Nhập tên đăng nhập của bạn',
         'autocomplete' => 'username',
         'class' => ['auth-input'],
       ],
@@ -103,7 +103,7 @@ class CrmLoginForm extends FormBase {
       '#title' => $this->t('Mật khẩu'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Enter your password',
+        'placeholder' => 'Nhập mật khẩu của bạn',
         'autocomplete' => 'current-password',
         'class' => ['auth-input'],
       ],

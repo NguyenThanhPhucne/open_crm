@@ -106,7 +106,7 @@ class CrmRegisterForm extends FormBase {
       '#title' => $this->t('Họ'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nguyen',
+        'placeholder' => 'Nhập họ của bạn',
         'class' => ['auth-input'],
       ],
     ];
@@ -116,7 +116,7 @@ class CrmRegisterForm extends FormBase {
       '#title' => $this->t('Tên'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'John',
+        'placeholder' => 'Nhập tên của bạn',
         'class' => ['auth-input'],
       ],
     ];
@@ -127,7 +127,7 @@ class CrmRegisterForm extends FormBase {
       '#title' => $this->t('Tên đăng nhập'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'john.nguyen',
+        'placeholder' => 'Nhập tên đăng nhập (vd: john.nguyen)',
         'autocomplete' => 'username',
         'class' => ['auth-input'],
       ],
@@ -139,7 +139,7 @@ class CrmRegisterForm extends FormBase {
       '#title' => $this->t('Email'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'john@example.com',
+        'placeholder' => 'Nhập địa chỉ email của bạn',
         'autocomplete' => 'email',
         'class' => ['auth-input'],
       ],
@@ -151,7 +151,7 @@ class CrmRegisterForm extends FormBase {
       '#title' => $this->t('Mật khẩu'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Create a strong password',
+        'placeholder' => 'Tạo mật khẩu (tối thiểu 5 ký tự)',
         'autocomplete' => 'new-password',
         'class' => ['auth-input'],
       ],
