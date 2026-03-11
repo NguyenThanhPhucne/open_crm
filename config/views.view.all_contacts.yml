@@ -305,7 +305,7 @@ display:
     position: 1
     display_options:
       display_extenders: {}
-      path: crm/all-contacts
+      path: crm/all-contacts-table
     cache_metadata:
       max-age: -1
       contexts:

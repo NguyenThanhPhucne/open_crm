@@ -37,6 +37,14 @@ crm.node_detail_canonical:
       node:
         type: entity:node
 
+crm.all_contacts:
+  path: "/crm/all-contacts"
+  defaults:
+    _controller: '\Drupal\crm\Controller\AllContactsController::view'
+    _title: "All Contacts"
+  requirements:
+    _permission: "access content"
+
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"
   defaults:
