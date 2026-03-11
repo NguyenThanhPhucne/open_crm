@@ -15,17 +15,20 @@ class ExportController extends ControllerBase {
    * Export contacts to CSV.
    */
   public function exportContacts() {
-    // Get current user to filter data
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
-    
-    // Query contacts owned by current user only
+    $is_admin = $current_user->hasRole('administrator') || $user_id == 1;
+    $is_manager = $current_user->hasRole('sales_manager');
+    $see_all = $is_admin || $is_manager;
+
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_owner', $user_id)
       ->accessCheck(FALSE)
       ->sort('created', 'DESC');
-    
+    if (!$see_all) {
+      $query->condition('field_owner', $user_id);
+    }
+
     $nids = $query->execute();
     $contacts = Node::loadMultiple($nids);
 
@@ -152,17 +155,20 @@ class ExportController extends ControllerBase {
    * Export deals to CSV.
    */
   public function exportDeals() {
-    // Get current user to filter data
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
-    
-    // Query deals owned by current user only
+    $is_admin = $current_user->hasRole('administrator') || $user_id == 1;
+    $is_manager = $current_user->hasRole('sales_manager');
+    $see_all = $is_admin || $is_manager;
+
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_owner', $user_id)
       ->accessCheck(FALSE)
       ->sort('created', 'DESC');
-    
+    if (!$see_all) {
+      $query->condition('field_owner', $user_id);
+    }
+
     $nids = $query->execute();
     $deals = Node::loadMultiple($nids);
 

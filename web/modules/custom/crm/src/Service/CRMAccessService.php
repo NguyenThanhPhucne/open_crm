@@ -153,12 +153,9 @@ class CRMAccessService {
       return TRUE;
     }
 
-    // Anonymous users: read-only view access.
+    // Anonymous users: deny ALL access to CRM data.
     if (!$account->id()) {
-      if ($op === 'view') {
-        return TRUE;
-      }
-      $this->log('denied', $account, $entity, $op, 'Anonymous user (read-only)');
+      $this->log('denied', $account, $entity, $op, 'Anonymous user — no CRM access');
       return FALSE;
     }
 
@@ -316,8 +313,9 @@ class CRMAccessService {
       return;
     }
 
-    // Anonymous: read-only access, show all published CRM data.
+    // Anonymous: deny all CRM data — add impossible condition.
     if (!$account->id()) {
+      $query->condition($node_alias . '.nid', 0, '=');
       return;
     }
 

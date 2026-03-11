@@ -17,8 +17,6 @@ class AllContactsController extends ControllerBase {
    * Render the All Contacts page.
    */
   public function view(Request $request) {
-    \Drupal::service('page_cache_kill_switch')->trigger();
-
     $current_user = \Drupal::currentUser();
     $user_id      = $current_user->id();
     $is_admin     = in_array('administrator', $current_user->getRoles()) || $user_id == 1;

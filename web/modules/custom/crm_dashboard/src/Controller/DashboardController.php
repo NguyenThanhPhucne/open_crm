@@ -17,9 +17,6 @@ class DashboardController extends ControllerBase {
    * Display the dashboard.
    */
   public function view() {
-    // Bypass all server-side page caches so every request gets fresh data.
-    \Drupal::service('page_cache_kill_switch')->trigger();
-
     // Get current user to filter data
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();

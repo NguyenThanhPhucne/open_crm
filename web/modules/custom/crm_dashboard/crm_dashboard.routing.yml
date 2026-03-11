@@ -5,6 +5,7 @@ crm_dashboard.admin:
     _title: "CRM Dashboard"
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
 
 crm_dashboard.dashboard:
   path: "/crm/dashboard"
@@ -13,6 +14,7 @@ crm_dashboard.dashboard:
     _title: "CRM Dashboard"
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
 
 crm_dashboard.test:
   path: "/crm/dashboard-new"
@@ -21,6 +23,7 @@ crm_dashboard.test:
     _title: "NEW Dashboard Test"
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
 
 crm_dashboard.refresh:
   path: "/crm/dashboard/refresh"
@@ -28,4 +31,5 @@ crm_dashboard.refresh:
     _controller: '\Drupal\crm_dashboard\Controller\DashboardController::getRefreshData'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
     _method: "GET|POST"

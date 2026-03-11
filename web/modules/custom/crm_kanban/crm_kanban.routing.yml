@@ -5,6 +5,7 @@ crm_kanban.pipeline:
     _title: "Sales Pipeline"
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
 
 crm_kanban.all_pipeline:
   path: "/crm/all-pipeline"
@@ -13,6 +14,7 @@ crm_kanban.all_pipeline:
     _title: "All Pipeline"
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
 
 crm_kanban.update_stage:
   path: "/crm/my-pipeline/update-stage"
@@ -20,5 +22,6 @@ crm_kanban.update_stage:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::updateStage'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: 'TRUE'
   options:
     no_cache: TRUE

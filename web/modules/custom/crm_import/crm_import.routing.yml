@@ -4,4 +4,4 @@ crm_import.import_page:
     _controller: '\Drupal\crm_import\Controller\ImportController::importPage'
     _title: "Import Data"
   requirements:
-    _permission: "access content"
+    _permission: "create contact content"
