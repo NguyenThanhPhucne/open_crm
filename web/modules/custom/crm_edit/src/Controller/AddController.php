@@ -431,7 +431,7 @@ class AddController extends ControllerBase {
         
         <div class="crm-modal-footer">
           <div class="save-status"></div>
-          <button type="button" class="btn-cancel crm-modal-close">
+          <button type="button" class="btn-cancel">
             <i data-lucide="x"></i>
             <span>Cancel</span>
           </button>
