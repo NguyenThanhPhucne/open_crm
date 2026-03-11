@@ -26,9 +26,12 @@ class AllOrganizationsController extends ControllerBase {
     // ── Filter parameters ─────────────────────────────────────────────────────
     $search_name     = trim($request->query->get('search', ''));
     $search_industry = trim($request->query->get('industry', ''));
+    $sort_field      = $request->query->get('sort', 'changed');
+    $sort_dir        = strtoupper($request->query->get('dir', 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
+    $per_page        = max(10, min(100, (int) $request->query->get('per_page', 25)));
     $search_status   = trim($request->query->get('status', ''));
     $page            = max(0, (int) $request->query->get('page', 0));
-    $per_page        = 25;
+    if (!in_array($sort_field, ['title', 'changed'])) { $sort_field = 'changed'; }
 
     // ── Query builder ─────────────────────────────────────────────────────────
     $build_query = function () use ($search_name, $search_industry, $search_status, $can_manage, $user_id) {
@@ -73,7 +76,7 @@ class AllOrganizationsController extends ControllerBase {
     $total_pages    = max(1, (int) ceil($filtered_total / $per_page));
     $page           = min($page, $total_pages - 1);
 
-    $ids   = $build_query()->sort('changed', 'DESC')->range($page * $per_page, $per_page)->execute();
+    $ids   = $build_query()->sort($sort_field, $sort_dir)->range($page * $per_page, $per_page)->execute();
     $orgs  = !empty($ids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids) : [];
 
     // ── Avatar palette ────────────────────────────────────────────────────────
@@ -178,17 +181,55 @@ class AllOrganizationsController extends ControllerBase {
     $add_url           = '/node/add/organization';
 
     // ── Pagination helper ─────────────────────────────────────────────────────
-    $page_url = function ($p) use ($search_name, $search_industry, $search_status, $current_path) {
-      $params = ['page' => $p];
+    $page_url = function ($p) use ($search_name, $search_industry, $search_status, $sort_field, $sort_dir, $per_page, $current_path) {
+      $params = ['page' => $p, 'sort' => $sort_field, 'dir' => $sort_dir, 'per_page' => $per_page];
       if ($search_name)     { $params['search']   = $search_name; }
       if ($search_industry) { $params['industry'] = $search_industry; }
       if ($search_status)   { $params['status']   = $search_status; }
       return $current_path . '?' . http_build_query($params);
     };
+    $sort_url = function ($field) use ($sort_field, $sort_dir, $search_name, $search_industry, $search_status, $per_page, $current_path): string {
+      $nd = ($sort_field === $field && $sort_dir === 'DESC') ? 'ASC' : 'DESC';
+      $p  = ['sort' => $field, 'dir' => $nd, 'per_page' => $per_page, 'page' => 0];
+      if ($search_name)     { $p['search']   = $search_name; }
+      if ($search_industry) { $p['industry'] = $search_industry; }
+      if ($search_status)   { $p['status']   = $search_status; }
+      return $current_path . '?' . http_build_query($p);
+    };
+    $sort_ic = function ($field) use ($sort_field, $sort_dir): string {
+      if ($sort_field !== $field) return '<svg class="sort-ic" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3"/></svg>';
+      return $sort_dir === 'ASC'
+        ? '<svg class="sort-ic asc" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13V1M2 4l3-3 3 3"/></svg>'
+        : '<svg class="sort-ic desc" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 1v12M2 10l3 3 3-3"/></svg>';
+    };
+    $th_cls = fn($f) => $sort_field === $f ? ' class="th-sort th-sorted"' : ' class="th-sort"';
 
     $e_search   = Html::escape($search_name);
     $e_industry = Html::escape($search_industry);
     $e_status   = Html::escape($search_status);
+
+    // ── Active filter chips ───────────────────────────────────────────────────
+    $chips_html = '';
+    if ($search_name || $search_industry || $search_status) {
+      $mk_chip = function ($label, $skip) use ($search_name, $search_industry, $search_status, $sort_field, $sort_dir, $per_page, $current_path): string {
+        $p = array_filter(['search' => $search_name, 'industry' => $search_industry, 'status' => $search_status, 'sort' => $sort_field, 'dir' => $sort_dir, 'per_page' => $per_page]);
+        unset($p[$skip]);
+        return '<span class="filter-chip">' . Html::escape($label) . '<a href="' . $current_path . '?' . http_build_query($p) . '" class="chip-x" title="Remove">×</a></span>';
+      };
+      $chips_html = '<div class="filter-chips"><span class="chips-lbl">Active filters:</span>';
+      if ($search_name)     { $chips_html .= $mk_chip('Name: ' . $search_name, 'search'); }
+      if ($search_industry) { $chips_html .= $mk_chip('Industry: ' . $search_industry, 'industry'); }
+      if ($search_status)   { $chips_html .= $mk_chip('Status: ' . ucfirst($search_status), 'status'); }
+      $chips_html .= '</div>';
+    }
+
+    // ── Sort pre-computations (used in heredoc) ────────────────────────────────
+    $su_nm = $sort_url('title');   $si_nm = $sort_ic('title');   $tc_nm = $th_cls('title');
+    $su_up = $sort_url('changed'); $si_up = $sort_ic('changed'); $tc_up = $th_cls('changed');
+    $per_page_sel = '';
+    foreach ([10, 25, 50, 100] as $_n) {
+      $per_page_sel .= '<option value="' . $_n . '"' . ($_n == $per_page ? ' selected' : '') . '>' . $_n . '</option>';
+    }
 
     // ── HTML ──────────────────────────────────────────────────────────────────
     $html = <<<HTML
@@ -334,6 +375,27 @@ class AllOrganizationsController extends ControllerBase {
   @media(max-width:900px){.orgs-table .col-email,.orgs-table th.th-email,.orgs-table td.td-email-cell{display:none}}
   @media(max-width:700px){.orgs-table .col-phone,.orgs-table th.th-phone,.orgs-table td.td-phone-cell{display:none}}
   .orgs-table th,.orgs-table td{box-sizing:border-box}
+  /* ── ClickUp-inspired UX additions ── */
+  .orgs-table thead tr{position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0}
+  .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
+  .sort-ic{width:9px;height:12px;margin-left:4px;vertical-align:-1px;color:#cbd5e1;transition:color .12s}.th-sort:hover .sort-ic,.th-sorted .sort-ic,.sort-ic.asc,.sort-ic.desc{color:#3b82f6}
+  .th-sort a,.th-sort a:visited{color:inherit;text-decoration:none;display:flex;align-items:center;gap:0}
+  .col-chk{width:40px}.th-chk,.td-chk{padding:10px 4px 10px 14px !important;box-sizing:border-box}
+  .row-chk,.chk-all{width:15px;height:15px;border-radius:4px;cursor:pointer;accent-color:#3b82f6;flex-shrink:0}
+  .cell-actions .btn-action{opacity:0;pointer-events:none;transform:translateX(3px);transition:opacity .12s,transform .12s}
+  .orgs-table tbody tr:hover .cell-actions .btn-action{opacity:1;pointer-events:auto;transform:translateX(0)}
+  #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
+  #bulk-bar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+  .bk-ct{font-weight:700;color:#93c5fd;min-width:70px}.bk-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
+  .btn-bulk{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:none;background:transparent;color:#e2e8f0;font-size:12px;font-weight:500;cursor:pointer;transition:background .12s;white-space:nowrap}.btn-bulk:hover{background:rgba(255,255,255,.12)}.btn-bulk svg{width:13px;height:13px;color:inherit;flex-shrink:0}
+  .filter-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .chips-lbl{font-size:12px;color:#94a3b8;font-weight:500;white-space:nowrap}
+  .filter-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 4px 3px 10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:12px;font-weight:500;line-height:1}
+  .chip-x{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;text-decoration:none;color:#1d4ed8;font-size:15px;line-height:1;transition:background .12s}.chip-x:hover{background:#bfdbfe}
+  .dn-wrap{display:flex;gap:2px;margin-right:4px}.dn-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;padding:0;color:#94a3b8}.dn-btn:hover,.dn-btn.on{border-color:#2563eb;color:#2563eb;background:#eff6ff}.dn-btn svg{pointer-events:none;width:12px;height:12px}
+  .is-compact .orgs-table td,.is-compact .orgs-table th{padding-top:5px !important;padding-bottom:5px !important}
+  .is-roomy .orgs-table td,.is-roomy .orgs-table th{padding-top:14px !important;padding-bottom:14px !important}
+  .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
 </style>
 HTML;
 
@@ -363,7 +425,7 @@ HTML;
 
     // ── Stats bar ─────────────────────────────────────────────────────────────
     $html .= <<<HTML
-<div class="orgs-page">
+<div class="orgs-page" id="pg-wrap">
 
   <!-- Stats bar -->
   <div class="stats-bar">
@@ -382,6 +444,11 @@ HTML;
       <div class="page-subtitle">Manage your companies, clients, and partner organizations</div>
     </div>
     <div class="page-actions">
+      <div class="dn-wrap">
+        <button class="dn-btn" data-dn="compact" title="Compact rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="3" x2="13" y2="3"/><line x1="1" y1="6" x2="13" y2="6"/><line x1="1" y1="9" x2="13" y2="9"/><line x1="1" y1="12" x2="13" y2="12"/></svg></button>
+        <button class="dn-btn on" data-dn="default" title="Default rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2.5" x2="13" y2="2.5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="1" y1="11.5" x2="13" y2="11.5"/></svg></button>
+        <button class="dn-btn" data-dn="roomy" title="Roomy rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="8" x2="13" y2="8"/></svg></button>
+      </div>
       <a href="{$add_url}" class="btn-primary">
         <i data-lucide="plus-circle"></i>
         Add Organization
@@ -424,13 +491,13 @@ HTML;
     $from = $filtered_total === 0 ? 0 : $page * $per_page + 1;
     $to   = min(($page + 1) * $per_page, $filtered_total);
     $html .= '<span class="filter-count">Showing ' . $from . '–' . $to . ' of ' . $filtered_total . '</span>';
-    $html .= '</form>';
-
+    $html .= '</form>';    $html .= $chips_html;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
     <table class="orgs-table">
       <colgroup>
+        <col class="col-chk">
         <col class="col-org">
         <col class="col-industry">
         <col class="col-phone">
@@ -444,7 +511,8 @@ HTML;
       </colgroup>
       <thead>
         <tr>
-          <th>Organization</th>
+          <th class="th-chk"><input type="checkbox" class="chk-all" id="chk-all"></th>
+          <th{$tc_nm}><a href="{$su_nm}">Organization{$si_nm}</a></th>
           <th>Industry</th>
           <th class="th-phone">Phone</th>
           <th class="th-email">Email</th>
@@ -452,7 +520,7 @@ HTML;
           <th class="th-employees">Employees</th>
           <th class="th-revenue">Revenue</th>
           <th class="th-assigned">Assigned To</th>
-          <th>Updated</th>
+          <th{$tc_up}><a href="{$su_up}">Updated{$si_up}</a></th>
           <th class="th-action">Actions</th>
         </tr>
       </thead>
@@ -461,7 +529,7 @@ HTML;
 
     if (empty($rows)) {
       $html .= <<<EMPTY
-      <tr><td colspan="10">
+      <tr><td colspan="11">
         <div class="empty-state">
           <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
           <div class="empty-state-title">No organizations found</div>
@@ -524,6 +592,7 @@ EMPTY;
         }
 
         $html .= '<tr id="org-row-' . $r['id'] . '">'
+          . '<td class="td-chk"><input type="checkbox" class="row-chk" value="' . $r['id'] . '"></td>'
           . '<td><div class="td-name">'
           . '<div class="org-avatar" style="' . $r['av_style'] . '">' . $r['initial'] . '</div>'
           . '<div class="org-name-block">'
@@ -546,11 +615,11 @@ EMPTY;
     $html .= '</tbody></table>';
 
     // ── Pagination ────────────────────────────────────────────────────────────
+    $html .= '<div class="pagination"><div class="pg-sz"><label for="pg-sz-sel">Rows:</label><select id="pg-sz-sel">' . $per_page_sel . '</select></div>';
     if ($total_pages > 1) {
       $from_count = $filtered_total === 0 ? 0 : $page * $per_page + 1;
       $to_count   = min(($page + 1) * $per_page, $filtered_total);
-      $html .= '<div class="pagination">'
-        . '<span class="page-info">Page ' . ($page + 1) . ' of ' . $total_pages . ' &nbsp;·&nbsp; ' . $from_count . '–' . $to_count . ' of ' . $filtered_total . '</span>'
+      $html .= '<span class="page-info">Page ' . ($page + 1) . ' of ' . $total_pages . ' &nbsp;·&nbsp; ' . $from_count . '–' . $to_count . ' of ' . $filtered_total . '</span>'
         . '<div class="page-links">';
 
       $html .= $page > 0
@@ -576,10 +645,14 @@ EMPTY;
         ? '<a class="page-link" href="' . $page_url($page + 1) . '">Next ›</a>'
         : '<span class="page-link disabled">Next ›</span>';
 
-      $html .= '</div></div>';
+      $html .= '</div>'; // .page-links
     }
-
+    $html .= '</div>'; // .pagination
     $html .= '</div>'; // .table-card
+    $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
+      . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
+      . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      . ' Clear selection</button></div>';
     $html .= '</div>'; // .orgs-page
 
     $html .= <<<JS
@@ -598,6 +671,66 @@ EMPTY;
   document.addEventListener('crm:icons-refresh', function () {
     if (window.lucide) lucide.createIcons();
   });
+  // Bulk select
+  (function() {
+    var bulkBar  = document.getElementById('bulk-bar');
+    if (!bulkBar) return;
+    var bkCount  = document.getElementById('bk-ct');
+    var chkAll   = document.getElementById('chk-all');
+    var clearBtn = document.getElementById('bulk-clear-btn');
+    function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
+    function refreshBulk() {
+      var sel = getRowChecks().filter(function(c) { return c.checked; });
+      if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
+      else { bulkBar.classList.remove('show'); }
+      if (chkAll) {
+        var all = getRowChecks();
+        chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
+        chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
+      }
+    }
+    if (chkAll) {
+      chkAll.addEventListener('change', function() {
+        getRowChecks().forEach(function(c) { c.checked = chkAll.checked; });
+        refreshBulk();
+      });
+    }
+    getRowChecks().forEach(function(c) { c.addEventListener('change', refreshBulk); });
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        getRowChecks().forEach(function(c) { c.checked = false; });
+        if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
+        bulkBar.classList.remove('show');
+      });
+    }
+  })();
+  // Density toggle
+  (function() {
+    var pgWrap  = document.getElementById('pg-wrap');
+    if (!pgWrap) return;
+    var savedDn = localStorage.getItem('crm_dn') || 'default';
+    if (savedDn !== 'default') pgWrap.classList.add('is-' + savedDn);
+    document.querySelectorAll('.dn-btn').forEach(function(btn) {
+      if (btn.dataset.dn === savedDn) { btn.classList.add('on'); } else { btn.classList.remove('on'); }
+      btn.addEventListener('click', function() {
+        ['compact','roomy'].forEach(function(k) { pgWrap.classList.remove('is-' + k); });
+        if (btn.dataset.dn !== 'default') pgWrap.classList.add('is-' + btn.dataset.dn);
+        document.querySelectorAll('.dn-btn').forEach(function(b) { b.classList.toggle('on', b === btn); });
+        localStorage.setItem('crm_dn', btn.dataset.dn);
+      });
+    });
+  })();
+  // Page size selector
+  (function() {
+    var pgSz = document.getElementById('pg-sz-sel');
+    if (!pgSz) return;
+    pgSz.addEventListener('change', function() {
+      var u = new URL(window.location.href);
+      u.searchParams.set('per_page', pgSz.value);
+      u.searchParams.set('page', '0');
+      window.location.href = u.toString();
+    });
+  })();
 </script>
 JS;
 

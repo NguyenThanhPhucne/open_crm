@@ -27,8 +27,11 @@ class AllContactsController extends ControllerBase {
     $search_name  = trim($request->query->get('search', ''));
     $search_email = trim($request->query->get('email', ''));
     $search_phone = trim($request->query->get('phone', ''));
+    $sort_field   = $request->query->get('sort', 'changed');
+    $sort_dir     = strtoupper($request->query->get('dir', 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
+    $per_page     = max(10, min(100, (int) $request->query->get('per_page', 25)));
     $page         = max(0, (int) $request->query->get('page', 0));
-    $per_page     = 25;
+    if (!in_array($sort_field, ['title', 'changed'])) { $sort_field = 'changed'; }
 
     // ── Query builder (reusable closure) ──────────────────────────────────────
     $build_query = function () use ($search_name, $search_email, $search_phone, $can_manage, $user_id) {
@@ -78,7 +81,7 @@ class AllContactsController extends ControllerBase {
     $total_pages    = max(1, (int) ceil($filtered_total / $per_page));
     $page           = min($page, $total_pages - 1);
 
-    $ids      = $build_query()->sort('changed', 'DESC')->range($page * $per_page, $per_page)->execute();
+    $ids      = $build_query()->sort($sort_field, $sort_dir)->range($page * $per_page, $per_page)->execute();
     $contacts = !empty($ids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids) : [];
 
     // ── Format rows ───────────────────────────────────────────────────────────
@@ -179,18 +182,48 @@ class AllContactsController extends ControllerBase {
     $add_url           = '/crm/add/contact';
 
     // ── Pagination helper ─────────────────────────────────────────────────────
-    $page_url = function ($p) use ($search_name, $search_email, $search_phone, $current_path) {
-      $params = ['page' => $p];
+    $page_url = function ($p) use ($search_name, $search_email, $search_phone, $sort_field, $sort_dir, $per_page, $current_path) {
+      $params = ['page' => $p, 'sort' => $sort_field, 'dir' => $sort_dir, 'per_page' => $per_page];
       if ($search_name)  { $params['search'] = $search_name; }
       if ($search_email) { $params['email']  = $search_email; }
       if ($search_phone) { $params['phone']  = $search_phone; }
       return $current_path . '?' . http_build_query($params);
     };
+    $sort_url = function ($field) use ($sort_field, $sort_dir, $search_name, $search_email, $search_phone, $per_page, $current_path): string {
+      $nd = ($sort_field === $field && $sort_dir === 'DESC') ? 'ASC' : 'DESC';
+      $p  = ['sort' => $field, 'dir' => $nd, 'per_page' => $per_page, 'page' => 0];
+      if ($search_name)  { $p['search'] = $search_name; }
+      if ($search_email) { $p['email']  = $search_email; }
+      if ($search_phone) { $p['phone']  = $search_phone; }
+      return $current_path . '?' . http_build_query($p);
+    };
+    $sort_ic = function ($field) use ($sort_field, $sort_dir): string {
+      if ($sort_field !== $field) return '<svg class="sort-ic" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3"/></svg>';
+      return $sort_dir === 'ASC'
+        ? '<svg class="sort-ic asc" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13V1M2 4l3-3 3 3"/></svg>'
+        : '<svg class="sort-ic desc" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 1v12M2 10l3 3 3-3"/></svg>';
+    };
+    $th_cls = fn($f) => $sort_field === $f ? ' class="th-sort th-sorted"' : ' class="th-sort"';
 
     // Escape for HTML attributes
     $e_search = Html::escape($search_name);
     $e_email  = Html::escape($search_email);
     $e_phone  = Html::escape($search_phone);
+
+    // ── Active filter chips ───────────────────────────────────────────────────
+    $chips_html = '';
+    if ($search_name || $search_email || $search_phone) {
+      $mk_chip = function ($label, $skip) use ($search_name, $search_email, $search_phone, $sort_field, $sort_dir, $per_page, $current_path): string {
+        $p = array_filter(['search' => $search_name, 'email' => $search_email, 'phone' => $search_phone, 'sort' => $sort_field, 'dir' => $sort_dir, 'per_page' => $per_page]);
+        unset($p[$skip]);
+        return '<span class="filter-chip">' . Html::escape($label) . '<a href="' . $current_path . '?' . http_build_query($p) . '" class="chip-x" title="Remove">×</a></span>';
+      };
+      $chips_html = '<div class="filter-chips"><span class="chips-lbl">Active filters:</span>';
+      if ($search_name)  { $chips_html .= $mk_chip('Name: ' . $search_name,  'search'); }
+      if ($search_email) { $chips_html .= $mk_chip('Email: ' . $search_email, 'email'); }
+      if ($search_phone) { $chips_html .= $mk_chip('Phone: ' . $search_phone, 'phone'); }
+      $chips_html .= '</div>';
+    }
 
     // ── Source / Customer-type badge colors ───────────────────────────────────
     $source_colors = [
@@ -214,6 +247,14 @@ class AllContactsController extends ControllerBase {
       }
       return ['bg' => '#f1f5f9', 'color' => '#475569'];
     };
+
+    // ── Sort pre-computations (used in heredoc) ────────────────────────────────
+    $su_nm = $sort_url('title');   $si_nm = $sort_ic('title');   $tc_nm = $th_cls('title');
+    $su_up = $sort_url('changed'); $si_up = $sort_ic('changed'); $tc_up = $th_cls('changed');
+    $per_page_sel = '';
+    foreach ([10, 25, 50, 100] as $_n) {
+      $per_page_sel .= '<option value="' . $_n . '"' . ($_n == $per_page ? ' selected' : '') . '>' . $_n . '</option>';
+    }
 
     // ── HTML output ───────────────────────────────────────────────────────────
     $html = <<<HTML
@@ -340,12 +381,41 @@ class AllContactsController extends ControllerBase {
   @media(max-width:900px){.contacts-table .col-email,.contacts-table th.th-email,.contacts-table td.td-email-cell{display:none}}
   @media(max-width:700px){.contacts-table .col-phone,.contacts-table th.th-phone,.contacts-table td.td-phone-cell{display:none}}
   .contacts-table th,.contacts-table td{box-sizing:border-box}
+  /* ── ClickUp-inspired UX additions ── */
+  /* Sticky thead */
+  .contacts-table thead tr{position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0}
+  /* Sort headers */
+  .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
+  .sort-ic{width:9px;height:12px;margin-left:4px;vertical-align:-1px;color:#cbd5e1;transition:color .12s}.th-sort:hover .sort-ic,.th-sorted .sort-ic,.sort-ic.asc,.sort-ic.desc{color:#3b82f6}
+  .th-sort a,.th-sort a:visited{color:inherit;text-decoration:none;display:flex;align-items:center;gap:0}
+  /* Checkbox col */
+  .col-chk{width:40px}.th-chk,.td-chk{padding:10px 4px 10px 14px !important;box-sizing:border-box}
+  .row-chk,.chk-all{width:15px;height:15px;border-radius:4px;cursor:pointer;accent-color:#3b82f6;flex-shrink:0}
+  /* Hover reveals actions */
+  .cell-actions .btn-action{opacity:0;pointer-events:none;transform:translateX(3px);transition:opacity .12s,transform .12s}
+  .contacts-table tbody tr:hover .cell-actions .btn-action{opacity:1;pointer-events:auto;transform:translateX(0)}
+  /* Bulk floating toolbar */
+  #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
+  #bulk-bar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+  .bk-ct{font-weight:700;color:#93c5fd;min-width:70px}.bk-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
+  .btn-bulk{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:none;background:transparent;color:#e2e8f0;font-size:12px;font-weight:500;cursor:pointer;transition:background .12s;white-space:nowrap}.btn-bulk:hover{background:rgba(255,255,255,.12)}.btn-bulk svg{width:13px;height:13px;color:inherit;flex-shrink:0}
+  /* Filter chips */
+  .filter-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .chips-lbl{font-size:12px;color:#94a3b8;font-weight:500;white-space:nowrap}
+  .filter-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 4px 3px 10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:12px;font-weight:500;line-height:1}
+  .chip-x{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;text-decoration:none;color:#1d4ed8;font-size:15px;line-height:1;transition:background .12s}.chip-x:hover{background:#bfdbfe}
+  /* Density toggle */
+  .dn-wrap{display:flex;gap:2px;margin-right:4px}.dn-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;padding:0;color:#94a3b8}.dn-btn:hover,.dn-btn.on{border-color:#2563eb;color:#2563eb;background:#eff6ff}.dn-btn svg{pointer-events:none;width:12px;height:12px}
+  .is-compact .contacts-table td,.is-compact .contacts-table th{padding-top:5px !important;padding-bottom:5px !important}
+  .is-roomy .contacts-table td,.is-roomy .contacts-table th{padding-top:14px !important;padding-bottom:14px !important}
+  /* Page size */
+  .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
 </style>
 HTML;
 
     // ── Page content ──────────────────────────────────────────────────────────
     $html .= <<<HTML
-<div class="contacts-page">
+<div class="contacts-page" id="pg-wrap">
 
   <!-- Stats bar -->
   <div class="stats-bar">
@@ -364,6 +434,11 @@ HTML;
       <div class="page-subtitle">Manage your customer contacts and relationships</div>
     </div>
     <div class="page-actions">
+      <div class="dn-wrap">
+        <button class="dn-btn" data-dn="compact" title="Compact rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="3" x2="13" y2="3"/><line x1="1" y1="6" x2="13" y2="6"/><line x1="1" y1="9" x2="13" y2="9"/><line x1="1" y1="12" x2="13" y2="12"/></svg></button>
+        <button class="dn-btn on" data-dn="default" title="Default rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2.5" x2="13" y2="2.5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="1" y1="11.5" x2="13" y2="11.5"/></svg></button>
+        <button class="dn-btn" data-dn="roomy" title="Roomy rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="8" x2="13" y2="8"/></svg></button>
+      </div>
       <a href="{$add_url}" class="btn-primary">
         <i data-lucide="user-plus"></i>
         Add Contact
@@ -402,13 +477,13 @@ HTML;
     $from = $filtered_total === 0 ? 0 : $page * $per_page + 1;
     $to   = min(($page + 1) * $per_page, $filtered_total);
     $html .= '<span class="filter-count">Showing ' . $from . '–' . $to . ' of ' . $filtered_total . '</span>';
-    $html .= '</form>';
-
+    $html .= '</form>';    $html .= $chips_html;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
     <table class="contacts-table">
       <colgroup>
+        <col class="col-chk">
         <col class="col-contact">
         <col class="col-org">
         <col class="col-phone th-phone">
@@ -421,14 +496,15 @@ HTML;
       </colgroup>
       <thead>
         <tr>
-          <th>Contact</th>
+          <th class="th-chk"><input type="checkbox" class="chk-all" id="chk-all"></th>
+          <th{$tc_nm}><a href="{$su_nm}">Contact{$si_nm}</a></th>
           <th>Organization</th>
           <th class="th-phone">Phone</th>
           <th class="th-email">Email</th>
           <th>Type</th>
           <th class="th-source">Source</th>
           <th class="th-owner">Owner</th>
-          <th>Updated</th>
+          <th{$tc_up}><a href="{$su_up}">Updated{$si_up}</a></th>
           <th class="th-action">Actions</th>
         </tr>
       </thead>
@@ -438,7 +514,7 @@ HTML;
     if (empty($rows)) {
       $clear_url = $contacts_url;
       $html .= <<<EMPTY
-      <tr><td colspan="9">
+      <tr><td colspan="10">
         <div class="empty-state">
           <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
           <div class="empty-state-title">No contacts found</div>
@@ -487,6 +563,7 @@ EMPTY;
         }
 
         $html .= '<tr id="contact-row-' . $r['id'] . '">'
+          . '<td class="td-chk"><input type="checkbox" class="row-chk" value="' . $r['id'] . '"></td>'
           . '<td><div class="td-name">'
           . '<div class="contact-avatar" style="' . $r['av_style'] . '">' . $r['initial'] . '</div>'
           . '<div class="contact-name-block">'
@@ -508,11 +585,11 @@ EMPTY;
     $html .= '</tbody></table>';
 
     // ── Pagination ────────────────────────────────────────────────────────────
+    $html .= '<div class="pagination"><div class="pg-sz"><label for="pg-sz-sel">Rows:</label><select id="pg-sz-sel">' . $per_page_sel . '</select></div>';
     if ($total_pages > 1) {
       $from_count = $filtered_total === 0 ? 0 : $page * $per_page + 1;
       $to_count   = min(($page + 1) * $per_page, $filtered_total);
-      $html .= '<div class="pagination">'
-        . '<span class="page-info">Page ' . ($page + 1) . ' of ' . $total_pages . ' &nbsp;·&nbsp; ' . $from_count . '–' . $to_count . ' of ' . $filtered_total . '</span>'
+      $html .= '<span class="page-info">Page ' . ($page + 1) . ' of ' . $total_pages . ' &nbsp;·&nbsp; ' . $from_count . '–' . $to_count . ' of ' . $filtered_total . '</span>'
         . '<div class="page-links">';
 
       // Prev
@@ -541,10 +618,14 @@ EMPTY;
         ? '<a class="page-link" href="' . $page_url($page + 1) . '">Next ›</a>'
         : '<span class="page-link disabled">Next ›</span>';
 
-      $html .= '</div></div>';
+      $html .= '</div>'; // .page-links
     }
-
+    $html .= '</div>'; // .pagination
     $html .= '</div>'; // .table-card
+    $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
+      . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
+      . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      . ' Clear selection</button></div>';
     $html .= '</div>'; // .contacts-page
 
     $html .= <<<JS
@@ -567,6 +648,66 @@ EMPTY;
   document.addEventListener('crm:icons-refresh', function () {
     if (window.lucide) lucide.createIcons();
   });
+  // Bulk select
+  (function() {
+    var bulkBar  = document.getElementById('bulk-bar');
+    if (!bulkBar) return;
+    var bkCount  = document.getElementById('bk-ct');
+    var chkAll   = document.getElementById('chk-all');
+    var clearBtn = document.getElementById('bulk-clear-btn');
+    function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
+    function refreshBulk() {
+      var sel = getRowChecks().filter(function(c) { return c.checked; });
+      if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
+      else { bulkBar.classList.remove('show'); }
+      if (chkAll) {
+        var all = getRowChecks();
+        chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
+        chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
+      }
+    }
+    if (chkAll) {
+      chkAll.addEventListener('change', function() {
+        getRowChecks().forEach(function(c) { c.checked = chkAll.checked; });
+        refreshBulk();
+      });
+    }
+    getRowChecks().forEach(function(c) { c.addEventListener('change', refreshBulk); });
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        getRowChecks().forEach(function(c) { c.checked = false; });
+        if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
+        bulkBar.classList.remove('show');
+      });
+    }
+  })();
+  // Density toggle
+  (function() {
+    var pgWrap  = document.getElementById('pg-wrap');
+    if (!pgWrap) return;
+    var savedDn = localStorage.getItem('crm_dn') || 'default';
+    if (savedDn !== 'default') pgWrap.classList.add('is-' + savedDn);
+    document.querySelectorAll('.dn-btn').forEach(function(btn) {
+      if (btn.dataset.dn === savedDn) { btn.classList.add('on'); } else { btn.classList.remove('on'); }
+      btn.addEventListener('click', function() {
+        ['compact','roomy'].forEach(function(k) { pgWrap.classList.remove('is-' + k); });
+        if (btn.dataset.dn !== 'default') pgWrap.classList.add('is-' + btn.dataset.dn);
+        document.querySelectorAll('.dn-btn').forEach(function(b) { b.classList.toggle('on', b === btn); });
+        localStorage.setItem('crm_dn', btn.dataset.dn);
+      });
+    });
+  })();
+  // Page size selector
+  (function() {
+    var pgSz = document.getElementById('pg-sz-sel');
+    if (!pgSz) return;
+    pgSz.addEventListener('change', function() {
+      var u = new URL(window.location.href);
+      u.searchParams.set('per_page', pgSz.value);
+      u.searchParams.set('page', '0');
+      window.location.href = u.toString();
+    });
+  })();
 </script>
 JS;
 
