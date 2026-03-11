@@ -79,18 +79,19 @@ class AllDealsController extends ControllerBase {
     $pipeline_alias->join('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $pipeline_alias->join('node__field_stage', 'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
     $pipeline_alias->condition('n.type', 'deal');
-    $pipeline_alias->condition('fs.field_stage_value', [5, 6], 'NOT IN'); // exclude Won/Lost
+    $pipeline_alias->condition('fs.field_stage_target_id', [5, 6], 'NOT IN'); // exclude Won/Lost
     if (!$can_manage && $user_id > 0) {
       $pipeline_alias->join('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
       $pipeline_alias->condition('fo.field_owner_target_id', $user_id);
     }
-    $pipeline_value = (float) ($pipeline_alias->addExpression('SUM(fa.field_amount_value)', 'total')->execute()->fetchField() ?? 0);
+    $pipeline_alias->addExpression('SUM(fa.field_amount_value)', 'total');
+    $pipeline_value = (float) ($pipeline_alias->execute()->fetchField() ?? 0);
 
     // Won this month
     $won_q = $db->select('node_field_data', 'n');
     $won_q->join('node__field_stage', 'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
     $won_q->condition('n.type', 'deal');
-    $won_q->condition('fs.field_stage_value', 5);
+    $won_q->condition('fs.field_stage_target_id', 5);
     $won_q->condition('n.changed', $month_start, '>=');
     if (!$can_manage && $user_id > 0) {
       $won_q->join('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
