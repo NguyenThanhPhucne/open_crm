@@ -287,7 +287,7 @@ class AllDealsController extends ControllerBase {
   .filter-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .filter-input::placeholder{color:#9ca3af}
   .filter-select-wrap{position:relative;min-width:160px}
-  .filter-select-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#9ca3af;pointer-events:none;z-index:2}
+  .filter-select-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#3b82f6;pointer-events:none;z-index:2;stroke-width:2.2}
   .filter-select{height:40px !important;padding:0 12px 0 34px !important;border:1px solid #e5e7eb !important;border-radius:8px !important;font-size:14px !important;color:#1e293b;background:#fff;outline:none;cursor:pointer;transition:border-color .15s;appearance:none;min-width:160px}
   .filter-select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
