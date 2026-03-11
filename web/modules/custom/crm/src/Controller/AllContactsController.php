@@ -294,16 +294,16 @@ class AllContactsController extends ControllerBase {
   .td-org a{color:#3b82f6;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap}
   .td-org a:hover{text-decoration:underline;color:#1d4ed8}
   .td-org .no-org{color:#cbd5e1;font-style:italic;font-size:12px}
-  .td-phone,.td-email{display:flex;align-items:center;gap:7px;white-space:nowrap}
-  .td-phone>i,.td-email>i{width:12px;height:12px;color:#d1d5db;flex-shrink:0;opacity:.85}
-  .td-phone a,.td-email a{color:#374151;text-decoration:none;font-size:13px;font-weight:500}
-  .td-phone a:hover,.td-email a:hover{color:#3b82f6}
+  .cell-phone,.cell-email{display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .cell-phone>i,.cell-email>i{width:12px;height:12px;color:#d1d5db;flex-shrink:0;opacity:.85}
+  .cell-phone a,.cell-email a{color:#374151;text-decoration:none;font-size:13px;font-weight:500}
+  .cell-phone a:hover,.cell-email a:hover{color:#3b82f6}
   .td-empty-val{color:#cbd5e1;font-style:italic;font-size:12px}
   .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
-  .td-owner{font-size:12px;color:#475569;white-space:nowrap;display:flex;align-items:center;gap:5px}
-  .td-owner i{width:11px;height:11px;color:#d1d5db;opacity:.8}
+  .cell-owner{display:flex;align-items:center;gap:5px;font-size:12px;color:#475569;white-space:nowrap}
+  .cell-owner i{width:11px;height:11px;color:#d1d5db;opacity:.8}
   .td-time{font-size:12px;color:#94a3b8;white-space:nowrap}
-  .td-actions{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+  .cell-actions{display:flex;align-items:center;gap:6px;justify-content:flex-end}
   .btn-action{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;text-decoration:none}
   .btn-action:hover.btn-edit{border-color:#bfdbfe;background:#eff6ff;color:#3b82f6}
   .btn-action:hover.btn-delete{border-color:#fecaca;background:#fef2f2;color:#ef4444}
@@ -328,6 +328,7 @@ class AllContactsController extends ControllerBase {
 
   @media(max-width:1024px){.contacts-table th.th-owner,.contacts-table td.td-owner-cell,.contacts-table th.th-source,.contacts-table td.td-source-cell{display:none}}
   @media(max-width:768px){body{padding:12px}.contacts-table th.th-email,.contacts-table td.td-email-cell,.contacts-table th.th-phone,.contacts-table td.td-phone-cell{display:none}.crm-toolbar-item span{display:none}}
+  .contacts-table th,.contacts-table td{box-sizing:border-box}
 </style>
 HTML;
 
@@ -451,12 +452,12 @@ EMPTY;
           ? '<a href="' . $r['org_url'] . '">' . $r['org_name'] . '</a>'
           : '<span class="no-org">—</span>';
 
-        // Phone cell — icon outside link so text is primary focus
+        // Phone cell
         $phone_cell = $r['phone']
           ? '<i data-lucide="phone"></i><a href="tel:' . $r['phone'] . '">' . $r['phone'] . '</a>'
           : '<span class="td-empty-val">—</span>';
 
-        // Email cell — icon outside link so text is primary focus
+        // Email cell
         $email_cell = $r['email']
           ? '<i data-lucide="mail"></i><a href="mailto:' . $r['email'] . '">' . $r['email'] . '</a>'
           : '<span class="td-empty-val">—</span>';
@@ -488,13 +489,13 @@ EMPTY;
           . ($r['position'] ? '<span class="contact-position">' . $r['position'] . '</span>' : '')
           . '</div></div></td>'
           . '<td class="td-org">' . $org_cell . '</td>'
-          . '<td class="td-phone td-phone-cell">' . $phone_cell . '</td>'
-          . '<td class="td-email td-email-cell">' . $email_cell . '</td>'
+          . '<td class="td-phone-cell"><div class="cell-phone">' . $phone_cell . '</div></td>'
+          . '<td class="td-email-cell"><div class="cell-email">' . $email_cell . '</div></td>'
           . '<td>' . $type_cell . '</td>'
           . '<td class="td-source-cell">' . $src_cell . '</td>'
-          . '<td class="td-owner td-owner-cell"><i data-lucide="user"></i>' . ($r['owner'] ?: '—') . '</td>'
+          . '<td class="td-owner-cell"><div class="cell-owner"><i data-lucide="user"></i>' . ($r['owner'] ?: '—') . '</div></td>'
           . '<td class="td-time">' . $r['time_ago'] . '</td>'
-          . '<td class="td-actions">' . $action_btns . '</td>'
+          . '<td><div class="cell-actions">' . $action_btns . '</div></td>'
           . '</tr>';
       }
     }
