@@ -240,13 +240,19 @@ class AllContactsController extends ControllerBase {
   .page-title{font-size:22px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:10px;letter-spacing:-.02em}
   .page-title i{color:#3b82f6;width:24px;height:24px}
   .page-subtitle{font-size:13px;color:#64748b}
-  .page-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s ease;box-shadow:0 2px 4px rgba(37,99,235,.25)}
-  .btn-primary:hover{background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 4px 8px rgba(37,99,235,.35);transform:translateY(-1px)}
-  .btn-primary i{width:15px;height:15px}
-  .btn-generate{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s ease;box-shadow:0 2px 4px rgba(124,58,237,.25)}
-  .btn-generate:hover{background:linear-gradient(135deg,#7c3aed,#6d28d9);transform:translateY(-1px)}
-  .btn-generate i{width:15px;height:15px}
+  .page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+  /* ── Outlined button base ── */
+  .btn-primary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+  .btn-primary{color:#2563eb;border:1.5px solid #2563eb}
+  .btn-primary:hover{background:#eff6ff;border-color:#1d4ed8;color:#1d4ed8}
+  .btn-primary:active{background:#dbeafe}
+  .btn-primary:focus-visible{outline:2px solid #3b82f6;outline-offset:2px}
+  .btn-primary i{width:15px;height:15px;color:inherit}
+  .btn-generate{color:#7c3aed;border:1.5px solid #7c3aed}
+  .btn-generate:hover{background:#f5f3ff;border-color:#6d28d9;color:#6d28d9}
+  .btn-generate:active{background:#ede9fe}
+  .btn-generate:focus-visible{outline:2px solid #8b5cf6;outline-offset:2px}
+  .btn-generate i{width:15px;height:15px;color:inherit}
 
   /* ── Filter bar ── */
   .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
@@ -255,8 +261,8 @@ class AllContactsController extends ControllerBase {
   .filter-input{width:100%;padding:8px 12px 8px 34px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#1e293b;outline:none;transition:border .15s}
   .filter-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .filter-input::placeholder{color:#94a3b8}
-  .btn-filter-apply{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
-  .btn-filter-apply:hover{background:#e2e8f0;color:#1e293b}
+  .btn-filter-apply{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,color .15s;text-decoration:none}
+  .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
   .btn-filter-clear{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;text-decoration:none}
   .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
   .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
@@ -305,10 +311,10 @@ class AllContactsController extends ControllerBase {
   .cell-owner i{width:10px;height:10px;color:#d1d5db;opacity:.8;flex-shrink:0}
   .td-time{font-size:11px;color:#94a3b8;white-space:nowrap}
   .cell-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end}
-  .btn-action{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
-  .btn-action:hover.btn-edit{border-color:#bfdbfe;background:#eff6ff;color:#3b82f6}
-  .btn-action:hover.btn-delete{border-color:#fecaca;background:#fef2f2;color:#ef4444}
-  .btn-action i{width:13px;height:13px}
+  .btn-action{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
+  .btn-action:hover.btn-edit{border-color:#2563eb;background:#eff6ff;color:#2563eb}
+  .btn-action:hover.btn-delete{border-color:#dc2626;background:#fef2f2;color:#dc2626}
+  .btn-action i{width:13px;height:13px;color:inherit}
 
   /* ── Empty state ── */
   .empty-state{text-align:center;padding:72px 30px}
@@ -316,7 +322,8 @@ class AllContactsController extends ControllerBase {
   .empty-state-icon i{width:30px;height:30px;color:#cbd5e1}
   .empty-state-title{font-size:18px;font-weight:700;color:#334155;margin-bottom:6px}
   .empty-state-sub{font-size:14px;color:#94a3b8;margin-bottom:24px}
-  .empty-state-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:#3b82f6;color:#fff;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none}
+  .empty-state-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s}
+  .empty-state-btn:hover{background:#eff6ff}
 
   /* ── Pagination ── */
   .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f1f5f9;background:#fafafa;flex-wrap:wrap;gap:10px}
