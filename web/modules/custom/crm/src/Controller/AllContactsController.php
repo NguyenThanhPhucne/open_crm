@@ -295,10 +295,10 @@ class AllContactsController extends ControllerBase {
   .td-org a:hover{text-decoration:underline}
   .td-org a i{width:13px;height:13px;flex-shrink:0}
   .td-org .no-org{color:#cbd5e1;font-style:italic;font-size:12px}
-  .td-phone,.td-email{display:flex;align-items:center;gap:6px;color:#374151;font-size:13px;white-space:nowrap}
+  .td-phone,.td-email{display:flex;align-items:center;gap:10px;color:#374151;font-size:13px;white-space:nowrap}
   .td-phone a,.td-email a{color:#374151;text-decoration:none}
   .td-phone a:hover,.td-email a:hover{color:#3b82f6}
-  .td-phone i,.td-email i{width:14px;height:14px;color:#94a3b8;flex-shrink:0}
+  .td-phone i,.td-email i{width:14px;height:14px;color:#94a3b8;flex-shrink:0;margin-top:2px}
   .td-empty-val{color:#cbd5e1;font-style:italic;font-size:12px}
   .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
   .td-owner{font-size:12px;color:#475569;white-space:nowrap;display:flex;align-items:center;gap:5px}
