@@ -462,3 +462,88 @@ function crm_page_attachments(array &$attachments) {
     }
   }
 }
+
+/**
+ * Implements hook_views_pre_view().
+ *
+ * For anonymous users: bypass the 'current_user' contextual argument on
+ * personal views (my_contacts, my_deals, etc.) so all published CRM records
+ * are visible in read-only demo mode.
+ */
+function crm_views_pre_view(\Drupal\views\ViewExecutable $view, $display_id, array &$args) {
+  $personal_views = ['my_contacts', 'my_deals', 'my_activities', 'my_organizations'];
+  if (!in_array($view->id(), $personal_views)) {
+    return;
+  }
+
+  $account = \Drupal::currentUser();
+  if (!$account->isAnonymous()) {
+    return;
+  }
+
+  // Change default_action from 'default' (inject uid=0) to 'ignore' (show all).
+  // Guard: display_handler may not be initialized in all call contexts.
+  $display_handler = $view->display_handler ?? ($view->displayHandlers ? $view->displayHandlers->get($display_id) : NULL);
+  if (!$display_handler) {
+    return;
+  }
+
+  $argument_options = $display_handler->getOption('arguments');
+  if (!empty($argument_options)) {
+    foreach ($argument_options as &$opt) {
+      $opt['default_action'] = 'ignore';
+    }
+    $display_handler->setOption('arguments', $argument_options);
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ *
+ * Injects a rich empty-state UI when a CRM list view returns no rows,
+ * replacing the blank page with a clear "no data" message.
+ */
+function crm_preprocess_views_view(array &$variables) {
+  $view = $variables['view'];
+
+  $crm_list_views = [
+    'my_contacts'      => ['icon' => 'users',      'label' => 'contacts'],
+    'my_deals'         => ['icon' => 'briefcase',  'label' => 'deals'],
+    'my_activities'    => ['icon' => 'activity',   'label' => 'activities'],
+    'my_organizations' => ['icon' => 'building-2', 'label' => 'organizations'],
+    'all_contacts'     => ['icon' => 'users',      'label' => 'contacts'],
+    'all_organizations'=> ['icon' => 'building-2', 'label' => 'organizations'],
+  ];
+
+  if (!isset($crm_list_views[$view->id()])) {
+    return;
+  }
+
+  // Only inject if there are truly no rows AND no empty text already configured.
+  $has_rows = !empty($variables['rows']);
+  $has_empty = !empty($variables['empty']);
+  if ($has_rows || $has_empty) {
+    return;
+  }
+
+  $info = $crm_list_views[$view->id()];
+  $account = \Drupal::currentUser();
+
+  if ($account->isAnonymous()) {
+    $title = 'No ' . $info['label'] . ' in the system yet.';
+    $subtitle = 'Check back later, or <a href="/user/login">log in</a> to start adding records.';
+  } else {
+    $title = 'No ' . $info['label'] . ' found.';
+    $subtitle = 'Try adjusting your search filters, or create a new record to get started.';
+  }
+
+  $variables['empty'] = [
+    '#markup' => \Drupal\Core\Render\Markup::create(
+      '<div class="crm-empty-state">' .
+        '<div class="crm-empty-icon"><i data-lucide="' . $info['icon'] . '"></i></div>' .
+        '<h3 class="crm-empty-title">' . $title . '</h3>' .
+        '<p class="crm-empty-sub">' . $subtitle . '</p>' .
+      '</div>'
+    ),
+  ];
+}

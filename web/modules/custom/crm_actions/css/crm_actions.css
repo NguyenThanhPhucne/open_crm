@@ -398,13 +398,18 @@ a.button--danger:active {
 .view-all-organizations,
 .view-my-activities,
 .view-my-contacts,
-.view-my-deals,
 .view-my-organizations {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   margin: 0 0 32px 0;
   overflow: hidden;
+}
+
+/* my-deals uses grouping so overflow:hidden would clip the groups */
+.view-my-deals {
+  background: transparent;
+  margin: 0 0 32px 0;
 }
 
 .view-all-organizations .view-content,
@@ -1165,4 +1170,150 @@ a.button--danger:active {
 .views-table thead th.views-field-nid,
 .views-table thead th.views-field-uid {
   text-align: right;
+}
+
+/* ===== View-Only Badge & Login Button (Anonymous Navbar) ===== */
+.crm-view-only-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1.5px solid #fcd34d;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.crm-view-only-badge i {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.crm-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  background: #3b82f6;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid #3b82f6;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+}
+
+.crm-login-btn:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+  text-decoration: none;
+}
+
+.crm-login-btn i {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ===== Views Grouping (used by my-deals stage grouping) ===== */
+.view-grouping {
+  margin-bottom: 32px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.view-grouping-header {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 3px solid #3b82f6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-grouping-content {
+  background: #ffffff;
+}
+
+/* Table inside grouping should not have its own border-radius corners */
+.view-grouping .views-table {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.view-grouping .views-table thead {
+  border-radius: 0;
+}
+
+/* Filters bar for my-deals — standalone card since the view container is transparent */
+.view-my-deals .view-filters {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border-bottom: none;
+  border: 1px solid #e2e8f0;
+}
+
+/* ===== Enhanced Empty State ===== */
+.crm-empty-state {
+  padding: 64px 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  margin: 16px 0;
+}
+
+.crm-empty-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #bfdbfe;
+}
+
+.crm-empty-icon i,
+.crm-empty-icon svg {
+  width: 32px;
+  height: 32px;
+  color: #3b82f6;
+  stroke: #3b82f6;
+}
+
+.crm-empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 10px;
+}
+
+.crm-empty-sub {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
 }
