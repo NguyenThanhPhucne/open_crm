@@ -73,6 +73,24 @@ crm.my_deals:
     _permission: "access content"
     _user_is_logged_in: "TRUE"
 
+crm.all_activities:
+  path: "/crm/all-activities"
+  defaults:
+    _controller: '\Drupal\crm\Controller\AllActivitiesController::view'
+    _title: "All Activities"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+
+crm.my_activities:
+  path: "/crm/my-activities"
+  defaults:
+    _controller: '\Drupal\crm\Controller\AllActivitiesController::view'
+    _title: "My Activities"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"
   defaults:

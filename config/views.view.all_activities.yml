@@ -18,9 +18,9 @@ dependencies:
     - node
     - user
 id: all_activities
-label: "All Activities"
+label: 'All Activities'
 module: views
-description: "All activities in the system (Admin/Manager view)"
+description: 'All activities in the system (Admin/Manager view)'
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -31,7 +31,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "All Activities"
+      title: 'All Activities'
       fields:
         title:
           id: title
@@ -47,7 +47,7 @@ display:
           table: node__field_assigned_to
           field: field_assigned_to
           plugin_id: field
-          label: "Assigned To"
+          label: 'Assigned To'
           type: entity_reference_label
           settings:
             link: true
@@ -90,9 +90,9 @@ display:
           field: changed
           plugin_id: date
           label: Updated
+          element_class: crm-time-ago
           date_format: custom
           custom_date_format: c
-          element_class: crm-time-ago
         crm_edit_link:
           id: crm_edit_link
           table: node_field_data
@@ -104,18 +104,24 @@ display:
         options:
           offset: 0
           items_per_page: 20
-      cache:
-        type: tag
-        options: {}
       exposed_form:
         type: basic
         options:
           submit_button: Filter
           reset_button: true
           reset_button_label: Reset
-          exposed_sorts_label: "Sort by"
+          exposed_sorts_label: 'Sort by'
           sort_asc_label: Asc
           sort_desc_label: Desc
+      access:
+        type: role
+        options:
+          role:
+            administrator: administrator
+            sales_manager: sales_manager
+      cache:
+        type: tag
+        options: {  }
       sorts:
         changed:
           id: changed
@@ -124,7 +130,7 @@ display:
           plugin_id: date
           order: DESC
           expose:
-            label: "Updated date"
+            label: 'Updated date'
           exposed: true
         title:
           id: title
@@ -133,7 +139,7 @@ display:
           plugin_id: standard
           order: ASC
           expose:
-            label: "Activity name"
+            label: 'Activity name'
           exposed: true
       filters:
         status:
@@ -141,7 +147,7 @@ display:
           table: node_field_data
           field: status
           plugin_id: boolean
-          value: "1"
+          value: '1'
         type:
           id: type
           table: node_field_data
@@ -154,14 +160,13 @@ display:
           table: node__field_type
           field: field_type_target_id
           plugin_id: taxonomy_index_tid
-          vid: activity_type
           operator: or
-          value: []
+          value: {  }
           exposed: true
           expose:
             operator_id: field_type_target_id_op
-            label: "Activity Type"
-            description: "Filter by activity type"
+            label: 'Activity Type'
+            description: 'Filter by activity type'
             use_operator: false
             operator: field_type_target_id_op
             identifier: type
@@ -169,29 +174,24 @@ display:
             remember: false
             multiple: true
             reduce: false
+          vid: activity_type
       style:
         type: table
-      access:
-        type: role
-        options:
-          role:
-            administrator: administrator
-            sales_manager: sales_manager
-      display_extenders: {}
+      display_extenders: {  }
     cache_metadata:
       max-age: -1
       contexts:
-        - "languages:language_content"
-        - "languages:language_interface"
+        - 'languages:language_content'
+        - 'languages:language_interface'
         - url
         - url.query_args
         - user
         - user.roles
       tags:
-        - "config:field.storage.node.field_assigned_to"
-        - "config:field.storage.node.field_datetime"
-        - "config:field.storage.node.field_deal"
-        - "config:field.storage.node.field_type"
+        - 'config:field.storage.node.field_assigned_to'
+        - 'config:field.storage.node.field_datetime'
+        - 'config:field.storage.node.field_deal'
+        - 'config:field.storage.node.field_type'
   page_1:
     id: page_1
     display_title: Page
@@ -200,7 +200,7 @@ display:
     display_options:
       cache:
         type: tag
-        options: {}
+        options: {  }
       header:
         area:
           id: area
@@ -208,21 +208,29 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/activity\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Activity\n        </a>\n      </div>"
+            value: |-
+              <div style="text-align: right; margin-bottom: 20px;">
+                      <a href="/node/add/activity" class="button button--primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                        Add Activity
+                      </a>
+                    </div>
             format: full_html
-      display_extenders: {}
+      display_extenders: {  }
       path: crm/all-activities
     cache_metadata:
       max-age: -1
       contexts:
-        - "languages:language_content"
-        - "languages:language_interface"
+        - 'languages:language_content'
+        - 'languages:language_interface'
         - url
         - url.query_args
         - user
         - user.roles
       tags:
-        - "config:field.storage.node.field_assigned_to"
-        - "config:field.storage.node.field_datetime"
-        - "config:field.storage.node.field_deal"
-        - "config:field.storage.node.field_type"
+        - 'config:field.storage.node.field_assigned_to'
+        - 'config:field.storage.node.field_datetime'
+        - 'config:field.storage.node.field_deal'
+        - 'config:field.storage.node.field_type'

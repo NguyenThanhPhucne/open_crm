@@ -14,9 +14,9 @@ dependencies:
     - datetime
     - node
 id: my_activities
-label: "My Activities"
+label: 'My Activities'
 module: views
-description: "Hoạt động của tôi"
+description: 'Hoạt động của tôi'
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -27,7 +27,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "My Activities"
+      title: 'My Activities'
       fields:
         title:
           id: title
@@ -80,40 +80,40 @@ display:
           exclude: false
           alter:
             alter_text: false
-            text: ""
+            text: ''
             make_link: false
-            path: ""
+            path: ''
             absolute: false
             external: false
             replace_spaces: false
             path_case: none
             trim_whitespace: false
-            alt: ""
-            rel: ""
-            link_class: ""
-            prefix: ""
-            suffix: ""
-            target: ""
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
             nl2br: false
             max_length: 0
             word_boundary: true
             ellipsis: true
             more_link: false
-            more_link_text: ""
-            more_link_path: ""
+            more_link_text: ''
+            more_link_path: ''
             strip_tags: false
             trim: false
-            preserve_tags: ""
+            preserve_tags: ''
             html: false
-          element_type: ""
-          element_class: ""
-          element_label_type: ""
-          element_label_class: ""
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
           element_label_colon: false
-          element_wrapper_type: ""
-          element_wrapper_class: ""
+          element_wrapper_type: ''
+          element_wrapper_class: ''
           element_default_classes: false
-          empty: ""
+          empty: ''
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
@@ -124,7 +124,7 @@ display:
           items_per_page: 20
       cache:
         type: tag
-        options: {}
+        options: {  }
       sorts:
         field_activity_date_value:
           id: field_activity_date_value
@@ -153,7 +153,7 @@ display:
           table: node_field_data
           field: status
           plugin_id: boolean
-          value: "1"
+          value: '1'
         type:
           id: type
           table: node_field_data
@@ -163,20 +163,20 @@ display:
             activity: activity
       style:
         type: table
-      display_extenders: {}
+      display_extenders: {  }
     cache_metadata:
       max-age: -1
       contexts:
-        - "languages:language_content"
-        - "languages:language_interface"
+        - 'languages:language_content'
+        - 'languages:language_interface'
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - 'user.node_grants:view'
       tags:
-        - "config:field.storage.node.field_datetime"
-        - "config:field.storage.node.field_deal"
-        - "config:field.storage.node.field_type"
+        - 'config:field.storage.node.field_datetime'
+        - 'config:field.storage.node.field_deal'
+        - 'config:field.storage.node.field_type'
   page_1:
     id: page_1
     display_title: Page
@@ -185,7 +185,7 @@ display:
     display_options:
       cache:
         type: tag
-        options: {}
+        options: {  }
       header:
         area:
           id: area
@@ -193,20 +193,28 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/activity\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Activity\n        </a>\n      </div>"
+            value: |-
+              <div style="text-align: right; margin-bottom: 20px;">
+                      <a href="/node/add/activity" class="button button--primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                        Add Activity
+                      </a>
+                    </div>
             format: full_html
-      display_extenders: {}
+      display_extenders: {  }
       path: crm/my-activities
     cache_metadata:
       max-age: -1
       contexts:
-        - "languages:language_content"
-        - "languages:language_interface"
+        - 'languages:language_content'
+        - 'languages:language_interface'
         - url
         - url.query_args
         - user
-        - "user.node_grants:view"
+        - 'user.node_grants:view'
       tags:
-        - "config:field.storage.node.field_datetime"
-        - "config:field.storage.node.field_deal"
-        - "config:field.storage.node.field_type"
+        - 'config:field.storage.node.field_datetime'
+        - 'config:field.storage.node.field_deal'
+        - 'config:field.storage.node.field_type'
