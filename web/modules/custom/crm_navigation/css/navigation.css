@@ -312,35 +312,3 @@ input[type="submit"]:hover {
   padding: 0 0.5rem;
   color: #6c757d;
 }
-
-/* Context menu for quick actions - Updated to clean minimal style */
-.crm-context-menu {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 1000;
-}
-
-.crm-fab-button {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: white;
-  color: #3b82f6;
-  border: 2px solid #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-  cursor: pointer;
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.crm-fab-button:hover {
-  background: #eff6ff;
-  color: #3b82f6;
-  border-color: #3b82f6;
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
-}

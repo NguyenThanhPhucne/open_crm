@@ -152,11 +152,11 @@
               modal.removeClass("crm-modal--visible");
 
               // Show success notification.
-              showNotification(
-                "success",
-                "Contact deleted",
-                "The contact has been removed from your CRM.",
-              );
+              window.CRM &&
+                CRM.toast(
+                  "Contact deleted — removed from your CRM.",
+                  "success",
+                );
 
               // Check if table is now empty.
               if (jQuery(".crm-contacts-table tbody tr").length === 0) {
@@ -164,11 +164,8 @@
               }
             });
         } else {
-          showNotification(
-            "error",
-            "Error",
-            response.message || "Failed to delete contact.",
-          );
+          window.CRM &&
+            CRM.toast(response.message || "Failed to delete contact.", "error");
         }
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -178,50 +175,13 @@
           errorMessage = jqXHR.responseJSON.message;
         }
 
-        showNotification("error", "Error", errorMessage);
+        window.CRM && CRM.toast(errorMessage, "error");
       },
       complete: function () {
         // Restore button state.
         confirmBtn.prop("disabled", false).text(originalText);
       },
     });
-  }
-
-  /**
-   * Show a notification message.
-   *
-   * @param {string} type - Type: 'success', 'error', 'warning', 'info'.
-   * @param {string} title - Notification title.
-   * @param {string} message - Notification message.
-   */
-  function showNotification(type, title, message) {
-    const notificationHTML = `
-      <div class="crm-notification crm-notification--${type}" role="alert">
-        <div class="crm-notification__icon">${getIcon(type)}</div>
-        <div class="crm-notification__content">
-          <h3 class="crm-notification__title">${title}</h3>
-          <p class="crm-notification__message">${message}</p>
-        </div>
-        <button class="crm-notification__close" aria-label="Close notification">&times;</button>
-      </div>
-    `;
-
-    const notification = jQuery(notificationHTML);
-    jQuery("body").append(notification);
-
-    // Close button.
-    notification.find(".crm-notification__close").on("click", function () {
-      notification.fadeOut(200, function () {
-        jQuery(this).remove();
-      });
-    });
-
-    // Auto-close after 5 seconds.
-    setTimeout(function () {
-      notification.fadeOut(200, function () {
-        jQuery(this).remove();
-      });
-    }, 5000);
   }
 
   /**
@@ -302,21 +262,5 @@
       year:
         date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
     });
-  }
-
-  /**
-   * Get icon for notification type.
-   *
-   * @param {string} type - Notification type.
-   * @returns {string} Icon HTML.
-   */
-  function getIcon(type) {
-    const icons = {
-      success: "✓",
-      error: "✕",
-      warning: "⚠",
-      info: "ⓘ",
-    };
-    return icons[type] || "●";
   }
 })(Drupal, jQuery);

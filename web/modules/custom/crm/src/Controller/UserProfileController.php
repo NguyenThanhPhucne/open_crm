@@ -41,7 +41,11 @@ class UserProfileController extends ControllerBase {
    * Get title for user profile page.
    */
   public function getTitle(UserInterface $user) {
-    return $user->getDisplayName();
+    $current_user = \Drupal::currentUser();
+    if ($current_user->id() == $user->id()) {
+      return $this->t('My Profile');
+    }
+    return $this->t('@name — Profile', ['@name' => $user->getDisplayName()]);
   }
 
   /**

@@ -232,7 +232,7 @@ class AIAutoCompleteController extends ControllerBase {
       );
 
       // Get the provider that was used
-      $provider = \Drupal::config('crm_ai_autocomplete.settings')->get('ai_provider') ?? 'mock';
+      $provider = \Drupal::config('crm_ai_autocomplete.settings')->get('llm_provider') ?? 'mock';
 
       return new JsonResponse([
         'success' => TRUE,

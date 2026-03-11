@@ -111,7 +111,7 @@ class AIEntityAutoCompleteService {
     try {
       // Get configuration.
       $config = $this->configFactory->get('crm_ai_autocomplete.settings');
-      $provider = $config->get('ai_provider') ?? 'mock';
+      $provider = $config->get('llm_provider') ?? 'mock';
 
       // Log which provider is being used (for debugging)
       $this->loggerFactory->get('crm_ai_autocomplete')->info(

@@ -666,6 +666,11 @@
   }
 }
 
+/* Override Gin's grey body background for the profile page */
+body.path-user {
+  background: #f0f2f5 !important;
+}
+
 .crm-user-profile {
   max-width: 1200px;
   width: 100%;

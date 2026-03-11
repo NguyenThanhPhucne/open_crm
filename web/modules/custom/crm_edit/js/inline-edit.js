@@ -3,23 +3,6 @@
  * Inline Edit JavaScript for CRM entities.
  */
 
-// Check if there's a pending toast from a previous page reload
-window.addEventListener("DOMContentLoaded", function () {
-  const pendingToast = localStorage.getItem("crmToast");
-  if (pendingToast) {
-    try {
-      const toastData = JSON.parse(pendingToast);
-      localStorage.removeItem("crmToast");
-      // Show the toast after page is fully loaded
-      setTimeout(() => {
-        window.CRMInlineEdit.showMessage(toastData.message, toastData.type);
-      }, 300);
-    } catch (e) {
-      console.error("Error parsing toast data:", e);
-    }
-  }
-});
-
 // Global CRMInlineEdit object for modal functionality
 window.CRMInlineEdit = {
   openModal: function (nid, type) {
@@ -190,60 +173,9 @@ window.CRMInlineEdit = {
   },
 
   showMessage: function (message, type) {
-    // Determine icon based on message type
-    const iconMap = {
-      success: "check-circle",
-      error: "alert-circle",
-      warning: "alert-triangle",
-      info: "info",
-    };
-
-    const icon = iconMap[type] || "info";
-
-    const messageHtml = `
-      <div class="crm-toast crm-toast-${type}">
-        <svg class="crm-toast-icon" data-lucide="${icon}"></svg>
-        <div class="crm-toast-content">
-          <p class="crm-toast-message">${message}</p>
-        </div>
-        <button class="crm-toast-close" type="button" aria-label="Close notification">
-          <svg data-lucide="x"></svg>
-        </button>
-      </div>
-    `;
-    document.body.insertAdjacentHTML("beforeend", messageHtml);
-
-    const toastEl = document.querySelector(".crm-toast:last-child");
-
-    // Initialize Lucide icons in toast
-    if (typeof lucide !== "undefined") {
-      lucide.createIcons();
+    if (window.CRM && window.CRM.toast) {
+      window.CRM.toast(message, type || "success");
     }
-
-    // Trigger animation
-    setTimeout(() => {
-      toastEl.classList.add("show");
-    }, 10);
-
-    // Close button handler
-    const closeBtn = toastEl.querySelector(".crm-toast-close");
-    const removeToast = () => {
-      toastEl.classList.add("closing");
-      setTimeout(() => {
-        if (toastEl.parentNode) {
-          toastEl.remove();
-        }
-      }, 300);
-    };
-
-    closeBtn.addEventListener("click", removeToast);
-
-    // Auto dismiss after 5 seconds
-    setTimeout(() => {
-      if (toastEl && toastEl.parentNode) {
-        removeToast();
-      }
-    }, 5000);
   },
 
   confirmDelete: function (nid, type, title) {

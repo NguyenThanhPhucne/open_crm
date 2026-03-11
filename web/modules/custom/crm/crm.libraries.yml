@@ -1,5 +1,5 @@
 crm_shared:
-  version: 1.0
+  version: 1.1
   css:
     theme:
       css/crm-shared.css: {}
@@ -58,7 +58,7 @@ empty_states:
     - core/once
 
 contacts_list:
-  version: 1.0
+  version: 1.1
   css:
     theme:
       css/crm-contacts-list.css: {}
@@ -69,9 +69,10 @@ contacts_list:
     - core/jquery
     - core/once
     - core/drupal.dialog
+    - crm/crm_shared
 
 node_detail_styles:
-  version: 1.0
+  version: 2.0
   css:
     theme:
       css/node-detail.css: {}

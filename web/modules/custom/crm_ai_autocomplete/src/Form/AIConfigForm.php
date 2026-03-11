@@ -14,7 +14,7 @@ class AIConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['crm_ai.settings'];
+    return ['crm_ai_autocomplete.settings'];
   }
 
   /**
@@ -28,7 +28,7 @@ class AIConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('crm_ai.settings');
+    $config = $this->config('crm_ai_autocomplete.settings');
 
     $form['llm_section'] = [
       '#type' => 'fieldset',
@@ -41,11 +41,31 @@ class AIConfigForm extends ConfigFormBase {
       '#title' => $this->t('LLM Provider'),
       '#options' => [
         'mock' => $this->t('Mock (for testing)'),
+        'groq' => $this->t('Groq (llama-3.1-8b-instant)'),
         'openai' => $this->t('OpenAI'),
         'anthropic' => $this->t('Anthropic'),
       ],
       '#default_value' => $config->get('llm_provider') ?? 'mock',
       '#description' => $this->t('Select the AI provider to use for generating suggestions.'),
+    ];
+
+    $form['llm_section']['groq_api_key'] = [
+      '#type' => 'password',
+      '#title' => $this->t('Groq API Key'),
+      '#default_value' => $config->get('groq_api_key') ?? '',
+      '#description' => $this->t('Your Groq API key. Get it from https://console.groq.com/keys'),
+      '#attributes' => ['placeholder' => 'gsk_...'],
+    ];
+
+    $form['llm_section']['groq_model'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Groq Model'),
+      '#options' => [
+        'llama-3.1-8b-instant' => 'Llama 3.1 8B Instant (fast)',
+        'llama-3.3-70b-versatile' => 'Llama 3.3 70B Versatile',
+        'mixtral-8x7b-32768' => 'Mixtral 8x7B',
+      ],
+      '#default_value' => $config->get('groq_model') ?? 'llama-3.1-8b-instant',
     ];
 
     $form['llm_section']['openai_api_key'] = [
@@ -154,9 +174,11 @@ class AIConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('crm_ai.settings');
+    $config = $this->config('crm_ai_autocomplete.settings');
 
     $config->set('llm_provider', $form_state->getValue('llm_provider'))
+      ->set('groq_api_key', $form_state->getValue('groq_api_key'))
+      ->set('groq_model', $form_state->getValue('groq_model'))
       ->set('openai_api_key', $form_state->getValue('openai_api_key'))
       ->set('openai_model', $form_state->getValue('openai_model'))
       ->set('anthropic_api_key', $form_state->getValue('anthropic_api_key'))
