@@ -92,18 +92,65 @@ class KanbanController extends ControllerBase {
           }
         }
         
+        // Compute owner initials
+        $owner_initials = '';
+        if ($owner_name) {
+          $parts = preg_split('/\s+/', trim($owner_name));
+          $owner_initials = mb_strtoupper(mb_substr($parts[0], 0, 1));
+          if (count($parts) > 1) {
+            $owner_initials .= mb_strtoupper(mb_substr(end($parts), 0, 1));
+          }
+        }
+
         $deals_by_stage[$stage_id][] = [
           'nid' => $deal->id(),
           'title' => $deal->getTitle(),
           'value' => $value,
           'organization' => $org_name,
           'owner' => $owner_name,
+          'owner_initials' => $owner_initials,
         ];
       }
     }
 
+    // Compute summary stats from loaded data
+    $total_count = 0;
+    $pipeline_value = 0;
+    $won_count = 0;
+    foreach ($stages as $sid => $sinfo) {
+      $cnt = count($deals_by_stage[$sid]);
+      $total_count += $cnt;
+      $sname_lower = strtolower($sinfo['name']);
+      if (str_contains($sname_lower, 'won')) {
+        $won_count += $cnt;
+      } elseif (!str_contains($sname_lower, 'lost') && !str_contains($sname_lower, 'closed')) {
+        $pipeline_value += $totals_by_stage[$sid];
+      }
+    }
+    $total_value_all = array_sum($totals_by_stage);
+
+    // Format values
+    $fmt_pipeline = '$' . ($pipeline_value >= 1000000
+      ? number_format($pipeline_value / 1000000, 1) . 'M'
+      : ($pipeline_value >= 1000 ? number_format($pipeline_value / 1000, 0) . 'K' : number_format($pipeline_value, 0)));
+
+    // Determine page context
+    $current_path = \Drupal::service('path.current')->getPath();
+    $is_all_pipeline = str_contains($current_path, 'all-pipeline');
+    $page_title = $is_all_pipeline ? 'All Pipeline' : 'My Pipeline';
+    $list_url   = $is_all_pipeline ? '/crm/all-deals' : '/crm/my-deals';
+
+    $stats = [
+      'total_count'  => $total_count,
+      'fmt_pipeline' => $fmt_pipeline,
+      'won_count'    => $won_count,
+      'page_title'   => $page_title,
+      'list_url'     => $list_url,
+      'is_admin'     => $is_admin,
+    ];
+
     // Build Kanban HTML
-    $html = $this->buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage);
+    $html = $this->buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage, $stats);
     
     return [
       '#markup' => Markup::create($html),
@@ -123,237 +170,81 @@ class KanbanController extends ControllerBase {
   /**
    * Build Kanban HTML.
    */
-  private function buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage) {
+  private function buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage, array $stats = []) {
+    $page_title   = $stats['page_title']   ?? 'Sales Pipeline';
+    $list_url     = $stats['list_url']     ?? '/crm/all-deals';
+    $total_count  = $stats['total_count']  ?? 0;
+    $fmt_pipeline = $stats['fmt_pipeline'] ?? '$0';
+    $won_count    = $stats['won_count']    ?? 0;
+
     $html = <<<'HTML'
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f8fafc;
-      min-height: 100vh;
-      color: #1e293b;
-    }
-    
-    .kanban-container {
-      padding: 12px;
-      padding-top: 12px;
-      overflow-x: hidden;
-      overflow-y: hidden;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      width: 100%;
-      height: calc(100vh - 60px);
-      display: flex;
-    }
-    
-    .kanban-container::-webkit-scrollbar {
-      height: 0px;
-    }
-    
-    .kanban-container::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 4px;
-    }
-    
-    .kanban-container::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-    
-    .kanban-container::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-    
-    .kanban-board {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 8px;
-      padding-bottom: 12px;
-      width: 100%;
-      align-items: stretch;
-    }
-    
-    .kanban-column {
-      background: #f1f5f9;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 140px);
-      overflow: hidden;
-      flex: 1 1 0;
-      min-width: 0;
-    }
-    
-    .column-header {
-      padding: 8px 6px;
-      border-bottom: 2px solid;
-      background: white;
-      border-radius: 12px 12px 0 0;
-      text-align: center;
-    }
-    
-    .column-title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 4px;
-      flex-wrap: wrap;
-      gap: 2px;
-    }
-    
-    .column-title h3 {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      word-break: break-word;
-    }
-    
-    .column-count {
-      background: #f1f5f9;
-      color: #64748b;
-      padding: 1px 4px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    
-    .column-total {
-      font-size: 12px;
-      font-weight: 700;
-      margin-top: 2px;
-      word-break: break-word;
-      text-align: center;
-    }
-    
-    .column-cards {
-      padding: 4px 4px;
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 80px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    .column-cards::-webkit-scrollbar {
-      width: 4px;
-    }
-    
-    .column-cards::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    .column-cards::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 2px;
-    }
-    
-    .column-cards::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-    
-    .deal-card {
-      background: white;
-      border-radius: 6px;
-      padding: 6px;
-      margin-bottom: 4px;
-      cursor: move;
-      border-left: 2px solid;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
-      box-sizing: border-box;
-      width: 100%;
-      overflow: hidden;
-      text-align: center;
-    }
-    
-    .deal-card:hover {
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      transform: translateY(-1px);
-    }
-    
-    .deal-card.sortable-ghost {
-      opacity: 0.4;
-      background: #e2e8f0;
-    }
-    
-    .deal-card.sortable-drag {
-      opacity: 0.8;
-      transform: rotate(2deg);
-    }
-    
-    .deal-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 2px;
-      line-height: 1.2;
-      word-break: break-word;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-    
-    .deal-value {
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 3px;
-      word-break: break-word;
-    }
-    
-    .deal-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      font-size: 10px;
-      color: #64748b;
-      align-items: center;
-    }
-    
-    .deal-meta-row {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .deal-meta-row i {
-      flex-shrink: 0;
-      font-size: 10px;
-    }
-    
-    /* Stage colors */
-    .stage-1 { border-color: #3b82f6; color: #3b82f6; }
-    .stage-2 { border-color: #8b5cf6; color: #8b5cf6; }
-    .stage-3 { border-color: #f59e0b; color: #f59e0b; }
-    .stage-4 { border-color: #ec4899; color: #ec4899; }
-    .stage-5 { border-color: #10b981; color: #10b981; }
-    .stage-6 { border-color: #ef4444; color: #ef4444; }
-    
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: #94a3b8;
-      font-size: 14px;
-    }
-    
-    .empty-state i {
-      margin-bottom: 8px;
-      opacity: 0.5;
-    }
+  *{box-sizing:border-box}
+  /* ── Page wrapper ── */
+  .pipeline-page{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b;padding:0}
+  /* ── Stats bar ── */
+  .stats-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .stat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid}
+  .stat-chip.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .stat-chip.green{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
+  .stat-chip.amber{background:#fffbeb;color:#b45309;border-color:#fde68a}
+  .stat-chip i{width:14px;height:14px;flex-shrink:0}
+  /* ── Page header ── */
+  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);flex-wrap:wrap}
+  .page-header-left{display:flex;flex-direction:column;gap:4px}
+  .page-title{font-size:20px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:9px;letter-spacing:-.02em}
+  .page-title i{color:#3b82f6;width:22px;height:22px}
+  .page-subtitle{font-size:12px;color:#64748b}
+  .page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .btn-primary,.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;border:1.5px solid}
+  .btn-primary{color:#2563eb;border-color:#2563eb;background:#fff}
+  .btn-primary:hover{background:#eff6ff;border-color:#1d4ed8;color:#1d4ed8}
+  .btn-secondary{color:#475569;border-color:#e2e8f0;background:#fff}
+  .btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+  .btn-primary i,.btn-secondary i{width:15px;height:15px;color:inherit}
+  /* ── Kanban layout ── */
+  .kanban-container{overflow-x:auto;overflow-y:hidden;width:100%;display:flex;padding-bottom:8px}
+  .kanban-container::-webkit-scrollbar{height:6px}
+  .kanban-container::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}
+  .kanban-container::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  .kanban-container::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+  .kanban-board{display:flex;flex-wrap:nowrap;gap:10px;padding-bottom:4px;width:100%;align-items:stretch}
+  .kanban-column{background:#f1f5f9;border-radius:12px;display:flex;flex-direction:column;min-height:300px;height:calc(100vh - 310px);overflow:hidden;flex:1 1 0;min-width:180px}
+  /* ── Column header ── */
+  .column-header{padding:10px 10px 8px;border-bottom:2px solid;background:#fff;border-radius:12px 12px 0 0}
+  .column-title{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .column-title h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151;flex:1;word-break:break-word}
+  .column-count{background:#e2e8f0;color:#64748b;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+  .column-total{font-size:13px;font-weight:700;margin-top:0;padding-left:14px}
+  /* ── Column cards ── */
+  .column-cards{padding:6px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:60px}
+  .column-cards::-webkit-scrollbar{width:3px}
+  .column-cards::-webkit-scrollbar-track{background:transparent}
+  .column-cards::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+  /* ── Deal card ── */
+  .deal-card{position:relative;background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:grab;border-left:3px solid;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
+  .deal-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-1px)}
+  .deal-card.sortable-ghost{opacity:.4;background:#e2e8f0}
+  .deal-card.sortable-drag{opacity:.85;transform:rotate(1.5deg);cursor:grabbing}
+  .deal-title{font-size:12px;font-weight:600;color:#1e293b;margin-bottom:3px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .deal-value{font-size:13px;font-weight:800;margin-bottom:5px}
+  .deal-meta{display:flex;flex-direction:column;gap:2px;font-size:10px;color:#64748b}
+  .deal-meta-row{display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0}
+  .deal-meta-row>i,.deal-meta-row>svg{width:11px;height:11px;flex-shrink:0;stroke-width:2}
+  .deal-meta-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .owner-av{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:8px;font-weight:700;flex-shrink:0;letter-spacing:0}
+  /* ── Hover-reveal card actions ── */
+  .card-actions{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+  .deal-card:hover .card-actions{opacity:1}
+  .ca-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;color:#94a3b8;text-decoration:none;transition:background .12s,color .12s;background:rgba(255,255,255,.9)}
+  .ca-btn:hover{background:#eff6ff;color:#2563eb}
+  .ca-btn i{width:12px;height:12px;flex-shrink:0}
+  /* ── Empty state ── */
+  .empty-state{text-align:center;padding:28px 12px;color:#cbd5e1;font-size:12px}
+  .empty-state i{display:block;margin:0 auto 6px;opacity:.5}
     
     /* Deal Closing Modal */
     .deal-modal-overlay {
@@ -625,420 +516,6 @@ class KanbanController extends ControllerBase {
       align-items: center;
       gap: 8px;
     }
-    
-    /* Responsive Design */
-    
-    /* Large Desktop (1900px+) */
-    @media (min-width: 1900px) {
-      .kanban-container {
-        padding: 20px;
-      }
-      
-      .kanban-board {
-        grid-auto-columns: minmax(300px, 1fr);
-        gap: 14px;
-      }
-      
-      .kanban-column {
-        height: calc(100vh - 140px);
-      }
-      
-      .column-header {
-        padding: 16px;
-      }
-      
-      .column-cards {
-        padding: 12px;
-      }
-      
-      .deal-card {
-        padding: 16px;
-        margin-bottom: 12px;
-      }
-      
-      .deal-title {
-        font-size: 15px;
-      }
-      
-      .deal-value {
-        font-size: 18px;
-      }
-      
-      .deal-meta {
-        font-size: 13px;
-      }
-    }
-    
-    /* Standard Desktop (1400px - 1900px) */
-    @media (max-width: 1899px) and (min-width: 1400px) {
-      .kanban-container {
-        padding: 18px;
-      }
-      
-      .kanban-board {
-        grid-auto-columns: minmax(270px, 1fr);
-        gap: 12px;
-      }
-      
-      .column-header {
-        padding: 15px;
-      }
-      
-      .column-cards {
-        padding: 11px;
-      }
-      
-      .deal-card {
-        padding: 15px;
-        margin-bottom: 11px;
-      }
-      
-      .deal-title {
-        font-size: 14px;
-      }
-      
-      .deal-value {
-        font-size: 17px;
-      }
-      
-      .deal-meta {
-        font-size: 12.5px;
-      }
-    }
-    
-    /* Laptop (1024px - 1400px) */
-    @media (max-width: 1399px) and (min-width: 1024px) {
-      .kanban-container {
-        padding: 16px;
-      }
-      
-      .kanban-board {
-        grid-auto-columns: minmax(250px, 1fr);
-        gap: 12px;
-      }
-      
-      .column-header {
-        padding: 14px;
-      }
-      
-      .column-cards {
-        padding: 10px;
-      }
-      
-      .deal-card {
-        padding: 14px;
-        margin-bottom: 10px;
-      }
-      
-      .deal-title {
-        font-size: 13.5px;
-        margin-bottom: 7px;
-      }
-      
-      .deal-value {
-        font-size: 16px;
-        margin-bottom: 10px;
-      }
-      
-      .deal-meta {
-        font-size: 12px;
-      }
-      
-      .column-total {
-        font-size: 17px;
-        margin-top: 3px;
-      }
-    }
-    
-    /* Tablet Landscape (768px - 1024px) */
-    @media (max-width: 1023px) and (min-width: 768px) {
-      .kanban-container {
-        padding: 14px;
-        height: calc(100vh - 50px);
-      }
-      
-      .kanban-board {
-        grid-auto-columns: minmax(230px, 1fr);
-        gap: 11px;
-      }
-      
-      .kanban-column {
-        height: calc(100vh - 120px);
-      }
-      
-      .column-header {
-        padding: 13px;
-      }
-      
-      .column-cards {
-        padding: 9px;
-      }
-      
-      .deal-card {
-        padding: 13px;
-        margin-bottom: 9px;
-      }
-      
-      .deal-title {
-        font-size: 13px;
-        margin-bottom: 6px;
-      }
-      
-      .deal-value {
-        font-size: 15px;
-        margin-bottom: 9px;
-      }
-      
-      .deal-meta {
-        font-size: 11.5px;
-        gap: 5px;
-      }
-      
-      .column-title h3 {
-        font-size: 13px;
-      }
-      
-      .column-count {
-        font-size: 11px;
-        padding: 2px 7px;
-      }
-      
-      .column-total {
-        font-size: 16px;
-        margin-top: 3px;
-      }
-    }
-    
-    /* Mobile Landscape / Small Tablet (480px - 768px) */
-    @media (max-width: 767px) and (min-width: 480px) {
-      .kanban-container {
-        padding: 12px;
-        height: calc(100vh - 40px);
-      }
-      
-      .kanban-board {
-        grid-auto-columns: minmax(200px, 1fr);
-        gap: 10px;
-      }
-      
-      .kanban-column {
-        height: calc(100vh - 100px);
-      }
-      
-      .column-header {
-        padding: 12px;
-      }
-      
-      .column-cards {
-        padding: 8px;
-      }
-      
-      .deal-card {
-        padding: 12px;
-        margin-bottom: 8px;
-      }
-      
-      .deal-title {
-        font-size: 12.5px;
-        margin-bottom: 5px;
-      }
-      
-      .deal-value {
-        font-size: 14px;
-        margin-bottom: 8px;
-      }
-      
-      .deal-meta {
-        font-size: 11px;
-        gap: 4px;
-      }
-      
-      .column-title h3 {
-        font-size: 12px;
-      }
-      
-      .column-count {
-        font-size: 10px;
-        padding: 2px 6px;
-      }
-      
-      .column-total {
-        font-size: 15px;
-        margin-top: 2px;
-      }
-    }
-    
-    /* Mobile Portrait (< 480px) */
-    @media (max-width: 479px) {
-      .kanban-container {
-        padding: 10px;
-        height: calc(100vh - 30px);
-      }
-      
-      .kanban-board {
-        grid-auto-columns: minmax(180px, 1fr);
-        gap: 8px;
-      }
-      
-      .kanban-column {
-        height: calc(100vh - 80px);
-      }
-      
-      .column-header {
-        padding: 11px;
-      }
-      
-      .column-cards {
-        padding: 7px;
-      }
-      
-      .deal-card {
-        padding: 11px;
-        margin-bottom: 7px;
-      }
-      
-      .deal-title {
-        font-size: 12px;
-        margin-bottom: 4px;
-      }
-      
-      .deal-value {
-        font-size: 13px;
-        margin-bottom: 7px;
-      }
-      
-      .deal-meta {
-        font-size: 10px;
-        gap: 3px;
-      }
-      
-      .column-title h3 {
-        font-size: 11px;
-      }
-      
-      .column-count {
-        font-size: 9px;
-        padding: 1px 5px;
-      }
-      
-      .column-total {
-        font-size: 14px;
-        margin-top: 2px;
-      }
-    }
-    .crm-toolbar {
-      background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-      border-bottom: 2px solid #3b82f6;
-      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
-      height: 42px;
-      margin: -24px -24px 24px -24px;
-    }
-    
-    .crm-toolbar-lining {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%;
-      padding: 0 1rem;
-      max-width: 100%;
-    }
-    
-    .crm-toolbar-menu {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      height: 100%;
-    }
-    
-    .crm-toolbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 16px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      text-decoration: none;
-      height: 100%;
-      border-right: 1px solid #e5e7eb;
-    }
-    
-    .crm-toolbar-brand:hover {
-      background: rgba(0, 0, 0, 0.03);
-      color: #0969da;
-    }
-    
-    .crm-toolbar-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0 14px;
-      height: 100%;
-      font-size: 13px;
-      font-weight: 500;
-      color: #4b5563;
-      text-decoration: none;
-      border-right: 1px solid #f3f4f6;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-    
-    .crm-toolbar-item:hover {
-      background: rgba(59, 130, 246, 0.08);
-      color: #2563eb;
-    }
-    
-    .crm-toolbar-item.active {
-      background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(243,244,246,0.9) 100%);
-      color: #1e40af;
-      font-weight: 600;
-      border-left: 1px solid #e5e7eb;
-    }
-    
-    .crm-toolbar-item svg {
-      width: 16px;
-      height: 16px;
-      stroke-width: 2;
-    }
-    
-    .crm-toolbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      height: 100%;
-    }
-    
-    .crm-toolbar-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0 12px;
-      height: 100%;
-      font-size: 13px;
-      font-weight: 600;
-      color: #2563eb;
-      text-decoration: none;
-      background: #fff;
-      border: none;
-      border-left: 1px solid #e2e8f0;
-      cursor: pointer;
-      transition: background .15s, color .15s;
-    }
-    
-    .crm-toolbar-btn:hover {
-      background: #eff6ff;
-      color: #1d4ed8;
-    }
-    
-    .crm-toolbar-btn:active {
-      background: #dbeafe;
-    }
-    
-    .crm-toolbar-btn svg {
-      width: 16px;
-      height: 16px;
-      stroke-width: 2.5;
-    }
   </style>
   
   <!-- Deal Closing Modal -->
@@ -1102,7 +579,28 @@ class KanbanController extends ControllerBase {
       </div>
     </div>
   </div>
-  
+
+HTML;
+
+    $html .= <<<HTML
+<div class="pipeline-page" id="pg-wrap">
+  <div class="stats-bar">
+    <span class="stat-chip blue"><i data-lucide="kanban-square"></i>{$total_count} total deals</span>
+    <span class="stat-chip amber"><i data-lucide="trending-up"></i>{$fmt_pipeline} in pipeline</span>
+    <span class="stat-chip green"><i data-lucide="trophy"></i>{$won_count} won</span>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title"><i data-lucide="kanban-square" width="22" height="22"></i>{$page_title}</div>
+      <div class="page-subtitle">Drag cards between columns to update deal stages</div>
+    </div>
+    <div class="page-actions">
+      <a href="{$list_url}" class="btn-secondary"><i data-lucide="list"></i> List view</a>
+      <a href="/node/add/deal" class="btn-primary"><i data-lucide="plus-circle"></i> Add Deal</a>
+    </div>
+  </div>
+
   <div class="kanban-container">
     <div class="kanban-board">
 HTML;
@@ -1117,12 +615,13 @@ HTML;
       $html .= <<<HTML
       
       <div class="kanban-column">
-        <div class="column-header stage-{$stage_id}">
+        <div class="column-header" style="border-color:{$stage_info['color']}">
           <div class="column-title">
+            <span class="col-dot" style="background:{$stage_info['color']}"></span>
             <h3>{$stage_info['name']}</h3>
             <span class="column-count">{$count}</span>
           </div>
-          <div class="column-total stage-{$stage_id}">{$total_formatted}</div>
+          <div class="column-total" style="color:{$stage_info['color']}">{$total_formatted}</div>
         </div>
         <div class="column-cards" data-stage="{$stage_id}">
 HTML;
@@ -1136,21 +635,30 @@ HTML;
 HTML;
       } else {
         foreach ($deals as $deal) {
-          $value_formatted = '$' . number_format($deal['value'] / 1000000, 2) . 'M';
-          $org_display = $deal['organization'] ? $deal['organization'] : 'No organization';
-          $owner_display = $deal['owner'] ? $deal['owner'] : 'Unassigned';
+          $val = (float)$deal['value'];
+          $value_formatted = $val >= 1000000
+            ? '$' . number_format($val / 1000000, 2) . 'M'
+            : ($val >= 1000 ? '$' . number_format($val / 1000, 0) . 'K' : '$' . number_format($val, 0));
+          $org_display   = $deal['organization'] ?: 'No organization';
+          $owner_display = $deal['owner'] ?: 'Unassigned';
+          $owner_av      = $deal['owner_initials'] ?: '?';
+          $card_color    = $stage_info['color'];
           
           $html .= <<<HTML
-          <div class="deal-card stage-{$stage_id}" data-deal-id="{$deal['nid']}">
+          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}">
+            <div class="card-actions">
+              <a href="/node/{$deal['nid']}" class="ca-btn" title="View"><i data-lucide="eye"></i></a>
+              <a href="/node/{$deal['nid']}/edit" class="ca-btn" title="Edit"><i data-lucide="pencil"></i></a>
+            </div>
             <div class="deal-title">{$deal['title']}</div>
-            <div class="deal-value stage-{$stage_id}">{$value_formatted}</div>
+            <div class="deal-value" style="color:{$card_color}">{$value_formatted}</div>
             <div class="deal-meta">
               <div class="deal-meta-row">
-                <i data-lucide="building-2" width="14" height="14"></i>
+                <i data-lucide="building-2"></i>
                 <span>{$org_display}</span>
               </div>
               <div class="deal-meta-row">
-                <i data-lucide="user" width="14" height="14"></i>
+                <span class="owner-av">{$owner_av}</span>
                 <span>{$owner_display}</span>
               </div>
             </div>
@@ -1168,6 +676,7 @@ HTML;
     $html .= <<<'HTML'
     </div>
   </div>
+</div>
 
   <script>
     // Initialize Lucide icons
