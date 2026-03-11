@@ -255,15 +255,16 @@ class AllContactsController extends ControllerBase {
   .btn-generate i{width:15px;height:15px;color:inherit}
 
   /* ── Filter bar ── */
-  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px}
-  .filter-input-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#94a3b8;pointer-events:none}
-  .filter-input{width:100%;padding:8px 12px 8px 34px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#1e293b;outline:none;transition:border .15s}
+  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;display:flex;align-items:center}
+  .filter-input-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#9ca3af;pointer-events:none;flex-shrink:0}
+  .filter-input{width:100%;height:40px;padding:0 12px 0 36px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;color:#1e293b;outline:none;transition:border-color .15s,box-shadow .15s;box-sizing:border-box;line-height:40px;background:#fff}
   .filter-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
-  .filter-input::placeholder{color:#94a3b8}
-  .btn-filter-apply{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,color .15s;text-decoration:none}
+  .filter-input::placeholder{color:#9ca3af}
+  .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,color .15s,border-color .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
   .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
-  .btn-filter-clear{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;text-decoration:none}
+  .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
+  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:8px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
   .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
   .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
 
