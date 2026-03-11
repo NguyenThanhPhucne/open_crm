@@ -316,10 +316,15 @@ class AIAutoCompleteController extends ControllerBase {
     }
 
     // Assign owner - CRITICAL: Always from current session.
+    // Always set uid (node authorship) so the node is never owned by Anonymous.
+    if ($entity->hasField('uid')) {
+      $entity->set('uid', $account->id());
+    }
     if ($entity->hasField('field_owner')) {
       $entity->set('field_owner', $account->id());
-    } elseif ($entity->hasField('uid')) {
-      $entity->set('uid', $account->id());
+    }
+    if ($entity->hasField('field_assigned_staff')) {
+      $entity->set('field_assigned_staff', $account->id());
     }
 
     // Assign random taxonomy terms for entity reference fields.
@@ -331,6 +336,9 @@ class AIAutoCompleteController extends ControllerBase {
     }
     if ($actual_bundle === 'deal') {
       $this->assignRandomDealReferences($entity);
+    }
+    if ($actual_bundle === 'activity') {
+      $this->assignRandomActivityReferences($entity);
     }
 
     // Mark as published if applicable.
@@ -380,6 +388,45 @@ class AIAutoCompleteController extends ControllerBase {
         $keys = array_keys($terms);
         $random_tid = $keys[array_rand($keys)];
         $entity->set($field_name, $random_tid);
+      }
+    }
+  }
+
+  /**
+   * Assign a random contact or deal to an activity node.
+   *
+   * Activities require at least one: field_contact or field_deal.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The activity entity.
+   */
+  protected function assignRandomActivityReferences($entity) {
+    $storage = $this->entityTypeManager->getStorage('node');
+
+    // Try to assign a random contact.
+    if ($entity->hasField('field_contact')) {
+      $nids = $storage->getQuery()
+        ->condition('type', 'contact')
+        ->condition('status', 1)
+        ->accessCheck(FALSE)
+        ->range(0, 50)
+        ->execute();
+      if (!empty($nids)) {
+        $entity->set('field_contact', $nids[array_rand($nids)]);
+        return;
+      }
+    }
+
+    // Fallback: assign a random deal if no contacts exist.
+    if ($entity->hasField('field_deal')) {
+      $nids = $storage->getQuery()
+        ->condition('type', 'deal')
+        ->condition('status', 1)
+        ->accessCheck(FALSE)
+        ->range(0, 50)
+        ->execute();
+      if (!empty($nids)) {
+        $entity->set('field_deal', $nids[array_rand($nids)]);
       }
     }
   }
