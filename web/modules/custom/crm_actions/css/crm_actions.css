@@ -1177,48 +1177,52 @@ a.button--danger:active {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px;
-  background: #fffbeb;
-  color: #92400e;
-  border: 1.5px solid #fcd34d;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 4px 11px 4px 9px;
+  background: rgba(254, 243, 199, 0.9);
+  color: #78350f;
+  border: 1px solid rgba(252, 211, 77, 0.6);
+  border-radius: 100px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
   user-select: none;
   white-space: nowrap;
+  backdrop-filter: blur(4px);
 }
 
 .crm-view-only-badge i {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .crm-login-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 18px;
-  background: #3b82f6;
-  color: #ffffff;
-  border-radius: 8px;
+  gap: 7px;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: #ffffff !important;
+  border-radius: 100px;
   font-size: 13px;
   font-weight: 600;
-  text-decoration: none;
-  border: 2px solid #3b82f6;
-  transition: all 0.2s ease;
+  text-decoration: none !important;
+  border: none;
+  transition: all 0.22s ease;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+  letter-spacing: 0.2px;
+  cursor: pointer;
 }
 
 .crm-login-btn:hover {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #ffffff;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
-  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+  text-decoration: none !important;
 }
 
 .crm-login-btn i {
@@ -1227,40 +1231,48 @@ a.button--danger:active {
   flex-shrink: 0;
 }
 
-/* ===== Views Grouping (used by my-deals stage grouping) ===== */
-.view-grouping {
-  margin-bottom: 32px;
+/* ===== my-deals Stage Grouping (Gin theme renders groups as gin-table-scroll-wrapper + caption) ===== */
+/* Each stage = one gin-table-scroll-wrapper div containing a views-table with <caption> */
+.view-my-deals .gin-table-scroll-wrapper {
+  margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(226, 232, 240, 0.8);
 }
 
-.view-grouping-header {
-  padding: 12px 24px;
+.view-my-deals .gin-table-scroll-wrapper + .gin-table-scroll-wrapper {
+  /* extra spacing already handled by margin-bottom above */
+}
+
+/* Stage header (caption) */
+.view-my-deals .views-table caption {
+  caption-side: top;
+  padding: 11px 20px;
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.7px;
   border-bottom: 3px solid #3b82f6;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  text-align: left;
 }
 
-.view-grouping-content {
-  background: #ffffff;
+.view-my-deals .views-table caption a {
+  color: #93c5fd;
+  text-decoration: none;
 }
 
-/* Table inside grouping should not have its own border-radius corners */
-.view-grouping .views-table {
-  border-radius: 0;
-  box-shadow: none;
+.view-my-deals .views-table caption a:hover {
+  color: #ffffff;
+  text-decoration: none;
 }
 
-.view-grouping .views-table thead {
-  border-radius: 0;
+/* Table inside each group has no independent card styling */
+.view-my-deals .views-table {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* Filters bar for my-deals — standalone card since the view container is transparent */
