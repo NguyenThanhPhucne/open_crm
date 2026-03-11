@@ -717,6 +717,56 @@
 }
 
 /* ── Responsive ───────────────────────────────────────── */
+
+/* Laptop (1025px – 1280px): tighten max-width and padding */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .crm-node-detail {
+    max-width: 960px;
+    padding: 0 1.25rem 2.5rem;
+  }
+
+  .detail-header-info h1 {
+    font-size: 1.4rem;
+  }
+
+  .stat-number {
+    font-size: 1.75rem;
+  }
+}
+
+/* Tablet (721px – 1024px) */
+@media (min-width: 721px) and (max-width: 1024px) {
+  .crm-node-detail {
+    padding: 0 1.25rem 2.5rem;
+  }
+
+  .detail-card {
+    padding: 1.4rem 1.5rem;
+  }
+
+  .detail-header-info h1 {
+    font-size: 1.35rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Small tablet + large mobile (601px – 720px) */
+@media (max-width: 720px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile (≤ 600px) */
 @media (max-width: 600px) {
   .crm-node-detail {
     padding: 0 1rem 2rem;
@@ -733,8 +783,14 @@
     margin-left: 0;
     width: 100%;
   }
+  .detail-header-actions .btn-primary,
+  .detail-header-actions .btn-secondary {
+    flex: 1;
+    justify-content: center;
+  }
   .stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
   }
   .fields-grid {
     grid-template-columns: 1fr;
@@ -746,5 +802,30 @@
   }
   .detail-header-info h1 {
     font-size: 1.3rem;
+  }
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}
+
+/* Very small mobile (≤ 400px) */
+@media (max-width: 400px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-header-info h1 {
+    font-size: 1.15rem;
+  }
+
+  .detail-meta-row {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
   }
 }

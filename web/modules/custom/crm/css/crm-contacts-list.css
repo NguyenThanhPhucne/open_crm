@@ -13,8 +13,30 @@
 
 /* ========== CONTACTS TABLE ========== */
 
+/* Wrapper ensures the table scrolls horizontally on small screens */
+.crm-contacts-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+
+.crm-contacts-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.crm-contacts-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.crm-contacts-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
 .crm-contacts-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: separate;
   border-spacing: 0;
   background: white;
@@ -547,9 +569,39 @@
 
 /* ========== RESPONSIVE ========== */
 
+/* Laptop (1025px – 1280px) */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .crm-contacts-table th,
+  .crm-contacts-table td {
+    padding: 11px 13px;
+    font-size: 13px;
+  }
+}
+
+/* Tablet (769px – 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .crm-contacts-table {
+    font-size: 13px;
+    min-width: 620px;
+  }
+
+  .crm-contacts-table th,
+  .crm-contacts-table td {
+    padding: 10px 12px;
+  }
+
+  /* Hide timestamp column to save space */
+  .crm-contacts-table .crm-contact__timestamp,
+  .crm-contacts-table th:nth-child(6),
+  .crm-contacts-table td:nth-child(6) {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .crm-contacts-table {
     font-size: 13px;
+    min-width: 540px;
   }
 
   .crm-contacts-table th,
@@ -573,7 +625,7 @@
     width: 95%;
   }
 
-  /* Hide certain columns on mobile */
+  /* Hide avatar column on small screens */
   .crm-contact__avatar {
     display: none;
   }
@@ -582,6 +634,7 @@
 @media (max-width: 480px) {
   .crm-contacts-table {
     font-size: 12px;
+    min-width: 420px;
   }
 
   .crm-contacts-table th,
@@ -601,6 +654,14 @@
   .crm-contact__action-btn {
     padding: 4px 8px;
     font-size: 12px;
+  }
+
+  /* Hide source and timestamp columns */
+  .crm-contacts-table th:nth-child(5),
+  .crm-contacts-table td:nth-child(5),
+  .crm-contacts-table th:nth-child(6),
+  .crm-contacts-table td:nth-child(6) {
+    display: none;
   }
 }
 

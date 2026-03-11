@@ -781,6 +781,54 @@ a.button--danger:active {
   }
 }
 
+/* ── Laptop / Large tablet (1025px – 1280px) ── */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .crm-nav-container {
+    gap: 16px;
+    padding: 0 20px;
+  }
+
+  .crm-nav-item {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .layout-container {
+    padding: 0 20px;
+  }
+
+  .views-table thead th,
+  .views-table tbody td {
+    padding: 13px 14px;
+    font-size: 13px;
+  }
+
+  .views-table thead th:first-child,
+  .views-table tbody td:first-child {
+    padding-left: 18px;
+  }
+
+  .views-table thead th:last-child,
+  .views-table tbody td:last-child {
+    padding-right: 18px;
+  }
+
+  .crm-nav-brand {
+    padding-right: 20px;
+    font-size: 16px;
+  }
+
+  .view-filters {
+    padding: 20px;
+  }
+
+  .views-exposed-form {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+}
+
+/* ── Standard Tablet (769px – 1024px) ── */
 @media (max-width: 1024px) {
   .layout-container {
     padding: 0 20px;
@@ -810,6 +858,7 @@ a.button--danger:active {
   }
 }
 
+/* ── Small tablet + large mobile (481px – 768px) ── */
 @media (max-width: 768px) {
   .layout-container {
     padding: 0 16px;
@@ -821,19 +870,51 @@ a.button--danger:active {
 
   .crm-nav-container {
     padding: 0 16px;
-    gap: 16px;
+    gap: 8px;
+    height: 56px;
   }
 
+  /* Brand: hide text, keep logo icon */
   .crm-nav-brand span {
     display: none;
   }
 
+  .crm-nav-brand {
+    padding-right: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Nav items: icon-only */
   .crm-nav-item span {
     display: none;
   }
 
+  .crm-nav-item {
+    padding: 8px 10px;
+  }
+
+  /* Quick-add: icon-only */
   .crm-quick-add-btn span {
     display: none;
+  }
+
+  /* Ensure nav items don't overflow — allow slight wrapping */
+  .crm-nav-items {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 2px;
+  }
+
+  .crm-nav-items::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Right section: shrink */
+  .crm-nav-right {
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .view-filters {
@@ -854,13 +935,15 @@ a.button--danger:active {
     width: 100%;
   }
 
+  /* Tables horizontal scroll — do NOT use min-width to allow card-stacking from views-table-improvements.css */
   .gin-table-scroll-wrapper {
-    overflow-x: scroll;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Remove conflicting min-width so views-table-improvements card layout can take over */
   .views-table {
-    min-width: 800px;
+    min-width: unset;
   }
 
   .views-table thead th,
@@ -889,13 +972,42 @@ a.button--danger:active {
   }
 }
 
-@media (max-width: 639px) {
+/* ── Mobile (≤ 480px) ── */
+@media (max-width: 480px) {
   .layout-container {
     padding: 0 12px;
   }
 
   .page-content {
-    padding: 20px 0;
+    padding: 16px 0;
+  }
+
+  /* Nav reduces to minimal */
+  .crm-nav-container {
+    padding: 0 10px;
+    height: 52px;
+    gap: 4px;
+  }
+
+  .crm-nav-item {
+    padding: 6px 8px;
+  }
+
+  /* Badge text hidden, only icon shown */
+  .crm-view-only-badge span {
+    display: none;
+  }
+
+  .crm-view-only-badge {
+    padding: 5px 8px;
+  }
+
+  .crm-login-btn span {
+    display: none;
+  }
+
+  .crm-login-btn {
+    padding: 8px 10px;
   }
 
   .view-all-organizations,
@@ -904,7 +1016,7 @@ a.button--danger:active {
   .view-my-deals,
   .view-my-organizations {
     border-radius: 8px;
-    margin: 0 0 16px 0;
+    margin: 0 0 12px 0;
   }
 
   .view-filters {
@@ -912,18 +1024,23 @@ a.button--danger:active {
     border-radius: 8px 8px 0 0;
   }
 
-  .views-table thead th {
-    font-size: 11px;
-    padding: 8px;
-  }
-
-  .views-table tbody td {
-    font-size: 12px;
-    padding: 8px;
-  }
-
   .pager__item--first,
   .pager__item--last {
+    display: none;
+  }
+}
+
+/* ── Very small (≤ 360px) ── */
+@media (max-width: 360px) {
+  .crm-nav-items {
+    gap: 0;
+  }
+
+  .crm-nav-item {
+    padding: 6px 6px;
+  }
+
+  .crm-nav-brand {
     display: none;
   }
 }
@@ -1237,7 +1354,9 @@ a.button--danger:active {
   margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(226, 232, 240, 0.8);
 }
 
 .view-my-deals .gin-table-scroll-wrapper + .gin-table-scroll-wrapper {

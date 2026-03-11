@@ -153,15 +153,15 @@
   color: #475569;
 }
 
-/* Mobile: Show labels for each field (Mobile First) */
-@media (max-width: 767px) {
+/* Mobile: Show labels for each field */
+@media (max-width: 480px) {
   /* Show data attributes with field labels */
   .views-table tbody td::before {
     content: attr(data-label);
     display: block;
     font-weight: 700;
-    font-size: 12px;
-    color: #475569; /* Sửa màu label mobile cho dễ đọc */
+    font-size: 11px;
+    color: #475569;
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -172,7 +172,7 @@
    RESPONSIVE TABLE DESIGN
    ============================================ */
 
-/* Tablet: Adjust padding */
+/* Tablet (769px – 1024px): Adjust padding */
 @media (max-width: 1024px) {
   .views-table thead th {
     padding: 12px 16px;
@@ -201,11 +201,41 @@
   }
 }
 
-/* Mobile: Stack table vertically with labels */
-@media (max-width: 767px) {
+/* Small tablet + large mobile (481px – 768px): horizontal scroll, header visible but compact */
+@media (max-width: 768px) {
   .gin-table-scroll-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .views-table {
+    min-width: 540px;
+    font-size: 13px;
+  }
+
+  /* Keep thead visible (do not hide) — horizontal scroll is sufficient */
+  .views-table thead {
+    display: table-header-group !important;
+  }
+
+  .views-table thead th {
+    padding: 10px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .views-table tbody td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile card-stacking (≤ 480px): stack rows as cards */
+@media (max-width: 480px) {
+  .gin-table-scroll-wrapper {
+    overflow-x: visible;
+    margin: 0;
+    padding: 0;
   }
 
   .views-table {
@@ -213,8 +243,9 @@
     font-size: 13px;
   }
 
+  /* Hide thead — labels shown via data-label on each td */
   .views-table thead {
-    display: none; /* Hide header on mobile */
+    display: none !important;
   }
 
   .views-table tbody {
@@ -224,24 +255,40 @@
   .views-table tbody tr {
     display: block;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-bottom: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    background: #ffffff;
   }
 
   .views-table tbody tr:hover {
+    background: #fafbff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .views-table tbody tr:nth-child(even) {
     background: #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
   .views-table tbody td {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border: none;
     border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #334155;
+  }
+
+  .views-table tbody td:first-child {
+    padding-left: 14px;
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 14px;
+    color: #1e293b;
+    border-bottom: 2px solid #e2e8f0;
   }
 
   .views-table tbody td:last-child {
@@ -249,38 +296,37 @@
   }
 
   .views-table tbody td::before {
-    font-size: 11px;
+    font-size: 10px;
     margin-bottom: 0;
     margin-right: 12px;
     white-space: nowrap;
     flex: 0 0 auto;
+    color: #94a3b8;
   }
 
   .views-table tbody td .field-content {
     flex: 1 1 auto;
     text-align: right;
   }
+
+  /* Edit link: full-width button at bottom of card */
+  .views-table tbody td.views-field-crm-edit-link {
+    justify-content: center;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+  }
 }
 
-/* Very small screens */
-@media (max-width: 480px) {
-  .views-table {
-    min-width: 100%;
-  }
-
-  .gin-table-scroll-wrapper {
-    overflow-x: auto;
-    margin: 0 -16px;
-    padding: 0 16px;
-  }
-
+/* Very small screens (≤ 360px) */
+@media (max-width: 360px) {
   .views-table tbody td {
-    padding: 10px 12px;
+    padding: 8px 10px;
     font-size: 12px;
   }
 
   .views-table tbody td::before {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
 
