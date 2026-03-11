@@ -44,7 +44,7 @@ crm.all_contacts:
     _title: "All Contacts"
   requirements:
     _permission: "access content"
-    _user_is_logged_in: 'TRUE'
+    _user_is_logged_in: "TRUE"
 
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"
