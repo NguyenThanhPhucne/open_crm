@@ -3,6 +3,7 @@
 namespace Drupal\crm_edit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\Markup;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
@@ -34,7 +35,7 @@ class AddController extends ControllerBase {
     $type_label = ucfirst($type);
     
     return [
-      '#markup' => '
+      '#markup' => Markup::create('
         <div class="crm-add-page">
           <div class="loading-spinner">
             <i data-lucide="loader"></i>
@@ -81,7 +82,7 @@ class AddController extends ControllerBase {
             color: #666;
           }
         </style>
-      ',
+      '),
       '#attached' => [
         'library' => [
           'crm_edit/lucide',
