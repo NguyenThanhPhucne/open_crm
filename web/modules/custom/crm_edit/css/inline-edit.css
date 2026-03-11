@@ -683,81 +683,78 @@
 
 /* Modal footer */
 .crm-modal-footer {
-  padding: 24px 32px;
+  padding: 18px 28px;
   border-top: 1px solid #e2e8f0;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   justify-content: flex-end;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  background: #ffffff;
   flex-shrink: 0;
+  min-height: 72px;
 }
+
+/* save-status message inside footer */
+.crm-modal-footer .save-status {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crm-modal-footer .save-status.success { color: #059669; }
+.crm-modal-footer .save-status.error   { color: #dc2626; }
 
 .crm-modal-footer button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 7px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
   letter-spacing: -0.01em;
-  position: relative;
-  overflow: hidden;
-}
-
-.crm-modal-footer button::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition:
-    width 0.6s,
-    height 0.6s;
-}
-
-.crm-modal-footer button:hover::before {
-  width: 300px;
-  height: 300px;
+  white-space: nowrap;
+  line-height: 1.4;
+  border: none;
 }
 
 .crm-modal-footer button svg {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 }
 
+/* Cancel — ghost style */
 .crm-modal-footer .btn-cancel {
-  background: #ffffff;
-  color: #475569;
+  background: transparent;
+  color: #64748b;
   border: 1.5px solid #e2e8f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .crm-modal-footer .btn-cancel:hover {
   background: #f1f5f9;
   border-color: #cbd5e1;
   color: #334155;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .crm-modal-footer .btn-cancel:active {
   background: #e2e8f0;
-  box-shadow: none;
+  color: #1e293b;
 }
 
+/* Save — solid primary blue */
 .crm-modal-footer .btn-save {
   background: #2563eb;
   color: #ffffff !important;
   border: none;
-  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.4);
 }
 
 .crm-modal-footer .btn-save svg {
@@ -768,7 +765,7 @@
 .crm-modal-footer .btn-save:hover {
   background: #1d4ed8;
   color: #ffffff !important;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.38);
 }
 
 .crm-modal-footer .btn-save:active {
@@ -777,10 +774,16 @@
   box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
 }
 
-.crm-modal-footer .btn-save:focus {
+.crm-modal-footer .btn-save:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+.crm-modal-footer .btn-save:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Toast messages */
@@ -1032,26 +1035,21 @@
 }
 
 .crm-modal-footer .btn-delete.enabled {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: #dc2626;
   color: white;
   cursor: pointer;
-  box-shadow:
-    0 4px 6px rgba(239, 68, 68, 0.25),
-    0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.4);
   animation: deleteButtonReady 0.3s ease;
 }
 
 .crm-modal-footer .btn-delete.enabled:hover {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 12px rgba(239, 68, 68, 0.35),
-    0 2px 4px rgba(0, 0, 0, 0.15);
+  background: #b91c1c;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4);
 }
 
 .crm-modal-footer .btn-delete.enabled:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+  background: #991b1b;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
 }
 
 @keyframes deleteButtonReady {
@@ -1632,123 +1630,33 @@
   border-color: #dc2626;
 }
 
-/* Add modal footer */
+/* Add modal footer — unified with main footer */
 .add-form .crm-modal-footer {
-  padding: 20px 32px;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #f8fafc;
-  flex-shrink: 0;
+  padding: 18px 28px;
+  background: #ffffff;
 }
 
-.add-form .save-btn {
-  background: white;
-  color: #10b981 !important;
-  border: 1.5px solid #10b981;
-  padding: 11px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.add-form .save-btn svg {
-  color: #10b981;
-  stroke: #10b981;
-}
-
-.add-form .save-btn:hover {
-  background: #f0fdf4;
-  color: #10b981 !important;
-  border-color: #10b981;
-  transform: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.add-form .save-btn:active {
-  background: #dcfce7;
-  color: #059669 !important;
-  border-color: #059669;
-  transform: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.add-form .save-btn:focus {
-  outline: 2px solid #10b981;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.add-form .save-btn:disabled {
-  opacity: 0.6;
+/* Save button in add form — inherits .btn-save blue; override only disabled state */
+.add-form .save-btn:disabled,
+.add-form .btn-save:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
-  transform: none;
-  background: #f3f4f6;
-  color: #9ca3af !important;
-  border-color: #d1d5db;
-}
-
-.add-form .btn-secondary {
-  background: white;
-  color: #64748b;
-  border: 1px solid #cbd5e1;
-  padding: 11px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-
-.add-form .btn-secondary:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-}
-
-.add-form .btn-secondary svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* Save status in add modal */
-.add-form .save-status {
-  margin-left: auto;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  display: none;
-  align-items: center;
-  gap: 8px;
+  box-shadow: none;
 }
 
 .add-form .save-status.success {
   display: flex;
-  background: #d1fae5;
-  color: #065f46;
-  border: 1px solid #a7f3d0;
+  color: #059669;
 }
 
 .add-form .save-status.error {
   display: flex;
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  color: #dc2626;
 }
 
 .add-form .save-status svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 /* Responsive adjustments for add modal */
@@ -1770,7 +1678,7 @@
   }
 
   .add-form .save-btn,
-  .add-form .btn-secondary {
+  .add-form .btn-cancel {
     flex: 1;
     min-width: 120px;
     justify-content: center;
