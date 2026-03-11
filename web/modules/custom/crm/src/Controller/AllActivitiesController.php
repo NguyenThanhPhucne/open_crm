@@ -308,10 +308,12 @@ class AllActivitiesController extends ControllerBase {
   .filter-input{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:1px solid #e5e7eb !important;border-radius:8px !important;font-size:14px !important;color:#1e293b;outline:none;transition:border-color .15s,box-shadow .15s;box-sizing:border-box !important;background:#fff !important;display:block}
   .filter-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .filter-input::placeholder{color:#9ca3af}
-  .filter-select-wrap{position:relative;min-width:160px}
-  .filter-select-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#3b82f6;pointer-events:none;z-index:2;stroke-width:2.2}
-  .filter-select{height:40px !important;padding:0 12px 0 34px !important;border:1px solid #e5e7eb !important;border-radius:8px !important;font-size:14px !important;color:#1e293b;background:#fff;outline:none;cursor:pointer;transition:border-color .15s;appearance:none;min-width:160px}
-  .filter-select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+  .filter-select-wrap{display:flex;align-items:center;height:40px;min-width:160px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s;overflow:hidden}
+  .filter-select-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+  .flt-sel-ico{display:flex;align-items:center;justify-content:center;padding:0 6px 0 10px;flex-shrink:0;color:#3b82f6;pointer-events:none}.flt-sel-ico i,.flt-sel-ico svg{width:15px;height:15px;display:block;flex-shrink:0;stroke-width:2.2}
+  .flt-sel-arr{display:flex;align-items:center;padding:0 9px 0 2px;flex-shrink:0;color:#9ca3af;pointer-events:none}.flt-sel-arr svg{width:13px;height:13px;display:block}
+  .filter-select{flex:1;height:100%;min-width:0;border:none !important;border-radius:0 !important;padding:0 2px !important;font-size:14px !important;color:#1e293b;background:transparent;outline:none !important;cursor:pointer;appearance:none;-webkit-appearance:none;box-shadow:none !important}
+  .filter-select:focus{border:none !important;box-shadow:none !important}
   .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
   .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
   .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
@@ -468,14 +470,14 @@ HTML;
       . '<input class="filter-input" type="text" name="search" placeholder="Search by activity name…" value="' . $e_search . '"></div>';
 
     // Type dropdown
-    $html .= '<div class="filter-select-wrap"><i data-lucide="layers"></i>'
+    $html .= '<div class="filter-select-wrap"><span class="flt-sel-ico"><i data-lucide="layers"></i></span>'
       . '<select class="filter-select" name="type">'
       . '<option value="0"' . ($filter_type === 0 ? ' selected' : '') . '>All types</option>';
     foreach (self::typeMap() as $tid => $t) {
       $sel = $filter_type === $tid ? ' selected' : '';
       $html .= '<option value="' . $tid . '"' . $sel . '>' . $t['label'] . '</option>';
     }
-    $html .= '</select></div>';
+    $html .= '</select><span class="flt-sel-arr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 4 7 9 12 4"/></svg></span></div>';
 
     $html .= '<button type="submit" class="btn-filter-apply"><i data-lucide="filter"></i>Apply</button>';
 
