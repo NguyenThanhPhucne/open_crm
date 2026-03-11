@@ -455,7 +455,129 @@ class DashboardController extends ControllerBase {
         ];
       }
     }
-    
+
+    // ── Recent Contacts (last 8, sorted by changed DESC) ─────────────────────
+    $rc_query = \Drupal::entityQuery('node')
+      ->condition('type', 'contact')
+      ->accessCheck(FALSE)
+      ->sort('changed', 'DESC')
+      ->range(0, 8);
+    if (!$is_admin && $user_id > 0) {
+      $rc_query->condition('field_owner', $user_id);
+    }
+    $recent_contacts = [];
+    foreach (\Drupal::entityTypeManager()->getStorage('node')->loadMultiple($rc_query->execute()) as $c) {
+      $c_org = '';
+      if ($c->hasField('field_organization') && !$c->get('field_organization')->isEmpty()) {
+        $c_org_e = $c->get('field_organization')->entity;
+        if ($c_org_e) { $c_org = $c_org_e->getTitle(); }
+      }
+      $c_source = '';
+      if ($c->hasField('field_source') && !$c->get('field_source')->isEmpty()) {
+        $c_source = $c->get('field_source')->value ?? '';
+      }
+      $c_diff = $now - $c->getChangedTime();
+      if ($c_diff < 60)       { $c_time = 'just now'; }
+      elseif ($c_diff < 3600) { $c_time = floor($c_diff / 60) . 'm ago'; }
+      elseif ($c_diff < 86400){ $c_time = floor($c_diff / 3600) . 'h ago'; }
+      elseif ($c_diff < 604800){ $c_time = floor($c_diff / 86400) . 'd ago'; }
+      else                    { $c_time = floor($c_diff / 604800) . 'w ago'; }
+      $c_name = $c->getTitle();
+      $recent_contacts[] = [
+        'id'            => $c->id(),
+        'title'         => Html::escape($c_name),
+        'initials'      => strtoupper(mb_substr($c_name, 0, 1)),
+        'org'           => Html::escape($c_org),
+        'source'        => Html::escape($c_source),
+        'relative_time' => $c_time,
+      ];
+    }
+
+    // ── Recent Organizations (last 8, sorted by changed DESC) ─────────────────
+    $ro_query = \Drupal::entityQuery('node')
+      ->condition('type', 'organization')
+      ->accessCheck(FALSE)
+      ->sort('changed', 'DESC')
+      ->range(0, 8);
+    if (!$is_admin && $user_id > 0) {
+      $ro_query->condition('field_assigned_staff', $user_id);
+    }
+    $recent_organizations = [];
+    foreach (\Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ro_query->execute()) as $o) {
+      $o_industry = '';
+      if ($o->hasField('field_industry') && !$o->get('field_industry')->isEmpty()) {
+        $o_industry = $o->get('field_industry')->value ?? '';
+      }
+      $o_phone = '';
+      if ($o->hasField('field_phone') && !$o->get('field_phone')->isEmpty()) {
+        $o_phone = $o->get('field_phone')->value ?? '';
+      }
+      $o_diff = $now - $o->getChangedTime();
+      if ($o_diff < 60)       { $o_time = 'just now'; }
+      elseif ($o_diff < 3600) { $o_time = floor($o_diff / 60) . 'm ago'; }
+      elseif ($o_diff < 86400){ $o_time = floor($o_diff / 3600) . 'h ago'; }
+      elseif ($o_diff < 604800){ $o_time = floor($o_diff / 86400) . 'd ago'; }
+      else                    { $o_time = floor($o_diff / 604800) . 'w ago'; }
+      $o_name = $o->getTitle();
+      $recent_organizations[] = [
+        'id'            => $o->id(),
+        'title'         => Html::escape($o_name),
+        'initials'      => strtoupper(mb_substr($o_name, 0, 1)),
+        'industry'      => Html::escape($o_industry),
+        'phone'         => Html::escape($o_phone),
+        'relative_time' => $o_time,
+      ];
+    }
+
+    // ── Recent Pipeline Deals (last 8, active only, sorted by changed DESC) ───
+    $rp_query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->accessCheck(FALSE)
+      ->sort('changed', 'DESC')
+      ->range(0, 8);
+    if (!empty($closed_term_ids)) {
+      $rp_query->condition('field_stage', $closed_term_ids, 'NOT IN');
+    }
+    if (!$is_admin && $user_id > 0) {
+      $rp_query->condition('field_owner', $user_id);
+    }
+    $pipeline_stage_palette = [
+      'new'         => ['bg' => '#dbeafe', 'color' => '#1e40af'],
+      'qualified'   => ['bg' => '#e9d5ff', 'color' => '#6b21a8'],
+      'proposal'    => ['bg' => '#fed7aa', 'color' => '#9a3412'],
+      'negotiation' => ['bg' => '#fce7f3', 'color' => '#9d174d'],
+    ];
+    $recent_pipeline = [];
+    foreach (\Drupal::entityTypeManager()->getStorage('node')->loadMultiple($rp_query->execute()) as $pd) {
+      $pd_amount = 0;
+      if ($pd->hasField('field_amount') && !$pd->get('field_amount')->isEmpty()) {
+        $pd_amount = floatval($pd->get('field_amount')->value);
+      }
+      $pd_stage_label = 'New';
+      $pd_stage_key   = 'new';
+      if ($pd->hasField('field_stage') && !$pd->get('field_stage')->isEmpty() && $pd->get('field_stage')->entity) {
+        $pd_st          = $pd->get('field_stage')->entity;
+        $pd_stage_label = $pd_st->getName();
+        $pd_stage_key   = strtolower($pd_stage_label);
+      }
+      $pd_sc   = $pipeline_stage_palette[$pd_stage_key] ?? ['bg' => '#f1f5f9', 'color' => '#475569'];
+      $pd_diff = $now - $pd->getChangedTime();
+      if ($pd_diff < 60)       { $pd_time = 'just now'; }
+      elseif ($pd_diff < 3600) { $pd_time = floor($pd_diff / 60) . 'm ago'; }
+      elseif ($pd_diff < 86400){ $pd_time = floor($pd_diff / 3600) . 'h ago'; }
+      elseif ($pd_diff < 604800){ $pd_time = floor($pd_diff / 86400) . 'd ago'; }
+      else                     { $pd_time = floor($pd_diff / 604800) . 'w ago'; }
+      $recent_pipeline[] = [
+        'id'            => $pd->id(),
+        'title'         => Html::escape($pd->getTitle()),
+        'amount'        => '$' . number_format($pd_amount / 1000, 0) . 'K',
+        'stage'         => $pd_stage_label,
+        'stage_bg'      => $pd_sc['bg'],
+        'stage_color'   => $pd_sc['color'],
+        'relative_time' => $pd_time,
+      ];
+    }
+
     // Build JSON data for charts
     $stage_labels_json = json_encode(array_values($stages));
     $stage_data_json = json_encode(array_values($deals_by_stage));
@@ -1619,6 +1741,114 @@ class DashboardController extends ControllerBase {
         height: 36px;
       }
     }
+
+    /* ================================================================
+       BOTTOM SECTION — Recent Contacts / Organizations / Pipelines
+       ================================================================ */
+    .bottom-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1200px) {
+      .bottom-section { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .bottom-section { grid-template-columns: 1fr; }
+    }
+
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+      max-height: 360px;
+      padding-right: 4px;
+    }
+
+    .recent-list::-webkit-scrollbar { width: 4px; }
+    .recent-list::-webkit-scrollbar-track { background: transparent; }
+    .recent-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .recent-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .recent-item:hover {
+      background: #f7f9fb;
+      border-color: #e6e8eb;
+    }
+
+    .recent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .recent-avatar.blue  { background: #dbeafe; color: #1e40af; }
+    .recent-avatar.pink  { background: #fce7f3; color: #9d174d; }
+    .recent-avatar.amber { background: #fef3c7; color: #92400e; }
+
+    .recent-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .recent-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recent-sub {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recent-time {
+      font-size: 11px;
+      color: #94a3b8;
+      flex-shrink: 0;
+      white-space: nowrap;
+      margin-left: auto;
+      padding-left: 8px;
+    }
+
+    .pipeline-stage-mini {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
   </style>
   
   <div class="dashboard-container">
@@ -1978,6 +2208,101 @@ EMPTY;
         </div>
       </div>
     </div>
+
+    <!-- Bottom Section: Recent Contacts, Recent Organizations, Recent Pipelines -->
+    <div class="bottom-section">
+      <!-- Recent Contacts -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i data-lucide="users" width="20" height="20"></i>
+            Recent Contacts
+          </div>
+          <a href="{$contacts_url}" class="view-all-link">
+            View all <i data-lucide="arrow-right" width="14" height="14"></i>
+          </a>
+        </div>
+        <div class="recent-list recent-contacts-list">
+HTML;
+    if (!empty($recent_contacts)) {
+      foreach ($recent_contacts as $rc) {
+        $rc_url = '/node/' . $rc['id'];
+        $rc_sub = $rc['org'] ?: ($rc['source'] ?: '');
+        $html  .= '<a href="' . $rc_url . '" class="recent-item">'
+          . '<div class="recent-avatar blue">' . $rc['initials'] . '</div>'
+          . '<div class="recent-info"><div class="recent-name">' . $rc['title'] . '</div>'
+          . '<div class="recent-sub">' . $rc_sub . '</div></div>'
+          . '<span class="recent-time">' . $rc['relative_time'] . '</span></a>';
+      }
+    } else {
+      $html .= '<div class="empty-state"><i data-lucide="user-x"></i><div class="empty-state-text">No contacts yet</div></div>';
+    }
+    $html .= <<<HTML
+        </div>
+      </div>
+
+      <!-- Recent Organizations -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i data-lucide="building-2" width="20" height="20"></i>
+            Recent Organizations
+          </div>
+          <a href="{$organizations_url}" class="view-all-link">
+            View all <i data-lucide="arrow-right" width="14" height="14"></i>
+          </a>
+        </div>
+        <div class="recent-list recent-orgs-list">
+HTML;
+    if (!empty($recent_organizations)) {
+      foreach ($recent_organizations as $ro) {
+        $ro_url = '/node/' . $ro['id'];
+        $ro_sub = $ro['industry'] ?: ($ro['phone'] ?: '');
+        $html  .= '<a href="' . $ro_url . '" class="recent-item">'
+          . '<div class="recent-avatar pink">' . $ro['initials'] . '</div>'
+          . '<div class="recent-info"><div class="recent-name">' . $ro['title'] . '</div>'
+          . '<div class="recent-sub">' . $ro_sub . '</div></div>'
+          . '<span class="recent-time">' . $ro['relative_time'] . '</span></a>';
+      }
+    } else {
+      $html .= '<div class="empty-state"><i data-lucide="building"></i><div class="empty-state-text">No organizations yet</div></div>';
+    }
+    $html .= <<<HTML
+        </div>
+      </div>
+
+      <!-- Recent Pipelines -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i data-lucide="git-branch" width="20" height="20"></i>
+            Recent Pipelines
+          </div>
+          <a href="{$pipeline_url}" class="view-all-link">
+            View all <i data-lucide="arrow-right" width="14" height="14"></i>
+          </a>
+        </div>
+        <div class="recent-list recent-pipeline-list">
+HTML;
+    if (!empty($recent_pipeline)) {
+      foreach ($recent_pipeline as $rp) {
+        $rp_url = '/node/' . $rp['id'];
+        $rp_bg  = $rp['stage_bg'];
+        $rp_col = $rp['stage_color'];
+        $html  .= '<a href="' . $rp_url . '" class="recent-item">'
+          . '<div class="recent-avatar" style="background:' . $rp_bg . ';color:' . $rp_col . '">'
+          . '<i data-lucide="circle-dot" width="16" height="16"></i></div>'
+          . '<div class="recent-info"><div class="recent-name">' . $rp['title'] . '</div>'
+          . '<div class="recent-sub"><span class="pipeline-stage-mini" style="background:' . $rp_bg . ';color:' . $rp_col . '">' . $rp['stage'] . '</span>&nbsp;' . $rp['amount'] . '</div></div>'
+          . '<span class="recent-time">' . $rp['relative_time'] . '</span></a>';
+      }
+    } else {
+      $html .= '<div class="empty-state"><i data-lucide="inbox"></i><div class="empty-state-text">No active pipeline deals</div></div>';
+    }
+    $html .= <<<HTML
+        </div>
+      </div>
+    </div>
   </div>
   
   <script>
@@ -2062,6 +2387,21 @@ EMPTY;
           const freshActs = doc.querySelector('.activity-list');
           const liveActs  = document.querySelector('.activity-list');
           if (freshActs && liveActs) liveActs.innerHTML = freshActs.innerHTML;
+
+          // Update Recent Contacts list
+          const freshCtcs = doc.querySelector('.recent-contacts-list');
+          const liveCtcs  = document.querySelector('.recent-contacts-list');
+          if (freshCtcs && liveCtcs) liveCtcs.innerHTML = freshCtcs.innerHTML;
+
+          // Update Recent Organizations list
+          const freshOrgs = doc.querySelector('.recent-orgs-list');
+          const liveOrgs  = document.querySelector('.recent-orgs-list');
+          if (freshOrgs && liveOrgs) liveOrgs.innerHTML = freshOrgs.innerHTML;
+
+          // Update Recent Pipeline list
+          const freshPipe = doc.querySelector('.recent-pipeline-list');
+          const livePipe  = document.querySelector('.recent-pipeline-list');
+          if (freshPipe && livePipe) livePipe.innerHTML = freshPipe.innerHTML;
 
           // Update Stage Chart data
           const freshStage = doc.getElementById('stageChart');

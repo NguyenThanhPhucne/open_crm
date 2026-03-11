@@ -10,10 +10,10 @@ field_name: field_phone
 entity_type: node
 bundle: organization
 label: Phone
-description: 'Main phone number for this organization. Use international format.'
+description: "Main phone number for this organization. Use international format."
 required: false
 translatable: true
-default_value: {  }
-default_value_callback: ''
-settings: {  }
+default_value: {}
+default_value_callback: ""
+settings: {}
 field_type: string
