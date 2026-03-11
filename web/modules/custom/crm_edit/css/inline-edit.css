@@ -705,8 +705,12 @@
   gap: 6px;
 }
 
-.crm-modal-footer .save-status.success { color: #059669; }
-.crm-modal-footer .save-status.error   { color: #dc2626; }
+.crm-modal-footer .save-status.success {
+  color: #059669;
+}
+.crm-modal-footer .save-status.error {
+  color: #dc2626;
+}
 
 .crm-modal-footer button {
   display: inline-flex;
@@ -718,7 +722,10 @@
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
   letter-spacing: -0.01em;
   white-space: nowrap;
   line-height: 1.4;

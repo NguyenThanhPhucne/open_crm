@@ -111,11 +111,25 @@ class UserProfileController extends ControllerBase {
     }
     
     // Get statistics
+    $total_deal_value = $this->getUserTotalDealValue($uid);
+    $total_value_formatted = '';
+    if ($total_deal_value >= 1000000000) {
+      $total_value_formatted = '$' . number_format($total_deal_value / 1000000000, 1) . 'B';
+    } elseif ($total_deal_value >= 1000000) {
+      $total_value_formatted = '$' . number_format($total_deal_value / 1000000, 1) . 'M';
+    } elseif ($total_deal_value >= 1000) {
+      $total_value_formatted = '$' . number_format($total_deal_value / 1000, 0) . 'K';
+    } elseif ($total_deal_value > 0) {
+      $total_value_formatted = '$' . number_format($total_deal_value, 0);
+    }
+
     $stats = [
       'contacts' => $this->getUserContactsCount($uid),
       'deals' => $this->getUserDealsCount($uid),
       'organizations' => $this->getUserOrganizationsCount($uid),
       'activities' => $this->getUserActivitiesCount($uid),
+      'total_value' => $total_deal_value,
+      'total_value_formatted' => $total_value_formatted,
     ];
     
     // Get recent activities
@@ -237,6 +251,30 @@ class UserProfileController extends ControllerBase {
     }
     
     return $activities;
+  }
+
+  /**
+   * Get total deal value for user.
+   */
+  protected function getUserTotalDealValue($uid) {
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', 'deal')
+      ->condition('status', 1)
+      ->condition('field_owner', $uid)
+      ->accessCheck(FALSE);
+    $nids = $query->execute();
+    $total = 0;
+    if (!empty($nids)) {
+      $nodes = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->loadMultiple($nids);
+      foreach ($nodes as $node) {
+        if ($node->hasField('field_deal_value') && !$node->get('field_deal_value')->isEmpty()) {
+          $total += (float) $node->get('field_deal_value')->value;
+        }
+      }
+    }
+    return $total;
   }
 
   /**

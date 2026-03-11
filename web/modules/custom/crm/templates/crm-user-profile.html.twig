@@ -1,22 +1,35 @@
 {{ attach_library('crm/user_profile_styles') }}
 
 <div class="crm-user-profile">
-  <!-- Profile Header Card -->
-  <div class="profile-header-card">
-    <div class="profile-avatar-wrapper">
-      {% if has_picture %}
-        <img src="{{ user_picture_url }}" alt="{{ user_name }}" class="profile-avatar">
-      {% else %}
-        <div class="profile-avatar profile-avatar-placeholder">
-          <span class="avatar-initial">{{ user_initial }}</span>
+
+  {# ── Cover + Floating Avatar Hero ─────────────────────────── #}
+  <div class="profile-hero">
+    <div class="profile-cover"></div>
+
+    <div class="profile-hero-body">
+      {# Avatar section #}
+      <div class="profile-avatar-section">
+        {% if has_picture %}
+          <img src="{{ user_picture_url }}" alt="{{ user_name }}" class="profile-avatar">
+        {% else %}
+          <div class="profile-avatar profile-avatar-placeholder">
+            <span class="avatar-initial">{{ user_initial }}</span>
+          </div>
+        {% endif %}
+        <span class="avatar-status online" title="Active"></span>
+      </div>
+
+      {# Identity #}
+      <div class="profile-identity">
+        <div class="profile-name-row">
+          <h1 class="profile-name">{{ user_name }}</h1>
+          {% if is_own_profile %}
+            <a href="/user/{{ user.id }}/edit" class="btn-edit-inline">
+              <i data-lucide="pencil" width="12" height="12"></i>Edit
+            </a>
+          {% endif %}
         </div>
-      {% endif %}
-    </div>
-    
-    <div class="profile-header-content">
-      <div class="profile-main-info">
-        <h1 class="profile-name">{{ user_name }}</h1>
-        
+
         {% if role_names %}
           <div class="profile-roles">
             {% for role in role_names %}
@@ -24,159 +37,159 @@
             {% endfor %}
           </div>
         {% endif %}
-      </div>
-      
-      <div class="profile-metadata">
-        {% if team_name %}
-          <div class="metadata-item">
-            <i data-lucide="users" width="18" height="18"></i>
-            <span>{{ team_name }}</span>
-          </div>
-        {% endif %}
-        
-        <div class="metadata-item">
-          <i data-lucide="mail" width="18" height="18"></i>
-          <span>{{ user_email }}</span>
-        </div>
-        
-        <div class="metadata-item">
-          <i data-lucide="calendar" width="18" height="18"></i>
-          <span>Member since {{ user_created|date('M d, Y') }}</span>
+
+        <div class="profile-meta-row">
+          {% if team_name %}
+            <span class="meta-chip"><i data-lucide="users" width="12" height="12"></i>{{ team_name }}</span>
+          {% endif %}
+          <span class="meta-chip"><i data-lucide="mail" width="12" height="12"></i>{{ user_email }}</span>
+          <span class="meta-chip"><i data-lucide="calendar" width="12" height="12"></i>Joined {{ user_created|date('M Y') }}</span>
         </div>
       </div>
-      
+
+      {# Quick-add buttons (own profile only) #}
       {% if is_own_profile %}
-        <div class="profile-actions">
-          <a href="/user/{{ user.id }}/edit" class="btn btn-primary">
-            <i data-lucide="pencil" width="18" height="18"></i>
-            <span>Edit Profile</span>
+        <div class="profile-quick-actions">
+          <a href="/node/add/deal" class="qa-btn qa-primary">
+            <i data-lucide="plus" width="14" height="14"></i>New Deal
           </a>
-          <a href="/user/{{ user.id }}/edit" class="btn btn-secondary">
-            <i data-lucide="camera" width="18" height="18"></i>
-            <span>Change Photo</span>
+          <a href="/node/add/contact" class="qa-btn qa-secondary">
+            <i data-lucide="user-plus" width="14" height="14"></i>Contact
+          </a>
+          <a href="/node/add/activity" class="qa-btn qa-secondary">
+            <i data-lucide="calendar-plus" width="14" height="14"></i>Activity
           </a>
         </div>
       {% endif %}
     </div>
   </div>
-  
-  <!-- Statistics Cards Grid -->
+
+  {# ── Stats row ─────────────────────────────────────────────── #}
   <div class="stats-grid">
-    <div class="stat-card stat-card-blue">
-      <div class="stat-icon-wrapper">
-        <i data-lucide="users" width="20" height="20"></i>
-      </div>
+    <a href="/crm/my-contacts" class="stat-card stat-blue">
+      <div class="stat-icon-wrap"><i data-lucide="users" width="20" height="20"></i></div>
       <div class="stat-info">
-        <div class="stat-value">{{ stats.contacts }}</div>
+        <div class="stat-value" data-count="{{ stats.contacts }}">{{ stats.contacts }}</div>
         <div class="stat-label">Contacts</div>
       </div>
-    </div>
-    
-    <div class="stat-card stat-card-purple">
-      <div class="stat-icon-wrapper">
-        <i data-lucide="briefcase" width="20" height="20"></i>
-      </div>
+      <i data-lucide="chevron-right" class="stat-arrow" width="16" height="16"></i>
+    </a>
+
+    <a href="/crm/my-deals" class="stat-card stat-purple">
+      <div class="stat-icon-wrap"><i data-lucide="briefcase" width="20" height="20"></i></div>
       <div class="stat-info">
-        <div class="stat-value">{{ stats.deals }}</div>
+        <div class="stat-value" data-count="{{ stats.deals }}">{{ stats.deals }}</div>
         <div class="stat-label">Deals</div>
+        {% if stats.total_value_formatted %}
+          <div class="stat-sub">{{ stats.total_value_formatted }}</div>
+        {% endif %}
       </div>
-    </div>
-    
-    <div class="stat-card stat-card-green">
-      <div class="stat-icon-wrapper">
-        <i data-lucide="building" width="20" height="20"></i>
-      </div>
+      <i data-lucide="chevron-right" class="stat-arrow" width="16" height="16"></i>
+    </a>
+
+    <a href="/crm/my-organizations" class="stat-card stat-green">
+      <div class="stat-icon-wrap"><i data-lucide="building" width="20" height="20"></i></div>
       <div class="stat-info">
-        <div class="stat-value">{{ stats.organizations }}</div>
+        <div class="stat-value" data-count="{{ stats.organizations }}">{{ stats.organizations }}</div>
         <div class="stat-label">Organizations</div>
       </div>
-    </div>
-    
-    <div class="stat-card stat-card-orange">
-      <div class="stat-icon-wrapper">
-        <i data-lucide="check-circle" width="20" height="20"></i>
-      </div>
+      <i data-lucide="chevron-right" class="stat-arrow" width="16" height="16"></i>
+    </a>
+
+    <a href="/crm/my-activities" class="stat-card stat-amber">
+      <div class="stat-icon-wrap"><i data-lucide="check-circle" width="20" height="20"></i></div>
       <div class="stat-info">
-        <div class="stat-value">{{ stats.activities }}</div>
+        <div class="stat-value" data-count="{{ stats.activities }}">{{ stats.activities }}</div>
         <div class="stat-label">Activities</div>
       </div>
-    </div>
+      <i data-lucide="chevron-right" class="stat-arrow" width="16" height="16"></i>
+    </a>
   </div>
-  
-  <!-- Content Grid: Activities & Deals -->
+
+  {# ── Content grid ──────────────────────────────────────────── #}
   <div class="content-grid">
-    <!-- Recent Activities Card -->
-    {% if recent_activities %}
-      <div class="content-card">
-        <div class="card-header">
-          <div class="card-title">
-            <i data-lucide="activity" width="20" height="20"></i>
-            <span>Recent Activities</span>
-          </div>
-          <a href="/crm/my-activities" class="view-all-link">
-            <span>View all</span>
-            <i data-lucide="arrow-right" width="16" height="16"></i>
-          </a>
+
+    {# Recent Activities #}
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="activity" width="17" height="17"></i>
+          <span>Recent Activities</span>
         </div>
-        
-        <div class="activity-list">
+        <a href="/crm/my-activities" class="view-all-link">
+          View all<i data-lucide="arrow-right" width="14" height="14"></i>
+        </a>
+      </div>
+
+      {% if recent_activities %}
+        <div class="timeline-list">
           {% for activity in recent_activities %}
-            <div class="activity-item">
-              <div class="activity-icon">
-                <i data-lucide="calendar-check" width="18" height="18"></i>
-              </div>
-              <div class="activity-content">
-                <a href="{{ activity.url }}" class="activity-title">{{ activity.title }}</a>
-                <div class="activity-meta">
-                  <span class="activity-type">{{ activity.type }}</span>
+            <a href="{{ activity.url }}" class="tl-item">
+              <div class="tl-dot dot-blue"></div>
+              <div class="tl-body">
+                <div class="tl-title">{{ activity.title }}</div>
+                <div class="tl-meta">
+                  {% if activity.type %}
+                    <span class="tl-chip chip-blue">{{ activity.type }}</span>
+                  {% endif %}
                   {% if activity.date %}
-                    <span class="activity-separator">•</span>
-                    <span class="activity-date">{{ activity.date|date('M d, Y') }}</span>
+                    <span class="tl-date"><i data-lucide="clock" width="10" height="10"></i>{{ activity.date|date('d M Y') }}</span>
                   {% endif %}
                 </div>
               </div>
-            </div>
+              <i data-lucide="chevron-right" class="tl-arrow" width="13" height="13"></i>
+            </a>
           {% endfor %}
         </div>
-      </div>
-    {% endif %}
-    
-    <!-- Recent Deals Card -->
-    {% if recent_deals %}
-      <div class="content-card">
-        <div class="card-header">
-          <div class="card-title">
-            <i data-lucide="trending-up" width="20" height="20"></i>
-            <span>Recent Deals</span>
-          </div>
-          <a href="/crm/my-deals" class="view-all-link">
-            <span>View all</span>
-            <i data-lucide="arrow-right" width="16" height="16"></i>
-          </a>
+      {% else %}
+        <div class="empty-state">
+          <i data-lucide="calendar-x" width="32" height="32"></i>
+          <p>No activities yet</p>
+          <a href="/node/add/activity" class="qa-btn qa-primary" style="margin-top:6px">Add Activity</a>
         </div>
-        
-        <div class="deal-list">
+      {% endif %}
+    </div>
+
+    {# Recent Deals #}
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="trending-up" width="17" height="17"></i>
+          <span>Recent Deals</span>
+        </div>
+        <a href="/crm/my-deals" class="view-all-link">
+          View all<i data-lucide="arrow-right" width="14" height="14"></i>
+        </a>
+      </div>
+
+      {% if recent_deals %}
+        <div class="timeline-list">
           {% for deal in recent_deals %}
-            <div class="deal-item">
-              <div class="deal-icon">
-                <i data-lucide="briefcase" width="18" height="18"></i>
-              </div>
-              <div class="deal-content">
-                <a href="{{ deal.url }}" class="deal-title">{{ deal.title }}</a>
-                <div class="deal-meta">
+            <a href="{{ deal.url }}" class="tl-item">
+              <div class="tl-dot dot-purple"></div>
+              <div class="tl-body">
+                <div class="tl-title">{{ deal.title }}</div>
+                <div class="tl-meta">
                   {% if deal.stage %}
-                    <span class="deal-stage">{{ deal.stage }}</span>
+                    <span class="tl-chip chip-purple">{{ deal.stage }}</span>
                   {% endif %}
                   {% if deal.value %}
-                    <span class="deal-separator">•</span>
-                    <span class="deal-value">{{ deal.value }} VND</span>
+                    <span class="tl-value">{{ deal.value }}</span>
                   {% endif %}
                 </div>
               </div>
-            </div>
+              <i data-lucide="chevron-right" class="tl-arrow" width="13" height="13"></i>
+            </a>
           {% endfor %}
         </div>
-      </div>
-    {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <i data-lucide="briefcase" width="32" height="32"></i>
+          <p>No deals yet</p>
+          <a href="/node/add/deal" class="qa-btn qa-primary" style="margin-top:6px">Add Deal</a>
+        </div>
+      {% endif %}
+    </div>
+
   </div>
 </div>

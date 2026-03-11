@@ -102,13 +102,22 @@ class KanbanController extends ControllerBase {
           }
         }
 
+        // Get closing date if available
+        $closing_date = '';
+        if ($deal->hasField('field_closing_date') && !$deal->get('field_closing_date')->isEmpty()) {
+          $closing_date = $deal->get('field_closing_date')->value;
+        }
+
         $deals_by_stage[$stage_id][] = [
-          'nid' => $deal->id(),
-          'title' => $deal->getTitle(),
-          'value' => $value,
-          'organization' => $org_name,
-          'owner' => $owner_name,
+          'nid'            => $deal->id(),
+          'title'          => $deal->getTitle(),
+          'value'          => $value,
+          'organization'   => $org_name,
+          'owner'          => $owner_name,
           'owner_initials' => $owner_initials,
+          'created'        => $deal->getCreatedTime(),
+          'changed'        => $deal->getChangedTime(),
+          'closing_date'   => $closing_date,
         ];
       }
     }
@@ -228,17 +237,19 @@ class KanbanController extends ControllerBase {
   .column-cards::-webkit-scrollbar-track{background:transparent}
   .column-cards::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
   /* ── Deal card ── */
-  .deal-card{position:relative;background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:grab;border-left:3px solid;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
-  .deal-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-1px)}
+  .deal-card{position:relative;background:#fff;border-radius:10px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
+  .deal-card:hover{box-shadow:0 5px 15px rgba(0,0,0,.11);transform:translateY(-2px)}
   .deal-card.sortable-ghost{opacity:.4;background:#e2e8f0}
   .deal-card.sortable-drag{opacity:.85;transform:rotate(1.5deg);cursor:grabbing}
-  .deal-title{font-size:12px;font-weight:600;color:#1e293b;margin-bottom:3px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .deal-value{font-size:13px;font-weight:800;margin-bottom:5px}
-  .deal-meta{display:flex;flex-direction:column;gap:2px;font-size:10px;color:#64748b}
-  .deal-meta-row{display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0}
-  .deal-meta-row>i,.deal-meta-row>svg{width:11px;height:11px;flex-shrink:0;stroke-width:2}
-  .deal-meta-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .owner-av{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:8px;font-weight:700;flex-shrink:0;letter-spacing:0}
+  .deal-title{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-right:36px}
+  .card-value-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
+  .deal-value{font-size:15px;font-weight:800}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;gap:4px;border-top:1px solid #f1f5f9;padding-top:6px;margin-top:2px}
+  .card-footer-left{display:flex;align-items:center;gap:4px;font-size:10.5px;color:#64748b;overflow:hidden;min-width:0}
+  .card-footer-left i,.card-footer-left svg{width:10px;height:10px;flex-shrink:0;stroke-width:2;color:#94a3b8}
+  .card-footer-left span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-footer-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+  .owner-av{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:8px;font-weight:700;flex-shrink:0;border:1.5px solid #bfdbfe}
   /* ── Hover-reveal card actions ── */
   .card-actions{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
   .deal-card:hover .card-actions{opacity:1}
@@ -287,6 +298,21 @@ class KanbanController extends ControllerBase {
   .error-message{background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;align-items:center;gap:8px}
   .error-message.show{display:flex}
   .error-message i{width:14px;height:14px;flex-shrink:0}
+  /* ── Time ago ── */
+  .time-ago{font-size:9.5px;color:#94a3b8;line-height:1;white-space:nowrap}
+  /* ── Due badge ── */
+  .due-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
+  .due-badge i{width:9px;height:9px;flex-shrink:0}
+  .due-badge.urgent{background:#fef2f2;color:#dc2626}
+  .due-badge.soon{background:#fffbeb;color:#d97706}
+  /* ── Board filter bar ── */
+  .kanban-filter{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .kf-wrap{position:relative;display:inline-flex;align-items:center}
+  .kf-wrap i{position:absolute;left:9px;width:14px;height:14px;color:#94a3b8;pointer-events:none;flex-shrink:0}
+  .kf-wrap input{padding:7px 12px 7px 30px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;outline:none;background:#fff;width:210px;transition:border-color .15s,width .2s}
+  .kf-wrap input:focus{border-color:#3b82f6;width:260px}
+  .filter-hint{font-size:12px;color:#94a3b8}
+  .card-hidden{display:none!important}
 </style>
   
   <!-- Deal Closing Modal -->
@@ -372,6 +398,14 @@ HTML;
     </div>
   </div>
 
+  <div class="kanban-filter">
+    <div class="kf-wrap">
+      <i data-lucide="search"></i>
+      <input type="text" id="kanban-search" placeholder="Filter deals…" autocomplete="off">
+    </div>
+    <span id="filter-count" class="filter-hint"></span>
+  </div>
+
   <div class="kanban-container">
     <div class="kanban-board">
 HTML;
@@ -416,7 +450,23 @@ HTML;
           $owner_display = $deal['owner'] ?: 'Unassigned';
           $owner_av      = $deal['owner_initials'] ?: '?';
           $card_color    = $stage_info['color'];
-          
+          $created_ts    = $deal['created'] ?? 0;
+
+          // Compute close-date badge
+          $due_badge_html = '';
+          if (!empty($deal['closing_date'])) {
+            $close_ts  = strtotime($deal['closing_date']);
+            $days_left = (int)(($close_ts - time()) / 86400);
+            if ($days_left < 0) {
+              $abs = abs($days_left);
+              $due_badge_html = '<span class="due-badge urgent"><i data-lucide="alert-circle"></i>' . $abs . 'd overdue</span>';
+            } elseif ($days_left <= 3) {
+              $due_badge_html = '<span class="due-badge urgent"><i data-lucide="clock"></i>' . $days_left . 'd left</span>';
+            } elseif ($days_left <= 14) {
+              $due_badge_html = '<span class="due-badge soon"><i data-lucide="clock"></i>' . $days_left . 'd left</span>';
+            }
+          }
+
           $html .= <<<HTML
           <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}">
             <div class="card-actions">
@@ -424,15 +474,18 @@ HTML;
               <a href="/node/{$deal['nid']}/edit" class="ca-btn" title="Edit"><i data-lucide="pencil"></i></a>
             </div>
             <div class="deal-title">{$deal['title']}</div>
-            <div class="deal-value" style="color:{$card_color}">{$value_formatted}</div>
-            <div class="deal-meta">
-              <div class="deal-meta-row">
+            <div class="card-value-row">
+              <span class="deal-value" style="color:{$card_color}">{$value_formatted}</span>
+              {$due_badge_html}
+            </div>
+            <div class="card-footer">
+              <div class="card-footer-left">
                 <i data-lucide="building-2"></i>
-                <span>{$org_display}</span>
+                <span title="{$org_display}">{$org_display}</span>
               </div>
-              <div class="deal-meta-row">
-                <span class="owner-av">{$owner_av}</span>
-                <span>{$owner_display}</span>
+              <div class="card-footer-right">
+                <span class="owner-av" title="{$owner_display}">{$owner_av}</span>
+                <span class="time-ago"><span data-timestamp="{$created_ts}"></span></span>
               </div>
             </div>
           </div>
@@ -458,7 +511,48 @@ HTML;
       CRM.initKeyboardShortcuts({ addUrl: '/node/add/deal', searchId: null });
       CRM.renderShortcutHints([{ key: 'N', label: 'New deal' }]);
     }
-    
+
+    // ── Time-ago relative timestamps ──────────────────────────────────
+    function timeAgo(ts) {
+      const s = Math.floor(Date.now() / 1000 - ts);
+      if (s < 60)      return 'just now';
+      if (s < 3600)    return Math.floor(s / 60) + 'm ago';
+      if (s < 86400)   return Math.floor(s / 3600) + 'h ago';
+      if (s < 604800)  return Math.floor(s / 86400) + 'd ago';
+      if (s < 2592000) return Math.floor(s / 604800) + 'w ago';
+      return Math.floor(s / 2592000) + 'mo ago';
+    }
+    function renderTimeAgo() {
+      document.querySelectorAll('[data-timestamp]').forEach(el => {
+        const ts = parseInt(el.dataset.timestamp, 10);
+        if (ts) el.textContent = timeAgo(ts);
+      });
+    }
+    renderTimeAgo();
+    setInterval(renderTimeAgo, 60000);
+
+    // ── Live board filter ─────────────────────────────────────────────
+    const _ks = document.getElementById('kanban-search');
+    const _kc = document.getElementById('filter-count');
+    if (_ks) {
+      _ks.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        let vis = 0, tot = 0;
+        document.querySelectorAll('.deal-card').forEach(c => {
+          tot++;
+          const match = !q || c.textContent.toLowerCase().includes(q);
+          c.classList.toggle('card-hidden', !match);
+          if (match) vis++;
+        });
+        _kc.textContent = q ? vis + ' of ' + tot + ' deals' : '';
+        document.querySelectorAll('.kanban-column').forEach(col => {
+          const cnt = col.querySelectorAll('.deal-card:not(.card-hidden)').length;
+          const badge = col.querySelector('.column-count');
+          if (badge) badge.textContent = cnt;
+        });
+      });
+    }
+
     // Variables for reverting card movement
     let pendingMove = null;
     
