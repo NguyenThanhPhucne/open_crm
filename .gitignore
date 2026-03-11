@@ -81,6 +81,7 @@
 # ========== Database Files (NEVER COMMIT) ==========
 *.sql
 *.sql.gz
+!db/latest.sql.gz
 *.mysql
 *.dump
 *.sqlite
