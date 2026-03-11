@@ -38,7 +38,7 @@ class DashboardController extends ControllerBase {
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $contacts_query->condition('field_owner', $user_id);
     }
     $contacts_count = $contacts_query->count()->execute();
@@ -48,7 +48,7 @@ class DashboardController extends ControllerBase {
       ->condition('type', 'contact')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $contacts_this_week_query->condition('field_owner', $user_id);
     }
     $contacts_this_week = $contacts_this_week_query->count()->execute();
@@ -56,7 +56,7 @@ class DashboardController extends ControllerBase {
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $orgs_query->condition('field_assigned_staff', $user_id);
     }
     $orgs_count = $orgs_query->count()->execute();
@@ -69,7 +69,7 @@ class DashboardController extends ControllerBase {
       ->condition('type', 'organization')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $orgs_this_month_query->condition('field_assigned_staff', $user_id);
     }
     $orgs_this_month = $orgs_this_month_query->count()->execute();
@@ -77,7 +77,7 @@ class DashboardController extends ControllerBase {
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $deals_query->condition('field_owner', $user_id);
     }
     $deals_count = $deals_query->count()->execute();
@@ -85,7 +85,7 @@ class DashboardController extends ControllerBase {
     $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $activities_query->condition('field_assigned_to', $user_id);
     }
     $activities_count = $activities_query->count()->execute();
@@ -95,7 +95,7 @@ class DashboardController extends ControllerBase {
       ->condition('type', 'activity')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $activities_this_week_query->condition('field_assigned_to', $user_id);
     }
     $activities_this_week = $activities_this_week_query->count()->execute();
@@ -128,7 +128,7 @@ class DashboardController extends ControllerBase {
         ->condition('type', 'deal')
         ->condition('field_stage', $stage_id)
         ->accessCheck(FALSE);
-      if (!$is_admin) {
+      if (!$is_admin && $user_id > 0) {
         $stage_query->condition('field_owner', $user_id);
       }
       $count = $stage_query->count()->execute();
@@ -150,7 +150,7 @@ class DashboardController extends ControllerBase {
     $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $deal_ids_query->condition('field_owner', $user_id);
     }
     $deal_ids = $deal_ids_query->execute();
@@ -203,7 +203,7 @@ class DashboardController extends ControllerBase {
       ->condition('type', 'activity')
       ->condition('field_datetime', $now, '<=') // due date is today or earlier
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $overdue_activities_query->condition('field_assigned_to', $user_id);
     }
     $overdue_activities = $overdue_activities_query->count()->execute();
@@ -219,7 +219,7 @@ class DashboardController extends ControllerBase {
       ->condition('field_stage', $won_term_id)
       ->condition('changed', $this_week_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $revenue_this_week_query->condition('field_owner', $user_id);
     }
     $revenue_this_week_ids = $revenue_this_week_query->execute();
@@ -269,7 +269,7 @@ class DashboardController extends ControllerBase {
     if (!empty($closed_term_ids)) {
       $due_this_week_query->condition('field_stage', $closed_term_ids, 'NOT IN');
     }
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $due_this_week_query->condition('field_owner', $user_id);
     }
     $due_this_week = $due_this_week_query->count()->execute();
@@ -280,7 +280,7 @@ class DashboardController extends ControllerBase {
       ->condition('type', 'contact')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $new_contacts_query->condition('field_owner', $user_id);
     }
     $new_contacts = $new_contacts_query->count()->execute();
@@ -291,7 +291,7 @@ class DashboardController extends ControllerBase {
       ->accessCheck(FALSE)
       ->sort('created', 'DESC')
       ->range(0, 30);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $activity_ids_query->condition('field_assigned_to', $user_id);
     }
     $activity_ids = $activity_ids_query->execute();
@@ -378,7 +378,7 @@ class DashboardController extends ControllerBase {
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $deal_ids_query->condition('field_owner', $user_id);
     }
     $deal_ids = $deal_ids_query->execute();
@@ -2516,7 +2516,7 @@ HTML;
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $contacts_query->condition('field_owner', $user_id);
     }
     $contacts_count = $contacts_query->count()->execute();
@@ -2525,7 +2525,7 @@ HTML;
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $orgs_query->condition('field_assigned_staff', $user_id);
     }
     $orgs_count = $orgs_query->count()->execute();
@@ -2534,7 +2534,7 @@ HTML;
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $deals_query->condition('field_owner', $user_id);
     }
     $deals_count = $deals_query->count()->execute();
@@ -2543,7 +2543,7 @@ HTML;
     $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $activities_query->condition('field_assigned_to', $user_id);
     }
     $activities_count = $activities_query->count()->execute();
@@ -2553,7 +2553,7 @@ HTML;
       ->condition('type', 'deal')
       ->condition('field_stage', $won_term_id)
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $won_query->condition('field_owner', $user_id);
     }
     $won_count = $won_query->count()->execute();
@@ -2563,7 +2563,7 @@ HTML;
       ->condition('type', 'deal')
       ->condition('field_stage', $lost_term_id)
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $lost_query->condition('field_owner', $user_id);
     }
     $lost_count = $lost_query->count()->execute();
@@ -2573,7 +2573,7 @@ HTML;
       ->condition('type', 'activity')
       ->condition('field_datetime', $now, '<=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $overdue_query->condition('field_assigned_to', $user_id);
     }
     $overdue_activities = $overdue_query->count()->execute();
@@ -2588,7 +2588,7 @@ HTML;
     if (!empty($closed_tids)) {
       $due_this_week_query->condition('field_stage', $closed_tids, 'NOT IN');
     }
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $due_this_week_query->condition('field_owner', $user_id);
     }
     $due_this_week = $due_this_week_query->count()->execute();
@@ -2598,7 +2598,7 @@ HTML;
       ->condition('type', 'contact')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $new_contacts_query->condition('field_owner', $user_id);
     }
     $new_contacts = $new_contacts_query->count()->execute();
@@ -2609,7 +2609,7 @@ HTML;
       ->condition('field_stage', $won_term_id)
       ->condition('changed', $this_week_start, '>=')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $revenue_this_week_query->condition('field_owner', $user_id);
     }
     $revenue_this_week_ids = $revenue_this_week_query->execute();
@@ -2630,7 +2630,7 @@ HTML;
     $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->accessCheck(FALSE);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $deal_ids_query->condition('field_owner', $user_id);
     }
     $deal_ids = $deal_ids_query->execute();
@@ -2689,7 +2689,7 @@ HTML;
       ->accessCheck(FALSE)
       ->sort('created', 'DESC')
       ->range(0, 10);
-    if (!$is_admin) {
+    if (!$is_admin && $user_id > 0) {
       $recent_activities_query->condition('field_assigned_to', $user_id);
     }
     $recent_activity_count = $recent_activities_query->count()->execute();

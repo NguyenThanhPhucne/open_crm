@@ -58,8 +58,8 @@ class KanbanController extends ControllerBase {
         ->accessCheck(FALSE)
         ->sort('created', 'DESC');
       
-      // Only filter by owner for non-admin users
-      if (!$is_admin) {
+      // Only filter by owner for non-admin, authenticated users.
+      if (!$is_admin && !$current_user->isAnonymous()) {
         $query->condition('field_owner', $user_id);
       }
       

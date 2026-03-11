@@ -24,29 +24,25 @@ function crm_actions_help($route_name, RouteMatchInterface $route_match) {
  */
 function crm_actions_page_top(array &$page_top) {
   $current_user = \Drupal::currentUser();
-  
-  // Only show for authenticated users
-  if ($current_user->isAuthenticated()) {
-    $current_path = \Drupal::request()->getRequestUri();
-    
-    // Show on CRM pages, user profiles, and content pages
-    if (str_contains($current_path, '/crm/') || 
-        str_contains($current_path, '/user/') ||
-        str_contains($current_path, '/node/') ||
-        str_contains($current_path, '/app/')) {
-      
-      $page_top['crm_global_nav'] = [
-        '#markup' => Markup::create(_crm_actions_build_navbar()),
-        '#attached' => [
-          'library' => [
-            'crm_actions/global_nav',
-          ],
+  $current_path = \Drupal::request()->getRequestUri();
+
+  // Show navbar on CRM pages for ALL users (including anonymous read-only viewers).
+  if (str_contains($current_path, '/crm/') ||
+      str_contains($current_path, '/user/') ||
+      str_contains($current_path, '/node/') ||
+      str_contains($current_path, '/app/')) {
+
+    $page_top['crm_global_nav'] = [
+      '#markup' => Markup::create(_crm_actions_build_navbar()),
+      '#attached' => [
+        'library' => [
+          'crm_actions/global_nav',
         ],
-        '#cache' => [
-          'contexts' => ['url.path', 'user'],
-        ],
-      ];
-    }
+      ],
+      '#cache' => [
+        'contexts' => ['url.path', 'user'],
+      ],
+    ];
   }
 }
 
@@ -57,10 +53,11 @@ function _crm_actions_build_navbar() {
   $current_path = \Drupal::request()->getRequestUri();
   $current_user = \Drupal::currentUser();
   
-  // Check if user is administrator
+  // Check user role level.
+  $is_anonymous = $current_user->isAnonymous();
   $is_admin = in_array('administrator', $current_user->getRoles()) || $current_user->id() == 1;
-  
-  // Base items for regular users
+
+  // Navigation items — anonymous sees all-* pages (same data as my-* since they see all published records).
   $items = [
     [
       'url' => '/crm/dashboard',
@@ -72,8 +69,8 @@ function _crm_actions_build_navbar() {
       'url' => $is_admin ? '/crm/all-contacts' : '/crm/my-contacts',
       'label' => $is_admin ? 'All Contacts' : 'Contacts',
       'icon' => 'users',
-      'active' => str_contains($current_path, '/crm/my-contacts') || 
-                  str_contains($current_path, '/crm/all-contacts') || 
+      'active' => str_contains($current_path, '/crm/my-contacts') ||
+                  str_contains($current_path, '/crm/all-contacts') ||
                   str_contains($current_path, '/node/add/contact'),
     ],
     [
@@ -101,7 +98,7 @@ function _crm_actions_build_navbar() {
       'active' => str_contains($current_path, '/crm/my-organizations') || str_contains($current_path, '/crm/all-organizations'),
     ],
   ];
-  
+
   $nav_html = '<div class="crm-global-nav">';
   $nav_html .= '<div class="crm-nav-container">';
   $nav_html .= '<div class="crm-nav-brand">';
@@ -109,7 +106,7 @@ function _crm_actions_build_navbar() {
   $nav_html .= '<span>OpenCRM</span>';
   $nav_html .= '</div>';
   $nav_html .= '<div class="crm-nav-items">';
-  
+
   foreach ($items as $item) {
     $active_class = $item['active'] ? ' active' : '';
     $nav_html .= '<a href="' . $item['url'] . '" class="crm-nav-item' . $active_class . '">';
@@ -117,11 +114,28 @@ function _crm_actions_build_navbar() {
     $nav_html .= '<span>' . $item['label'] . '</span>';
     $nav_html .= '</a>';
   }
-  
+
+  $nav_html .= '</div>';
+
+  // Right side: show "View Only" badge + Login button for anonymous; user info for authenticated.
+  $nav_html .= '<div class="crm-nav-right">';
+  if ($is_anonymous) {
+    $nav_html .= '<span class="crm-view-only-badge" style="'
+      . 'display:inline-flex;align-items:center;gap:6px;padding:4px 12px;'
+      . 'background:#fef3c7;color:#92400e;border:1px solid #fcd34d;'
+      . 'border-radius:9999px;font-size:12px;font-weight:600;margin-right:8px;">'
+      . '<i data-lucide="eye" width="14" height="14"></i>View Only</span>';
+    $nav_html .= '<a href="/user/login" style="'
+      . 'display:inline-flex;align-items:center;gap:6px;padding:6px 14px;'
+      . 'background:#3b82f6;color:#fff;border-radius:6px;'
+      . 'font-size:13px;font-weight:600;text-decoration:none;">'
+      . '<i data-lucide="log-in" width="14" height="14"></i>Login</a>';
+  }
+  $nav_html .= '</div>';
+
   $nav_html .= '</div>';
   $nav_html .= '</div>';
-  $nav_html .= '</div>';
-  
+
   return $nav_html;
 }
 
