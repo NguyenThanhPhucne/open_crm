@@ -262,10 +262,10 @@ body.path-login .region {
 }
 
 .btn-auth-submit:hover:not(:disabled) {
-  background: #eff6ff;
-  color: #2563eb !important;
+  background: #2563eb;
+  color: #ffffff !important;
   border-color: #2563eb;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 6px 16px rgba(59,130,246,0.35);
   transform: translateY(-2px);
 }
 
@@ -274,11 +274,11 @@ body.path-login .region {
 }
 
 .btn-auth-submit:active:not(:disabled) {
-  background: #dbeafe;
-  color: #1d4ed8 !important;
+  background: #1d4ed8;
+  color: #ffffff !important;
   border-color: #1d4ed8;
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 2px 4px rgba(59,130,246,0.2);
 }
 
 .btn-auth-submit:focus:not(:disabled) {
@@ -290,9 +290,9 @@ body.path-login .region {
 .btn-auth-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: #f8fafc;
-  color: #cbd5e1 !important;
-  border-color: #e2e8f0;
+  background: #93c5fd;
+  color: #ffffff !important;
+  border-color: #93c5fd;
   box-shadow: none;
   transform: none;
 }
