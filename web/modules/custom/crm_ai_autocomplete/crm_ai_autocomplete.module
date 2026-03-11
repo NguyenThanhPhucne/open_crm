@@ -100,9 +100,11 @@ function crm_ai_autocomplete_form_views_exposed_form_alter(&$form, FormStateInte
   }
 
   $view_map = [
-    'all_contacts' => ['/node/add/contact', 'Add Contact', 'contact'],
-    'my_contacts'  => ['/node/add/contact', 'Add Contact', 'contact'],
-    'all_deals'    => ['/node/add/deal', 'Add Deal', 'deal'],
+    'all_contacts'      => ['/node/add/contact',      'Add Contact',      'contact'],
+    'my_contacts'       => ['/node/add/contact',      'Add Contact',      'contact'],
+    'all_deals'         => ['/node/add/deal',          'Add Deal',         'deal'],
+    'all_activities'    => ['/node/add/activity',     'Add Activity',     'activity'],
+    'all_organizations' => ['/node/add/organization', 'Add Organization', 'organization'],
   ];
 
   if (!isset($view_map[$view->id()])) {
