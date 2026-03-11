@@ -84,6 +84,15 @@ display:
           label: Date
           settings:
             format_type: short
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          plugin_id: date
+          label: Updated
+          date_format: custom
+          custom_date_format: c
+          element_class: crm-time-ago
         crm_edit_link:
           id: crm_edit_link
           table: node_field_data
@@ -98,13 +107,34 @@ display:
       cache:
         type: tag
         options: {}
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Filter
+          reset_button: true
+          reset_button_label: Reset
+          exposed_sorts_label: "Sort by"
+          sort_asc_label: Asc
+          sort_desc_label: Desc
       sorts:
-        field_activity_date_value:
-          id: field_activity_date_value
-          table: node__field_datetime
-          field: field_datetime_value
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
           plugin_id: date
           order: DESC
+          expose:
+            label: "Updated date"
+          exposed: true
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          plugin_id: standard
+          order: ASC
+          expose:
+            label: "Activity name"
+          exposed: true
       filters:
         status:
           id: status

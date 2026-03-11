@@ -70,14 +70,15 @@ class EntitySchemaService {
       ],
       'organization' => [
         'title',
-        'field_industry',
+        'field_website',
+        'field_email',
+        'field_phone',
         'field_employees_count',
         'field_annual_revenue',
       ],
       'activity' => [
         'title',
         'field_outcome',
-        'field_type',
       ],
     ];
 

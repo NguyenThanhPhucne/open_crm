@@ -225,8 +225,15 @@ class AIEntityAutoCompleteService {
         'organization' => 'Company name (e.g., "Apex Solutions", "BrightWave Technologies"). NOT a person name.',
         'activity'     => 'Short action description (e.g., "Follow-up call with client", "Proposal sent to Acme").',
       ],
-      'field_email'          => 'Work email address (e.g., "james.carter@techcorp.com"). Must match the contact name.',
-      'field_phone'          => 'Business phone in format +1 (XXX) XXX-XXXX.',
+      'field_email'          => [
+        'contact'      => 'Work email address (e.g., "james.carter@techcorp.com"). Must match the contact name.',
+        'organization' => 'Company contact email matching the company domain (e.g., "info@apexsolutions.com", "contact@brightwavetech.io"). Match the company name in the domain.',
+      ],
+      'field_phone'          => [
+        'contact'      => 'Personal business phone in format +1 (XXX) XXX-XXXX.',
+        'organization' => 'Company main phone number in format +1 (XXX) XXX-XXXX.',
+      ],
+      'field_website'        => 'Company website URL starting with https:// (e.g., "https://apexsolutions.com", "https://brightwavetech.io"). Must be a plausible URL derived from the company name in "title".',
       'field_position'       => 'Job title at a company (e.g., "VP of Sales", "Head of Engineering", "CFO").',
       'field_source'         => 'Lead source — one of: Website, LinkedIn, Referral, Cold Call, Email Campaign, Trade Show, Partner, Direct.',
       'field_customer_type'  => 'Account category — one of: Enterprise, SMB, Startup, Individual, Non-Profit, Government.',

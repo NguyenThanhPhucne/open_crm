@@ -371,6 +371,12 @@ class AIAutoCompleteController extends ControllerBase {
         'field_source'        => 'crm_source',
         'field_customer_type' => 'crm_customer_type',
       ],
+      'activity' => [
+        'field_type' => 'activity_type',
+      ],
+      'organization' => [
+        'field_industry' => 'industry',
+      ],
     ];
 
     if (!isset($vocab_map[$bundle])) {
@@ -402,8 +408,9 @@ class AIAutoCompleteController extends ControllerBase {
    */
   protected function assignRandomActivityReferences($entity) {
     $storage = $this->entityTypeManager->getStorage('node');
+    $has_reference = FALSE;
 
-    // Try to assign a random contact.
+    // Assign a random contact.
     if ($entity->hasField('field_contact')) {
       $nids = $storage->getQuery()
         ->condition('type', 'contact')
@@ -412,12 +419,13 @@ class AIAutoCompleteController extends ControllerBase {
         ->range(0, 50)
         ->execute();
       if (!empty($nids)) {
+        $nids = array_values($nids);
         $entity->set('field_contact', $nids[array_rand($nids)]);
-        return;
+        $has_reference = TRUE;
       }
     }
 
-    // Fallback: assign a random deal if no contacts exist.
+    // Also assign a random deal for richer data.
     if ($entity->hasField('field_deal')) {
       $nids = $storage->getQuery()
         ->condition('type', 'deal')
@@ -426,8 +434,41 @@ class AIAutoCompleteController extends ControllerBase {
         ->range(0, 50)
         ->execute();
       if (!empty($nids)) {
+        $nids = array_values($nids);
         $entity->set('field_deal', $nids[array_rand($nids)]);
+        $has_reference = TRUE;
       }
+    }
+
+    if (!$has_reference) {
+      $this->loggerFactory->get('crm_ai_autocomplete')->warning(
+        'Cannot assign activity references: no contact or deal nodes exist yet.'
+      );
+    }
+
+    // Assign a random active staff member to field_assigned_to.
+    if ($entity->hasField('field_assigned_to')) {
+      $uids = $this->entityTypeManager->getStorage('user')
+        ->getQuery()
+        ->condition('status', 1)
+        ->condition('uid', 0, '>')
+        ->accessCheck(FALSE)
+        ->range(0, 20)
+        ->execute();
+      if (!empty($uids)) {
+        $uids = array_values($uids);
+        $entity->set('field_assigned_to', $uids[array_rand($uids)]);
+      }
+    }
+
+    // Set a realistic activity datetime if the AI did not supply one.
+    if ($entity->hasField('field_datetime') && $entity->get('field_datetime')->isEmpty()) {
+      // 70% past activities, 30% upcoming — mix of done + scheduled.
+      $offset = (mt_rand(0, 9) < 7) ? -mt_rand(1, 30) : mt_rand(1, 14);
+      $hour   = mt_rand(8, 17);
+      $minute = mt_rand(0, 3) * 15; // quarter-hour slots: 0, 15, 30, 45
+      $ts = mktime($hour, $minute, 0, (int) date('n'), (int) date('j') + $offset, (int) date('Y'));
+      $entity->set('field_datetime', date('Y-m-d\TH:i:s', $ts));
     }
   }
 
