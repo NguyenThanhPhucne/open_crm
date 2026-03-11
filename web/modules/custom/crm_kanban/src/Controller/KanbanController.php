@@ -24,10 +24,10 @@ class KanbanController extends ControllerBase {
     // Check if user is administrator
     $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
     
-    // Load pipeline stages dynamically from taxonomy.
+    // Load pipeline stages dynamically from taxonomy, sorted by weight.
     $stage_terms = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
-      ->loadByProperties(['vid' => 'pipeline_stage']);
+      ->loadTree('pipeline_stage', 0, NULL, TRUE);
 
     $stages = [];
     // Dynamic color palette (cycles through colors based on stage order).
@@ -245,278 +245,46 @@ class KanbanController extends ControllerBase {
   /* ── Empty state ── */
   .empty-state{text-align:center;padding:28px 12px;color:#cbd5e1;font-size:12px}
   .empty-state i{display:block;margin:0 auto 6px;opacity:.5}
-    
-    /* Deal Closing Modal */
-    .deal-modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 2000;
-      animation: fadeIn 0.2s ease;
-      pointer-events: none;
-    }
-    
-    .deal-modal-overlay.active {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: auto;
-    }
-    
-    .deal-modal {
-      background: white;
-      border-radius: 16px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: slideUp 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .modal-header h2 {
-      font-size: 20px;
-      font-weight: 600;
-      color: #1e293b;
-      flex: 1;
-      margin: 0;
-    }
-    
-    .modal-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-    
-    .modal-body {
-      padding: 24px;
-    }
-    
-    .info-box {
-      background: #fef3c7;
-      border-left: 4px solid #f59e0b;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 14px;
-      color: #92400e;
-      display: flex;
-      gap: 10px;
-    }
-    
-    .info-box i {
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-label {
-      display: block;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-    
-    .form-label .required {
-      color: #ef4444;
-      margin-left: 2px;
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.2s ease;
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-    }
-    
-    .file-upload-zone {
-      border: 2px dashed #cbd5e1;
-      border-radius: 8px;
-      padding: 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .file-upload-zone:hover {
-      border-color: #10b981;
-      background: #f0fdf4;
-    }
-    
-    .file-upload-zone.has-file {
-      border-color: #10b981;
-      background: #f0fdf4;
-    }
-    
-    .file-icon {
-      width: 48px;
-      height: 48px;
-      background: #e2e8f0;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      color: #64748b;
-    }
-    
-    .file-upload-zone.has-file .file-icon {
-      background: #d1fae5;
-      color: #10b981;
-    }
-    
-    .file-instructions {
-      font-size: 14px;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-    
-    .file-name {
-      font-size: 13px;
-      color: #10b981;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-    
-    .file-hint {
-      font-size: 12px;
-      color: #94a3b8;
-    }
-    
-    .modal-actions {
-      padding: 16px 24px;
-      border-top: 1px solid #e2e8f0;
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-    
-    .btn {
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s, border-color .15s, color .15s;
-      border: 1.5px solid;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .btn-cancel {
-      background: #fff;
-      color: #64748b;
-      border-color: #cbd5e1;
-    }
-    
-    .btn-cancel:hover {
-      background: #f8fafc;
-      border-color: #94a3b8;
-    }
-    
-    .btn-primary {
-      background: #fff;
-      color: #2563eb;
-      border-color: #2563eb;
-    }
-    
-    .btn-primary:hover {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border-color: #1d4ed8;
-    }
-    
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .btn-primary.loading {
-      position: relative;
-      color: transparent;
-    }
-    
-    .btn-primary.loading::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      top: 50%;
-      left: 50%;
-      margin-left: -8px;
-      margin-top: -8px;
-      border: 2px solid #2563eb;
-      border-radius: 50%;
-      border-top-color: transparent;
-      animation: spin 0.6s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .error-message {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-top: 16px;
-      display: none;
-    }
-    
-    .error-message.show {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  </style>
+  /* ── Modal ── */
+  .deal-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:2000;pointer-events:none}
+  .deal-modal-overlay.active{display:flex;align-items:center;justify-content:center;pointer-events:auto}
+  .deal-modal{background:#fff;border-radius:16px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUp .3s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  .modal-header{padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px}
+  .modal-header h2{font-size:18px;font-weight:700;color:#1e293b;flex:1;margin:0}
+  .modal-icon{width:36px;height:36px;background:linear-gradient(135deg,#10b981,#059669);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff}
+  .modal-icon i{width:18px;height:18px}
+  .modal-body{padding:20px 24px}
+  .info-box{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#92400e;display:flex;gap:10px}
+  .info-box i{flex-shrink:0;margin-top:2px;width:16px;height:16px}
+  .form-group{margin-bottom:16px}
+  .form-label{display:flex;align-items:center;gap:6px;font-weight:600;color:#1e293b;margin-bottom:6px;font-size:13px}
+  .form-label .required{color:#ef4444}
+  .form-input{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;transition:border-color .2s,box-shadow .2s;outline:none}
+  .form-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+  .file-upload-zone{border:2px dashed #cbd5e1;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+  .file-upload-zone:hover,.file-upload-zone.has-file{border-color:#10b981;background:#f0fdf4}
+  .file-icon{width:44px;height:44px;background:#e2e8f0;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;color:#64748b}
+  .file-upload-zone.has-file .file-icon{background:#d1fae5;color:#10b981}
+  .file-icon i{width:22px;height:22px}
+  .file-instructions{font-size:13px;color:#64748b;margin-bottom:4px}
+  .file-name{font-size:13px;color:#10b981;font-weight:600;margin-top:6px}
+  .file-hint{font-size:12px;color:#94a3b8}
+  .modal-actions{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end}
+  .modal-btn{padding:9px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s;border:1.5px solid;display:inline-flex;align-items:center;gap:7px}
+  .modal-btn i{width:14px;height:14px}
+  .modal-btn-cancel{background:#fff;color:#64748b;border-color:#cbd5e1}
+  .modal-btn-cancel:hover{background:#f8fafc;border-color:#94a3b8}
+  .modal-btn-confirm{background:#fff;color:#2563eb;border-color:#2563eb}
+  .modal-btn-confirm:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
+  .modal-btn-confirm:disabled{opacity:.5;cursor:not-allowed}
+  .modal-btn-confirm.loading{position:relative;color:transparent}
+  .modal-btn-confirm.loading::after{content:'';position:absolute;width:14px;height:14px;top:50%;left:50%;margin:-7px 0 0 -7px;border:2px solid #2563eb;border-radius:50%;border-top-color:transparent;animation:spin .6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-message{background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;align-items:center;gap:8px}
+  .error-message.show{display:flex}
+  .error-message i{width:14px;height:14px;flex-shrink:0}
+</style>
   
   <!-- Deal Closing Modal -->
   <div class="deal-modal-overlay" id="dealClosingModal">
@@ -568,12 +336,12 @@ class KanbanController extends ControllerBase {
         </form>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-cancel" onclick="closeDealModal()">
-          <i data-lucide="x" width="16" height="16"></i>
+        <button type="button" class="modal-btn modal-btn-cancel" onclick="closeDealModal()">
+          <i data-lucide="x"></i>
           Cancel
         </button>
-        <button type="button" class="btn btn-primary" onclick="submitDealClosing()">
-          <i data-lucide="check" width="16" height="16"></i>
+        <button type="button" class="modal-btn modal-btn-confirm" onclick="submitDealClosing()">
+          <i data-lucide="check"></i>
           Confirm Close Deal
         </button>
       </div>
@@ -610,7 +378,9 @@ HTML;
       $deals = $deals_by_stage[$stage_id] ?? [];
       $total = $totals_by_stage[$stage_id] ?? 0;
       $count = count($deals);
-      $total_formatted = '$' . number_format($total / 1000000, 1) . 'M';
+      $total_formatted = $total >= 1000000
+        ? '$' . number_format($total / 1000000, 1) . 'M'
+        : ($total >= 1000 ? '$' . number_format($total / 1000, 0) . 'K' : '$' . number_format($total, 0));
       
       $html .= <<<HTML
       
@@ -637,7 +407,7 @@ HTML;
         foreach ($deals as $deal) {
           $val = (float)$deal['value'];
           $value_formatted = $val >= 1000000
-            ? '$' . number_format($val / 1000000, 2) . 'M'
+            ? '$' . number_format($val / 1000000, 1) . 'M'
             : ($val >= 1000 ? '$' . number_format($val / 1000, 0) . 'K' : '$' . number_format($val, 0));
           $org_display   = $deal['organization'] ?: 'No organization';
           $owner_display = $deal['owner'] ?: 'Unassigned';
@@ -681,24 +451,6 @@ HTML;
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
-    
-    // Quick Add dropdown toggle
-    const quickAddToggle = document.getElementById('crm-quick-add-toggle');
-    const quickAddMenu = document.getElementById('crm-quick-add-menu');
-    
-    if (quickAddToggle && quickAddMenu) {
-      quickAddToggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        quickAddMenu.classList.toggle('active');
-      });
-      
-      // Close dropdown when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!quickAddToggle.contains(e.target) && !quickAddMenu.contains(e.target)) {
-          quickAddMenu.classList.remove('active');
-        }
-      });
-    }
     
     // Variables for reverting card movement
     let pendingMove = null;
