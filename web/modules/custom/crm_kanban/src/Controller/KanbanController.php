@@ -545,30 +545,34 @@ class KanbanController extends ControllerBase {
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
+      transition: background .15s, border-color .15s, color .15s;
+      border: 1.5px solid;
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
     
     .btn-cancel {
-      background: #f1f5f9;
+      background: #fff;
       color: #64748b;
+      border-color: #cbd5e1;
     }
     
     .btn-cancel:hover {
-      background: #e2e8f0;
+      background: #f8fafc;
+      border-color: #94a3b8;
     }
     
     .btn-primary {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
+      background: #fff;
+      color: #2563eb;
+      border-color: #2563eb;
     }
     
     .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #1d4ed8;
     }
     
     .btn-primary:disabled {
@@ -590,7 +594,7 @@ class KanbanController extends ControllerBase {
       left: 50%;
       margin-left: -8px;
       margin-top: -8px;
-      border: 2px solid white;
+      border: 2px solid #2563eb;
       border-radius: 50%;
       border-top-color: transparent;
       animation: spin 0.6s linear infinite;
@@ -1006,22 +1010,22 @@ class KanbanController extends ControllerBase {
       height: 100%;
       font-size: 13px;
       font-weight: 600;
-      color: #ffffff;
+      color: #2563eb;
       text-decoration: none;
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      background: #fff;
       border: none;
+      border-left: 1px solid #e2e8f0;
       cursor: pointer;
-      transition: all 0.2s ease;
-      border-left: 1px solid rgba(255,255,255,0.1);
+      transition: background .15s, color .15s;
     }
     
     .crm-toolbar-btn:hover {
-      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      background: #eff6ff;
+      color: #1d4ed8;
     }
     
     .crm-toolbar-btn:active {
-      transform: translateY(0);
+      background: #dbeafe;
     }
     
     .crm-toolbar-btn svg {

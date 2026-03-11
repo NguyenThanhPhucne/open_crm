@@ -190,31 +190,33 @@ class ImportController extends ControllerBase {
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.2s ease;
+      transition: background .15s, border-color .15s, color .15s;
       cursor: pointer;
-      border: none;
+      border: 1.5px solid;
     }
     
     .btn-primary {
-      background: #3b82f6;
-      color: white;
+      background: #fff;
+      color: #2563eb;
+      border-color: #2563eb;
     }
     
     .btn-primary:hover {
-      background: #2563eb;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #1d4ed8;
     }
     
     .btn-secondary {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #64748b;
+      border-color: #cbd5e1;
     }
     
     .btn-secondary:hover {
-      background: #e2e8f0;
-      border-color: #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      border-color: #94a3b8;
     }
     
     .info-box {

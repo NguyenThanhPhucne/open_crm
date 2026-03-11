@@ -638,14 +638,14 @@ class TeamsManagementController extends ControllerBase {
     
     .save-btn-card {
       padding: 10px 18px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      border: none;
+      background: #fff;
+      color: #2563eb;
+      border: 1.5px solid #2563eb;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background .15s, border-color .15s, color .15s;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -653,18 +653,18 @@ class TeamsManagementController extends ControllerBase {
     }
     
     .save-btn-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #1d4ed8;
     }
     
     .save-btn-card:active {
-      transform: translateY(0);
+      background: #dbeafe;
     }
     
     .save-btn-card:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
     
     .filter-bar {
@@ -806,28 +806,28 @@ class TeamsManagementController extends ControllerBase {
     
     .save-btn {
       padding: 8px 16px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      border: none;
+      background: #fff;
+      color: #2563eb;
+      border: 1.5px solid #2563eb;
       border-radius: 8px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background .15s, border-color .15s, color .15s;
       display: inline-flex;
       align-items: center;
       gap: 6px;
     }
     
     .save-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #1d4ed8;
     }
     
     .save-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
     
     .role-badge {
@@ -1099,34 +1099,33 @@ class TeamsManagementController extends ControllerBase {
     
     .save-btn-table {
       padding: 10px 18px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      border: none;
+      background: #fff;
+      color: #2563eb;
+      border: 1.5px solid #2563eb;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background .15s, border-color .15s, color .15s;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
     }
     
     .save-btn-table:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #1d4ed8;
     }
     
     .save-btn-table:active {
-      transform: translateY(0);
+      background: #dbeafe;
     }
     
     .save-btn-table:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
     
     .success-message {

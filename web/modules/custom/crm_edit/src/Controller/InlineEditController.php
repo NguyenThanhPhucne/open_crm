@@ -358,34 +358,38 @@ class InlineEditController extends ControllerBase {
       
       .btn {
         padding: 10px 20px;
-        border: none;
+        border: 1.5px solid;
         border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        transition: all 0.2s;
+        transition: background .15s, border-color .15s, color .15s;
       }
       
       .btn-primary {
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        color: white;
+        background: #fff;
+        color: #2563eb;
+        border-color: #2563eb;
       }
       
       .btn-primary:hover {
-        background: linear-gradient(135deg, #2980b9, #21638f);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #1d4ed8;
       }
       
       .btn-secondary {
-        background: #95a5a6;
-        color: white;
+        background: #fff;
+        color: #64748b;
+        border-color: #cbd5e1;
       }
       
       .btn-secondary:hover {
-        background: #7f8c8d;
+        background: #f8fafc;
+        color: #475569;
+        border-color: #94a3b8;
       }
       
       .save-status {
