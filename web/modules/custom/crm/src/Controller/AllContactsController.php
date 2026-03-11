@@ -291,18 +291,17 @@ class AllContactsController extends ControllerBase {
   .contact-name-link{font-weight:600;color:#0f172a;text-decoration:none;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;display:block}
   .contact-name-link:hover{color:#3b82f6;text-decoration:underline}
   .contact-position{font-size:11px;color:#94a3b8;white-space:nowrap}
-  .td-org a{color:#3b82f6;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:5px;white-space:nowrap}
-  .td-org a:hover{text-decoration:underline}
-  .td-org a i{width:13px;height:13px;flex-shrink:0}
+  .td-org a{color:#3b82f6;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap}
+  .td-org a:hover{text-decoration:underline;color:#1d4ed8}
   .td-org .no-org{color:#cbd5e1;font-style:italic;font-size:12px}
-  .td-phone,.td-email{display:flex;align-items:center;gap:10px;color:#374151;font-size:13px;white-space:nowrap}
-  .td-phone a,.td-email a{color:#374151;text-decoration:none}
+  .td-phone,.td-email{display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .td-phone>i,.td-email>i{width:12px;height:12px;color:#d1d5db;flex-shrink:0;opacity:.85}
+  .td-phone a,.td-email a{color:#374151;text-decoration:none;font-size:13px;font-weight:500}
   .td-phone a:hover,.td-email a:hover{color:#3b82f6}
-  .td-phone i,.td-email i{width:14px;height:14px;color:#94a3b8;flex-shrink:0;margin-top:2px}
   .td-empty-val{color:#cbd5e1;font-style:italic;font-size:12px}
   .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
   .td-owner{font-size:12px;color:#475569;white-space:nowrap;display:flex;align-items:center;gap:5px}
-  .td-owner i{width:12px;height:12px;color:#94a3b8}
+  .td-owner i{width:11px;height:11px;color:#d1d5db;opacity:.8}
   .td-time{font-size:12px;color:#94a3b8;white-space:nowrap}
   .td-actions{display:flex;align-items:center;gap:6px;justify-content:flex-end}
   .btn-action{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;text-decoration:none}
@@ -447,19 +446,19 @@ EMPTY;
         $src_style = $get_badge($r['source'], $source_colors);
         $ct_style  = $get_badge($r['ctype'],  $ctype_colors);
 
-        // Org cell
+        // Org cell — clean text link, no icon inside
         $org_cell = $r['org_name']
-          ? '<a href="' . $r['org_url'] . '"><i data-lucide="building-2"></i>' . $r['org_name'] . '</a>'
+          ? '<a href="' . $r['org_url'] . '">' . $r['org_name'] . '</a>'
           : '<span class="no-org">—</span>';
 
-        // Phone cell
+        // Phone cell — icon outside link so text is primary focus
         $phone_cell = $r['phone']
-          ? '<a href="tel:' . $r['phone'] . '"><i data-lucide="phone"></i>' . $r['phone'] . '</a>'
+          ? '<i data-lucide="phone"></i><a href="tel:' . $r['phone'] . '">' . $r['phone'] . '</a>'
           : '<span class="td-empty-val">—</span>';
 
-        // Email cell
+        // Email cell — icon outside link so text is primary focus
         $email_cell = $r['email']
-          ? '<a href="mailto:' . $r['email'] . '"><i data-lucide="mail"></i>' . $r['email'] . '</a>'
+          ? '<i data-lucide="mail"></i><a href="mailto:' . $r['email'] . '">' . $r['email'] . '</a>'
           : '<span class="td-empty-val">—</span>';
 
         // Type badge
