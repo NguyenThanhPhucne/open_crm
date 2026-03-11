@@ -60,7 +60,22 @@ window.CRMInlineEdit = {
     const overlay = document.getElementById("crm-modal-overlay");
     if (overlay) {
       overlay.classList.add("closing");
-      setTimeout(() => overlay.remove(), 300);
+      setTimeout(() => {
+        overlay.remove();
+        // If on a dedicated add page, redirect to the matching list instead of
+        // leaving the user staring at the "Loading create form…" background.
+        const path = window.location.pathname;
+        const addMatch = path.match(/^\/crm\/add\/(\w+)/);
+        if (addMatch) {
+          const listMap = {
+            contact: "/crm/all-contacts",
+            deal: "/crm/all-deals",
+            organization: "/crm/all-organizations",
+            activity: "/crm/all-activities",
+          };
+          window.location.href = listMap[addMatch[1]] || "/crm/dashboard";
+        }
+      }, 300);
     }
   },
 
@@ -223,12 +238,12 @@ window.CRMInlineEdit = {
 
     closeBtn.addEventListener("click", removeToast);
 
-    // Auto dismiss after 3 seconds
+    // Auto dismiss after 5 seconds
     setTimeout(() => {
       if (toastEl && toastEl.parentNode) {
         removeToast();
       }
-    }, dismissTime);
+    }, 5000);
   },
 
   confirmDelete: function (nid, type, title) {
@@ -615,7 +630,7 @@ window.CRMInlineEdit = {
     });
 
     // Cancel button
-    const cancelBtn = overlay.querySelector(".btn-secondary");
+    const cancelBtn = overlay.querySelector(".btn-cancel");
     if (cancelBtn) {
       cancelBtn.addEventListener("click", () => this.closeModal());
     }

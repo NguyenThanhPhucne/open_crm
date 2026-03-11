@@ -430,15 +430,15 @@ class AddController extends ControllerBase {
         </div>
         
         <div class="crm-modal-footer">
-          <button type="submit" class="btn btn-primary save-btn">
-            <i data-lucide="plus-circle"></i>
-            <span>Create <?= $type_label ?></span>
-          </button>
-          <button type="button" class="btn btn-secondary cancel-btn crm-modal-close">
+          <div class="save-status"></div>
+          <button type="button" class="btn-cancel crm-modal-close">
             <i data-lucide="x"></i>
             <span>Cancel</span>
           </button>
-          <div class="save-status"></div>
+          <button type="submit" class="btn-save save-btn">
+            <i data-lucide="plus-circle"></i>
+            <span>Create <?= $type_label ?></span>
+          </button>
         </div>
       </form>
     </div>
