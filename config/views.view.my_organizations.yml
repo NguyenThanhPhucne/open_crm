@@ -1,6 +1,6 @@
 uuid: 3b8f2e91-4c7a-4d2e-9a31-7e5c9d8a1f23
 langcode: en
-status: true
+status: false
 dependencies:
   config:
     - field.storage.node.field_assigned_staff

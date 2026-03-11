@@ -91,6 +91,24 @@ crm.my_activities:
     _permission: "access content"
     _user_is_logged_in: "TRUE"
 
+crm.all_organizations:
+  path: "/crm/all-organizations"
+  defaults:
+    _controller: '\Drupal\crm\Controller\AllOrganizationsController::view'
+    _title: "All Organizations"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+
+crm.my_organizations:
+  path: "/crm/my-organizations"
+  defaults:
+    _controller: '\Drupal\crm\Controller\AllOrganizationsController::view'
+    _title: "My Organizations"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"
   defaults:
