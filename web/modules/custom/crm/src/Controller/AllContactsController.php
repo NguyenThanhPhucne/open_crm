@@ -455,7 +455,7 @@ HTML;
   <form class="filter-bar" method="get" action="{$contacts_url}">
     <div class="filter-input-wrap">
       <i data-lucide="search"></i>
-      <input class="filter-input" type="text" name="search" placeholder="Search by name…" value="{$e_search}">
+      <input id="crm-search-input" class="filter-input" type="text" name="search" placeholder="Search by name…" value="{$e_search}">
     </div>
     <div class="filter-input-wrap">
       <i data-lucide="mail"></i>
@@ -633,19 +633,12 @@ EMPTY;
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     if (window.lucide) lucide.createIcons();
-
-    // Show pending toast (after edit/delete reload)
-    const t = localStorage.getItem('crmToast');
-    if (t) {
-      try {
-        const d = JSON.parse(t);
-        localStorage.removeItem('crmToast');
-        setTimeout(() => { if (window.CRMInlineEdit) CRMInlineEdit.showMessage(d.message, d.type); }, 300);
-      } catch(e) {}
+    if (window.CRM) {
+      CRM.initRealtimeSearch('crm-search-input');
+      CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
+      CRM.renderShortcutHints([{ key: 'N', label: 'New contact' }, { key: '/', label: 'Search' }, { key: 'Esc', label: 'Clear' }]);
     }
   });
-  // Re-init Lucide after any DOM change (modal open/close, etc.)
-  const _origCreate = window.lucide ? lucide.createIcons.bind(lucide) : null;
   document.addEventListener('crm:icons-refresh', function () {
     if (window.lucide) lucide.createIcons();
   });
@@ -716,8 +709,7 @@ JS;
       '#markup' => Markup::create($html),
       '#attached' => [
         'library' => [
-          'core/drupal',
-          'crm_edit/inline_edit',
+          'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
           'crm_ai_autocomplete/ai-generate-button',
         ],
       ],

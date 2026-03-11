@@ -465,7 +465,7 @@ HTML;
   <form class="filter-bar" method="get" action="{$organizations_url}">
     <div class="filter-input-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#3b82f6"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="filter-input" type="text" name="search" placeholder="Search by name…" value="{$e_search}">
+      <input id="crm-search-input" class="filter-input" type="text" name="search" placeholder="Search by name…" value="{$e_search}">
     </div>
     <div class="filter-input-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -660,13 +660,10 @@ EMPTY;
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     if (window.lucide) lucide.createIcons();
-    const t = localStorage.getItem('crmToast');
-    if (t) {
-      try {
-        const d = JSON.parse(t);
-        localStorage.removeItem('crmToast');
-        setTimeout(() => { if (window.CRMInlineEdit) CRMInlineEdit.showMessage(d.message, d.type); }, 300);
-      } catch(e) {}
+    if (window.CRM) {
+      CRM.initRealtimeSearch('crm-search-input');
+      CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
+      CRM.renderShortcutHints([{ key: 'N', label: 'New organization' }, { key: '/', label: 'Search' }, { key: 'Esc', label: 'Clear' }]);
     }
   });
   document.addEventListener('crm:icons-refresh', function () {
@@ -739,8 +736,7 @@ JS;
       '#markup' => Markup::create($html),
       '#attached' => [
         'library' => [
-          'core/drupal',
-          'crm_edit/inline_edit',
+          'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
           'crm_ai_autocomplete/ai-generate-button',
         ],
       ],

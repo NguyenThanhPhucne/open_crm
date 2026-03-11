@@ -157,6 +157,7 @@ class KanbanController extends ControllerBase {
       '#attached' => [
         'library' => [
           'core/drupal',
+          'crm/crm_shared',
         ],
       ],
       '#cache' => [
@@ -453,6 +454,10 @@ HTML;
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
+    if (window.CRM) {
+      CRM.initKeyboardShortcuts({ addUrl: '/node/add/deal', searchId: null });
+      CRM.renderShortcutHints([{ key: 'N', label: 'New deal' }]);
+    }
     
     // Variables for reverting card movement
     let pendingMove = null;

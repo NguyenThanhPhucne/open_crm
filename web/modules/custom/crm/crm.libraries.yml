@@ -1,3 +1,13 @@
+crm_shared:
+  version: 1.0
+  css:
+    theme:
+      css/crm-shared.css: {}
+  js:
+    js/crm-shared.js: {}
+  dependencies:
+    - core/drupal
+
 crm-design-system:
   version: 1.0
   css: {}

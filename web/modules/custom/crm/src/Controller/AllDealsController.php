@@ -496,7 +496,7 @@ HTML;
     // ── Filter bar ────────────────────────────────────────────────────────────
     $html .= '<form class="filter-bar" method="get" action="' . $deals_url . '">';
     $html .= '<div class="filter-input-wrap"><i data-lucide="search"></i>'
-      . '<input class="filter-input" type="text" name="search" placeholder="Search by deal name…" value="' . $e_search . '"></div>';
+      . '<input id="crm-search-input" class="filter-input" type="text" name="search" placeholder="Search by deal name…" value="' . $e_search . '"></div>';
 
     // Stage dropdown
     $html .= '<div class="filter-select-wrap"><span class="flt-sel-ico"><i data-lucide="layers"></i></span>'
@@ -673,13 +673,10 @@ EMPTY;
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     if (window.lucide) lucide.createIcons();
-    const t = localStorage.getItem('crmToast');
-    if (t) {
-      try {
-        const d = JSON.parse(t);
-        localStorage.removeItem('crmToast');
-        setTimeout(() => { if (window.CRMInlineEdit) CRMInlineEdit.showMessage(d.message, d.type); }, 300);
-      } catch(e) {}
+    if (window.CRM) {
+      CRM.initRealtimeSearch('crm-search-input');
+      CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
+      CRM.renderShortcutHints([{ key: 'N', label: 'New deal' }, { key: '/', label: 'Search' }, { key: 'Esc', label: 'Clear' }]);
     }
   });
   document.addEventListener('crm:icons-refresh', function () {
@@ -752,8 +749,7 @@ JS;
       '#markup' => Markup::create($html),
       '#attached' => [
         'library' => [
-          'core/drupal',
-          'crm_edit/inline_edit',
+          'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
           'crm_ai_autocomplete/ai-generate-button',
         ],
       ],
