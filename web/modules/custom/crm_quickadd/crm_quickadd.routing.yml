@@ -2,7 +2,7 @@ crm_quickadd.contact_form:
   path: "/crm/quickadd/contact"
   defaults:
     _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::contactForm'
-    _title: "Thêm khách hàng nhanh"
+    _title: "Quick Add Contact"
   requirements:
     _permission: "create contact content"
 
@@ -18,7 +18,7 @@ crm_quickadd.deal_form:
   path: "/crm/quickadd/deal"
   defaults:
     _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::dealForm'
-    _title: "Thêm cơ hội nhanh"
+    _title: "Quick Add Deal"
   requirements:
     _permission: "create deal content"
 
@@ -34,7 +34,7 @@ crm_quickadd.organization_form:
   path: "/crm/quickadd/organization"
   defaults:
     _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::organizationForm'
-    _title: "Thêm tổ chức nhanh"
+    _title: "Quick Add Organization"
   requirements:
     _permission: "create organization content"
 

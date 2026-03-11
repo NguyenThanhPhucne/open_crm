@@ -36,7 +36,7 @@ class ActivityApiController extends ControllerBase {
       foreach ($nodes as $node) {
         $value = '';
         if ($node->hasField('field_value') && !$node->get('field_value')->isEmpty()) {
-          $value = number_format($node->get('field_value')->value, 0, ',', '.') . ' đ';
+          $value = number_format($node->get('field_value')->value, 0, ',', '.') . ' VND';
         }
         
         $stage = '';

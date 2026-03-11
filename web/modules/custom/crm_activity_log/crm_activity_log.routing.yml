@@ -2,7 +2,7 @@ crm_activity_log.activity_tab:
   path: "/node/{node}/activities"
   defaults:
     _controller: '\Drupal\crm_activity_log\Controller\ActivityLogController::activityTab'
-    _title: "Lịch sử tương tác"
+    _title: "Activity Log"
   requirements:
     _activity_tab_access: "TRUE"
     node: \d+

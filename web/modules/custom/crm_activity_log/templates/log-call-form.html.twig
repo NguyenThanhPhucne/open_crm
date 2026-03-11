@@ -3,7 +3,7 @@
     <div class="activity-form-header">
       <h2>
         <i data-lucide="phone"></i>
-        Log Call với {{ contact_name }}
+        Log Call with {{ contact_name }}
       </h2>
       <button class="activity-close" onclick="window.history.back()">
         <i data-lucide="x"></i>
@@ -14,41 +14,41 @@
       <input type="hidden" name="contact_id" value="{{ contact_id }}">
 
       <div class="form-group">
-        <label for="call-outcome" class="required">Kết quả cuộc gọi</label>
+        <label for="call-outcome" class="required">Call Outcome</label>
         <select id="call-outcome" name="outcome" required>
-          <option value="">-- Chọn kết quả --</option>
-          <option value="Khách nghe máy - Quan tâm">✅ Khách nghe máy - Quan tâm</option>
-          <option value="Khách nghe máy - Chưa quan tâm">⚠️ Khách nghe máy - Chưa quan tâm</option>
-          <option value="Khách nghe máy - Từ chối">❌ Khách nghe máy - Từ chối</option>
-          <option value="Không nghe máy">📵 Không nghe máy</option>
-          <option value="Thuê bao / Máy bận">📞 Thuê bao / Máy bận</option>
-          <option value="Hẹn gọi lại sau">🔄 Hẹn gọi lại sau</option>
-          <option value="Đặt lịch meeting">📅 Đặt lịch meeting</option>
+          <option value="">-- Select outcome --</option>
+          <option value="Answered - Interested">✅ Answered – Interested</option>
+          <option value="Answered - Not Interested">⚠️ Answered – Not Interested</option>
+          <option value="Answered - Declined">❌ Answered – Declined</option>
+          <option value="No Answer">📵 No Answer</option>
+          <option value="Busy / Unavailable">📞 Busy / Unavailable</option>
+          <option value="Scheduled Callback">🔄 Scheduled Callback</option>
+          <option value="Meeting Scheduled">📅 Meeting Scheduled</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="call-notes">Ghi chú cuộc gọi</label>
+        <label for="call-notes">Call Notes</label>
         <textarea 
           id="call-notes" 
           name="notes" 
           rows="6" 
-          placeholder="Ghi chú nội dung cuộc gọi, nhu cầu khách hàng, điều cần follow-up..."></textarea>
+          placeholder="Note the call content, customer needs, follow-up items..."></textarea>
       </div>
 
       <div class="form-group">
-        <label for="call-deal">Deal liên quan (nếu có)</label>
+        <label for="call-deal">Related Deal (if any)</label>
         <select id="call-deal" name="deal">
-          <option value="">-- Không có deal --</option>
+          <option value="">-- No deal --</option>
           <!-- Deals will be loaded via JS -->
         </select>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-secondary" onclick="window.history.back()">Hủy</button>
+        <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
         <button type="submit" class="btn-primary">
           <i data-lucide="save"></i>
-          Lưu cuộc gọi
+          Save Call
         </button>
       </div>
 

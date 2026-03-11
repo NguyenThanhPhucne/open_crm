@@ -80,18 +80,18 @@ class CrmLoginForm extends FormBase {
         <a href="/" class="auth-logo">
           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </a>
-        <h1 class="auth-title">Chào mừng quay lại</h1>
-        <p class="auth-subtitle">Đăng nhập vào tài khoản Open CRM của bạn</p>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to your Open CRM account</p>
       </div>',
     ];
 
     // Username
     $form['card']['form_column']['username'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Tên đăng nhập'),
+      '#title' => $this->t('Username'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nhập tên đăng nhập của bạn',
+        'placeholder' => 'Enter your username',
         'autocomplete' => 'username',
         'class' => ['auth-input'],
       ],
@@ -100,10 +100,10 @@ class CrmLoginForm extends FormBase {
     // Password
     $form['card']['form_column']['password'] = [
       '#type' => 'password',
-      '#title' => $this->t('Mật khẩu'),
+      '#title' => $this->t('Password'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nhập mật khẩu của bạn',
+        'placeholder' => 'Enter your password',
         'autocomplete' => 'current-password',
         'class' => ['auth-input'],
       ],
@@ -117,19 +117,19 @@ class CrmLoginForm extends FormBase {
 
     $form['card']['form_column']['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Đăng nhập'),
+      '#value' => $this->t('Sign In'),
       '#attributes' => ['class' => ['btn-auth-submit']],
     ];
 
     // Register link
     $form['card']['form_column']['register_link'] = [
-      '#markup' => '<div class="auth-link">Chưa có tài khoản? <a href="/register">Đăng ký</a></div>',
+      '#markup' => '<div class="auth-link">Don\'t have an account? <a href="/register">Sign up</a></div>',
     ];
 
     // Footer terms (inside form column)
     $form['card']['form_column']['footer_terms'] = [
       '#markup' => '<div class="auth-footer-terms">
-        Bằng cách tiếp tục, bạn đồng ý với <a href="/terms">Điều khoản dịch vụ</a> và <a href="/privacy">Chính sách bảo mật</a> của chúng tôi.
+        By continuing, you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.
       </div>',
     ];
 
@@ -153,7 +153,7 @@ class CrmLoginForm extends FormBase {
     // Check flood control
     $flood_config = $this->config('user.flood');
     if (!$this->flood->isAllowed('user.failed_login_ip', $flood_config->get('ip_limit'), $flood_config->get('ip_window'))) {
-      $form_state->setErrorByName('username', $this->t('Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau.'));
+      $form_state->setErrorByName('username', $this->t('Too many failed login attempts. Please try again later.'));
       return;
     }
 
@@ -163,7 +163,7 @@ class CrmLoginForm extends FormBase {
     if (!$uid) {
       // Register flood event
       $this->flood->register('user.failed_login_ip', $flood_config->get('ip_window'));
-      $form_state->setErrorByName('username', $this->t('Tên đăng nhập hoặc mật khẩu không đúng'));
+      $form_state->setErrorByName('username', $this->t('Invalid username or password.'));
     }
     else {
       // Store UID for submission
@@ -183,7 +183,7 @@ class CrmLoginForm extends FormBase {
       user_login_finalize($user);
 
       // Success message
-      $this->messenger()->addStatus($this->t('Chào mừng trở lại, @name!', [
+      $this->messenger()->addStatus($this->t('Welcome back, @name!', [
         '@name' => $user->getDisplayName(),
       ]));
 

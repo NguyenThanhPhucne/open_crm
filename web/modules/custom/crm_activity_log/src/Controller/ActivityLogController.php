@@ -119,7 +119,7 @@ class ActivityLogController extends ControllerBase {
       if (empty($data['outcome'])) {
         return new JsonResponse([
           'status' => 'error',
-          'message' => 'Vui lòng chọn kết quả cuộc gọi.',
+          'message' => 'Please select a call outcome.',
         ], 400);
       }
 
@@ -155,7 +155,7 @@ class ActivityLogController extends ControllerBase {
 
       return new JsonResponse([
         'status' => 'success',
-        'message' => 'Đã ghi nhận cuộc gọi thành công.',
+        'message' => 'Call logged successfully.',
         'activity_id' => $activity->id(),
         'redirect' => '/node/' . $contact . '/activities',
       ]);
@@ -164,7 +164,7 @@ class ActivityLogController extends ControllerBase {
       \Drupal::logger('crm_activity_log')->error('Log call error: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse([
         'status' => 'error',
-        'message' => 'Có lỗi xảy ra. Vui lòng thử lại.',
+        'message' => 'An error occurred. Please try again.',
       ], 500);
     }
   }
@@ -204,7 +204,7 @@ class ActivityLogController extends ControllerBase {
       if (empty($data['meeting_date']) || empty($data['title'])) {
         return new JsonResponse([
           'status' => 'error',
-          'message' => 'Vui lòng nhập đầy đủ Tiêu đề và Thời gian.',
+          'message' => 'Please fill in the meeting title and time.',
         ], 400);
       }
 
@@ -231,7 +231,7 @@ class ActivityLogController extends ControllerBase {
 
       return new JsonResponse([
         'status' => 'success',
-        'message' => 'Đã đặt lịch hẹn thành công.',
+        'message' => 'Meeting scheduled successfully.',
         'activity_id' => $activity->id(),
         'redirect' => '/node/' . $contact . '/activities',
       ]);
@@ -240,7 +240,7 @@ class ActivityLogController extends ControllerBase {
       \Drupal::logger('crm_activity_log')->error('Schedule meeting error: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse([
         'status' => 'error',
-        'message' => 'Có lỗi xảy ra. Vui lòng thử lại.',
+        'message' => 'An error occurred. Please try again.',
       ], 500);
     }
   }

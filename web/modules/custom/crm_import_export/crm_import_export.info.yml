@@ -1,6 +1,6 @@
 name: "CRM Import/Export"
 type: module
-description: "Import và Export dữ liệu CRM từ CSV/Excel"
+description: "Import and export CRM data from CSV/Excel"
 package: CRM
 core_version_requirement: ^10 || ^11
 dependencies:

@@ -3,7 +3,7 @@
     <div class="quickadd-header">
       <h2>
         <i data-lucide="user-plus"></i>
-        Thêm khách hàng nhanh
+        Quick Add Contact
       </h2>
       <button class="quickadd-close" onclick="window.history.back()">
         <i data-lucide="x"></i>
@@ -13,14 +13,14 @@
     <form id="quickadd-contact-form" class="quickadd-form">
       <div class="form-row">
         <div class="form-group full-width">
-          <label for="contact-name" class="required">Tên khách hàng</label>
-          <input type="text" id="contact-name" name="name" required placeholder="Nguyễn Văn A">
+          <label for="contact-name" class="required">Full Name</label>
+          <input type="text" id="contact-name" name="name" required placeholder="John Smith">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="contact-phone" class="required">Số điện thoại</label>
+          <label for="contact-phone" class="required">Phone Number</label>
           <input type="tel" id="contact-phone" name="phone" required placeholder="+84 901234567">
           <span class="validation-message" id="phone-validation"></span>
         </div>
@@ -33,11 +33,11 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="contact-position">Chức vụ</label>
+          <label for="contact-position">Job Title</label>
           <input type="text" id="contact-position" name="position" placeholder="Sales Manager">
         </div>
         <div class="form-group">
-          <label for="contact-customer-type">Phân loại</label>
+          <label for="contact-customer-type">Customer Type</label>
           <select id="contact-customer-type" name="customer_type">
             {{ type_options|raw }}
           </select>
@@ -46,13 +46,13 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="contact-source">Nguồn KH</label>
+          <label for="contact-source">Lead Source</label>
           <select id="contact-source" name="source">
             {{ source_options|raw }}
           </select>
         </div>
         <div class="form-group">
-          <label for="contact-organization">Công ty</label>
+          <label for="contact-organization">Company</label>
           <select id="contact-organization" name="organization">
             {{ org_options|raw }}
           </select>
@@ -61,16 +61,16 @@
 
       <div id="inline-org-fields" class="inline-fields" style="display:none;">
         <div class="form-group full-width">
-          <label for="inline-org-name">Tên công ty mới</label>
-          <input type="text" id="inline-org-name" name="organization_name" placeholder="Công ty ABC">
+          <label for="inline-org-name">New Company Name</label>
+          <input type="text" id="inline-org-name" name="organization_name" placeholder="ABC Company">
         </div>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-secondary" onclick="window.history.back()">Hủy</button>
+        <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
         <button type="submit" class="btn-primary">
           <i data-lucide="save"></i>
-          Lưu khách hàng
+          Save Contact
         </button>
       </div>
 

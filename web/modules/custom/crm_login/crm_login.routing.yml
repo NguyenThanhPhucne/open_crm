@@ -2,7 +2,7 @@ crm_login.login:
   path: "/login"
   defaults:
     _form: '\Drupal\crm_login\Form\CrmLoginForm'
-    _title: "Đăng nhập"
+    _title: "Login"
   requirements:
     _permission: "access content"
     _user_is_logged_in: "FALSE"

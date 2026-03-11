@@ -90,12 +90,12 @@ class CrmRegisterForm extends FormBase {
         <a href="/" class="auth-logo">
           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </a>
-        <h1 class="auth-title">Tạo tài khoản Open CRM</h1>
-        <p class="auth-subtitle">Chào mừng bạn! Hãy đăng ký để bắt đầu!</p>
+        <h1 class="auth-title">Create your Open CRM account</h1>
+        <p class="auth-subtitle">Join us today and get started!</p>
       </div>',
     ];
 
-    // Họ và Tên (2 cột)
+    // Last Name and First Name (2 columns)
     $form['card']['form_column']['name_wrapper'] = [
       '#type' => 'container',
       '#attributes' => ['class' => ['name-row']],
@@ -103,20 +103,20 @@ class CrmRegisterForm extends FormBase {
 
     $form['card']['form_column']['name_wrapper']['lastname'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Họ'),
+      '#title' => $this->t('Last Name'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nhập họ của bạn',
+        'placeholder' => 'Enter your last name',
         'class' => ['auth-input'],
       ],
     ];
 
     $form['card']['form_column']['name_wrapper']['firstname'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Tên'),
+      '#title' => $this->t('First Name'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nhập tên của bạn',
+        'placeholder' => 'Enter your first name',
         'class' => ['auth-input'],
       ],
     ];
@@ -124,10 +124,10 @@ class CrmRegisterForm extends FormBase {
     // Username
     $form['card']['form_column']['username'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Tên đăng nhập'),
+      '#title' => $this->t('Username'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nhập tên đăng nhập (vd: john.nguyen)',
+        'placeholder' => 'Enter your username (e.g. john.nguyen)',
         'autocomplete' => 'username',
         'class' => ['auth-input'],
       ],
@@ -139,7 +139,7 @@ class CrmRegisterForm extends FormBase {
       '#title' => $this->t('Email'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Nhập địa chỉ email của bạn',
+        'placeholder' => 'Enter your email address',
         'autocomplete' => 'email',
         'class' => ['auth-input'],
       ],
@@ -148,10 +148,10 @@ class CrmRegisterForm extends FormBase {
     // Password
     $form['card']['form_column']['password'] = [
       '#type' => 'password',
-      '#title' => $this->t('Mật khẩu'),
+      '#title' => $this->t('Password'),
       '#required' => TRUE,
       '#attributes' => [
-        'placeholder' => 'Tạo mật khẩu (tối thiểu 5 ký tự)',
+        'placeholder' => 'Create a password (min. 5 characters)',
         'autocomplete' => 'new-password',
         'class' => ['auth-input'],
       ],
@@ -165,19 +165,19 @@ class CrmRegisterForm extends FormBase {
 
     $form['card']['form_column']['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Tạo tài khoản'),
+      '#value' => $this->t('Create Account'),
       '#attributes' => ['class' => ['btn-auth-submit']],
     ];
 
     // Login link
     $form['card']['form_column']['login_link'] = [
-      '#markup' => '<div class="auth-link">Đã có tài khoản? <a href="/login">Đăng nhập</a></div>',
+      '#markup' => '<div class="auth-link">Already have an account? <a href="/login">Sign in</a></div>',
     ];
 
     // Footer terms (inside form column)
     $form['card']['form_column']['footer_terms'] = [
       '#markup' => '<div class="auth-footer-terms">
-        Bằng cách tiếp tục, bạn đồng ý với <a href="/terms">Điều khoản dịch vụ</a> và <a href="/privacy">Chính sách bảo mật</a> của chúng tôi.
+        By continuing, you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.
       </div>',
     ];
 
@@ -198,31 +198,31 @@ class CrmRegisterForm extends FormBase {
     // Validate username
     $username = $form_state->getValue('username');
     if (!preg_match('/^[a-zA-Z0-9._]{3,}$/', $username)) {
-      $form_state->setErrorByName('username', $this->t('Tên đăng nhập phải có ít nhất 3 ký tự'));
+      $form_state->setErrorByName('username', $this->t('Username must be at least 3 characters.'));
     }
 
     // Check if username exists
     $existing_user = user_load_by_name($username);
     if ($existing_user) {
-      $form_state->setErrorByName('username', $this->t('Tên đăng nhập đã tồn tại'));
+      $form_state->setErrorByName('username', $this->t('Username is already taken.'));
     }
 
     // Validate email
     $email = $form_state->getValue('email');
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      $form_state->setErrorByName('email', $this->t('Email không hợp lệ'));
+      $form_state->setErrorByName('email', $this->t('Invalid email address.'));
     }
 
     // Check if email exists
     $existing_email = user_load_by_mail($email);
     if ($existing_email) {
-      $form_state->setErrorByName('email', $this->t('Email đã được sử dụng'));
+      $form_state->setErrorByName('email', $this->t('Email is already in use.'));
     }
 
     // Validate password (min 5 chars like Discord)
     $password = $form_state->getValue('password');
     if (strlen($password) < 5) {
-      $form_state->setErrorByName('password', $this->t('Mật khẩu phải có ít nhất 5 ký tự'));
+      $form_state->setErrorByName('password', $this->t('Password must be at least 5 characters.'));
     }
   }
 
@@ -259,7 +259,7 @@ class CrmRegisterForm extends FormBase {
       user_login_finalize($user);
 
       // Success message
-      $this->messenger()->addStatus($this->t('Chào mừng @name! Tài khoản của bạn đã được tạo thành công.', [
+      $this->messenger()->addStatus($this->t('Welcome, @name! Your account has been created successfully.', [
         '@name' => $full_name,
       ]));
 
@@ -268,7 +268,7 @@ class CrmRegisterForm extends FormBase {
 
     }
     catch (\Exception $e) {
-      $this->messenger()->addError($this->t('Có lỗi xảy ra khi tạo tài khoản: @error', [
+      $this->messenger()->addError($this->t('An error occurred while creating your account: @error', [
         '@error' => $e->getMessage(),
       ]));
       

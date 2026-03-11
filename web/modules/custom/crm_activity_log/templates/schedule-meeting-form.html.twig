@@ -3,7 +3,7 @@
     <div class="activity-form-header">
       <h2>
         <i data-lucide="calendar-plus"></i>
-        Đặt lịch hẹn với {{ contact_name }}
+        Schedule Meeting with {{ contact_name }}
       </h2>
       <button class="activity-close" onclick="window.history.back()">
         <i data-lucide="x"></i>
@@ -14,39 +14,39 @@
       <input type="hidden" name="contact_id" value="{{ contact_id }}">
 
       <div class="form-group">
-        <label for="meeting-title" class="required">Tiêu đề cuộc họp</label>
+        <label for="meeting-title" class="required">Meeting Title</label>
         <input 
           type="text" 
           id="meeting-title" 
           name="title" 
           required 
-          placeholder="Ví dụ: Meeting demo sản phẩm">
+          placeholder="e.g. Product Demo Meeting">
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="meeting-date" class="required">Ngày</label>
+          <label for="meeting-date" class="required">Date</label>
           <input type="date" id="meeting-date" name="meeting_date" required>
         </div>
         <div class="form-group">
-          <label for="meeting-time" class="required">Giờ</label>
+          <label for="meeting-time" class="required">Time</label>
           <input type="time" id="meeting-time" name="meeting_time" required value="14:00">
         </div>
       </div>
 
       <div class="form-group">
-        <label for="meeting-agenda">Nội dung/Chương trình</label>
+        <label for="meeting-agenda">Agenda</label>
         <textarea 
           id="meeting-agenda" 
           name="agenda" 
           rows="5" 
-          placeholder="Nội dung cuộc họp, chủ đề cần thảo luận, tài liệu cần chuẩn bị..."></textarea>
+          placeholder="Meeting agenda, topics to discuss, materials to prepare..."></textarea>
       </div>
 
       <div class="form-group">
-        <label for="meeting-deal">Deal liên quan (nếu có)</label>
+        <label for="meeting-deal">Related Deal (if any)</label>
         <select id="meeting-deal" name="deal">
-          <option value="">-- Không có deal --</option>
+          <option value="">-- No deal --</option>
           <!-- Deals will be loaded via JS -->
         </select>
       </div>
@@ -54,15 +54,15 @@
       <div class="info-box">
         <i data-lucide="info"></i>
         <div>
-          <strong>Lưu ý:</strong> Sau khi đặt lịch, bạn sẽ thấy cuộc họp này trong calendar và sẽ nhận thông báo nhắc nhở.
+          <strong>Note:</strong> Once scheduled, this meeting will appear in your calendar and you will receive a reminder notification.
         </div>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-secondary" onclick="window.history.back()">Hủy</button>
+        <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
         <button type="submit" class="btn-primary">
           <i data-lucide="calendar-check"></i>
-          Đặt lịch
+          Schedule
         </button>
       </div>
 

@@ -26,8 +26,8 @@ class QuickAddController extends ControllerBase {
     $org_nids = $org_query->execute();
     $organizations = Node::loadMultiple($org_nids);
     
-    $org_options = '<option value="">-- Chọn công ty --</option>';
-    $org_options .= '<option value="__new__">+ Tạo công ty mới</option>';
+    $org_options = '<option value="">-- Select company --</option>';
+    $org_options .= '<option value="__new__">+ Create new company</option>';
     foreach ($organizations as $org) {
       $org_options .= '<option value="' . $org->id() . '">' . htmlspecialchars($org->getTitle()) . '</option>';
     }
@@ -36,7 +36,7 @@ class QuickAddController extends ControllerBase {
     $customer_types = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
       ->loadTree('crm_customer_type');
-    $type_options = '<option value="">-- Chọn loại khách hàng --</option>';
+    $type_options = '<option value="">-- Select customer type --</option>';
     foreach ($customer_types as $type) {
       $type_options .= '<option value="' . $type->tid . '">' . htmlspecialchars($type->name) . '</option>';
     }
@@ -45,7 +45,7 @@ class QuickAddController extends ControllerBase {
     $sources = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
       ->loadTree('crm_source');
-    $source_options = '<option value="">-- Chọn nguồn KH --</option>';
+    $source_options = '<option value="">-- Select lead source --</option>';
     foreach ($sources as $source) {
       $source_options .= '<option value="' . $source->tid . '">' . htmlspecialchars($source->name) . '</option>';
     }
@@ -70,7 +70,7 @@ class QuickAddController extends ControllerBase {
       if (empty($data['name']) || empty($data['phone'])) {
         return new JsonResponse([
           'status' => 'error',
-          'message' => 'Vui lòng nhập đầy đủ Tên và Số điện thoại.',
+          'message' => 'Please enter name and phone number.',
         ], 400);
       }
 
@@ -85,7 +85,7 @@ class QuickAddController extends ControllerBase {
       if (!empty($existing)) {
         return new JsonResponse([
           'status' => 'error',
-          'message' => 'Số điện thoại này đã tồn tại trong hệ thống.',
+          'message' => 'This phone number already exists in the system.',
         ], 409);
       }
 
@@ -121,7 +121,7 @@ class QuickAddController extends ControllerBase {
 
       return new JsonResponse([
         'status' => 'success',
-        'message' => 'Đã tạo khách hàng thành công: ' . $data['name'],
+        'message' => 'Contact created successfully: ' . $data['name'],
         'entity_id' => $contact->id(),
         'redirect' => '/crm/my-contacts',
       ]);
@@ -130,7 +130,7 @@ class QuickAddController extends ControllerBase {
       \Drupal::logger('crm_quickadd')->error('Contact creation error: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse([
         'status' => 'error',
-        'message' => 'Có lỗi xảy ra. Vui lòng thử lại.',
+        'message' => 'An error occurred. Please try again.',
       ], 500);
     }
   }
@@ -149,7 +149,7 @@ class QuickAddController extends ControllerBase {
     $contact_nids = $contact_query->execute();
     $contacts = Node::loadMultiple($contact_nids);
     
-    $contact_options = '<option value="">-- Chọn khách hàng --</option>';
+    $contact_options = '<option value="">-- Select contact --</option>';
     foreach ($contacts as $contact) {
       $contact_options .= '<option value="' . $contact->id() . '">' . htmlspecialchars($contact->getTitle()) . '</option>';
     }
@@ -182,7 +182,7 @@ class QuickAddController extends ControllerBase {
       if (empty($data['title']) || empty($data['amount'])) {
         return new JsonResponse([
           'status' => 'error',
-          'message' => 'Vui lòng nhập đầy đủ Tên cơ hội và Giá trị.',
+          'message' => 'Please enter deal name and value.',
         ], 400);
       }
 
@@ -231,7 +231,7 @@ class QuickAddController extends ControllerBase {
 
       return new JsonResponse([
         'status' => 'success',
-        'message' => 'Đã tạo cơ hội thành công: ' . $data['title'],
+        'message' => 'Deal created successfully: ' . $data['title'],
         'entity_id' => $deal->id(),
         'redirect' => '/crm/my-pipeline',
       ]);
@@ -240,7 +240,7 @@ class QuickAddController extends ControllerBase {
       \Drupal::logger('crm_quickadd')->error('Deal creation error: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse([
         'status' => 'error',
-        'message' => 'Có lỗi xảy ra. Vui lòng thử lại.',
+        'message' => 'An error occurred. Please try again.',
       ], 500);
     }
   }
@@ -253,7 +253,7 @@ class QuickAddController extends ControllerBase {
     $industries = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
       ->loadTree('crm_industry');
-    $industry_options = '<option value="">-- Chọn ngành nghề --</option>';
+    $industry_options = '<option value="">-- Select industry --</option>';
     foreach ($industries as $industry) {
       $industry_options .= '<option value="' . $industry->tid . '">' . htmlspecialchars($industry->name) . '</option>';
     }
@@ -275,7 +275,7 @@ class QuickAddController extends ControllerBase {
       if (empty($data['name'])) {
         return new JsonResponse([
           'status' => 'error',
-          'message' => 'Vui lòng nhập tên công ty.',
+          'message' => 'Please enter the company name.',
         ], 400);
       }
 
@@ -295,7 +295,7 @@ class QuickAddController extends ControllerBase {
 
       return new JsonResponse([
         'status' => 'success',
-        'message' => 'Đã tạo tổ chức thành công: ' . $data['name'],
+        'message' => 'Organization created successfully: ' . $data['name'],
         'entity_id' => $org->id(),
         'redirect' => '/crm/my-organizations',
       ]);
@@ -304,7 +304,7 @@ class QuickAddController extends ControllerBase {
       \Drupal::logger('crm_quickadd')->error('Organization creation error: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse([
         'status' => 'error',
-        'message' => 'Có lỗi xảy ra. Vui lòng thử lại.',
+        'message' => 'An error occurred. Please try again.',
       ], 500);
     }
   }
@@ -332,7 +332,7 @@ class QuickAddController extends ControllerBase {
 
       return new JsonResponse([
         'exists' => !empty($results),
-        'message' => !empty($results) ? ($field === 'field_phone' ? 'Số điện thoại đã tồn tại' : 'Email đã tồn tại') : '',
+        'message' => !empty($results) ? ($field === 'field_phone' ? 'Phone number already exists' : 'Email already exists') : '',
       ]);
 
     } catch (\Exception $e) {

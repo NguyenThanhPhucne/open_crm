@@ -1289,7 +1289,7 @@ class TeamsManagementController extends ControllerBase {
         <i data-lucide="shield" width="32" height="32"></i>
         Team Management
       </h1>
-      <p>Quản lý team assignments và phân quyền truy cập CRM data</p>
+      <p>Manage team assignments and CRM data access permissions</p>
     </div>
     
     <!-- Stats Overview -->

@@ -1038,12 +1038,12 @@ class KanbanController extends ControllerBase {
         <div class="modal-icon">
           <i data-lucide="trophy" width="24" height="24"></i>
         </div>
-        <h2>Chốt Deal Thành Công</h2>
+        <h2>Close Deal</h2>
       </div>
       <div class="modal-body">
         <div class="info-box">
           <i data-lucide="info" width="18" height="18"></i>
-          <div>Vui lòng nhập đầy đủ thông tin để hoàn tất việc chốt deal. Email thông báo sẽ được gửi đến quản lý.</div>
+          <div>Please fill in all required information to close the deal. A notification email will be sent to the manager.</div>
         </div>
         
         <form id="dealClosingForm">
@@ -1053,7 +1053,7 @@ class KanbanController extends ControllerBase {
           <div class="form-group">
             <label class="form-label">
               <i data-lucide="calendar-check" width="16" height="16" style="vertical-align: middle;"></i>
-              Ngày chốt deal <span class="required">*</span>
+              Close Date <span class="required">*</span>
             </label>
             <input type="date" name="closing_date" class="form-input" required>
           </div>
@@ -1061,14 +1061,14 @@ class KanbanController extends ControllerBase {
           <div class="form-group">
             <label class="form-label">
               <i data-lucide="file-text" width="16" height="16" style="vertical-align: middle;"></i>
-              Hợp đồng đính kèm <span style="color: #94a3b8; font-size: 13px;">(tùy chọn)</span>
+              Attached Contract <span style="color: #94a3b8; font-size: 13px;">(optional)</span>
             </label>
             <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('contractFile').click()">
               <div class="file-icon">
                 <i data-lucide="upload" width="24" height="24"></i>
               </div>
-              <div class="file-instructions">Click để chọn file hợp đồng (không bắt buộc)</div>
-              <div class="file-hint">PDF, DOC, DOCX (tối đa 10MB)</div>
+              <div class="file-instructions">Click to select contract file (optional)</div>
+              <div class="file-hint">PDF, DOC, DOCX (max 10MB)</div>
               <div class="file-name" id="fileName" style="display: none;"></div>
             </div>
             <input type="file" id="contractFile" name="contract" accept=".pdf,.doc,.docx" style="display: none;">
@@ -1083,11 +1083,11 @@ class KanbanController extends ControllerBase {
       <div class="modal-actions">
         <button type="button" class="btn btn-cancel" onclick="closeDealModal()">
           <i data-lucide="x" width="16" height="16"></i>
-          Hủy
+          Cancel
         </button>
         <button type="button" class="btn btn-primary" onclick="submitDealClosing()">
           <i data-lucide="check" width="16" height="16"></i>
-          Xác nhận chốt deal
+          Confirm Close Deal
         </button>
       </div>
     </div>
@@ -1217,7 +1217,7 @@ HTML;
       
       // Validation
       if (!closingDate) {
-        errorText.textContent = 'Vui lòng chọn ngày chốt deal';
+        errorText.textContent = 'Please select the close date';
         errorMsg.classList.add('show');
         lucide.createIcons();
         return;
@@ -1225,7 +1225,7 @@ HTML;
       
       // File size validation (only if file is selected)
       if (contractFile && contractFile.size > 10 * 1024 * 1024) {
-        errorText.textContent = 'File vượt quá 10MB. Vui lòng chọn file nhỏ hơn.';
+        errorText.textContent = 'File exceeds 10MB. Please choose a smaller file.';
         errorMsg.classList.add('show');
         lucide.createIcons();
         return;
@@ -1265,7 +1265,7 @@ HTML;
           // Show success message
           const successDiv = document.createElement('div');
           successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px;';
-          successDiv.innerHTML = '<i data-lucide="check-circle" width="20" height="20"></i><span>✅ Đã chốt deal thành công!</span>';
+          successDiv.innerHTML = '<i data-lucide="check-circle" width="20" height="20"></i><span>✅ Deal closed successfully!</span>';
           document.body.appendChild(successDiv);
           lucide.createIcons();
           
@@ -1274,7 +1274,7 @@ HTML;
             window.location.href = '/crm/dashboard';
           }, 1500);
         } else {
-          errorText.textContent = result.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
+          errorText.textContent = result.message || 'An error occurred. Please try again.';
           errorMsg.classList.add('show');
           lucide.createIcons();
           submitBtn.classList.remove('loading');
@@ -1282,7 +1282,7 @@ HTML;
         }
       } catch (error) {
         console.error('Error:', error);
-        errorText.textContent = 'Có lỗi xảy ra. Vui lòng thử lại.';
+        errorText.textContent = 'An error occurred. Please try again.';
         errorMsg.classList.add('show');
         lucide.createIcons();
         submitBtn.classList.remove('loading');

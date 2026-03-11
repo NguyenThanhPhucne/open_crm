@@ -3,9 +3,9 @@
     <div>
       <h2>
         <i data-lucide="activity"></i>
-        Lịch sử tương tác với {{ contact_name }}
+        Activity History with {{ contact_name }}
       </h2>
-      <p class="subtitle">Tất cả hoạt động, cuộc gọi, và lịch hẹn</p>
+      <p class="subtitle">All activities, calls, and meetings</p>
     </div>
     <div class="activity-actions">
       <a href="/crm/activity/log-call/{{ contact_id }}" class="btn-action btn-primary">
@@ -22,11 +22,11 @@
   {% if activities is empty %}
     <div class="empty-state">
       <i data-lucide="inbox"></i>
-      <h3>Chưa có hoạt động nào</h3>
-      <p>Bắt đầu ghi nhận cuộc gọi hoặc đặt lịch hẹn với khách hàng này.</p>
+      <h3>No activities yet</h3>
+      <p>Start by logging a call or scheduling a meeting with this contact.</p>
       <a href="/crm/activity/log-call/{{ contact_id }}" class="btn-primary">
         <i data-lucide="phone"></i>
-        Log cuộc gọi đầu tiên
+        Log your first call
       </a>
     </div>
   {% else %}
@@ -57,7 +57,7 @@
             {% if activity.outcome %}
               <div class="activity-outcome">
                 <i data-lucide="check-circle"></i>
-                <strong>Kết quả:</strong> {{ activity.outcome }}
+                <strong>Outcome:</strong> {{ activity.outcome }}
               </div>
             {% endif %}
 
@@ -72,7 +72,7 @@
               </span>
               <a href="/node/{{ activity.id }}/edit" class="activity-edit">
                 <i data-lucide="edit-2"></i>
-                Sửa
+                Edit
               </a>
             </div>
           </div>

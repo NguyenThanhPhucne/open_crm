@@ -66,18 +66,18 @@ class DataValidationService {
    */
   public function validateEmail($email) {
     if (empty($email)) {
-      return ['valid' => FALSE, 'message' => 'Email không được để trống'];
+      return ['valid' => FALSE, 'message' => 'Email is required.'];
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      return ['valid' => FALSE, 'message' => 'Email không đúng định dạng'];
+      return ['valid' => FALSE, 'message' => 'Invalid email format.'];
     }
 
     // Check for disposable email domains (production security).
     $disposable_domains = ['tempmail.com', 'throwaway.email', '10minutemail.com'];
     $domain = substr(strrchr($email, "@"), 1);
     if (in_array($domain, $disposable_domains)) {
-      return ['valid' => FALSE, 'message' => 'Không chấp nhận email tạm thời'];
+      return ['valid' => FALSE, 'message' => 'Disposable email addresses are not allowed.'];
     }
 
     return ['valid' => TRUE, 'message' => ''];
@@ -94,7 +94,7 @@ class DataValidationService {
    */
   public function validatePhone($phone) {
     if (empty($phone)) {
-      return ['valid' => FALSE, 'message' => 'Số điện thoại không được để trống'];
+      return ['valid' => FALSE, 'message' => 'Phone number is required.'];
     }
 
     // Remove spaces and special characters.
@@ -102,7 +102,7 @@ class DataValidationService {
 
     // Vietnamese phone format: 10 digits starting with 0, or +84.
     if (!preg_match('/^(0|\+84)[0-9]{9}$/', $cleaned)) {
-      return ['valid' => FALSE, 'message' => 'Số điện thoại không đúng định dạng (VD: 0912345678)'];
+      return ['valid' => FALSE, 'message' => 'Invalid phone number format (e.g. 0912345678).'];
     }
 
     return ['valid' => TRUE, 'message' => '', 'cleaned' => $cleaned];
@@ -192,29 +192,29 @@ class DataValidationService {
    */
   public function validateAmount($amount) {
     if ($amount === '' || $amount === NULL) {
-      return ['valid' => FALSE, 'message' => 'Giá trị deal không được để trống'];
+      return ['valid' => FALSE, 'message' => 'Deal value is required.'];
     }
 
     // Check for negative sign first (before removing it in cleaning).
     if (is_string($amount) && strpos($amount, '-') !== FALSE) {
-      return ['valid' => FALSE, 'message' => 'Giá trị deal không được âm'];
+      return ['valid' => FALSE, 'message' => 'Deal value cannot be negative.'];
     }
 
     // Remove currency symbols and commas.
     $cleaned = preg_replace('/[^0-9.]/', '', $amount);
 
     if (!is_numeric($cleaned)) {
-      return ['valid' => FALSE, 'message' => 'Giá trị deal phải là số'];
+      return ['valid' => FALSE, 'message' => 'Deal value must be a number.'];
     }
 
     $value = floatval($cleaned);
 
     if ($value < 0) {
-      return ['valid' => FALSE, 'message' => 'Giá trị deal không được âm'];
+      return ['valid' => FALSE, 'message' => 'Deal value cannot be negative.'];
     }
 
     if ($value > 999999999999) {
-      return ['valid' => FALSE, 'message' => 'Giá trị deal quá lớn'];
+      return ['valid' => FALSE, 'message' => 'Deal value is too large.'];
     }
 
     return ['valid' => TRUE, 'message' => '', 'cleaned' => $value];
@@ -235,7 +235,7 @@ class DataValidationService {
     if (empty($value) && $value !== '0') {
       return [
         'valid' => FALSE,
-        'message' => sprintf('%s không được để trống', $field_name),
+        'message' => sprintf('%s is required.', $field_name),
       ];
     }
 
@@ -255,14 +255,14 @@ class DataValidationService {
    */
   public function validateDate($date, $format = 'Y-m-d') {
     if (empty($date)) {
-      return ['valid' => FALSE, 'message' => 'Ngày không được để trống'];
+      return ['valid' => FALSE, 'message' => 'Date is required.'];
     }
 
     $d = \DateTime::createFromFormat($format, $date);
     if (!$d || $d->format($format) !== $date) {
       return [
         'valid' => FALSE,
-        'message' => sprintf('Ngày không đúng định dạng (%s)', $format),
+        'message' => sprintf('Invalid date format (%s).', $format),
       ];
     }
 
@@ -282,13 +282,13 @@ class DataValidationService {
    */
   public function validateTaxonomyTerm($tid, $vocabulary) {
     if (empty($tid)) {
-      return ['valid' => FALSE, 'message' => 'Vui lòng chọn giá trị'];
+      return ['valid' => FALSE, 'message' => 'Please select a value.'];
     }
 
     $term = $this->entityTypeManager->getStorage('taxonomy_term')->load($tid);
 
     if (!$term || $term->bundle() !== $vocabulary) {
-      return ['valid' => FALSE, 'message' => 'Giá trị không hợp lệ'];
+      return ['valid' => FALSE, 'message' => 'Invalid value.'];
     }
 
     return ['valid' => TRUE, 'message' => ''];
@@ -307,13 +307,13 @@ class DataValidationService {
    */
   public function validateNodeReference($nid, $type) {
     if (empty($nid)) {
-      return ['valid' => FALSE, 'message' => 'Vui lòng chọn'];
+      return ['valid' => FALSE, 'message' => 'Please select.'];
     }
 
     $node = $this->entityTypeManager->getStorage('node')->load($nid);
 
     if (!$node || $node->bundle() !== $type) {
-      return ['valid' => FALSE, 'message' => 'Tham chiếu không hợp lệ'];
+      return ['valid' => FALSE, 'message' => 'Invalid reference.'];
     }
 
     return ['valid' => TRUE, 'message' => ''];
@@ -368,7 +368,7 @@ class DataValidationService {
     $errors = [];
 
     // Required: Name.
-    $name_validation = $this->validateRequired($data['name'] ?? '', 'Tên khách hàng');
+    $name_validation = $this->validateRequired($data['name'] ?? '', 'Contact Name');
     if (!$name_validation['valid']) {
       $errors['name'] = $name_validation['message'];
     }
@@ -383,7 +383,7 @@ class DataValidationService {
       $duplicate = $this->checkDuplicatePhone($phone_validation['cleaned'], $exclude_nid);
       if ($duplicate['exists']) {
         $errors['phone'] = sprintf(
-          'Số điện thoại đã tồn tại (Contact ID: %d)',
+          'Phone number already exists (Contact ID: %d).',
           $duplicate['nid']
         );
       }
@@ -400,7 +400,7 @@ class DataValidationService {
         $duplicate = $this->checkDuplicateEmail($data['email'], $exclude_nid);
         if ($duplicate['exists']) {
           $errors['email'] = sprintf(
-            'Email đã tồn tại (Contact ID: %d)',
+            'Email already exists (Contact ID: %d).',
             $duplicate['nid']
           );
         }
@@ -434,7 +434,7 @@ class DataValidationService {
     $errors = [];
 
     // Required: Title.
-    $title_validation = $this->validateRequired($data['title'] ?? '', 'Tên deal');
+    $title_validation = $this->validateRequired($data['title'] ?? '', 'Deal Name');
     if (!$title_validation['valid']) {
       $errors['title'] = $title_validation['message'];
     }
@@ -488,20 +488,20 @@ class DataValidationService {
     $errors = [];
 
     // Required: Title.
-    $title_validation = $this->validateRequired($data['title'] ?? '', 'Tiêu đề hoạt động');
+    $title_validation = $this->validateRequired($data['title'] ?? '', 'Activity Title');
     if (!$title_validation['valid']) {
       $errors['title'] = $title_validation['message'];
     }
 
     // Required: Activity type.
-    $type_validation = $this->validateRequired($data['type'] ?? '', 'Loại hoạt động');
+    $type_validation = $this->validateRequired($data['type'] ?? '', 'Activity Type');
     if (!$type_validation['valid']) {
       $errors['type'] = $type_validation['message'];
     }
 
     // Required: Assigned to user.
     if (empty($data['assigned_to'])) {
-      $errors['assigned_to'] = 'Người phụ trách không được để trống';
+      $errors['assigned_to'] = 'Assigned user is required.';
     }
 
     // CRITICAL: Must have Contact OR Deal.
@@ -509,7 +509,7 @@ class DataValidationService {
     $has_deal = !empty($data['deal']);
 
     if (!$has_contact && !$has_deal) {
-      $errors['contact_deal'] = 'Hoạt động phải liên kết với Khách hàng hoặc Deal';
+      $errors['contact_deal'] = 'Activity must be linked to a Contact or Deal.';
     }
 
     // Validate contact reference if provided.
@@ -541,7 +541,7 @@ class DataValidationService {
       $valid_priorities = ['low', 'normal', 'high', 'urgent'];
       if (!in_array(strtolower($data['priority']), $valid_priorities)) {
         $errors['priority'] = sprintf(
-          'Mức độ ưu tiên không hợp lệ. Chọn: %s',
+          'Invalid priority. Choose: %s.',
           implode(', ', $valid_priorities)
         );
       }

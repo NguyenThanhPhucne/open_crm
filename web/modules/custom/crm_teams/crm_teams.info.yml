@@ -1,5 +1,5 @@
 name: CRM Teams
-description: 'Team-based access control for CRM - Sales Team A không xem được khách của Team B'
+description: 'Team-based access control for CRM - Sales Team A cannot view Team B contacts'
 type: module
 core_version_requirement: ^10 || ^11
 package: CRM
