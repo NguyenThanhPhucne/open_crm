@@ -277,37 +277,52 @@ class AllContactsController extends ControllerBase {
 
   /* ── Table card ── */
   .table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-  .contacts-table{width:100%;border-collapse:collapse;font-size:13px}
+  .contacts-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
   .contacts-table thead tr{background:linear-gradient(to right,#f8fafc,#f1f5f9);border-bottom:2px solid #e2e8f0}
-  .contacts-table th{padding:12px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;white-space:nowrap}
+  .contacts-table th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;white-space:nowrap;overflow:hidden}
   .contacts-table th.th-action{text-align:right}
   .contacts-table tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
   .contacts-table tbody tr:last-child{border-bottom:none}
   .contacts-table tbody tr:hover{background:#f8fafc}
-  .contacts-table td{padding:13px 16px;vertical-align:middle}
-  .td-name{display:flex;align-items:center;gap:11px}
-  .contact-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
-  .contact-name-block{display:flex;flex-direction:column;gap:2px;min-width:0}
-  .contact-name-link{font-weight:600;color:#0f172a;text-decoration:none;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;display:block}
+  .contacts-table td{padding:10px 12px;vertical-align:middle;overflow:hidden}
+  /* Column widths */
+  .contacts-table .col-contact{width:200px}
+  .contacts-table .col-org{width:130px}
+  .contacts-table .col-phone{width:120px}
+  .contacts-table .col-email{width:155px}
+  .contacts-table .col-type{width:85px}
+  .contacts-table .col-source{width:80px}
+  .contacts-table .col-owner{width:90px}
+  .contacts-table .col-updated{width:68px}
+  .contacts-table .col-actions{width:76px}
+  /* Name cell */
+  .td-name{display:flex;align-items:center;gap:9px}
+  .contact-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+  .contact-name-block{display:flex;flex-direction:column;gap:1px;min-width:0;overflow:hidden}
+  .contact-name-link{font-weight:600;color:#0f172a;text-decoration:none;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
   .contact-name-link:hover{color:#3b82f6;text-decoration:underline}
-  .contact-position{font-size:11px;color:#94a3b8;white-space:nowrap}
-  .td-org a{color:#3b82f6;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap}
+  .contact-position{font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  /* Org */
+  .td-org{overflow:hidden}
+  .td-org a{color:#3b82f6;text-decoration:none;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
   .td-org a:hover{text-decoration:underline;color:#1d4ed8}
   .td-org .no-org{color:#cbd5e1;font-style:italic;font-size:12px}
-  .cell-phone,.cell-email{display:flex;align-items:center;gap:7px;white-space:nowrap}
-  .cell-phone>i,.cell-email>i{width:12px;height:12px;color:#d1d5db;flex-shrink:0;opacity:.85}
-  .cell-phone a,.cell-email a{color:#374151;text-decoration:none;font-size:13px;font-weight:500}
+  /* Phone / Email */
+  .cell-phone,.cell-email{display:flex;align-items:center;gap:6px;overflow:hidden}
+  .cell-phone>i,.cell-email>i{width:11px;height:11px;color:#d1d5db;flex-shrink:0;opacity:.85}
+  .cell-phone a,.cell-email a{color:#374151;text-decoration:none;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .cell-phone a:hover,.cell-email a:hover{color:#3b82f6}
   .td-empty-val{color:#cbd5e1;font-style:italic;font-size:12px}
-  .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
-  .cell-owner{display:flex;align-items:center;gap:5px;font-size:12px;color:#475569;white-space:nowrap}
-  .cell-owner i{width:11px;height:11px;color:#d1d5db;opacity:.8}
-  .td-time{font-size:12px;color:#94a3b8;white-space:nowrap}
-  .cell-actions{display:flex;align-items:center;gap:6px;justify-content:flex-end}
-  .btn-action{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;text-decoration:none}
+  .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .cell-owner{display:flex;align-items:center;gap:4px;font-size:11px;color:#475569;overflow:hidden}
+  .cell-owner span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell-owner i{width:10px;height:10px;color:#d1d5db;opacity:.8;flex-shrink:0}
+  .td-time{font-size:11px;color:#94a3b8;white-space:nowrap}
+  .cell-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+  .btn-action{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
   .btn-action:hover.btn-edit{border-color:#bfdbfe;background:#eff6ff;color:#3b82f6}
   .btn-action:hover.btn-delete{border-color:#fecaca;background:#fef2f2;color:#ef4444}
-  .btn-action i{width:14px;height:14px}
+  .btn-action i{width:13px;height:13px}
 
   /* ── Empty state ── */
   .empty-state{text-align:center;padding:72px 30px}
@@ -326,8 +341,10 @@ class AllContactsController extends ControllerBase {
   .page-link.active{background:#3b82f6;border-color:#3b82f6;color:#fff;font-weight:700}
   .page-link.disabled{opacity:.4;pointer-events:none}
 
-  @media(max-width:1024px){.contacts-table th.th-owner,.contacts-table td.td-owner-cell,.contacts-table th.th-source,.contacts-table td.td-source-cell{display:none}}
-  @media(max-width:768px){body{padding:12px}.contacts-table th.th-email,.contacts-table td.td-email-cell,.contacts-table th.th-phone,.contacts-table td.td-phone-cell{display:none}.crm-toolbar-item span{display:none}}
+  @media(max-width:1280px){.contacts-table .col-source,.contacts-table th.th-source,.contacts-table td.td-source-cell{display:none}}
+  @media(max-width:1100px){.contacts-table .col-owner,.contacts-table th.th-owner,.contacts-table td.td-owner-cell{display:none}}
+  @media(max-width:900px){.contacts-table .col-email,.contacts-table th.th-email,.contacts-table td.td-email-cell{display:none}}
+  @media(max-width:700px){.contacts-table .col-phone,.contacts-table th.th-phone,.contacts-table td.td-phone-cell{display:none}.crm-toolbar-item span{display:none}}
   .contacts-table th,.contacts-table td{box-sizing:border-box}
 </style>
 HTML;
@@ -414,6 +431,17 @@ HTML;
     $html .= <<<HTML
   <div class="table-card">
     <table class="contacts-table">
+      <colgroup>
+        <col class="col-contact">
+        <col class="col-org">
+        <col class="col-phone th-phone">
+        <col class="col-email th-email">
+        <col class="col-type">
+        <col class="col-source th-source">
+        <col class="col-owner th-owner">
+        <col class="col-updated">
+        <col class="col-actions">
+      </colgroup>
       <thead>
         <tr>
           <th>Contact</th>
@@ -493,7 +521,7 @@ EMPTY;
           . '<td class="td-email-cell"><div class="cell-email">' . $email_cell . '</div></td>'
           . '<td>' . $type_cell . '</td>'
           . '<td class="td-source-cell">' . $src_cell . '</td>'
-          . '<td class="td-owner-cell"><div class="cell-owner"><i data-lucide="user"></i>' . ($r['owner'] ?: '—') . '</div></td>'
+          . '<td class="td-owner-cell"><div class="cell-owner"><i data-lucide="user"></i><span>' . ($r['owner'] ?: '—') . '</span></div></td>'
           . '<td class="td-time">' . $r['time_ago'] . '</td>'
           . '<td><div class="cell-actions">' . $action_btns . '</div></td>'
           . '</tr>';
