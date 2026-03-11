@@ -17,6 +17,9 @@ class DashboardController extends ControllerBase {
    * Display the dashboard.
    */
   public function view() {
+    // Bypass all server-side page caches so every request gets fresh data.
+    \Drupal::service('page_cache_kill_switch')->trigger();
+
     // Get current user to filter data
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
@@ -26,7 +29,9 @@ class DashboardController extends ControllerBase {
     
     // Use a consistent time window for this week and last week
     $now = \Drupal::time()->getCurrentTime();
-    $this_week_start = $now - ($now % 604800); // Start of current week (Monday)
+    // Monday midnight of the current week (date('N') = 1 Mon … 7 Sun)
+    $dow = (int) date('N', $now); // 1=Mon, 7=Sun
+    $this_week_start = mktime(0, 0, 0, (int) date('n', $now), (int) date('j', $now) - ($dow - 1));
     $last_week_start = $this_week_start - 604800;
     
     // Get dashboard metrics (filtered by user ownership for non-admins)
@@ -56,8 +61,10 @@ class DashboardController extends ControllerBase {
     }
     $orgs_count = $orgs_query->count()->execute();
     
+    // Midnight on the 1st of the current month
+    $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
+
     // Organizations this month
-    $month_start = $now - (date('j', $now) - 1) * 86400;
     $orgs_this_month_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
       ->condition('created', $month_start, '>=')
@@ -128,6 +135,15 @@ class DashboardController extends ControllerBase {
       $deals_by_stage[$stage_id] = $count;
     }
 
+    // Build lookup: term name (lowercase) → term ID for stage comparisons.
+    // field_stage is an entity reference — must compare by target_id, NOT by string value.
+    $stage_id_by_name = [];
+    foreach ($stage_terms as $term) {
+      $stage_id_by_name[strtolower($term->getName())] = $term->id();
+    }
+    $won_term_id  = $stage_id_by_name['won']  ?? null;
+    $lost_term_id = $stage_id_by_name['lost'] ?? null;
+
     // Get total deal value and won/lost deals (filtered by current user for non-admins)
     // NOTE: loadByProperties() does NOT work with entity reference fields like field_owner!
     // Must use entityQuery instead.
@@ -155,12 +171,11 @@ class DashboardController extends ControllerBase {
       }
       
       if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-        $stage = $deal->get('field_stage')->value;
-        // Check if stage is Won (closed_won) or Lost (closed_lost)
-        if ($stage === 'closed_won') {
+        $stage_tid = (int) $deal->get('field_stage')->target_id;
+        if ($won_term_id && $stage_tid === (int) $won_term_id) {
           $won_value += $amount;
           $won_count++;
-        } elseif ($stage === 'closed_lost') {
+        } elseif ($lost_term_id && $stage_tid === (int) $lost_term_id) {
           $lost_value += $amount;
           $lost_count++;
         }
@@ -197,12 +212,12 @@ class DashboardController extends ControllerBase {
     // Shows open opportunities vs completed deals
     $active_value_display = '$' . number_format($active_value / 1000000, 1) . 'M';
     
-    // 3. Revenue This Week - Won deals closed just this week
+    // 3. Revenue This Week - Won deals moved to Won stage this week (by changed timestamp)
     // Measures sales velocity and momentum
     $revenue_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_stage', 'closed_won')
-      ->condition('created', $this_week_start, '>=')
+      ->condition('field_stage', $won_term_id)
+      ->condition('changed', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin) {
       $revenue_this_week_query->condition('field_owner', $user_id);
@@ -230,8 +245,8 @@ class DashboardController extends ControllerBase {
       
       foreach ($deals as $deal) {
         if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-          $stage = $deal->get('field_stage')->value;
-          if ($stage === 'closed_won') {
+          $stage_tid = (int) $deal->get('field_stage')->target_id;
+          if ($won_term_id && $stage_tid === (int) $won_term_id) {
             $days_open = floor(($now - $deal->getCreatedTime()) / 86400);
             $total_days += $days_open;
             $closed_deal_count++;
@@ -245,12 +260,15 @@ class DashboardController extends ControllerBase {
     // 5. Deals Due This Week - Deals with closing date in next 7 days
     // Helps prioritize urgent deals
     $week_end = $now + 604800; // 7 days from now
+    $closed_term_ids = array_filter([$won_term_id, $lost_term_id]);
     $due_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_closing_date', $now, '>=')
-      ->condition('field_closing_date', $week_end, '<=')
-      ->condition('field_stage', ['closed_won', 'closed_lost'], 'NOT IN') // not already closed
+      ->condition('field_closing_date', date('Y-m-d', $now), '>=')
+      ->condition('field_closing_date', date('Y-m-d', $week_end), '<=')
       ->accessCheck(FALSE);
+    if (!empty($closed_term_ids)) {
+      $due_this_week_query->condition('field_stage', $closed_term_ids, 'NOT IN');
+    }
     if (!$is_admin) {
       $due_this_week_query->condition('field_owner', $user_id);
     }
@@ -354,11 +372,11 @@ class DashboardController extends ControllerBase {
       }
     }
     
-    // Get recent deals (last 8, filtered by current user for non-admins)
+    // Get recent deals (last 8, newest-updated first, filtered by current user for non-admins)
     $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->accessCheck(FALSE)
-      ->sort('created', 'DESC')
+      ->sort('changed', 'DESC')
       ->range(0, 8);
     if (!$is_admin) {
       $deal_ids_query->condition('field_owner', $user_id);
@@ -374,22 +392,24 @@ class DashboardController extends ControllerBase {
           $amount = floatval($deal->get('field_amount')->value);
         }
         
-        $stage = 'new';
+        $stage_key   = 'new';
         $stage_label = 'New';
-        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-          $stage = $deal->get('field_stage')->value ?? 'new';
-          $stage_label = ucfirst(str_replace('_', ' ', $stage ?? 'new'));
+        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty() && $deal->get('field_stage')->entity) {
+          $stage_term   = $deal->get('field_stage')->entity;
+          $stage_label  = $stage_term->getName();
+          $stage_key    = strtolower($stage_label);
         }
-        
+
+        // Keyed by lowercase term name (matches taxonomy: New, Qualified, Proposal, Negotiation, Won, Lost)
         $stage_colors_deals = [
-          'new' => '#dbeafe',
-          'qualified' => '#e9d5ff',
-          'proposal' => '#fed7aa',
+          'new'         => '#dbeafe',
+          'qualified'   => '#e9d5ff',
+          'proposal'    => '#fed7aa',
           'negotiation' => '#fce7f3',
-          'closed_won' => '#d1fae5',
-          'closed_lost' => '#fee2e2',
+          'won'         => '#d1fae5',
+          'lost'        => '#fee2e2',
         ];
-        
+
         $contact_name = '';
         if ($deal->hasField('field_contact') && !$deal->get('field_contact')->isEmpty()) {
           $contact = $deal->get('field_contact')->entity;
@@ -398,13 +418,40 @@ class DashboardController extends ControllerBase {
           }
         }
         
+        // Calculate relative time since last update
+        $deal_changed = $deal->getChangedTime();
+        $deal_now = \Drupal::time()->getCurrentTime();
+        $deal_diff = $deal_now - $deal_changed;
+        if ($deal_diff < 60) {
+          $deal_relative_time = 'just now';
+          $deal_freshness = 'hot';
+        } elseif ($deal_diff < 3600) {
+          $m = floor($deal_diff / 60);
+          $deal_relative_time = $m . 'm ago';
+          $deal_freshness = 'hot';
+        } elseif ($deal_diff < 86400) {
+          $h = floor($deal_diff / 3600);
+          $deal_relative_time = $h . 'h ago';
+          $deal_freshness = 'today';
+        } elseif ($deal_diff < 604800) {
+          $d = floor($deal_diff / 86400);
+          $deal_relative_time = $d . 'd ago';
+          $deal_freshness = 'week';
+        } else {
+          $wk = floor($deal_diff / 604800);
+          $deal_relative_time = $wk . 'w ago';
+          $deal_freshness = 'old';
+        }
+
         $recent_deals[] = [
-          'id' => $deal->id(),
-          'title' => $deal->getTitle(),
-          'amount' => '$' . number_format($amount / 1000, 0) . 'K',
-          'stage' => $stage_label,
-          'stage_color' => $stage_colors_deals[$stage] ?? '#f1f5f9',
-          'contact' => $contact_name,
+          'id'            => $deal->id(),
+          'title'         => $deal->getTitle(),
+          'amount'        => '$' . number_format($amount / 1000, 0) . 'K',
+          'stage'         => $stage_label,
+          'stage_color'   => $stage_colors_deals[$stage_key] ?? '#f1f5f9',
+          'contact'       => $contact_name,
+          'relative_time' => $deal_relative_time,
+          'freshness'     => $deal_freshness,
         ];
       }
     }
@@ -1176,13 +1223,40 @@ class DashboardController extends ControllerBase {
     }
     
     /* Deal Items */
+    .deals-section-card {
+      max-height: 460px;
+    }
+
     .deal-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       min-height: 0;
+      padding: 0 8px 0 0;
+      scroll-behavior: smooth;
+      margin-right: -8px;
+    }
+
+    /* Custom scrollbar for deals — matches activity list */
+    .deal-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .deal-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .deal-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .deal-list::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
     
     .deal-item {
@@ -1193,13 +1267,46 @@ class DashboardController extends ControllerBase {
       border-radius: 10px;
       border: 1px solid #f1f5f9;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      color: inherit;
     }
     
     .deal-item:hover {
       border-color: #cbd5e1;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       transform: translateX(2px);
+      background: #f8fafc;
     }
+
+    .deal-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .deal-updated {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    .freshness-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .freshness-dot.freshness-hot   { background: #10b981; box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+    .freshness-dot.freshness-today { background: #3b82f6; }
+    .freshness-dot.freshness-week  { background: #f59e0b; }
+    .freshness-dot.freshness-old   { background: #cbd5e1; }
     
     .deal-info {
       flex: 1;
@@ -1736,7 +1843,9 @@ class DashboardController extends ControllerBase {
               <div class="chart-subtitle">Current deals by stage</div>
             </div>
             <div class="chart-container">
-              <canvas id="stageChart"></canvas>
+              <canvas id="stageChart"
+                data-labels='{$stage_labels_json}'
+                data-values='{$stage_data_json}'></canvas>
             </div>
           </div>
           
@@ -1746,13 +1855,16 @@ class DashboardController extends ControllerBase {
               <div class="chart-subtitle">Won vs Lost vs Active</div>
             </div>
             <div class="chart-container">
-              <canvas id="valueChart"></canvas>
+              <canvas id="valueChart"
+                data-won="{$won_value}"
+                data-lost="{$lost_value}"
+                data-active="{$active_value}"></canvas>
             </div>
           </div>
         </div>
         
         <!-- Recent Deals -->
-        <div class="section-card">
+        <div class="section-card deals-section-card">
           <div class="section-header">
             <div class="section-title">
               <i data-lucide="briefcase" width="20" height="20"></i>
@@ -1769,15 +1881,22 @@ HTML;
     // Add recent deals
     if (!empty($recent_deals)) {
       foreach ($recent_deals as $deal) {
+        $deal_url = '/node/' . $deal['id'];
         $html .= <<<DEAL
-            <div class="deal-item">
+            <a href="{$deal_url}" class="deal-item">
               <div class="deal-info">
                 <div class="deal-title">{$deal['title']}</div>
                 <div class="deal-contact">{$deal['contact']}</div>
+                <div class="deal-updated">
+                  <span class="freshness-dot freshness-{$deal['freshness']}"></span>
+                  {$deal['relative_time']}
+                </div>
               </div>
-              <div class="deal-amount">{$deal['amount']}</div>
-              <span class="deal-stage" style="background: {$deal['stage_color']}; color: #0f172a;">{$deal['stage']}</span>
-            </div>
+              <div class="deal-right">
+                <div class="deal-amount">{$deal['amount']}</div>
+                <span class="deal-stage" style="background: {$deal['stage_color']}; color: #0f172a;">{$deal['stage']}</span>
+              </div>
+            </a>
 DEAL;
       }
     } else {
@@ -1868,82 +1987,133 @@ EMPTY;
         this.refreshInterval = 30000; // 30 seconds
         this.isRefreshing = false;
         this.lastRefreshTime = Date.now();
+        this.pollingTimer = null;
         this.init();
       }
-      
+
       init() {
-        // Listen for activity changes via Drupal events
-        if (window.Drupal && window.Drupal.behaviors) {
-          // Hook into entity changes
-          document.addEventListener('crm:activity-created', () => this.refreshActivities());
-          document.addEventListener('crm:deal-updated', () => this.refreshDashboard());
-          document.addEventListener('crm:stage-changed', () => this.refreshDashboard());
-        }
-        
-        // Setup auto-refresh polling
-        this.setupPolling();
-        
-        // Show refresh indicator
-        this.showRefreshStatus('Connected');
+        document.addEventListener('crm:activity-created', () => this.refreshDashboard());
+        document.addEventListener('crm:deal-updated',     () => this.refreshDashboard());
+        document.addEventListener('crm:stage-changed',    () => this.refreshDashboard());
+
+        // Pause polling when tab is hidden, resume when visible
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            this.stopPolling();
+          } else {
+            this.refreshDashboard();
+            this.startPolling();
+          }
+        });
+
+        this.startPolling();
+        this.showRefreshStatus('↻ Live');
+        this.startTimeSince();
       }
-      
-      setupPolling() {
+
+      startPolling() {
+        this.stopPolling();
+        this.pollingTimer = setInterval(() => this.refreshDashboard(), this.refreshInterval);
+      }
+
+      stopPolling() {
+        if (this.pollingTimer) { clearInterval(this.pollingTimer); this.pollingTimer = null; }
+      }
+
+      // Show "X s ago" counter in badge
+      startTimeSince() {
         setInterval(() => {
-          // Auto-refresh dashboard data every 30 seconds
-          this.refreshDashboard();
-        }, this.refreshInterval);
+          if (this.isRefreshing) return;
+          const secs = Math.round((Date.now() - this.lastRefreshTime) / 1000);
+          if (secs < 5)  { this.showRefreshStatus('↻ Live'); return; }
+          if (secs < 60) { this.showRefreshStatus('↻ ' + secs + 's ago'); return; }
+          this.showRefreshStatus('↻ ' + Math.round(secs / 60) + 'm ago');
+        }, 5000);
       }
-      
+
       async refreshDashboard() {
         if (this.isRefreshing) return;
-        
         this.isRefreshing = true;
+        this.showRefreshStatus('↻ ...');
         try {
-          // This would be extended with actual AJAX refresh
-          // For now, you can implement via Drupal JSON API or custom endpoint
-          // Example: 
-          // const response = await fetch('/api/crm/dashboard-data');
-          // const data = await response.json();
-          // this.updateDashboard(data);
-          this.showRefreshStatus('Last updated just now');
+          const response = await fetch(window.location.href, {
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          const html = await response.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+
+          // Update stat cards
+          ['stat-value', 'stat-trend'].forEach(cls => {
+            const fresh = doc.querySelectorAll('.' + cls);
+            const live  = document.querySelectorAll('.' + cls);
+            fresh.forEach((el, i) => {
+              if (live[i] && live[i].innerHTML !== el.innerHTML) live[i].innerHTML = el.innerHTML;
+            });
+          });
+
+          // Update Recent Deals list
+          const freshDeals = doc.querySelector('.deal-list');
+          const liveDeals  = document.querySelector('.deal-list');
+          if (freshDeals && liveDeals) liveDeals.innerHTML = freshDeals.innerHTML;
+
+          // Update Recent Activities list
+          const freshActs = doc.querySelector('.activity-list');
+          const liveActs  = document.querySelector('.activity-list');
+          if (freshActs && liveActs) liveActs.innerHTML = freshActs.innerHTML;
+
+          // Update Stage Chart data
+          const freshStage = doc.getElementById('stageChart');
+          if (freshStage && window_stageChart) {
+            const labels = JSON.parse(freshStage.dataset.labels || '[]');
+            const values = JSON.parse(freshStage.dataset.values || '[]');
+            window_stageChart.data.labels = labels;
+            window_stageChart.data.datasets[0].data = values;
+            window_stageChart.update('active');
+          }
+
+          // Update Value Chart data
+          const freshValue = doc.getElementById('valueChart');
+          if (freshValue && window_valueChart) {
+            window_valueChart.data.datasets[0].data = [
+              parseFloat(freshValue.dataset.won   || 0),
+              parseFloat(freshValue.dataset.lost  || 0),
+              parseFloat(freshValue.dataset.active || 0)
+            ];
+            window_valueChart.update('active');
+          }
+
+          if (window.lucide) window.lucide.createIcons();
+
           this.lastRefreshTime = Date.now();
+          this.showRefreshStatus('↻ Live');
         } catch (error) {
           console.error('Dashboard refresh failed:', error);
-          this.showRefreshStatus('Update failed', true);
+          this.showRefreshStatus('⚠ Retry', true);
         } finally {
           this.isRefreshing = false;
         }
       }
-      
-      refreshActivities() {
-        // Focused refresh of activities only (faster than full dashboard)
-        // Can be implemented via AJAX
-        console.log('Activities refreshed');
-      }
-      
+
       showRefreshStatus(message, isError = false) {
-        // Update refresh indicator if it exists
         const badge = document.querySelector('.refresh-badge');
-        if (badge) {
-          badge.textContent = message;
-          if (isError) {
-            badge.style.background = 'rgba(239, 68, 68, 0.1)';
-            badge.style.color = '#ef4444';
-          } else {
-            badge.style.background = 'rgba(16, 185, 129, 0.1)';
-            badge.style.color = '#10b981';
-          }
-        }
+        if (!badge) return;
+        badge.textContent = message;
+        badge.style.background = isError ? 'rgba(239,68,68,0.1)'   : 'rgba(16,185,129,0.1)';
+        badge.style.color      = isError ? '#ef4444'               : '#10b981';
       }
     }
     
     // Initialize dashboard sync on page load
     document.addEventListener('DOMContentLoaded', () => {
       window.dashboardSync = new DashboardSync();
+      if (window.lucide) window.lucide.createIcons();
     });
-    
-    // Initialize Lucide icons
-    lucide.createIcons();
+
+    // ── Chart instances (global so DashboardSync can update them) ────────────
+    let window_stageChart = null;
+    let window_valueChart = null;
     
     // Modern color palette with gradients
     const colors = {
@@ -1999,7 +2169,7 @@ EMPTY;
       return gradient;
     };
     
-    const stageChart = new Chart(stageCtx, {
+    window_stageChart = new Chart(stageCtx, {
       type: 'bar',
       data: {
         labels: {$stage_labels_json},
@@ -2026,25 +2196,18 @@ EMPTY;
           },
           borderRadius: 8,
           borderSkipped: false,
-          barThickness: 32,
+          maxBarThickness: 40,
+          barPercentage: 0.75,
+          categoryPercentage: 0.85,
           hoverBackgroundColor: function(context) {
-            const chart = context.chart;
-            const {ctx, chartArea} = chart;
-            if (!chartArea) return colors.blue;
-            
-            const colorPairs = [
-              [colors.blueLight, colors.blue],
-              [colors.greenLight, colors.green],
-              [colors.yellowLight, colors.yellow],
-              [colors.pinkLight, colors.pink],
-              [colors.emeraldLight, colors.emerald],
-              [colors.redLight, colors.red]
-            ];
-            
             const index = context.dataIndex;
-            const pair = colorPairs[index % colorPairs.length];
-            return createGradient(ctx, pair[0], pair[1], chartArea.right);
-          }
+            const solidColors = [
+              colors.blue, colors.green, colors.yellow,
+              colors.pink, colors.emerald, colors.red
+            ];
+            return solidColors[index % solidColors.length];
+          },
+          hoverBorderWidth: 0
         }]
       },
       options: {
@@ -2129,7 +2292,7 @@ EMPTY;
         },
         interaction: {
           intersect: false,
-          mode: 'index'
+          mode: 'y'
         },
         onHover: (event, activeElements) => {
           event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
@@ -2141,7 +2304,7 @@ EMPTY;
     // Value Chart - Enhanced Doughnut with gradients and animations
     const valueCtx = document.getElementById('valueChart').getContext('2d');
     
-    const valueChart = new Chart(valueCtx, {
+    window_valueChart = new Chart(valueCtx, {
       type: 'doughnut',
       data: {
         labels: ['Won', 'Lost', 'Active Pipeline'],
@@ -2266,97 +2429,6 @@ EMPTY;
         }
       }
     });
-    
-    // ============================================
-    // REAL-TIME DASHBOARD REFRESH
-    // ============================================
-    // Auto-refresh dashboard metrics every 30 seconds
-    // to ensure data is always current with database changes
-    
-    const dashboardRefreshInterval = setInterval(function() {
-      // Fetch fresh metrics from the server via AJAX endpoint
-      fetch('/crm/dashboard/refresh', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        credentials: 'same-origin'
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success && data.metrics) {
-          // Update stat card values on the page with new data
-          updateDashboardMetrics(data.metrics);
-          
-          // Optional: Show visual indicator that data was refreshed
-          const timestamp = new Date(data.timestamp * 1000);
-          console.log('Dashboard metrics updated at', timestamp.toLocaleTimeString());
-        }
-      })
-      .catch(error => {
-        console.error('Dashboard refresh error:', error);
-      });
-    }, 30000); // Refresh every 30 seconds
-    
-    /**
-     * Update dashboard stat card values in real-time
-     * @param {Object} metrics - Fresh metrics from server
-     */
-    function updateDashboardMetrics(metrics) {
-      // Helper function to update a stat card value
-      const updateStatCard = (label, value) => {
-        try {
-          // Find stat card by its label text
-          const cards = document.querySelectorAll('.stat-card');
-          for (const card of cards) {
-            const labelElement = card.querySelector('.stat-label');
-            if (labelElement && labelElement.textContent.trim().toLowerCase() === label.toLowerCase()) {
-              const valueElement = card.querySelector('.stat-value');
-              if (valueElement && valueElement.textContent !== value.toString()) {
-                // Animate the value change
-                valueElement.style.transition = 'none';
-                valueElement.style.opacity = '0.5';
-                setTimeout(() => {
-                  valueElement.textContent = value;
-                  valueElement.style.opacity = '1';
-                  valueElement.style.transition = 'opacity 0.3s ease-in-out';
-                }, 100);
-              }
-              return true;
-            }
-          }
-        } catch (e) {
-          console.warn('Could not update stat card:', label, e);
-        }
-        return false;
-      };
-      
-      // Update all 16 main metrics
-      if (metrics.contacts !== undefined) updateStatCard('Contacts', metrics.contacts);
-      if (metrics.organizations !== undefined) updateStatCard('Organizations', metrics.organizations);
-      if (metrics.deals !== undefined) updateStatCard('Deals', metrics.deals);
-      if (metrics.total_value_display) updateStatCard('Total Value', metrics.total_value_display);
-      if (metrics.won !== undefined) updateStatCard('Won', metrics.won);
-      if (metrics.lost !== undefined) updateStatCard('Lost', metrics.lost);
-      if (metrics.win_rate !== undefined) updateStatCard('Win Rate', metrics.win_rate + '%');
-      if (metrics.activities !== undefined) updateStatCard('Activities', metrics.activities);
-      if (metrics.conversion_rate !== undefined) updateStatCard('Conversion', metrics.conversion_rate + '%');
-      if (metrics.avg_deal_display) updateStatCard('Avg Deal', metrics.avg_deal_display);
-      
-      // Update new enhanced metrics
-      if (metrics.overdue_activities !== undefined) updateStatCard('Overdue', metrics.overdue_activities);
-      if (metrics.active_value_display) updateStatCard('Active Pipeline', metrics.active_value_display);
-      if (metrics.revenue_this_week_display) updateStatCard('This Week', metrics.revenue_this_week_display);
-      if (metrics.due_this_week !== undefined) updateStatCard('Due This Week', metrics.due_this_week);
-      if (metrics.avg_days_in_pipeline !== undefined) updateStatCard('Avg Cycle', metrics.avg_days_in_pipeline);
-      if (metrics.new_contacts_this_month !== undefined) updateStatCard('New Contacts', metrics.new_contacts_this_month);
-    }
-    
-    // Clean up interval when page unloads
-    window.addEventListener('beforeunload', () => {
-      clearInterval(dashboardRefreshInterval);
-    });
   </script>
 HTML;
 
@@ -2424,9 +2496,19 @@ HTML;
     
     // Get timestamps for calculations (same as main view)
     $now = \Drupal::time()->getCurrentTime();
-    $this_week_start = $now - ($now % 604800);
-    $month_start = $now - (date('j', $now) - 1) * 86400;
+    $dow = (int) date('N', $now);
+    $this_week_start = mktime(0, 0, 0, (int) date('n', $now), (int) date('j', $now) - ($dow - 1));
+    $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
     $week_end = $now + 604800;
+
+    // Resolve Won/Lost taxonomy term IDs (field_stage is an entity reference).
+    $stage_terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['vid' => 'pipeline_stage']);
+    $won_term_id = null; $lost_term_id = null;
+    foreach ($stage_terms as $term) {
+      $n = strtolower($term->getName());
+      if ($n === 'won')  $won_term_id  = $term->id();
+      if ($n === 'lost') $lost_term_id = $term->id();
+    }
     
     // === FETCH ALL DASHBOARD METRICS IN REAL-TIME ===
     
@@ -2469,7 +2551,7 @@ HTML;
     // 5. Won Deals
     $won_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_stage', 'closed_won')
+      ->condition('field_stage', $won_term_id)
       ->accessCheck(FALSE);
     if (!$is_admin) {
       $won_query->condition('field_owner', $user_id);
@@ -2479,7 +2561,7 @@ HTML;
     // 6. Lost Deals
     $lost_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_stage', 'closed_lost')
+      ->condition('field_stage', $lost_term_id)
       ->accessCheck(FALSE);
     if (!$is_admin) {
       $lost_query->condition('field_owner', $user_id);
@@ -2497,12 +2579,15 @@ HTML;
     $overdue_activities = $overdue_query->count()->execute();
     
     // 8. Deals Due This Week
+    $closed_tids = array_filter([$won_term_id, $lost_term_id]);
     $due_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_closing_date', $now, '>=')
-      ->condition('field_closing_date', $week_end, '<=')
-      ->condition('field_stage', ['closed_won', 'closed_lost'], 'NOT IN')
+      ->condition('field_closing_date', date('Y-m-d', $now), '>=')
+      ->condition('field_closing_date', date('Y-m-d', $week_end), '<=')
       ->accessCheck(FALSE);
+    if (!empty($closed_tids)) {
+      $due_this_week_query->condition('field_stage', $closed_tids, 'NOT IN');
+    }
     if (!$is_admin) {
       $due_this_week_query->condition('field_owner', $user_id);
     }
@@ -2521,8 +2606,8 @@ HTML;
     // 10. Revenue This Week (deals with amounts)
     $revenue_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_stage', 'closed_won')
-      ->condition('created', $this_week_start, '>=')
+      ->condition('field_stage', $won_term_id)
+      ->condition('changed', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin) {
       $revenue_this_week_query->condition('field_owner', $user_id);
@@ -2569,17 +2654,17 @@ HTML;
         }
         
         if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-          $stage = $deal->get('field_stage')->value;
-          if ($stage === 'closed_won') {
+          $stage_tid = (int) $deal->get('field_stage')->target_id;
+          if ($won_term_id && $stage_tid === (int) $won_term_id) {
             $won_value += $amount;
-          } elseif ($stage === 'closed_lost') {
+          } elseif ($lost_term_id && $stage_tid === (int) $lost_term_id) {
             $lost_value += $amount;
           } else {
             $active_value += $amount;
           }
           
           // Calculate average days in pipeline for won deals
-          if ($stage === 'closed_won') {
+          if ($won_term_id && $stage_tid === (int) $won_term_id) {
             $days_open = floor(($now - $deal->getCreatedTime()) / 86400);
             $total_days += $days_open;
             $closed_deal_count++;
