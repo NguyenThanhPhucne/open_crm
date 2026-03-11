@@ -168,7 +168,8 @@ class AllContactsController extends ControllerBase {
     }
 
     // ── Navigation URLs ───────────────────────────────────────────────────────
-    $contacts_url      = '/crm/all-contacts';
+    $current_path      = $request->getPathInfo();
+    $contacts_url      = $current_path;
     $organizations_url = $can_manage ? '/crm/all-organizations' : '/crm/my-organizations';
     $deals_url         = $can_manage ? '/crm/all-deals'         : '/crm/my-deals';
     $activities_url    = $can_manage ? '/crm/all-activities'    : '/crm/my-activities';
@@ -177,12 +178,12 @@ class AllContactsController extends ControllerBase {
     $add_url           = '/crm/add/contact';
 
     // ── Pagination helper ─────────────────────────────────────────────────────
-    $page_url = function ($p) use ($search_name, $search_email, $search_phone) {
+    $page_url = function ($p) use ($search_name, $search_email, $search_phone, $current_path) {
       $params = ['page' => $p];
       if ($search_name)  { $params['search'] = $search_name; }
       if ($search_email) { $params['email']  = $search_email; }
       if ($search_phone) { $params['phone']  = $search_phone; }
-      return '/crm/all-contacts?' . http_build_query($params);
+      return $current_path . '?' . http_build_query($params);
     };
 
     // Escape for HTML attributes

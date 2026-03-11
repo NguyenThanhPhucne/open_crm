@@ -46,6 +46,15 @@ crm.all_contacts:
     _permission: "access content"
     _user_is_logged_in: "TRUE"
 
+crm.my_contacts:
+  path: "/crm/my-contacts"
+  defaults:
+    _controller: '\Drupal\crm\Controller\AllContactsController::view'
+    _title: "My Contacts"
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"
   defaults:
