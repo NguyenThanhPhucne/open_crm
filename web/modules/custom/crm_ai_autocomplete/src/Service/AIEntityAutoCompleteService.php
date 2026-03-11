@@ -233,6 +233,7 @@ class AIEntityAutoCompleteService {
         'contact'      => 'Personal business phone in format +1 (XXX) XXX-XXXX.',
         'organization' => 'Company main phone number in format +1 (XXX) XXX-XXXX.',
       ],
+      'field_industry'       => 'Industry sector as a plain text string — one of: Technology, Finance, Healthcare, Retail, Manufacturing, Education, Real Estate, Logistics, Consulting, Telecommunications.',
       'field_website'        => 'Company website URL starting with https:// (e.g., "https://apexsolutions.com", "https://brightwavetech.io"). Must be a plausible URL derived from the company name in "title".',
       'field_position'       => 'Job title at a company (e.g., "VP of Sales", "Head of Engineering", "CFO").',
       'field_source'         => 'Lead source — one of: Website, LinkedIn, Referral, Cold Call, Email Campaign, Trade Show, Partner, Direct.',

@@ -46,7 +46,7 @@ display:
           field: field_industry
           plugin_id: field
           label: Industry
-          type: entity_reference_label
+          type: string
         field_website:
           id: field_website
           table: node__field_website
@@ -162,20 +162,18 @@ display:
             label: "Organization name"
             identifier: title
             required: false
-        field_industry_target_id:
-          id: field_industry_target_id
+        field_industry:
+          id: field_industry
           table: node__field_industry
-          field: field_industry_target_id
-          plugin_id: taxonomy_index_tid
-          vid: industry
+          field: field_industry
+          plugin_id: string
+          operator: contains
           exposed: true
           expose:
-            operator_id: field_industry_target_id_op
+            operator_id: field_industry_op
             label: Industry
-            identifier: field_industry_target_id
+            identifier: field_industry
             required: false
-            reduce: false
-          type: select
       style:
         type: table
         options:

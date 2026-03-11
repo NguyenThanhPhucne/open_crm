@@ -301,38 +301,64 @@ class LLMProviderService {
    *   Mock suggestions with random data.
    */
   protected function callMock($prompt, array $options) {
-    // Generate random data for each call
-    $first_names = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Jessica', 'James', 'Lisa', 'William', 'Jennifer', 'Richard', 'Patricia', 'Charles', 'Barbara'];
-    $last_names = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Rodriguez', 'Garcia', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas'];
-    $companies = ['Tech Solutions Inc.', 'Digital Innovations Ltd.', 'Cloud Systems Corp.', 'Data Analytics Pro', 'Software House LLC', 'Innovation Labs', 'Digital Ventures', 'Tech Startup Inc.', 'Web Services Co.', 'Mobile Solutions'];
-    $industries = ['Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Education', 'Real Estate', 'Telecommunications', 'Entertainment', 'Transportation'];
-    $sources = ['Website', 'LinkedIn', 'Referral', 'Cold Call', 'Email Campaign', 'Trade Show', 'Partner', 'Direct Purchase'];
-    $customer_types = ['Enterprise', 'SMB', 'Startup', 'Individual', 'Non-Profit', 'Government'];
-    
-    $first_name = $first_names[array_rand($first_names)];
-    $last_name = $last_names[array_rand($last_names)];
-    $company = $companies[array_rand($companies)];
-    $industry = $industries[array_rand($industries)];
-    $source = $sources[array_rand($sources)];
-    $customer_type = $customer_types[array_rand($customer_types)];
-    
-    $value = rand(10000, 500000);
-    $probability = rand(20, 95);
-    $phone = '+1 (' . rand(200, 999) . ') ' . rand(100, 999) . '-' . rand(1000, 9999);
-    $email = strtolower(str_replace(' ', '.', $first_name . '.' . $last_name)) . '@' . strtolower(str_replace(' ', '', $company)) . '.com';
-    
-    // Return realistic mock data with random values
+    // Detect bundle from the prompt so we generate the right kind of data.
+    preg_match('/Generate a realistic CRM (\w+) record/', $prompt, $m);
+    $bundle = $m[1] ?? 'contact';
+
+    // ── Shared pool data ─────────────────────────────────────────────────────
+    $first_names = ['James', 'Linda', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Jessica', 'William', 'Jennifer', 'Richard', 'Patricia', 'Charles', 'Barbara', 'Daniel', 'Helen'];
+    $last_names  = ['Carter', 'Park', 'Chen', 'Johnson', 'Williams', 'Brown', 'Davis', 'Garcia', 'Martinez', 'Wilson', 'Anderson', 'Thomas', 'Lee', 'Taylor', 'Harris', 'Walker'];
+    $phone = '+1 (' . mt_rand(200, 999) . ') ' . mt_rand(100, 999) . '-' . mt_rand(1000, 9999);
+
+    // ── ORGANIZATION ─────────────────────────────────────────────────────────
+    if ($bundle === 'organization') {
+      $org_names  = ['Apex Solutions', 'BrightWave Technologies', 'NovaCrest Inc.', 'Meridian Systems', 'BlueHorizon Corp.', 'ClearPath Consulting', 'IronBridge Group', 'SummitEdge Digital', 'PinnacleSoft', 'TerraLogic Ltd.', 'VantagePoint Analytics', 'CobaltStream LLC', 'OmniForge Technologies', 'SilverOak Ventures', 'RedMast Enterprises'];
+      $industries  = ['Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Education', 'Real Estate', 'Logistics', 'Consulting', 'Telecommunications'];
+      $org_name    = $org_names[array_rand($org_names)];
+      $industry    = $industries[array_rand($industries)];
+      // Build a URL-safe slug from the org name.
+      $slug        = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', str_replace(' ', '', $org_name)));
+      $tld         = ['com', 'io', 'co', 'net'][array_rand(['com', 'io', 'co', 'net'])];
+      $domain      = $slug . '.' . $tld;
+      $emp_count   = mt_rand(5, 10) * mt_rand(10, 200);   // 50 – 2000
+      $revenue     = mt_rand(1, 50) * 100000;              // 100 000 – 5 000 000
+      return [
+        'title'                => $org_name,
+        'field_industry'       => $industry,
+        'field_website'        => 'https://www.' . $domain,
+        'field_email'          => 'info@' . $domain,
+        'field_phone'          => $phone,
+        'field_employees_count'=> (string) $emp_count,
+        'field_annual_revenue' => (string) $revenue,
+      ];
+    }
+
+    // ── ACTIVITY ─────────────────────────────────────────────────────────────
+    if ($bundle === 'activity') {
+      $titles   = ['Follow-up call with client', 'Product demo scheduled', 'Proposal sent to prospect', 'Quarterly review meeting', 'Contract negotiation call', 'Technical requirements discussion', 'Onboarding kickoff meeting', 'Support issue escalation call', 'Partnership exploration meeting', 'Renewal discussion with account'];
+      $outcomes = ['Successfully discussed next steps', 'Client requested a follow-up', 'Sent proposal for review', 'Meeting rescheduled for next week', 'Agreement reached on terms', 'Demo went well — trial requested', 'Identified key decision maker', 'Issue resolved; client satisfied'];
+      return [
+        'title'        => $titles[array_rand($titles)],
+        'field_outcome'=> $outcomes[array_rand($outcomes)],
+      ];
+    }
+
+    // ── CONTACT (default) ────────────────────────────────────────────────────
+    $companies     = ['Tech Solutions Inc.', 'Digital Innovations Ltd.', 'Cloud Systems Corp.', 'Data Analytics Pro', 'Software House LLC', 'Innovation Labs'];
+    $sources       = ['Website', 'LinkedIn', 'Referral', 'Cold Call', 'Email Campaign', 'Trade Show', 'Partner', 'Direct'];
+    $customer_types= ['Enterprise', 'SMB', 'Startup', 'Individual', 'Non-Profit', 'Government'];
+    $positions     = ['VP of Sales', 'Head of Engineering', 'CFO', 'Marketing Manager', 'Operations Director', 'CEO', 'Product Manager', 'CTO', 'Account Executive', 'Business Development Manager'];
+    $first_name    = $first_names[array_rand($first_names)];
+    $last_name     = $last_names[array_rand($last_names)];
+    $company       = $companies[array_rand($companies)];
+    $email_domain  = strtolower(preg_replace('/[^a-z0-9]+/', '', strtolower($company))) . '.com';
     return [
-      'field_company' => $company,
-      'field_email' => $email,
-      'field_phone' => $phone,
-      'field_source' => $source,
-      'field_customer_type' => $customer_type,
-      'title' => $first_name . ' ' . $last_name,
-      'field_value' => (string)$value,
-      'field_probability' => (string)$probability,
-      'field_industry' => $industry,
-      'body' => 'Generated contact via AI autocomplete on ' . date('Y-m-d H:i:s'),
+      'title'               => $first_name . ' ' . $last_name,
+      'field_email'         => strtolower($first_name . '.' . $last_name) . '@' . $email_domain,
+      'field_phone'         => $phone,
+      'field_position'      => $positions[array_rand($positions)],
+      'field_source'        => $sources[array_rand($sources)],
+      'field_customer_type' => $customer_types[array_rand($customer_types)],
     ];
   }
 

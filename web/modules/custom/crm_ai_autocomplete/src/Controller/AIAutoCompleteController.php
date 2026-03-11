@@ -378,9 +378,7 @@ class AIAutoCompleteController extends ControllerBase {
       'activity' => [
         'field_type' => 'activity_type',
       ],
-      'organization' => [
-        'field_industry' => 'industry',
-      ],
+      // organization.field_industry is a plain string field — no vocab needed.
     ];
 
     if (!isset($vocab_map[$bundle])) {

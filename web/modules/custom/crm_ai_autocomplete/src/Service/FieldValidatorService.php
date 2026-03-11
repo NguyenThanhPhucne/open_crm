@@ -43,6 +43,24 @@ class FieldValidatorService {
       case 'list_integer':
         return $this->validateListField($value);
 
+      case 'link':
+        // Link fields need a URI array. Accept plain URL strings too.
+        if (is_array($value)) {
+          return $value;
+        }
+        $uri = trim((string) $value);
+        if (!empty($uri)) {
+          if (!preg_match('#^https?://#i', $uri)) {
+            $uri = 'https://' . $uri;
+          }
+          return ['uri' => $uri, 'title' => ''];
+        }
+        return NULL;
+
+      case 'email':
+      case 'telephone':
+        return $this->validateStringField($value);
+
       case 'entity_reference':
         return $this->validateEntityReference($value, $bundle, $field_name);
 
