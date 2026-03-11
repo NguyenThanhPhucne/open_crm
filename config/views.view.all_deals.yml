@@ -1,6 +1,6 @@
 uuid: 1f72b3c8-d5e2-4a1f-b7e3-9d4c2b8f6a01
 langcode: en
-status: true
+status: false
 dependencies:
   config:
     - field.storage.node.field_amount
@@ -11,18 +11,19 @@ dependencies:
     - field.storage.node.field_probability
     - field.storage.node.field_stage
     - node.type.deal
-    - system.menu.main
+    - taxonomy.vocabulary.pipeline_stage
     - user.role.administrator
     - user.role.sales_manager
   module:
     - crm_edit
     - datetime
     - node
+    - taxonomy
     - user
 id: all_deals
-label: "All Deals"
+label: 'All Deals'
 module: views
-description: "All deals in the system (Admin/Manager view)"
+description: 'All deals in the system (Admin/Manager view)'
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -33,7 +34,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: "All Deals"
+      title: 'All Deals'
       fields:
         title:
           id: title
@@ -60,9 +61,9 @@ display:
           plugin_id: field
           label: Amount
           settings:
-            thousand_separator: ","
+            thousand_separator: ','
             decimal_separator: .
-            suffix: " VND"
+            suffix: ' VND'
         field_stage:
           id: field_stage
           table: node__field_stage
@@ -77,13 +78,13 @@ display:
           plugin_id: field
           label: Probability
           settings:
-            suffix: "%"
+            suffix: '%'
         field_closing_date:
           id: field_closing_date
           table: node__field_closing_date
           field: field_closing_date
           plugin_id: field
-          label: "Close Date"
+          label: 'Close Date'
           settings:
             format_type: medium
         field_contact:
@@ -110,9 +111,9 @@ display:
           field: changed
           plugin_id: date
           label: Updated
+          element_class: crm-time-ago
           date_format: custom
           custom_date_format: c
-          element_class: crm-time-ago
         crm_edit_link:
           id: crm_edit_link
           table: node_field_data
@@ -130,6 +131,12 @@ display:
           submit_button: Search
           reset_button: true
           reset_button_label: Reset
+      access:
+        type: role
+        options:
+          role:
+            administrator: administrator
+            sales_manager: sales_manager
       sorts:
         changed:
           id: changed
@@ -143,7 +150,7 @@ display:
           table: node_field_data
           field: status
           plugin_id: boolean
-          value: "1"
+          value: '1'
         type:
           id: type
           table: node_field_data
@@ -157,32 +164,30 @@ display:
           field: title
           plugin_id: string
           operator: contains
-          value: ""
+          value: ''
           exposed: true
           expose:
             operator_id: title_op
-            label: "Deal Name"
-            description: "Search by deal name"
+            label: 'Deal Name'
+            description: 'Search by deal name'
             use_operator: false
             operator: title_op
             identifier: title
             required: false
             remember: false
-            placeholder: "Enter deal name..."
+            placeholder: 'Enter deal name...'
         field_stage_target_id:
           id: field_stage_target_id
           table: node__field_stage
           field: field_stage_target_id
           plugin_id: taxonomy_index_tid
-          vid: pipeline_stage
-          type: select
           operator: or
-          value: []
+          value: {  }
           exposed: true
           expose:
             operator_id: field_stage_target_id_op
             label: Stage
-            description: "Filter by pipeline stage"
+            description: 'Filter by pipeline stage'
             use_operator: false
             operator: field_stage_target_id_op
             identifier: stage
@@ -190,11 +195,13 @@ display:
             remember: false
             multiple: false
             reduce: false
+          vid: pipeline_stage
+          type: select
       style:
         type: table
         options:
-          grouping: {}
-          row_class: ""
+          grouping: {  }
+          row_class: ''
           default_row_class: true
           columns:
             title: title
@@ -211,101 +218,95 @@ display:
             title:
               sortable: true
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_owner:
               sortable: false
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_amount:
               sortable: true
               default_sort_order: desc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_stage:
               sortable: false
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_probability:
               sortable: true
               default_sort_order: desc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_closing_date:
               sortable: true
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_contact:
               sortable: false
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             field_organization:
               sortable: false
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             changed:
               sortable: true
               default_sort_order: desc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
             crm_edit_link:
               sortable: false
               default_sort_order: asc
-              align: ""
-              separator: ""
+              align: ''
+              separator: ''
               empty_column: false
-              responsive: ""
+              responsive: ''
           override: true
           sticky: false
-          summary: ""
+          summary: ''
           empty_table: false
-      access:
-        type: role
-        options:
-          role:
-            administrator: administrator
-            sales_manager: sales_manager
-      display_extenders: {}
+      display_extenders: {  }
     cache_metadata:
       max-age: -1
       contexts:
-        - "languages:language_content"
-        - "languages:language_interface"
+        - 'languages:language_content'
+        - 'languages:language_interface'
         - url
         - url.query_args
-        - user
+        - 'user.node_grants:view'
         - user.roles
       tags:
-        - "config:field.storage.node.field_amount"
-        - "config:field.storage.node.field_closing_date"
-        - "config:field.storage.node.field_contact"
-        - "config:field.storage.node.field_organization"
-        - "config:field.storage.node.field_owner"
-        - "config:field.storage.node.field_probability"
-        - "config:field.storage.node.field_stage"
+        - 'config:field.storage.node.field_amount'
+        - 'config:field.storage.node.field_closing_date'
+        - 'config:field.storage.node.field_contact'
+        - 'config:field.storage.node.field_organization'
+        - 'config:field.storage.node.field_owner'
+        - 'config:field.storage.node.field_probability'
+        - 'config:field.storage.node.field_stage'
   page_1:
     id: page_1
     display_title: Page
@@ -319,24 +320,32 @@ display:
           field: area
           plugin_id: text
           content:
-            value: "<div style=\"text-align: right; margin-bottom: 20px;\">\n        <a href=\"/node/add/deal\" class=\"button button--primary\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n            <path d=\"M12 5v14M5 12h14\"></path>\n          </svg>\n          Add Deal\n        </a>\n      </div>"
+            value: |-
+              <div style="text-align: right; margin-bottom: 20px;">
+                      <a href="/node/add/deal" class="button button--primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                        Add Deal
+                      </a>
+                    </div>
             format: full_html
-      display_extenders: {}
+      display_extenders: {  }
       path: crm/all-deals
     cache_metadata:
       max-age: -1
       contexts:
-        - "languages:language_content"
-        - "languages:language_interface"
+        - 'languages:language_content'
+        - 'languages:language_interface'
         - url
         - url.query_args
-        - user
+        - 'user.node_grants:view'
         - user.roles
       tags:
-        - "config:field.storage.node.field_amount"
-        - "config:field.storage.node.field_closing_date"
-        - "config:field.storage.node.field_contact"
-        - "config:field.storage.node.field_organization"
-        - "config:field.storage.node.field_owner"
-        - "config:field.storage.node.field_probability"
-        - "config:field.storage.node.field_stage"
+        - 'config:field.storage.node.field_amount'
+        - 'config:field.storage.node.field_closing_date'
+        - 'config:field.storage.node.field_contact'
+        - 'config:field.storage.node.field_organization'
+        - 'config:field.storage.node.field_owner'
+        - 'config:field.storage.node.field_probability'
+        - 'config:field.storage.node.field_stage'
