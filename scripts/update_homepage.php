@@ -25,8 +25,10 @@ $new_body = <<<'HTML'
 
 /* ── HERO ─────────────────────────────────────────────── */
 .qac-hero {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 55%, #7c3aed 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 60%, #f5f0ff 100%);
   border-radius: 16px;
+  border: 1px solid #dde8ff;
+  border-top: 3px solid #2563eb;
   padding: 36px 40px;
   margin-bottom: 36px;
   display: flex;
@@ -34,28 +36,22 @@ $new_body = <<<'HTML'
   justify-content: space-between;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
 }
 
 .qac-hero::before {
   content: '';
   position: absolute;
-  top: -40%;
-  right: -4%;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+  top: -30%;
+  right: -3%;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .qac-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -60%;
-  left: 25%;
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 .qac-hero-text {
@@ -66,14 +62,14 @@ $new_body = <<<'HTML'
 .qac-hero-text h1 {
   font-size: 26px;
   font-weight: 800;
-  color: white;
+  color: #0f172a;
   margin-bottom: 8px;
   letter-spacing: -0.02em;
 }
 
 .qac-hero-text p {
   font-size: 14px;
-  color: rgba(255,255,255,0.72);
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -105,46 +101,45 @@ $new_body = <<<'HTML'
 .qac-btn i { width: 15px; height: 15px; stroke-width: 2; }
 
 .qac-btn-white {
-  background: white;
-  color: #2563eb;
-  border-color: white;
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
 }
 
 .qac-btn-white:hover {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
 }
 
 .qac-btn-outline {
-  background: rgba(255,255,255,0.13);
-  color: white;
-  border-color: rgba(255,255,255,0.28);
-  backdrop-filter: blur(4px);
+  background: white;
+  color: #2563eb;
+  border-color: #dbeafe;
 }
 
 .qac-btn-outline:hover {
-  background: rgba(255,255,255,0.22);
-  border-color: rgba(255,255,255,0.45);
-  color: white;
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.12);
 }
 
 .qac-btn-login {
-  background: white;
-  color: #2563eb;
-  border-color: white;
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
   font-size: 14px;
   padding: 12px 28px;
 }
 
 .qac-btn-login:hover {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
 }
 
 /* ── SECTION LABEL ────────────────────────────────────── */
