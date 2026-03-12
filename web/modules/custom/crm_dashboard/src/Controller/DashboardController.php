@@ -588,6 +588,12 @@ class DashboardController extends ControllerBase {
     $pipeline_url = Url::fromUserInput('/crm/my-pipeline')->toString();
     $dashboard_url = Url::fromUserInput('/crm/dashboard')->toString();
 
+    // Greeting and date for dashboard hero
+    $user_display_name = $current_user->getDisplayName() ?: 'there';
+    $greeting_hour = (int) date('H', $now);
+    $greeting = $greeting_hour < 12 ? 'Good morning' : ($greeting_hour < 18 ? 'Good afternoon' : 'Good evening');
+    $today_display = date('l, F j, Y', $now);
+
     // Build HTML with professional design
     $html = <<<HTML
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -1832,11 +1838,201 @@ class DashboardController extends ControllerBase {
       text-transform: uppercase;
       letter-spacing: 0.03em;
     }
+
+    /* ================================================================
+       DASHBOARD HERO — Greeting header with quick-action buttons
+       ================================================================ */
+    .dashboard-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 55%, #7c3aed 100%);
+      border-radius: 16px;
+      padding: 26px 32px;
+      margin-bottom: 28px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-hero::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -5%;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .dashboard-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60%;
+      left: 25%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-left {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-greeting {
+      font-size: 23px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 7px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 500;
+    }
+
+    .hero-date i {
+      opacity: 0.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1.5px solid transparent;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .hero-btn-primary {
+      background: white;
+      color: #2563eb;
+      border-color: white;
+    }
+
+    .hero-btn-primary:hover {
+      background: #eff6ff;
+      color: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-btn-outline {
+      background: rgba(255, 255, 255, 0.13);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-btn-outline:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.45);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    /* ================================================================
+       STATS SECTION LABELS — Group headers inside the stats grid
+       ================================================================ */
+    .stats-row-label {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 12px 2px 2px;
+    }
+
+    .stats-row-label:first-child {
+      padding-top: 0;
+    }
+
+    .stats-row-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+      }
+      .hero-actions {
+        width: 100%;
+      }
+      .hero-action-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
   </style>
   
   <div class="dashboard-container">
+
+    <!-- Dashboard Hero: Greeting + Quick Actions -->
+    <div class="dashboard-hero">
+      <div class="hero-left">
+        <div class="hero-greeting">{$greeting}, {$user_display_name}!</div>
+        <div class="hero-date">
+          <i data-lucide="calendar" width="13" height="13"></i>
+          {$today_display}
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="/node/add/contact" class="hero-action-btn hero-btn-primary">
+          <i data-lucide="user-plus" width="15" height="15"></i>
+          <span>New Contact</span>
+        </a>
+        <a href="/node/add/organization" class="hero-action-btn hero-btn-outline">
+          <i data-lucide="building-2" width="15" height="15"></i>
+          <span>New Organization</span>
+        </a>
+        <a href="/node/add/deal" class="hero-action-btn hero-btn-outline">
+          <i data-lucide="plus-circle" width="15" height="15"></i>
+          <span>New Deal</span>
+        </a>
+        <a href="/node/add/activity" class="hero-action-btn hero-btn-outline">
+          <i data-lucide="calendar-plus" width="15" height="15"></i>
+          <span>Log Activity</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="stats-grid">
+      <div class="stats-row-label">Core Metrics</div>
       <a href="{$contacts_url}" class="stat-card stat-card-blue">
         <div class="stat-header">
           <div class="stat-icon blue">
@@ -1889,6 +2085,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">Deal value</div>
       </a>
       
+      <div class="stats-row-label">Deal Performance</div>
       <a href="{$pipeline_url}" class="stat-card stat-card-green">
         <div class="stat-header">
           <div class="stat-icon green">
@@ -1937,6 +2134,7 @@ class DashboardController extends ControllerBase {
         </div>
       </a>
       
+      <div class="stats-row-label">Pipeline Intelligence</div>
       <a href="{$pipeline_url}" class="stat-card stat-card-purple">
         <div class="stat-header">
           <div class="stat-icon blue">
@@ -1986,6 +2184,7 @@ class DashboardController extends ControllerBase {
         <div class="stat-desc">Open opportunities</div>
       </a>
       
+      <div class="stats-row-label">Weekly Focus</div>
       <a href="{$deals_url}" class="stat-card stat-card-emerald">
         <div class="stat-header">
           <div class="stat-icon emerald">
