@@ -10,6 +10,17 @@ $new_body = <<<'HTML'
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* Override Gin theme's blue-accent body background (#f8fafe) to full white */
+body.path-frontpage {
+  background: #ffffff !important;
+}
+
+body.path-frontpage .layout-container,
+body.path-frontpage .page-content,
+body.path-frontpage .region-content {
+  background: #ffffff;
+}
+
 .qac-wrapper {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   max-width: 1320px;
