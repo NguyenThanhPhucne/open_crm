@@ -51,5 +51,6 @@ crm_quickadd.check_duplicate:
   defaults:
     _controller: '\Drupal\crm_quickadd\Controller\QuickAddController::checkDuplicate'
   requirements:
-    _permission: "access content"
+    _permission: "create contact content"
+    _user_is_logged_in: "TRUE"
   methods: [POST]

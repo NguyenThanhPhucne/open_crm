@@ -699,6 +699,31 @@ class TeamsManagementController extends ControllerBase {
       border-color: #3b82f6;
       box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
+
+    .search-clear-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #94a3b8;
+      background: none;
+      border: none;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 15px;
+      line-height: 1;
+      transition: color .15s, background .15s;
+    }
+    .search-clear-btn.visible { display: flex; }
+    .search-clear-btn:hover { color: #ef4444; background: rgba(239,68,68,.08); }
+    @keyframes rowMatchIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:translateX(0)}}
+    .row-just-shown { animation: rowMatchIn .2s cubic-bezier(.4,0,.2,1); }
     
     .search-icon {
       position: absolute;
@@ -1350,6 +1375,7 @@ class TeamsManagementController extends ControllerBase {
           <div class="search-box">
             <i data-lucide="search" width="18" height="18" class="search-icon"></i>
             <input type="text" class="search-input" id="search-users" placeholder="Search users by name or email..." />
+            <button type="button" id="search-users-clear" class="search-clear-btn" title="Clear" aria-label="Clear">&#x2715;</button>
           </div>
           <select class="filter-select" id="filter-team">
             {$team_filter_options}
@@ -1662,16 +1688,25 @@ class TeamsManagementController extends ControllerBase {
     // Search and filter functionality
     function setupFilters() {
       const searchInput = document.getElementById('search-users');
+      const searchClear = document.getElementById('search-users-clear');
       const teamFilter = document.getElementById('filter-team');
       const roleFilter = document.getElementById('filter-role');
-      
+
+      // Prefix-match: true if any word in text starts with query.
+      function crmWordMatch(text, q) {
+        if (!q) return true;
+        if (text.startsWith(q)) return true;
+        return text.split(/[\s\-_@.]+/).some(function(w){ return w.startsWith(q); });
+      }
+
       function applyFilters() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const teamValue = teamFilter.value;
         const roleValue = roleFilter.value.toLowerCase();
-        
+        if (searchClear) searchClear.classList.toggle('visible', searchTerm.length > 0);
+
         let visibleCount = 0;
-        
+
         // Filter cards
         const cards = document.querySelectorAll('.user-card');
         cards.forEach(card => {
@@ -1679,16 +1714,24 @@ class TeamsManagementController extends ControllerBase {
           const email = card.getAttribute('data-user-email') || '';
           const team = card.getAttribute('data-user-team') || '';
           const role = card.getAttribute('data-user-role') || '';
-          
-          const matchesSearch = !searchTerm || name.includes(searchTerm) || email.includes(searchTerm);
+
+          const matchesSearch = !searchTerm || crmWordMatch(name, searchTerm) || crmWordMatch(email, searchTerm);
           const matchesTeam = !teamValue || team === teamValue;
           const matchesRole = !roleValue || role.includes(roleValue);
-          
+
           const isVisible = matchesSearch && matchesTeam && matchesRole;
+          const wasHidden = card.style.display === 'none';
           card.style.display = isVisible ? 'block' : 'none';
-          if (isVisible) visibleCount++;
+          if (isVisible) {
+            visibleCount++;
+            if (wasHidden && searchTerm) {
+              card.classList.remove('row-just-shown');
+              void card.offsetWidth;
+              card.classList.add('row-just-shown');
+            }
+          }
         });
-        
+
         // Filter table rows
         const rows = document.querySelectorAll('#users-tbody tr');
         rows.forEach(row => {
@@ -1696,12 +1739,19 @@ class TeamsManagementController extends ControllerBase {
           const email = row.getAttribute('data-user-email') || '';
           const team = row.getAttribute('data-user-team') || '';
           const role = row.getAttribute('data-user-role') || '';
-          
-          const matchesSearch = !searchTerm || name.includes(searchTerm) || email.includes(searchTerm);
+
+          const matchesSearch = !searchTerm || crmWordMatch(name, searchTerm) || crmWordMatch(email, searchTerm);
           const matchesTeam = !teamValue || team === teamValue;
           const matchesRole = !roleValue || role.includes(roleValue);
-          
-          row.style.display = (matchesSearch && matchesTeam && matchesRole) ? '' : 'none';
+
+          const isRowVisible = matchesSearch && matchesTeam && matchesRole;
+          const wasRowHidden = row.style.display === 'none';
+          row.style.display = isRowVisible ? '' : 'none';
+          if (isRowVisible && wasRowHidden && searchTerm) {
+            row.classList.remove('row-just-shown');
+            void row.offsetWidth;
+            row.classList.add('row-just-shown');
+          }
         });
         
         // Show empty state if no results
@@ -1729,6 +1779,14 @@ class TeamsManagementController extends ControllerBase {
       searchInput.addEventListener('input', applyFilters);
       teamFilter.addEventListener('change', applyFilters);
       roleFilter.addEventListener('change', applyFilters);
+      if (searchClear) {
+        searchClear.addEventListener('click', function() {
+          searchInput.value = '';
+          this.classList.remove('visible');
+          applyFilters();
+          searchInput.focus();
+        });
+      }
     }
     
     // Assign team to user

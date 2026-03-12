@@ -98,34 +98,9 @@ class CrmEditLink extends FieldPluginBase {
    * Check if user has permission for action.
    */
   protected function checkPermission($account, $entity, $bundle, $action) {
-    // Admin has all permissions
-    if ($account->hasRole('administrator')) {
-      return TRUE;
-    }
-    
-    // Sales manager permissions
-    if ($account->hasRole('sales_manager')) {
-      $permission = "{$action} any {$bundle} content";
-      if ($account->hasPermission($permission)) {
-        return TRUE;
-      }
-    }
-    
-    // Sales rep permissions (own content only)
-    if ($account->hasRole('sales_rep')) {
-      $permission = "{$action} own {$bundle} content";
-      if ($account->hasPermission($permission)) {
-        $owner_field = $this->getOwnerField($bundle);
-        if ($entity->hasField($owner_field)) {
-          $owner_id = $entity->get($owner_field)->target_id;
-          if ($owner_id == $account->id()) {
-            return TRUE;
-          }
-        }
-      }
-    }
-    
-    return FALSE;
+    // Use Drupal's standard node access system.
+    $drupal_op = ($action === 'delete') ? 'delete' : 'update';
+    return $entity->access($drupal_op, $account);
   }
   
   /**

@@ -168,18 +168,46 @@ window.CRMInlineEdit = {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            // Save toast message to localStorage and reload
-            localStorage.setItem(
-              "crmToast",
-              JSON.stringify({
-                message: "Changes saved successfully!",
-                type: "success",
-              }),
-            );
-            this.closeModal();
+            // Remove overlay immediately (skip close animation for speed)
+            const overlay = document.getElementById("crm-modal-overlay");
+            if (overlay) overlay.remove();
 
-            // Reload page immediately to show updated data
-            setTimeout(() => location.reload(), 100);
+            // Flash the edited row green + update visible cells
+            const typeRowPrefix = {
+              contact: "contact-row-",
+              deal: "deal-row-",
+              organization: "org-row-",
+              activity: "activity-row-",
+            };
+            const rowEl = document.getElementById(
+              (typeRowPrefix[type] || type + "-row-") + nid,
+            );
+            if (rowEl) {
+              rowEl.style.transition = "background-color 0.5s ease";
+              rowEl.style.backgroundColor = "#dcfce7";
+              const timeCell = rowEl.querySelector(".td-time");
+              if (timeCell) timeCell.textContent = "just now";
+              if (data.title) {
+                const nameLink = rowEl.querySelector("[class$='-name-link']");
+                if (nameLink) nameLink.textContent = data.title;
+              }
+            }
+
+            // Show toast immediately
+            if (window.CRM && window.CRM.toast) {
+              window.CRM.toast("Changes saved successfully!", "success");
+            } else {
+              localStorage.setItem(
+                "crmToast",
+                JSON.stringify({
+                  message: "Changes saved successfully!",
+                  type: "success",
+                }),
+              );
+            }
+
+            // Reload after short delay to sync all field values in the row
+            setTimeout(() => location.reload(), 1200);
           } else {
             // Show error message (don't reload if there's an error)
             this.showMessage(data.message || "Error saving changes", "error");
@@ -454,16 +482,25 @@ window.CRMInlineEdit = {
     const deleteBtn = overlay.querySelector(".btn-delete-final");
     const closeBtn = overlay.querySelector(".crm-modal-close");
 
-    // Enable delete button when name matches
-    confirmInput.addEventListener("input", (e) => {
-      if (e.target.value.trim() === title) {
+    const closeModal = () => {
+      overlay.classList.add("closing");
+      setTimeout(() => overlay.remove(), 300);
+    };
+
+    // Check whether the typed/pasted value matches the title
+    const checkMatch = () => {
+      if (confirmInput.value.trim() === title) {
         deleteBtn.disabled = false;
         deleteBtn.classList.add("enabled");
       } else {
         deleteBtn.disabled = true;
         deleteBtn.classList.remove("enabled");
       }
-    });
+    };
+
+    // "input" covers typing; "paste" fires before value updates so defer by one tick
+    confirmInput.addEventListener("input", checkMatch);
+    confirmInput.addEventListener("paste", () => setTimeout(checkMatch, 0));
 
     const deleteAction = () => {
       if (confirmInput.value.trim() === title) {
@@ -471,34 +508,32 @@ window.CRMInlineEdit = {
       }
     };
 
-    // Handle delete action
     deleteBtn.addEventListener("click", deleteAction);
 
-    // Enter on the input triggers delete when name matches
+    // Keyboard shortcuts inside the input
     confirmInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !deleteBtn.disabled) {
         e.preventDefault();
         deleteAction();
+      } else if (e.key === "Escape") {
+        closeModal();
       }
     });
-
-    const closeModal = () => {
-      overlay.classList.add("closing");
-      setTimeout(() => overlay.remove(), 300);
-    };
 
     closeBtn.addEventListener("click", closeModal);
 
+    // Click-outside: use closest() so any transparent sub-element still works
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) {
+      if (!e.target.closest(".crm-modal-container")) {
         closeModal();
       }
     });
 
+    // ESC from anywhere on the page (e.g. when input is not focused)
     const escHandler = (e) => {
       if (e.key === "Escape") {
-        closeModal();
         document.removeEventListener("keydown", escHandler);
+        closeModal();
       }
     };
     document.addEventListener("keydown", escHandler);
@@ -529,26 +564,69 @@ window.CRMInlineEdit = {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            // Save toast message to localStorage and reload
-            localStorage.setItem(
-              "crmToast",
-              JSON.stringify({
-                message: data.message || "Deleted successfully!",
-                type: "success",
-              }),
-            );
-
-            // Close delete modal
+            // Close delete modal immediately
             const overlay =
               document.getElementById("crm-delete-step3") ||
               document.getElementById("crm-delete-step2") ||
               document.getElementById("crm-delete-step1");
-            if (overlay) {
-              overlay.remove();
+            if (overlay) overlay.remove();
+
+            // Show toast immediately (no localStorage needed — we're on the same page)
+            if (window.CRM && window.CRM.toast) {
+              window.CRM.toast(
+                data.message || "Deleted successfully!",
+                "success",
+              );
+            } else {
+              localStorage.setItem(
+                "crmToast",
+                JSON.stringify({
+                  message: data.message || "Deleted successfully!",
+                  type: "success",
+                }),
+              );
             }
 
-            // Reload page immediately to show updated data
-            setTimeout(() => location.reload(), 100);
+            // Remove the row from DOM with a fast fade — no page reload needed
+            const rowPrefixMap = {
+              contact: "contact-row-",
+              deal: "deal-row-",
+              organization: "org-row-",
+              activity: "activity-row-",
+            };
+            const rowId = (rowPrefixMap[type] || type + "-row-") + nid;
+            const row = document.getElementById(rowId);
+            if (row) {
+              row.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+              row.style.opacity = "0";
+              row.style.transform = "translateX(-12px)";
+              setTimeout(() => {
+                row.remove();
+                // Decrement the "Showing X–Y of Z" counter
+                const countEl = document.querySelector(".filter-count");
+                if (countEl) {
+                  countEl.textContent = countEl.textContent.replace(
+                    /of (\d+)/,
+                    function (_, n) {
+                      return "of " + Math.max(0, parseInt(n, 10) - 1);
+                    },
+                  );
+                }
+                // Decrement first stat chip number
+                const firstChip = document.querySelector(".stat-chip");
+                if (firstChip) {
+                  firstChip.innerHTML = firstChip.innerHTML.replace(
+                    /^(\d+)/,
+                    function (_, n) {
+                      return Math.max(0, parseInt(n, 10) - 1);
+                    },
+                  );
+                }
+              }, 260);
+            } else {
+              // Row not found in DOM — fall back to reload
+              setTimeout(() => location.reload(), 100);
+            }
           } else {
             this.showMessage(data.message || "Error deleting", "error");
             if (modal) {

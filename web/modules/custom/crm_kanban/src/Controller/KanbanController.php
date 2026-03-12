@@ -7,6 +7,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Cache\Cache;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * Controller for CRM Kanban Pipeline.
@@ -167,6 +168,7 @@ class KanbanController extends ControllerBase {
         'library' => [
           'core/drupal',
           'crm/crm_shared',
+          'crm_edit/inline_edit',
         ],
       ],
       '#cache' => [
@@ -186,6 +188,12 @@ class KanbanController extends ControllerBase {
     $total_count  = $stats['total_count']  ?? 0;
     $fmt_pipeline = $stats['fmt_pipeline'] ?? '$0';
     $won_count    = $stats['won_count']    ?? 0;
+
+    // Build stage options for filter dropdown
+    $stage_options_html = '';
+    foreach ($stages as $stage_id => $stage_info) {
+      $stage_options_html .= '<option value="' . htmlspecialchars($stage_id, ENT_QUOTES) . '">' . htmlspecialchars($stage_info['name'], ENT_QUOTES) . '</option>';
+    }
 
     $html = <<<'HTML'
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -306,13 +314,30 @@ class KanbanController extends ControllerBase {
   .due-badge.urgent{background:#fef2f2;color:#dc2626}
   .due-badge.soon{background:#fffbeb;color:#d97706}
   /* ── Board filter bar ── */
-  .kanban-filter{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-  .kf-wrap{position:relative;display:inline-flex;align-items:center}
-  .kf-wrap i{position:absolute;left:9px;width:14px;height:14px;color:#94a3b8;pointer-events:none;flex-shrink:0}
-  .kf-wrap input{padding:7px 12px 7px 30px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;outline:none;background:#fff;width:210px;transition:border-color .15s,width .2s}
-  .kf-wrap input:focus{border-color:#3b82f6;width:260px}
-  .filter-hint{font-size:12px;color:#94a3b8}
+  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .filter-input-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+  .filter-input-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#3b82f6;pointer-events:none;z-index:2;flex-shrink:0;stroke-width:2.2}
+  .filter-input{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:none !important;font-size:14px !important;color:#1e293b;outline:none;box-sizing:border-box !important;background:transparent !important;display:block;box-shadow:none !important}
+  .filter-input:focus{outline:none}
+  .filter-input::placeholder{color:#9ca3af}
+  .filter-select-wrap{display:flex;align-items:center;height:40px;min-width:160px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s;overflow:hidden}
+  .filter-select-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+  .flt-sel-ico{display:flex;align-items:center;justify-content:center;padding:0 6px 0 10px;flex-shrink:0;color:#3b82f6;pointer-events:none}.flt-sel-ico i{width:15px;height:15px;display:block;flex-shrink:0}
+  .flt-sel-arr{display:flex;align-items:center;padding:0 9px 0 2px;flex-shrink:0;color:#9ca3af;pointer-events:none}.flt-sel-arr svg{width:13px;height:13px;display:block}
+  .filter-select{flex:1;height:100%;min-width:0;border:none !important;padding:0 2px !important;font-size:14px !important;color:#1e293b;background:transparent;outline:none !important;cursor:pointer;appearance:none;-webkit-appearance:none;box-shadow:none !important}
+  .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+  .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
+  .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
+  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:8px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0}
+  .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
+  .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
   .card-hidden{display:none!important}
+  @keyframes cardShowFilter{from{opacity:0;transform:translateY(-5px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .deal-card.card-just-shown{animation:cardShowFilter .22s cubic-bezier(.4,0,.2,1)}
+  .filter-input-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:20px;height:20px;display:none;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;background:none;border:none;padding:0;border-radius:50%;font-size:15px;line-height:1;transition:color .15s}
+  .filter-input-clear.visible{display:flex}
+  .filter-input-clear:hover{color:#ef4444;background:rgba(239,68,68,.08)}
 </style>
   
   <!-- Deal Closing Modal -->
@@ -398,12 +423,23 @@ HTML;
     </div>
   </div>
 
-  <div class="kanban-filter">
-    <div class="kf-wrap">
-      <i data-lucide="search"></i>
-      <input type="text" id="kanban-search" placeholder="Filter deals…" autocomplete="off">
+  <div class="filter-bar">
+    <div class="filter-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="kanban-search" class="filter-input" placeholder="Search deals…" autocomplete="off">
+      <button type="button" id="kanban-search-clear" class="filter-input-clear" title="Clear search" aria-label="Clear">&#x2715;</button>
     </div>
-    <span id="filter-count" class="filter-hint"></span>
+    <div class="filter-select-wrap">
+      <span class="flt-sel-ico"><i data-lucide="layers"></i></span>
+      <select class="filter-select" id="kanban-stage-filter">
+        <option value="">All stages</option>
+        {$stage_options_html}
+      </select>
+      <span class="flt-sel-arr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 4 7 9 12 4"/></svg></span>
+    </div>
+    <span class="stat-chip blue" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
+    <span class="stat-chip green" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
+    <span id="filter-count" class="filter-count"></span>
   </div>
 
   <div class="kanban-container">
@@ -467,11 +503,12 @@ HTML;
             }
           }
 
+          $search_text = htmlspecialchars(strtolower($deal['title'] . ' ' . $org_display . ' ' . $owner_display), ENT_QUOTES, 'UTF-8');
           $html .= <<<HTML
-          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}">
+          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}" data-search-text="{$search_text}">
             <div class="card-actions">
               <a href="/node/{$deal['nid']}" class="ca-btn" title="View"><i data-lucide="eye"></i></a>
-              <a href="/node/{$deal['nid']}/edit" class="ca-btn" title="Edit"><i data-lucide="pencil"></i></a>
+              <button type="button" class="ca-btn" title="Edit" onclick="if(window.CRMInlineEdit)CRMInlineEdit.openModal({$deal['nid']},'deal');else location='/node/{$deal['nid']}/edit';"><i data-lucide="pencil"></i></button>
             </div>
             <div class="deal-title">{$deal['title']}</div>
             <div class="card-value-row">
@@ -533,25 +570,50 @@ HTML;
 
     // ── Live board filter ─────────────────────────────────────────────
     const _ks = document.getElementById('kanban-search');
+    const _kstage = document.getElementById('kanban-stage-filter');
     const _kc = document.getElementById('filter-count');
-    if (_ks) {
-      _ks.addEventListener('input', function () {
-        const q = this.value.trim().toLowerCase();
-        let vis = 0, tot = 0;
-        document.querySelectorAll('.deal-card').forEach(c => {
-          tot++;
-          const match = !q || c.textContent.toLowerCase().includes(q);
-          c.classList.toggle('card-hidden', !match);
-          if (match) vis++;
-        });
-        _kc.textContent = q ? vis + ' of ' + tot + ' deals' : '';
-        document.querySelectorAll('.kanban-column').forEach(col => {
-          const cnt = col.querySelectorAll('.deal-card:not(.card-hidden)').length;
-          const badge = col.querySelector('.column-count');
-          if (badge) badge.textContent = cnt;
-        });
+    const _ksClear = document.getElementById('kanban-search-clear');
+
+    // Prefix-match: true if any word in text starts with query.
+    function crmWordMatch(text, q) {
+      if (!q) return true;
+      if (text.startsWith(q)) return true;
+      return text.split(/[\s\-_\/]+/).some(function(w){ return w.startsWith(q); });
+    }
+
+    function applyKanbanFilter() {
+      const q = (_ks ? _ks.value.trim().toLowerCase() : '');
+      const stage = (_kstage ? _kstage.value : '');
+      if (_ksClear) _ksClear.classList.toggle('visible', q.length > 0);
+      let vis = 0, tot = 0;
+      document.querySelectorAll('.deal-card').forEach(c => {
+        tot++;
+        const searchText = c.dataset.searchText || c.querySelector('.deal-title')?.textContent.toLowerCase() || c.textContent.toLowerCase();
+        const matchText = !q || crmWordMatch(searchText, q);
+        const col = c.closest('.column-cards');
+        const matchStage = !stage || (col && col.dataset.stage === stage);
+        const match = matchText && matchStage;
+        const wasHidden = c.classList.contains('card-hidden');
+        c.classList.toggle('card-hidden', !match);
+        if (match) {
+          vis++;
+          if (wasHidden) {
+            c.classList.remove('card-just-shown');
+            void c.offsetWidth; // force reflow
+            c.classList.add('card-just-shown');
+          }
+        }
+      });
+      if (_kc) _kc.textContent = (q || stage) ? vis + ' of ' + tot + ' deals' : '';
+      document.querySelectorAll('.kanban-column').forEach(col => {
+        const cnt = col.querySelectorAll('.deal-card:not(.card-hidden)').length;
+        const badge = col.querySelector('.column-count');
+        if (badge) badge.textContent = cnt;
       });
     }
+    if (_ks) { _ks.addEventListener('input', applyKanbanFilter); }
+    if (_kstage) { _kstage.addEventListener('change', applyKanbanFilter); }
+    if (_ksClear) { _ksClear.addEventListener('click', function(){ if(_ks){_ks.value='';} applyKanbanFilter(); _ks && _ks.focus(); }); }
 
     // Variables for reverting card movement
     let pendingMove = null;
@@ -811,7 +873,7 @@ HTML;
 
     // CSRF validation.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['success' => FALSE, 'message' => 'CSRF validation failed'], 403);
     }
 
@@ -835,7 +897,13 @@ HTML;
       if (!$deal || $deal->bundle() !== 'deal') {
         return new JsonResponse(['success' => FALSE, 'message' => 'Deal not found'], 404);
       }
-      
+
+      // Authorization: verify the current user can edit this deal.
+      $current_user = \Drupal::currentUser();
+      if (!$deal->access('update', $current_user)) {
+        return new JsonResponse(['success' => FALSE, 'message' => 'Access denied. You do not have permission to modify this deal.'], 403);
+      }
+
       // If moving to Won (term ID 5 in pipeline_stage vocabulary).
       if ($numeric_stage_id === 5) {
         // Validate closing date

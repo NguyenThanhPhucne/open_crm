@@ -6,8 +6,10 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Render\Markup;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * Controller for creating new CRM entities.
@@ -24,7 +26,7 @@ class AddController extends ControllerBase {
         '#markup' => '<div class="error-message">Invalid content type</div>',
       ];
     }
-    
+
     // Check create access
     $access = $this->checkCreateAccess($type);
     if (!$access) {
@@ -32,7 +34,14 @@ class AddController extends ControllerBase {
         '#markup' => '<div class="error-message">Access denied. You do not have permission to create this content type.</div>',
       ];
     }
-    
+
+    // Contact, deal and organization have dedicated quickadd form pages.
+    // Redirect to them so we avoid showing a duplicate Drupal page title
+    // alongside the inline-edit modal header.
+    if (in_array($type, ['contact', 'deal', 'organization'])) {
+      return new RedirectResponse('/crm/quickadd/' . $type);
+    }
+
     $type_label = ucfirst($type);
     
     return [
@@ -179,7 +188,7 @@ class AddController extends ControllerBase {
   public function ajaxCreate(Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['success' => false, 'message' => 'CSRF token validation failed.'], 403);
     }
 
@@ -263,27 +272,8 @@ class AddController extends ControllerBase {
    */
   protected function checkCreateAccess($type) {
     $account = $this->currentUser();
-    
-    // Admin has full access
-    if ($account->hasRole('administrator')) {
-      return TRUE;
-    }
-    
-    // Sales manager can create any content
-    if ($account->hasRole('sales_manager')) {
-      if ($account->hasPermission("create {$type} content")) {
-        return TRUE;
-      }
-    }
-    
-    // Sales rep can create own content
-    if ($account->hasRole('sales_rep')) {
-      if ($account->hasPermission("create {$type} content")) {
-        return TRUE;
-      }
-    }
-    
-    return FALSE;
+    // Use Drupal's standard permission check.
+    return $account->hasPermission("create {$type} content");
   }
   
   /**
@@ -454,7 +444,12 @@ class AddController extends ControllerBase {
                     echo '<option value="" disabled selected hidden>' . htmlspecialchars($ref_prompt) . '</option>';
 
                     if ($target_type === 'user') {
-                      $users = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['status' => 1]);
+                      $uids = \Drupal::entityTypeManager()->getStorage('user')->getQuery()
+                        ->condition('status', 1)
+                        ->sort('name', 'ASC')
+                        ->accessCheck(FALSE)
+                        ->execute();
+                      $users = !empty($uids) ? \Drupal::entityTypeManager()->getStorage('user')->loadMultiple($uids) : [];
                       foreach ($users as $user) {
                         if ($user->id() > 0) {
                           $selected = ($value == $user->id()) ? 'selected' : '';
@@ -475,10 +470,20 @@ class AddController extends ControllerBase {
                     } elseif ($target_type === 'node') {
                       $target_bundles = $field_settings['target_bundles'] ?? [];
                       if (!empty($target_bundles)) {
-                        $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => $target_bundles]);
-                        foreach ($nodes as $node) {
-                          $selected = ($value == $node->id()) ? 'selected' : '';
-                          echo '<option value="' . $node->id() . '" ' . $selected . '>' . htmlspecialchars($node->getTitle() ?? '') . '</option>';
+                        // Use entity query with sort + limit to avoid loading unbounded data
+                        $nq = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+                          ->condition('type', array_values($target_bundles), 'IN')
+                          ->condition('status', 1)
+                          ->sort('title', 'ASC')
+                          ->range(0, 200)
+                          ->accessCheck(FALSE);
+                        $nids = $nq->execute();
+                        if (!empty($nids)) {
+                          $ref_nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+                          foreach ($ref_nodes as $ref_node) {
+                            $selected = ($value == $ref_node->id()) ? 'selected' : '';
+                            echo '<option value="' . $ref_node->id() . '" ' . $selected . '>' . htmlspecialchars($ref_node->getTitle() ?? '') . '</option>';
+                          }
                         }
                       }
                     }

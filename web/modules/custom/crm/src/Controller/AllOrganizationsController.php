@@ -39,10 +39,10 @@ class AllOrganizationsController extends ControllerBase {
         ->condition('type', 'organization')
         ->accessCheck(FALSE);
       if ($search_name) {
-        $q->condition('title', '%' . $search_name . '%', 'LIKE');
+        $q->condition('title', $search_name . '%', 'LIKE');
       }
       if ($search_industry) {
-        $q->condition('field_industry', '%' . $search_industry . '%', 'LIKE');
+        $q->condition('field_industry', $search_industry . '%', 'LIKE');
       }
       if ($search_status) {
         $q->condition('field_status', $search_status);
@@ -276,8 +276,12 @@ class AllOrganizationsController extends ControllerBase {
   .filter-input{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:none !important;font-size:14px !important;color:#1e293b;outline:none;box-sizing:border-box !important;background:transparent !important;display:block;box-shadow:none !important}
   .filter-input:focus{outline:none}
   .filter-input::placeholder{color:#9ca3af}
-  .filter-select{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:none !important;font-size:14px !important;color:#1e293b;outline:none;box-sizing:border-box !important;background:transparent !important;display:block;cursor:pointer;appearance:none;box-shadow:none !important}
-  .filter-select:focus{outline:none}
+  .filter-select-wrap{display:flex;align-items:center;height:40px;min-width:160px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s;overflow:hidden}
+  .filter-select-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+  .flt-sel-ico{display:flex;align-items:center;justify-content:center;padding:0 6px 0 10px;flex-shrink:0;color:#3b82f6;pointer-events:none}
+  .flt-sel-arr{display:flex;align-items:center;padding:0 9px 0 2px;flex-shrink:0;color:#9ca3af;pointer-events:none}.flt-sel-arr svg{width:13px;height:13px;display:block}
+  .filter-select{flex:1;height:100%;min-width:0;border:none !important;padding:0 2px !important;font-size:14px !important;color:#1e293b;background:transparent;outline:none !important;cursor:pointer;appearance:none;-webkit-appearance:none;box-shadow:none !important}
+  .filter-select:focus{border:none !important;box-shadow:none !important}
   .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,color .15s,border-color .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
   .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
   .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
@@ -468,16 +472,17 @@ HTML;
       <input id="crm-search-input" class="filter-input" type="text" name="search" placeholder="Search by name…" value="{$e_search}">
     </div>
     <div class="filter-input-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#3b82f6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <input class="filter-input" type="text" name="industry" placeholder="Filter by industry…" value="{$e_industry}">
     </div>
-    <div class="filter-input-wrap" style="max-width:180px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    <div class="filter-select-wrap" style="min-width:160px">
+      <span class="flt-sel-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:#3b82f6"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></span>
       <select class="filter-select" name="status">
         <option value="">All statuses</option>
         <option value="active"{$active_sel}>Active</option>
         <option value="inactive"{$inactive_sel}>Inactive</option>
       </select>
+      <span class="flt-sel-arr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 4 7 9 12 4"/></svg></span>
     </div>
     <button type="submit" class="btn-filter-apply">
       <i data-lucide="filter"></i>
@@ -492,7 +497,9 @@ HTML;
     $from = $filtered_total === 0 ? 0 : $page * $per_page + 1;
     $to   = min(($page + 1) * $per_page, $filtered_total);
     $html .= '<span class="filter-count">Showing ' . $from . '–' . $to . ' of ' . $filtered_total . '</span>';
-    $html .= '</form>';    $html .= $chips_html;
+    $html .= '</form>';
+    $html .= '<div id="crm-results-wrap">';
+    $html .= $chips_html;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
@@ -650,6 +657,7 @@ EMPTY;
     }
     $html .= '</div>'; // .pagination
     $html .= '</div>'; // .table-card
+    $html .= '</div>'; // #crm-results-wrap
     $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
       . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
       . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
@@ -669,34 +677,40 @@ EMPTY;
   document.addEventListener('crm:icons-refresh', function () {
     if (window.lucide) lucide.createIcons();
   });
-  // Bulk select
+  // Bulk select — event delegation survives AJAX result swaps
   (function() {
     var bulkBar  = document.getElementById('bulk-bar');
     if (!bulkBar) return;
     var bkCount  = document.getElementById('bk-ct');
-    var chkAll   = document.getElementById('chk-all');
     var clearBtn = document.getElementById('bulk-clear-btn');
     function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
     function refreshBulk() {
       var sel = getRowChecks().filter(function(c) { return c.checked; });
       if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
       else { bulkBar.classList.remove('show'); }
+      var chkAll = document.getElementById('chk-all');
       if (chkAll) {
         var all = getRowChecks();
         chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
         chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
       }
     }
-    if (chkAll) {
-      chkAll.addEventListener('change', function() {
-        getRowChecks().forEach(function(c) { c.checked = chkAll.checked; });
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.classList.contains('chk-all')) {
+        getRowChecks().forEach(function(c) { c.checked = e.target.checked; });
         refreshBulk();
-      });
-    }
-    getRowChecks().forEach(function(c) { c.addEventListener('change', refreshBulk); });
+      } else if (e.target && e.target.classList.contains('row-chk')) {
+        refreshBulk();
+      }
+    });
+    document.addEventListener('crm:results-swapped', function() {
+      bulkBar.classList.remove('show');
+      bkCount.textContent = '0 selected';
+    });
     if (clearBtn) {
       clearBtn.addEventListener('click', function() {
         getRowChecks().forEach(function(c) { c.checked = false; });
+        var chkAll = document.getElementById('chk-all');
         if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
         bulkBar.classList.remove('show');
       });
@@ -718,17 +732,7 @@ EMPTY;
       });
     });
   })();
-  // Page size selector
-  (function() {
-    var pgSz = document.getElementById('pg-sz-sel');
-    if (!pgSz) return;
-    pgSz.addEventListener('change', function() {
-      var u = new URL(window.location.href);
-      u.searchParams.set('per_page', pgSz.value);
-      u.searchParams.set('page', '0');
-      window.location.href = u.toString();
-    });
-  })();
+  // Page size — handled by CRM.initRealtimeSearch event delegation
 </script>
 JS;
 

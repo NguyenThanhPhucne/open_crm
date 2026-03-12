@@ -9,6 +9,7 @@ use Drupal\node\NodeInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * Inline Edit Controller for CRM entities.
@@ -20,37 +21,10 @@ class InlineEditController extends ControllerBase {
    */
   protected function checkEditAccess(NodeInterface $node) {
     $account = $this->currentUser();
-    
-    // Admin has full access
-    if ($account->hasRole('administrator')) {
+    // Use Drupal's standard node access system.
+    if ($node->access('update', $account)) {
       return AccessResult::allowed();
     }
-    
-    $bundle = $node->bundle();
-    
-    // Managers can edit any content
-    if ($account->hasRole('sales_manager')) {
-      if ($account->hasPermission("edit any {$bundle} content")) {
-        return AccessResult::allowed();
-      }
-    }
-    
-    // Sales reps can only edit own content
-    if ($account->hasRole('sales_rep')) {
-      // Determine ownership field
-      $owner_field = $this->getOwnerField($bundle);
-      
-      if ($node->hasField($owner_field)) {
-        $owner_id = $node->get($owner_field)->target_id;
-        
-        if ($owner_id == $account->id()) {
-          if ($account->hasPermission("edit own {$bundle} content")) {
-            return AccessResult::allowed();
-          }
-        }
-      }
-    }
-    
     return AccessResult::forbidden('You do not have permission to edit this content.');
   }
   
@@ -549,7 +523,7 @@ class InlineEditController extends ControllerBase {
   public function ajaxSave(Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['success' => false, 'message' => 'CSRF token validation failed.'], 403);
     }
 

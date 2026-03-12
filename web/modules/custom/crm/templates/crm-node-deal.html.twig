@@ -1,237 +1,295 @@
 {#
   crm-node-deal.html.twig
-  Professional deal detail page
+  Professional deal detail page — hero design matching contact page
 #}
-<div class="crm-node-detail">
+<style>body { background: #f0f2f5 !important; }</style>
 
-  {# Breadcrumb #}
+<div class="crm-deal-detail">
+
+  {# ── Breadcrumb ───────────────────────────────────────────── #}
   <nav class="detail-breadcrumb">
     <a href="/crm/all-deals"><i data-lucide="trending-up"></i> Deals</a>
     <i data-lucide="chevron-right"></i>
     <span>{{ title }}</span>
   </nav>
 
-  {# ─── Header Card ──────────────────────────────────── #}
-  <div class="detail-card detail-header-card">
-    <div class="detail-avatar deal">
-      <i data-lucide="dollar-sign" style="color:#fff;width:36px;height:36px;"></i>
-    </div>
+  {# ── Hero: cover gradient + icon avatar + identity ─────────── #}
+  <div class="contact-hero">
+    <div class="deal-cover"></div>
 
-    <div class="detail-header-info">
-      <h1>{{ title }}</h1>
+    <div class="contact-hero-body">
 
-      <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.35rem;flex-wrap:wrap;">
-        {% if stage_name %}
-          <span class="badge stage-badge stage-{{ stage_class }}">{{ stage_name }}</span>
-        {% endif %}
-        {% if probability %}
-          <span class="badge" style="background:#f0f9ff;color:#0369a1;">{{ probability }}% probability</span>
-        {% endif %}
-      </div>
-
-      {% if amount %}
-        <div class="deal-amount-hero">
-          <span class="deal-amount-value">${{ amount|number_format(0, '.', ',') }}</span>
+      {# Avatar — deal icon in purple rounded square #}
+      <div class="contact-avatar-section">
+        <div class="entity-avatar-icon deal-avatar-icon">
+          <i data-lucide="trending-up" width="44" height="44"></i>
         </div>
-      {% endif %}
-
-      <div class="detail-meta-row" style="margin-top:0.75rem;">
-        {% if contact_name %}
-          <div class="detail-meta-item">
-            <i data-lucide="user"></i>
-            <a href="{{ contact_url }}">{{ contact_name }}</a>
-          </div>
-        {% endif %}
-        {% if org_name %}
-          <div class="detail-meta-item">
-            <i data-lucide="building-2"></i>
-            <a href="{{ org_url }}">{{ org_name }}</a>
-          </div>
-        {% endif %}
-        {% if close_date %}
-          <div class="detail-meta-item">
-            <i data-lucide="calendar"></i>
-            Close: {{ close_date|date('M j, Y') }}
-          </div>
-        {% endif %}
-        {% if owner_name %}
-          <div class="detail-meta-item">
-            <i data-lucide="user-check"></i>
-            Owner: <a href="{{ owner_url }}">{{ owner_name }}</a>
-          </div>
-        {% endif %}
-        {% if source %}
-          <div class="detail-meta-item">
-            <i data-lucide="zap"></i>
-            {{ source }}
-          </div>
-        {% endif %}
       </div>
+
+      {# Identity #}
+      <div class="contact-identity">
+        <div class="contact-name-row">
+          <h1 class="contact-name">{{ title }}</h1>
+          {% if can_edit %}
+            <button onclick="CRMInlineEdit.openModal({{ nid }}, 'deal')" class="contact-edit-btn">
+              <i data-lucide="pencil" width="12" height="12"></i>Edit
+            </button>
+          {% endif %}
+        </div>
+
+        <div class="contact-roles">
+          {% if stage_name %}
+            <span class="contact-role-badge" style="background:rgba(139,92,246,0.12);color:#6d28d9;">{{ stage_name }}</span>
+          {% endif %}
+          {% if probability %}
+            <span class="contact-role-badge" style="background:#f0f9ff;color:#0369a1;">{{ probability }}% probability</span>
+          {% endif %}
+        </div>
+
+        <div class="contact-meta-row">
+          {% if amount %}
+            <span class="contact-meta-chip" style="font-size:1.3rem;font-weight:800;color:#0f172a;">
+              ${{ amount|number_format(0, '.', ',') }}
+            </span>
+          {% endif %}
+          {% if contact_name %}
+            <a href="{{ contact_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="user" width="12" height="12"></i>{{ contact_name }}
+            </a>
+          {% endif %}
+          {% if org_name %}
+            <a href="{{ org_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="building-2" width="12" height="12"></i>{{ org_name }}
+            </a>
+          {% endif %}
+          {% if close_date %}
+            <span class="contact-meta-chip">
+              <i data-lucide="calendar" width="12" height="12"></i>Close: {{ close_date|date('M j, Y') }}
+            </span>
+          {% endif %}
+          {% if owner_name %}
+            <a href="{{ owner_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="user-check" width="12" height="12"></i>{{ owner_name }}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Quick-action buttons #}
+      <div class="contact-quick-actions">
+        <a href="/crm/add/activity" class="cqa-btn cqa-primary">
+          <i data-lucide="plus" width="14" height="14"></i>New Activity
+        </a>
+        {% if can_edit %}
+          <button onclick="CRMInlineEdit.openModal({{ nid }}, 'deal')" class="cqa-btn cqa-secondary">
+            <i data-lucide="edit-2" width="14" height="14"></i>Edit
+          </button>
+        {% endif %}
+        <a href="/crm/all-deals" class="cqa-btn cqa-secondary">
+          <i data-lucide="arrow-left" width="14" height="14"></i>Back
+        </a>
+      </div>
+
     </div>
+  </div>{# /.contact-hero #}
 
-    {% if can_edit %}
-      <div class="detail-header-actions">
-        <a href="/node/{{ nid }}/edit" class="btn-primary">
-          <i data-lucide="edit-2"></i> Edit
-        </a>
-        <a href="/crm/all-deals" class="btn-secondary">
-          <i data-lucide="arrow-left"></i> Back
-        </a>
-      </div>
-    {% endif %}
-  </div>
+  {# ── Stats row ─────────────────────────────────────────────── #}
+  <div class="cstats-grid">
 
-  {# ─── Stats Row ────────────────────────────────────── #}
-  <div class="stats-grid">
     {% if amount %}
-      <div class="stat-card stat-card-green">
-        <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
-        <div class="stat-number" style="font-size:1.4rem;">${{ amount|number_format(0, '.', ',') }}</div>
-        <div class="stat-label">Deal Value</div>
+      <div class="cstat-card cstat-green">
+        <div class="cstat-icon-wrap"><i data-lucide="dollar-sign" width="20" height="20"></i></div>
+        <div class="cstat-info">
+          <div class="cstat-value cstat-value-sm">${{ amount|number_format(0, '.', ',') }}</div>
+          <div class="cstat-label">Deal Value</div>
+        </div>
       </div>
     {% endif %}
-    {% if probability %}
-      <div class="stat-card stat-card-blue">
-        <div class="stat-icon"><i data-lucide="percent"></i></div>
-        <div class="stat-number">{{ probability }}%</div>
-        <div class="stat-label">Win Probability</div>
-      </div>
-    {% endif %}
-    <div class="stat-card stat-card-purple">
-      <div class="stat-icon"><i data-lucide="activity"></i></div>
-      <div class="stat-number">{{ activities|length }}</div>
-      <div class="stat-label">Activities</div>
-    </div>
-    {% if close_date %}
-      <div class="stat-card stat-card-orange">
-        <div class="stat-icon"><i data-lucide="calendar"></i></div>
-        <div class="stat-number" style="font-size:1rem;">{{ close_date|date('M j, Y') }}</div>
-        <div class="stat-label">Close Date</div>
-      </div>
-    {% endif %}
-  </div>
 
-  {# ─── Details Panel ────────────────────────────────── #}
-  <div class="details-panel">
-    <div class="details-panel-title">
-      <i data-lucide="info"></i> Deal Details
-    </div>
-    <div class="fields-grid">
-      <div class="field-item">
-        <div class="field-label">Deal Name</div>
-        <div class="field-value">{{ title }}</div>
+    {% if probability %}
+      <div class="cstat-card cstat-blue">
+        <div class="cstat-icon-wrap"><i data-lucide="percent" width="20" height="20"></i></div>
+        <div class="cstat-info">
+          <div class="cstat-value">{{ probability }}%</div>
+          <div class="cstat-label">Win Probability</div>
+        </div>
       </div>
-      {% if stage_name %}
-        <div class="field-item">
-          <div class="field-label">Stage</div>
-          <div class="field-value">
-            <span class="badge stage-badge stage-{{ stage_class }}">{{ stage_name }}</span>
+    {% endif %}
+
+    <div class="cstat-card cstat-purple">
+      <div class="cstat-icon-wrap"><i data-lucide="activity" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value">{{ activities|length }}</div>
+        <div class="cstat-label">Activities</div>
+      </div>
+    </div>
+
+    {% if close_date %}
+      <div class="cstat-card cstat-amber">
+        <div class="cstat-icon-wrap"><i data-lucide="calendar" width="20" height="20"></i></div>
+        <div class="cstat-info">
+          <div class="cstat-value cstat-value-sm">{{ close_date|date('M j') }}</div>
+          <div class="cstat-label">Close Date</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="cstat-card cstat-amber">
+        <div class="cstat-icon-wrap"><i data-lucide="zap" width="20" height="20"></i></div>
+        <div class="cstat-info">
+          <div class="cstat-value cstat-value-sm">{{ source ? source : '—' }}</div>
+          <div class="cstat-label">Source</div>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>{# /.cstats-grid #}
+
+  {# ── Two-column content grid ───────────────────────────────── #}
+  <div class="contact-content-grid">
+
+    {# Left column: details + notes #}
+    <div class="contact-col">
+
+      <div class="ccontent-card">
+        <div class="ccard-header">
+          <div class="ccard-title">
+            <i data-lucide="info" width="16" height="16"></i>
+            <span>Deal Details</span>
           </div>
         </div>
-      {% endif %}
-      {% if amount %}
-        <div class="field-item">
-          <div class="field-label">Amount</div>
-          <div class="field-value amount">${{ amount|number_format(0, '.', ',') }}</div>
-        </div>
-      {% endif %}
-      {% if probability %}
-        <div class="field-item">
-          <div class="field-label">Win Probability</div>
-          <div class="field-value">{{ probability }}%</div>
-        </div>
-      {% endif %}
-      {% if contact_name %}
-        <div class="field-item">
-          <div class="field-label">Contact</div>
-          <div class="field-value"><a href="{{ contact_url }}">{{ contact_name }}</a></div>
-        </div>
-      {% endif %}
-      {% if org_name %}
-        <div class="field-item">
-          <div class="field-label">Organization</div>
-          <div class="field-value"><a href="{{ org_url }}">{{ org_name }}</a></div>
-        </div>
-      {% endif %}
-      {% if owner_name %}
-        <div class="field-item">
-          <div class="field-label">Owner</div>
-          <div class="field-value"><a href="{{ owner_url }}">{{ owner_name }}</a></div>
-        </div>
-      {% endif %}
-      {% if close_date %}
-        <div class="field-item">
-          <div class="field-label">Expected Close Date</div>
-          <div class="field-value">{{ close_date|date('F j, Y') }}</div>
-        </div>
-      {% endif %}
-      {% if source %}
-        <div class="field-item">
-          <div class="field-label">Source</div>
-          <div class="field-value">{{ source }}</div>
-        </div>
-      {% endif %}
-      {% if lost_reason %}
-        <div class="field-item">
-          <div class="field-label">Lost Reason</div>
-          <div class="field-value" style="color:#ef4444;">{{ lost_reason }}</div>
-        </div>
-      {% endif %}
-      <div class="field-item">
-        <div class="field-label">Created</div>
-        <div class="field-value">{{ created|date('M j, Y') }}</div>
-      </div>
-      <div class="field-item">
-        <div class="field-label">Last Updated</div>
-        <div class="field-value">{{ changed|date('M j, Y') }}</div>
-      </div>
-    </div>
-  </div>
-
-  {# ─── Notes ────────────────────────────────────────── #}
-  {% if notes %}
-    <div class="notes-panel">
-      <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
-      <div class="notes-panel-text">{{ notes }}</div>
-    </div>
-  {% endif %}
-
-  {# ─── Activities ───────────────────────────────────── #}
-  <div class="content-card" style="margin-top:0;">
-    <div class="content-card-header">
-      <div class="content-card-title">
-        <i data-lucide="activity"></i> Activity Timeline
-      </div>
-    </div>
-    <div class="content-card-body">
-      {% if activities %}
-        <ul class="detail-list">
-          {% for act in activities %}
-            <li class="detail-list-item">
-              <div class="timeline-dot {{ act.status|lower|replace({' ':'-'}) }}"></div>
-              <div class="detail-list-info">
-                <div class="detail-list-title"><a href="{{ act.url }}">{{ act.title }}</a></div>
-                <div class="detail-list-sub">
-                  {% if act.type %}<span>{{ act.type }}</span>{% endif %}
-                  {% if act.date %}<span>· {{ act.date|date('M j, Y') }}</span>{% endif %}
-                </div>
+        <div class="fields-grid" style="padding:16px 20px 20px;">
+          <div class="field-item">
+            <div class="field-label">Deal Name</div>
+            <div class="field-value">{{ title }}</div>
+          </div>
+          {% if stage_name %}
+            <div class="field-item">
+              <div class="field-label">Stage</div>
+              <div class="field-value">
+                <span class="badge stage-badge stage-{{ stage_class }}">{{ stage_name }}</span>
               </div>
-              {% if act.status %}
-                <span class="badge status-badge status-{{ act.status|lower|replace({' ':'-'}) }}">{{ act.status }}</span>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="empty-state">
-          <i data-lucide="activity"></i>
-          <p>No activities yet for this deal</p>
+            </div>
+          {% endif %}
+          {% if amount %}
+            <div class="field-item">
+              <div class="field-label">Amount</div>
+              <div class="field-value amount">${{ amount|number_format(0, '.', ',') }}</div>
+            </div>
+          {% endif %}
+          {% if probability %}
+            <div class="field-item">
+              <div class="field-label">Win Probability</div>
+              <div class="field-value">{{ probability }}%</div>
+            </div>
+          {% endif %}
+          {% if contact_name %}
+            <div class="field-item">
+              <div class="field-label">Contact</div>
+              <div class="field-value"><a href="{{ contact_url }}">{{ contact_name }}</a></div>
+            </div>
+          {% endif %}
+          {% if org_name %}
+            <div class="field-item">
+              <div class="field-label">Organization</div>
+              <div class="field-value"><a href="{{ org_url }}">{{ org_name }}</a></div>
+            </div>
+          {% endif %}
+          {% if owner_name %}
+            <div class="field-item">
+              <div class="field-label">Owner</div>
+              <div class="field-value"><a href="{{ owner_url }}">{{ owner_name }}</a></div>
+            </div>
+          {% endif %}
+          {% if close_date %}
+            <div class="field-item">
+              <div class="field-label">Expected Close</div>
+              <div class="field-value">{{ close_date|date('F j, Y') }}</div>
+            </div>
+          {% endif %}
+          {% if source %}
+            <div class="field-item">
+              <div class="field-label">Source</div>
+              <div class="field-value">{{ source }}</div>
+            </div>
+          {% endif %}
+          {% if lost_reason %}
+            <div class="field-item">
+              <div class="field-label">Lost Reason</div>
+              <div class="field-value" style="color:#ef4444;">{{ lost_reason }}</div>
+            </div>
+          {% endif %}
+          <div class="field-item">
+            <div class="field-label">Created</div>
+            <div class="field-value">{{ created|date('M j, Y') }}</div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Last Updated</div>
+            <div class="field-value">{{ changed|date('M j, Y') }}</div>
+          </div>
+        </div>
+      </div>
+
+      {% if notes %}
+        <div class="notes-panel">
+          <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
+          <div class="notes-panel-text">{{ notes }}</div>
         </div>
       {% endif %}
-    </div>
-  </div>
 
-</div>{# /.crm-node-detail #}
+    </div>{# /.contact-col (left) #}
+
+    {# Right column: activities timeline #}
+    <div class="contact-col">
+
+      <div class="ccontent-card">
+        <div class="ccard-header">
+          <div class="ccard-title">
+            <i data-lucide="activity" width="16" height="16"></i>
+            <span>Activity Timeline</span>
+          </div>
+          <a href="/crm/all-activities" class="cview-all-link">
+            View all<i data-lucide="arrow-right" width="13" height="13"></i>
+          </a>
+        </div>
+        {% if activities %}
+          <div class="ctimeline-list">
+            {% for act in activities %}
+              <a href="{{ act.url }}" class="ctl-item">
+                <div class="ctl-dot dot-blue"></div>
+                <div class="ctl-body">
+                  <div class="ctl-title">{{ act.title }}</div>
+                  <div class="ctl-meta">
+                    {% if act.type %}
+                      <span class="ctl-chip chip-blue">{{ act.type }}</span>
+                    {% endif %}
+                    {% if act.date %}
+                      <span class="ctl-date">
+                        <i data-lucide="clock" width="10" height="10"></i>{{ act.date|date('d M Y') }}
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if act.status %}
+                  <span class="badge status-badge status-{{ act.status|lower|replace({' ':'-'}) }}">{{ act.status }}</span>
+                {% endif %}
+                <i data-lucide="chevron-right" class="ctl-arrow" width="13" height="13"></i>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+            <i data-lucide="activity"></i>
+            <p>No activities yet for this deal</p>
+            <a href="/crm/add/activity" class="cqa-btn cqa-primary" style="margin-top:10px;">Add Activity</a>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>{# /.contact-col (right) #}
+
+  </div>{# /.contact-content-grid #}
+
+</div>{# /.crm-deal-detail #}
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {

@@ -8,6 +8,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\node\NodeInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * Delete Controller for CRM entities.
@@ -20,7 +21,7 @@ class DeleteController extends ControllerBase {
   public function ajaxDelete(Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['success' => false, 'message' => 'CSRF token validation failed.'], 403);
     }
 
@@ -114,36 +115,10 @@ class DeleteController extends ControllerBase {
    */
   protected function checkDeleteAccess(NodeInterface $node) {
     $account = $this->currentUser();
-    
-    // Admin has full access
-    if ($account->hasRole('administrator')) {
+    // Use Drupal's standard node access system.
+    if ($node->access('delete', $account)) {
       return AccessResult::allowed();
     }
-    
-    $bundle = $node->bundle();
-    
-    // Managers can delete any content
-    if ($account->hasRole('sales_manager')) {
-      if ($account->hasPermission("delete any {$bundle} content")) {
-        return AccessResult::allowed();
-      }
-    }
-    
-    // Sales reps can only delete own content
-    if ($account->hasRole('sales_rep')) {
-      $owner_field = $this->getOwnerField($bundle);
-      
-      if ($node->hasField($owner_field)) {
-        $owner_id = $node->get($owner_field)->target_id;
-        
-        if ($owner_id == $account->id()) {
-          if ($account->hasPermission("delete own {$bundle} content")) {
-            return AccessResult::allowed();
-          }
-        }
-      }
-    }
-    
     return AccessResult::forbidden('You do not have permission to delete this content.');
   }
   

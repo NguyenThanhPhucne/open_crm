@@ -170,40 +170,246 @@
      REALTIME DEBOUNCED SEARCH
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   /**
-   * Wire up a search input to auto-submit its parent form after typing stops.
-   * @param {string} inputId   ID of the search <input>
+   * Wire up a search/filter form to update results without a full page reload.
+   * Uses fetch() + DOMParser to swap only #crm-results-wrap and update the
+   * filter-count label. Falls back to a normal form submit when #crm-results-wrap
+   * is absent (e.g. pages that don't opt-in to AJAX filtering).
+   *
+   * Also injects × clear buttons into every .filter-input-wrap in the form.
+   *
+   * @param {string} inputId   ID of the primary search <input>
    * @param {number} delay     Debounce delay in ms (default 450)
    */
   function initRealtimeSearch(inputId, delay) {
     var input = document.getElementById(inputId);
     if (!input) return;
     delay = delay || 450;
-    var timer = null;
-    var lastVal = input.value;
+    var form = input.closest("form") || input.form;
+    var resultsWrap = document.getElementById("crm-results-wrap");
 
-    input.addEventListener("input", function () {
-      clearTimeout(timer);
-      var val = input.value;
-      if (val === lastVal) return;
-      timer = setTimeout(function () {
-        lastVal = val;
-        var form = input.closest("form") || input.form;
-        if (form) {
-          form.submit();
-        }
-      }, delay);
-    });
+    // ── Inject shared CSS once per page ──────────────────────────────────
+    if (!document.getElementById("crm-irs-style")) {
+      var styleEl = document.createElement("style");
+      styleEl.id = "crm-irs-style";
+      styleEl.textContent =
+        ".crm-filter-clear{position:absolute;right:8px;top:50%;" +
+        "transform:translateY(-50%);width:22px;height:22px;display:none;" +
+        "align-items:center;justify-content:center;cursor:pointer;" +
+        "color:#94a3b8;background:none;border:none;padding:0;" +
+        "border-radius:50%;font-size:18px;line-height:1;z-index:3;" +
+        "transition:color .15s,background .15s}" +
+        ".crm-filter-clear.visible{display:flex}" +
+        ".crm-filter-clear:hover{color:#ef4444;background:rgba(239,68,68,.08)}" +
+        ".filter-bar.is-submitting{opacity:.65;pointer-events:none;transition:opacity .2s}" +
+        "#crm-results-wrap{transition:opacity .15s}" +
+        "#crm-results-wrap.crm-loading{opacity:.45;pointer-events:none}";
+      document.head.appendChild(styleEl);
+    }
 
-    // Submit immediately on Enter
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        clearTimeout(timer);
-        var form = input.closest("form") || input.form;
-        if (form) {
-          form.submit();
-        }
+    // ── Serialize form fields to a clean URL ──────────────────────────────
+    function getFormUrl() {
+      var action = form
+        ? form.getAttribute("action") || window.location.pathname
+        : window.location.pathname;
+      var params = new URLSearchParams();
+      if (form) {
+        form
+          .querySelectorAll("input[name], select[name]")
+          .forEach(function (el) {
+            if (el.type === "submit") return;
+            var v = el.value;
+            // strip empties and "all" sentinel values so URLs stay clean
+            if (!v || v === "0") return;
+            params.set(el.name, v);
+          });
       }
+      return action + (params.toString() ? "?" + params.toString() : "");
+    }
+
+    // ── AJAX fetch + DOM swap ─────────────────────────────────────────────
+    function fetchResults(url) {
+      if (resultsWrap) resultsWrap.classList.add("crm-loading");
+      if (form) form.classList.add("is-submitting");
+
+      fetch(url, { credentials: "same-origin" })
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.text();
+        })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, "text/html");
+
+          // Swap the results container (chips + table + pagination)
+          var newWrap = doc.getElementById("crm-results-wrap");
+          if (newWrap && resultsWrap) {
+            resultsWrap.innerHTML = newWrap.innerHTML;
+            resultsWrap.classList.remove("crm-loading");
+          }
+
+          // Update filter-count label inside the filter bar
+          var newCount = doc.querySelector(".filter-count");
+          var oldCount = document.querySelector(".filter-count");
+          if (newCount && oldCount) oldCount.textContent = newCount.textContent;
+
+          // Show/hide the "Clear all filters" link in the filter bar
+          var hasFilt = false;
+          if (form) {
+            form
+              .querySelectorAll(".filter-input, .filter-select")
+              .forEach(function (el) {
+                if (el.value && el.value !== "0") hasFilt = true;
+              });
+          }
+          var clearLink = form ? form.querySelector(".btn-filter-clear") : null;
+          if (clearLink) clearLink.style.display = hasFilt ? "" : "none";
+
+          // Update the address bar and re-init icons
+          history.pushState(null, "", url);
+          if (window.lucide) lucide.createIcons();
+          if (form) form.classList.remove("is-submitting");
+
+          // Signal other components (bulk select etc.) that content changed
+          document.dispatchEvent(new CustomEvent("crm:results-swapped"));
+        })
+        .catch(function () {
+          if (form) form.classList.remove("is-submitting");
+          if (resultsWrap) resultsWrap.classList.remove("crm-loading");
+          // Fallback: normal navigation keeps everything working
+          window.location.href = url;
+        });
+    }
+
+    // ── doSubmit: AJAX when opt-in, else normal form submit ───────────────
+    function doSubmit() {
+      if (!resultsWrap || !form) {
+        if (form) form.submit();
+        return;
+      }
+      fetchResults(getFormUrl());
+    }
+
+    // ── Intercept form submit event (Apply button / submit) ───────────────
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        if (!resultsWrap) return;
+        e.preventDefault();
+        doSubmit();
+      });
+    }
+
+    // ── Intercept "Clear all filters" link ────────────────────────────────
+    if (form) {
+      var clearFilterLink = form.querySelector(".btn-filter-clear");
+      if (clearFilterLink) {
+        clearFilterLink.addEventListener("click", function (e) {
+          if (!resultsWrap) return;
+          e.preventDefault();
+          form.querySelectorAll(".filter-input").forEach(function (el) {
+            el.value = "";
+          });
+          form.querySelectorAll(".filter-select").forEach(function (el) {
+            el.value = el.options[0] ? el.options[0].value : "";
+          });
+          form.querySelectorAll(".crm-filter-clear").forEach(function (btn) {
+            btn.classList.remove("visible");
+          });
+          clearFilterLink.style.display = "none";
+          fetchResults(form.getAttribute("action") || window.location.pathname);
+        });
+      }
+    }
+
+    // ── Helper: inject × clear button into a .filter-input-wrap ──────────
+    function attachClearBtn(inp) {
+      var wrap = inp.closest(".filter-input-wrap");
+      if (!wrap || wrap.querySelector(".crm-filter-clear")) return;
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "crm-filter-clear";
+      btn.setAttribute("tabindex", "-1");
+      btn.setAttribute("aria-label", "Clear");
+      btn.textContent = "\u00d7"; // ×
+      inp.style.setProperty("padding-right", "32px", "important");
+      wrap.appendChild(btn);
+      if (inp.value) btn.classList.add("visible");
+      inp.addEventListener("input", function () {
+        btn.classList.toggle("visible", !!inp.value);
+      });
+      btn.addEventListener("click", function () {
+        inp.value = "";
+        btn.classList.remove("visible");
+        inp.focus();
+        doSubmit();
+      });
+    }
+
+    // ── Attach clear buttons to all filter text inputs in the form ────────
+    var filterInputs = form
+      ? form.querySelectorAll(".filter-input-wrap .filter-input")
+      : [input];
+    filterInputs.forEach(function (inp) {
+      attachClearBtn(inp);
     });
+
+    // ── Debounced auto-submit on typing ───────────────────────────────────
+    filterInputs.forEach(function (inp) {
+      var timer = null;
+      var lastVal = inp.value;
+      inp.addEventListener("input", function () {
+        clearTimeout(timer);
+        var val = inp.value;
+        if (val === lastVal) return;
+        timer = setTimeout(function () {
+          lastVal = val;
+          doSubmit();
+        }, delay);
+      });
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault(); // prevent double-fire via form submit event
+          clearTimeout(timer);
+          doSubmit();
+        }
+      });
+    });
+
+    // ── Dropdown selects: submit immediately on change ────────────────────
+    if (form) {
+      form.querySelectorAll(".filter-select").forEach(function (sel) {
+        sel.addEventListener("change", function () {
+          doSubmit();
+        });
+      });
+    }
+
+    // ── Event delegation: pagination, sort-column links, page-size ────────
+    if (resultsWrap) {
+      document.addEventListener("click", function (e) {
+        var a = e.target.closest("a.page-link");
+        if (a && resultsWrap.contains(a)) {
+          e.preventDefault();
+          fetchResults(a.href);
+          return;
+        }
+        var sortA = e.target.closest("thead a");
+        if (sortA && resultsWrap.contains(sortA)) {
+          e.preventDefault();
+          fetchResults(sortA.href);
+        }
+      });
+      document.addEventListener("change", function (e) {
+        if (
+          e.target &&
+          e.target.id === "pg-sz-sel" &&
+          resultsWrap.contains(e.target)
+        ) {
+          var u = new URL(window.location.href);
+          u.searchParams.set("per_page", e.target.value);
+          u.searchParams.set("page", "0");
+          fetchResults(u.toString());
+        }
+      });
+    }
   }
 
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -31,9 +31,9 @@
         <div class="contact-name-row">
           <h1 class="contact-name">{{ title }}</h1>
           {% if can_edit %}
-            <a href="/node/{{ nid }}/edit" class="contact-edit-btn">
+            <button onclick="CRMInlineEdit.openModal({{ nid }}, 'contact')" class="contact-edit-btn">
               <i data-lucide="pencil" width="12" height="12"></i>Edit
-            </a>
+            </button>
           {% endif %}
         </div>
 
@@ -81,9 +81,9 @@
           <i data-lucide="briefcase" width="14" height="14"></i>New Deal
         </a>
         {% if can_edit %}
-          <a href="/node/{{ nid }}/edit" class="cqa-btn cqa-secondary">
+          <button onclick="CRMInlineEdit.openModal({{ nid }}, 'contact')" class="cqa-btn cqa-secondary">
             <i data-lucide="edit-2" width="14" height="14"></i>Edit
-          </a>
+          </button>
         {% endif %}
       </div>
 

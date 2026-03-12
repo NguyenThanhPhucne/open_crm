@@ -106,9 +106,9 @@ class DashboardController extends ControllerBase {
     $stage_colors = [];
     $deals_by_stage = [];
 
-    // Dynamic color palette (cycles through colors based on stage order).
+    // Dynamic color palette — matches /crm/all-pipeline kanban column colors.
     $color_palette = [
-      '#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#10b981', '#ef4444',
+      '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#10b981', '#ef4444',
       '#06b6d4', '#84cc16', '#f97316', '#a855f7', '#14b8a6', '#f43f5e',
     ];
     $color_index = 0;
@@ -2616,10 +2616,12 @@ HTML;
     let window_stageChart = null;
     let window_valueChart = null;
     
-    // Modern color palette with gradients
+    // Modern color palette — matches /crm/all-pipeline kanban column colors
     const colors = {
       blue: '#3b82f6',
       blueLight: '#60a5fa',
+      purple: '#8b5cf6',
+      purpleLight: '#a78bfa',
       green: '#10b981',
       greenLight: '#34d399',
       yellow: '#f59e0b',
@@ -2683,12 +2685,12 @@ HTML;
             if (!chartArea) return colors.blue;
             
             const colorPairs = [
-              [colors.blue, colors.blueLight],
-              [colors.green, colors.greenLight],
+              [colors.blue,   colors.blueLight],
+              [colors.purple, colors.purpleLight],
               [colors.yellow, colors.yellowLight],
-              [colors.pink, colors.pinkLight],
+              [colors.pink,   colors.pinkLight],
               [colors.emerald, colors.emeraldLight],
-              [colors.red, colors.redLight]
+              [colors.red,    colors.redLight]
             ];
             
             const index = context.dataIndex;
@@ -2703,7 +2705,7 @@ HTML;
           hoverBackgroundColor: function(context) {
             const index = context.dataIndex;
             const solidColors = [
-              colors.blue, colors.green, colors.yellow,
+              colors.blue, colors.purple, colors.yellow,
               colors.pink, colors.emerald, colors.red
             ];
             return solidColors[index % solidColors.length];

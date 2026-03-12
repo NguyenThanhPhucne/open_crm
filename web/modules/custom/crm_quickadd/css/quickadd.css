@@ -1,30 +1,569 @@
-/* Quick Add Modal Styles */
+/* ═══════════════════════════════════════════════════════════════
+   Quick Add Modals — ClickUp-style professional design system
+   ═══════════════════════════════════════════════════════════════ */
 
+/* ── In-page modal overlay (injected by quickadd.js) ────────── */
+.crm-qa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.crm-qa-overlay.crm-qa-visible { opacity: 1; }
+
+/* Loading spinner inside the overlay */
+.crm-qa-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+.crm-qa-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: crm-qa-spin 0.65s linear infinite;
+}
+@keyframes crm-qa-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Standalone backdrop (navigating directly to /crm/quickadd/*) ── */
 .quickadd-modal-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   padding: 20px;
-  animation: fadeIn 0.2s ease-out;
+  animation: qa-fade 0.18s ease-out;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@keyframes qa-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
+/* ── Modal container ────────────────────────────────────────── */
 .quickadd-form-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0,0,0,.04);
+  max-width: 560px;
+  width: 100%;
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: qa-slide 0.22s cubic-bezier(.16,1,.3,1);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+}
+
+@keyframes qa-slide {
+  from { transform: translateY(18px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* ── Colored header band ────────────────────────────────────── */
+.quickadd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 64px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Contact = blue */
+.quickadd-header.qa-contact {
+  background: linear-gradient(130deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%);
+}
+/* Deal = purple */
+.quickadd-header.qa-deal {
+  background: linear-gradient(130deg, #2d1b69 0%, #7c3aed 60%, #8b5cf6 100%);
+}
+/* Organization = green */
+.quickadd-header.qa-org {
+  background: linear-gradient(130deg, #064e3b 0%, #059669 60%, #10b981 100%);
+}
+
+/* Subtle grid pattern overlay */
+.quickadd-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+
+/* Header icon + title */
+.qa-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.qa-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.qa-header-icon i,
+.qa-header-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: #fff;
+  flex-shrink: 0;
+}
+
+.qa-header-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.1px;
+}
+.qa-header-sub {
+  color: rgba(255,255,255,.72);
+  font-size: 11.5px;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+/* Close button */
+.quickadd-close {
+  background: rgba(255,255,255,.15);
+  border: none;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+  position: relative;
+  z-index: 1;
+}
+.quickadd-close:hover {
+  background: rgba(255,255,255,.28);
+}
+.quickadd-close i,
+.quickadd-close svg {
+  width: 16px;
+  height: 16px;
+  stroke: #fff;
+  flex-shrink: 0;
+}
+
+/* ── Scrollable body ────────────────────────────────────────── */
+.quickadd-form {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 24px 0;
+}
+.quickadd-form::-webkit-scrollbar { width: 5px; }
+.quickadd-form::-webkit-scrollbar-track { background: transparent; }
+.quickadd-form::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+/* ── Section dividers ───────────────────────────────────────── */
+.qa-section-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #94a3b8;
+  margin: 6px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.qa-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #f1f5f9;
+}
+
+/* ── Form grid ──────────────────────────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* ── Labels ─────────────────────────────────────────────────── */
+.form-group label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.form-group label .lbl-icon {
+  width: 13px;
+  height: 13px;
+  stroke: #94a3b8;
+  flex-shrink: 0;
+}
+.form-group label.required::after {
+  content: "*";
+  color: #ef4444;
+  font-size: 13px;
+  line-height: 1;
+  margin-left: 1px;
+}
+
+/* ── Input wrapper (for icon prefix) ───────────────────────── */
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-wrap .input-ico {
+  position: absolute;
+  left: 11px;
+  width: 14px;
+  height: 14px;
+  stroke: #9ca3af;
+  pointer-events: none;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.input-wrap input,
+.input-wrap select {
+  padding-left: 34px !important;
+}
+
+/* ── Inputs / Selects ───────────────────────────────────────── */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #1e293b;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.form-group textarea {
+  height: auto;
+  min-height: 72px;
+  padding: 9px 12px;
+  resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: #cbd5e1;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #c6cdd8;
+  font-size: 13px;
+}
+
+/* Custom select arrow */
+.qa-select-wrap {
+  position: relative;
+}
+.qa-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #9ca3af;
+  pointer-events: none;
+}
+.qa-select-wrap select {
+  padding-right: 30px;
+}
+
+/* ── Inline org creation panel ──────────────────────────────── */
+.inline-fields {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.inline-fields .qa-section-label {
+  margin-top: 0;
+}
+
+/* ── Validation messages ────────────────────────────────────── */
+.validation-message {
+  font-size: 11.5px;
+  color: #ef4444;
+  min-height: 15px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── Amount input with currency prefix ─────────────────────── */
+.amount-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.amount-currency {
+  position: absolute;
+  left: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  pointer-events: none;
+  z-index: 1;
+}
+.amount-wrap input {
+  padding-left: 24px !important;
+}
+
+/* ── Footer / actions ───────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  margin-top: 18px;
+}
+
+/* Cancel */
+.quickadd-form-container .btn-secondary {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-family: inherit;
+  transition: all .15s;
+  text-decoration: none;
+}
+.quickadd-form-container .btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* Submit — solid filled */
+.quickadd-form-container .btn-primary {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  font-family: inherit;
+  transition: all .15s;
+}
+/* Contact = blue */
+.quickadd-header.qa-contact ~ * .btn-primary,
+.qa-contact-submit {
+  background: #2563eb;
+  color: #fff !important;
+}
+.quickadd-header.qa-contact ~ * .btn-primary:hover,
+.qa-contact-submit:hover {
+  background: #1d4ed8;
+}
+/* Deal = purple */
+.quickadd-header.qa-deal ~ * .btn-primary,
+.qa-deal-submit {
+  background: #7c3aed;
+  color: #fff !important;
+}
+.quickadd-header.qa-deal ~ * .btn-primary:hover,
+.qa-deal-submit:hover {
+  background: #6d28d9;
+}
+/* Org = green */
+.quickadd-header.qa-org ~ * .btn-primary,
+.qa-org-submit {
+  background: #059669;
+  color: #fff !important;
+}
+.quickadd-header.qa-org ~ * .btn-primary:hover,
+.qa-org-submit:hover {
+  background: #047857;
+}
+
+.quickadd-form-container .btn-primary i,
+.quickadd-form-container .btn-primary svg {
+  width: 14px;
+  height: 14px;
+  stroke: #fff;
+  flex-shrink: 0;
+}
+.quickadd-form-container .btn-primary:active {
+  transform: scale(0.97);
+}
+.quickadd-form-container .btn-primary:focus,
+.quickadd-form-container .btn-secondary:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+.quickadd-form-container .btn-primary:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Alert messages ─────────────────────────────────────────── */
+.quickadd-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 0 24px 16px;
+  border: 1px solid;
+}
+.quickadd-alert i,
+.quickadd-alert svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.quickadd-alert.success {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+.quickadd-alert.success i,
+.quickadd-alert.success svg {
+  stroke: #10b981;
+}
+.quickadd-alert.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.quickadd-alert.error i,
+.quickadd-alert.error svg {
+  stroke: #ef4444;
+}
+
+/* Legacy .alert compatibility */
+.alert { display: none; }
+
+/* ── Loading spinner on submit ──────────────────────────────── */
+.quickadd-form-container .btn-primary.loading {
+  opacity: .75;
+  pointer-events: none;
+}
+.quickadd-form-container .btn-primary.loading::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: qa-spin .6s linear infinite;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+@keyframes qa-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .quickadd-modal-wrapper { padding: 12px; }
+  .quickadd-form-container { max-height: 96vh; border-radius: 14px; }
+  .form-row { grid-template-columns: 1fr; }
+  .quickadd-header { height: 58px; padding: 0 16px; }
+  .quickadd-form { padding: 16px 16px 0; }
+  .form-actions { padding: 14px 16px; }
+}
+
+@media (max-width: 400px) {
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary { width: 100%; justify-content: center; }
+}
   background: white;
   border-radius: 12px;
   box-shadow:
@@ -164,77 +703,6 @@
   margin-bottom: 16px;
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.quickadd-form-container .btn-primary,
-.quickadd-form-container .btn-secondary {
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  font-family: inherit;
-}
-
-.quickadd-form-container .btn-primary {
-  background: white;
-  color: #3b82f6 !important;
-  border: 1.5px solid #3b82f6;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.quickadd-form-container .btn-primary svg {
-  color: #3b82f6;
-  stroke: #3b82f6;
-}
-
-.quickadd-form-container .btn-primary:hover {
-  background: #eff6ff;
-  color: #3b82f6 !important;
-  border-color: #3b82f6;
-}
-
-.quickadd-form-container .btn-primary:active {
-  background: #dbeafe;
-  color: #2563eb !important;
-  border-color: #2563eb;
-  transform: scale(0.98);
-}
-
-.quickadd-form-container .btn-primary:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.quickadd-form-container .btn-primary:disabled {
-  background: #f3f4f6;
-  color: #9ca3af !important;
-  border-color: #d1d5db;
-  cursor: not-allowed;
-}
-
-.quickadd-form-container .btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.quickadd-form-container .btn-secondary:hover {
-  background: #f9fafb;
-}
 
 .alert {
   padding: 12px 16px;

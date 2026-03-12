@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * Activity Log Controller.
@@ -108,7 +109,7 @@ class ActivityLogController extends ControllerBase {
   public function logCallSubmit($contact, Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
     }
 
@@ -202,7 +203,7 @@ class ActivityLogController extends ControllerBase {
   public function scheduleMeetingSubmit($contact, Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
     }
 

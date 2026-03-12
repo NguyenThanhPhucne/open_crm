@@ -39,13 +39,13 @@ class AllContactsController extends ControllerBase {
         ->condition('type', 'contact')
         ->accessCheck(FALSE);
       if ($search_name) {
-        $q->condition('title', '%' . $search_name . '%', 'LIKE');
+        $q->condition('title', $search_name . '%', 'LIKE');
       }
       if ($search_email) {
-        $q->condition('field_email.value', '%' . $search_email . '%', 'LIKE');
+        $q->condition('field_email.value', $search_email . '%', 'LIKE');
       }
       if ($search_phone) {
-        $q->condition('field_phone', '%' . $search_phone . '%', 'LIKE');
+        $q->condition('field_phone', $search_phone . '%', 'LIKE');
       }
       if (!$can_manage && $user_id > 0) {
         $q->condition('field_owner', $user_id);
@@ -478,7 +478,9 @@ HTML;
     $from = $filtered_total === 0 ? 0 : $page * $per_page + 1;
     $to   = min(($page + 1) * $per_page, $filtered_total);
     $html .= '<span class="filter-count">Showing ' . $from . '–' . $to . ' of ' . $filtered_total . '</span>';
-    $html .= '</form>';    $html .= $chips_html;
+    $html .= '</form>';
+    $html .= '<div id="crm-results-wrap">';
+    $html .= $chips_html;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
@@ -623,6 +625,7 @@ EMPTY;
     }
     $html .= '</div>'; // .pagination
     $html .= '</div>'; // .table-card
+    $html .= '</div>'; // #crm-results-wrap
     $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
       . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
       . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
@@ -642,34 +645,40 @@ EMPTY;
   document.addEventListener('crm:icons-refresh', function () {
     if (window.lucide) lucide.createIcons();
   });
-  // Bulk select
+  // Bulk select — event delegation survives AJAX result swaps
   (function() {
     var bulkBar  = document.getElementById('bulk-bar');
     if (!bulkBar) return;
     var bkCount  = document.getElementById('bk-ct');
-    var chkAll   = document.getElementById('chk-all');
     var clearBtn = document.getElementById('bulk-clear-btn');
     function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
     function refreshBulk() {
       var sel = getRowChecks().filter(function(c) { return c.checked; });
       if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
       else { bulkBar.classList.remove('show'); }
+      var chkAll = document.getElementById('chk-all');
       if (chkAll) {
         var all = getRowChecks();
         chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
         chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
       }
     }
-    if (chkAll) {
-      chkAll.addEventListener('change', function() {
-        getRowChecks().forEach(function(c) { c.checked = chkAll.checked; });
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.classList.contains('chk-all')) {
+        getRowChecks().forEach(function(c) { c.checked = e.target.checked; });
         refreshBulk();
-      });
-    }
-    getRowChecks().forEach(function(c) { c.addEventListener('change', refreshBulk); });
+      } else if (e.target && e.target.classList.contains('row-chk')) {
+        refreshBulk();
+      }
+    });
+    document.addEventListener('crm:results-swapped', function() {
+      bulkBar.classList.remove('show');
+      bkCount.textContent = '0 selected';
+    });
     if (clearBtn) {
       clearBtn.addEventListener('click', function() {
         getRowChecks().forEach(function(c) { c.checked = false; });
+        var chkAll = document.getElementById('chk-all');
         if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
         bulkBar.classList.remove('show');
       });
@@ -691,17 +700,7 @@ EMPTY;
       });
     });
   })();
-  // Page size selector
-  (function() {
-    var pgSz = document.getElementById('pg-sz-sel');
-    if (!pgSz) return;
-    pgSz.addEventListener('change', function() {
-      var u = new URL(window.location.href);
-      u.searchParams.set('per_page', pgSz.value);
-      u.searchParams.set('page', '0');
-      window.location.href = u.toString();
-    });
-  })();
+  // Page size — handled by CRM.initRealtimeSearch event delegation
 </script>
 JS;
 

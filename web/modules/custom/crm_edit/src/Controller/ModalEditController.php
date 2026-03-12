@@ -109,29 +109,12 @@ class ModalEditController extends ControllerBase {
    */
   protected function checkEditAccess(NodeInterface $node) {
     $account = $this->currentUser();
-    
-    if ($account->hasRole('administrator')) {
+
+    // Use Drupal's standard node access system.
+    if ($node->access('update', $account)) {
       return TRUE;
     }
-    
-    $bundle = $node->bundle();
-    
-    if ($account->hasRole('sales_manager')) {
-      if ($account->hasPermission("edit any {$bundle} content")) {
-        return TRUE;
-      }
-    }
-    
-    if ($account->hasRole('sales_rep')) {
-      $owner_field = $this->getOwnerField($bundle);
-      if ($node->hasField($owner_field)) {
-        $owner_id = $node->get($owner_field)->target_id;
-        if ($owner_id == $account->id() && $account->hasPermission("edit own {$bundle} content")) {
-          return TRUE;
-        }
-      }
-    }
-    
+
     return FALSE;
   }
   
@@ -297,7 +280,11 @@ class ModalEditController extends ControllerBase {
         }
       }
       
-      $query->range(0, 100); // Limit to 100 options
+      $label_key = $storage->getEntityType()->getKey('label');
+      if ($label_key) {
+        $query->sort($label_key, 'ASC');
+      }
+      $query->range(0, 200);
       $entity_ids = $query->execute();
       
       if ($entity_ids) {

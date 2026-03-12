@@ -1,175 +1,274 @@
 {#
   crm-node-activity.html.twig
-  Professional activity detail page
+  Professional activity detail page — hero design matching contact page
 #}
-<div class="crm-node-detail">
+<style>body { background: #f0f2f5 !important; }</style>
 
-  {# Breadcrumb #}
+<div class="crm-activity-detail">
+
+  {# ── Breadcrumb ───────────────────────────────────────────── #}
   <nav class="detail-breadcrumb">
     <a href="/crm/all-activities"><i data-lucide="activity"></i> Activities</a>
     <i data-lucide="chevron-right"></i>
     <span>{{ title }}</span>
   </nav>
 
-  {# ─── Header Card ──────────────────────────────────── #}
-  <div class="detail-card detail-header-card">
-    <div class="detail-avatar activity">
-      <i data-lucide="calendar-check" style="color:#fff;width:32px;height:32px;"></i>
-    </div>
+  {# ── Hero: cover gradient + icon avatar + identity ─────────── #}
+  <div class="contact-hero">
+    <div class="activity-cover"></div>
 
-    <div class="detail-header-info">
-      <h1>{{ title }}</h1>
+    <div class="contact-hero-body">
 
-      <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.4rem;flex-wrap:wrap;">
-        {% if activity_type %}
-          <span class="badge type-badge">{{ activity_type }}</span>
-        {% endif %}
-        {% if status %}
-          <span class="badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
-        {% endif %}
+      {# Avatar — calendar-check icon in amber rounded square #}
+      <div class="contact-avatar-section">
+        <div class="entity-avatar-icon activity-avatar-icon">
+          <i data-lucide="calendar-check" width="44" height="44"></i>
+        </div>
       </div>
 
-      <div class="detail-meta-row" style="margin-top:0.75rem;">
-        {% if activity_date %}
-          <div class="detail-meta-item">
-            <i data-lucide="calendar"></i>
-            {{ activity_date|date('F j, Y g:i A') }}
-          </div>
-        {% endif %}
-        {% if assigned_name %}
-          <div class="detail-meta-item">
-            <i data-lucide="user"></i>
-            <a href="{{ assigned_url }}">{{ assigned_name }}</a>
-          </div>
-        {% endif %}
+      {# Identity #}
+      <div class="contact-identity">
+        <div class="contact-name-row">
+          <h1 class="contact-name">{{ title }}</h1>
+          {% if can_edit %}
+            <button onclick="CRMInlineEdit.openModal({{ nid }}, 'activity')" class="contact-edit-btn">
+              <i data-lucide="pencil" width="12" height="12"></i>Edit
+            </button>
+          {% endif %}
+        </div>
+
+        <div class="contact-roles">
+          {% if activity_type %}
+            <span class="contact-role-badge" style="background:rgba(245,158,11,0.12);color:#b45309;">{{ activity_type }}</span>
+          {% endif %}
+          {% if status %}
+            <span class="contact-role-badge badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
+          {% endif %}
+        </div>
+
+        <div class="contact-meta-row">
+          {% if activity_date %}
+            <span class="contact-meta-chip">
+              <i data-lucide="calendar" width="12" height="12"></i>{{ activity_date|date('M j, Y') }} at {{ activity_date|date('g:i A') }}
+            </span>
+          {% endif %}
+          {% if assigned_name %}
+            <a href="{{ assigned_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="user" width="12" height="12"></i>{{ assigned_name }}
+            </a>
+          {% endif %}
+          {% if contact_name %}
+            <a href="{{ contact_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="user-circle" width="12" height="12"></i>{{ contact_name }}
+            </a>
+          {% endif %}
+          {% if deal_name %}
+            <a href="{{ deal_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="trending-up" width="12" height="12"></i>{{ deal_name }}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Quick-action buttons #}
+      <div class="contact-quick-actions">
         {% if contact_name %}
-          <div class="detail-meta-item">
-            <i data-lucide="user-circle"></i>
-            Contact: <a href="{{ contact_url }}">{{ contact_name }}</a>
-          </div>
-        {% endif %}
-        {% if deal_name %}
-          <div class="detail-meta-item">
-            <i data-lucide="trending-up"></i>
-            Deal: <a href="{{ deal_url }}">{{ deal_name }}</a>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-
-    {% if can_edit %}
-      <div class="detail-header-actions">
-        <a href="/node/{{ nid }}/edit" class="btn-primary">
-          <i data-lucide="edit-2"></i> Edit
-        </a>
-        <a href="/crm/all-activities" class="btn-secondary">
-          <i data-lucide="arrow-left"></i> Back
-        </a>
-      </div>
-    {% endif %}
-  </div>
-
-  {# ─── Details Panel ────────────────────────────────── #}
-  <div class="details-panel">
-    <div class="details-panel-title">
-      <i data-lucide="info"></i> Activity Details
-    </div>
-    <div class="fields-grid">
-      <div class="field-item">
-        <div class="field-label">Title</div>
-        <div class="field-value">{{ title }}</div>
-      </div>
-      {% if activity_type %}
-        <div class="field-item">
-          <div class="field-label">Type</div>
-          <div class="field-value">
-            <span class="badge type-badge">{{ activity_type }}</span>
-          </div>
-        </div>
-      {% endif %}
-      {% if status %}
-        <div class="field-item">
-          <div class="field-label">Status</div>
-          <div class="field-value">
-            <span class="badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
-          </div>
-        </div>
-      {% endif %}
-      {% if activity_date %}
-        <div class="field-item">
-          <div class="field-label">Date &amp; Time</div>
-          <div class="field-value">{{ activity_date|date('F j, Y') }} at {{ activity_date|date('g:i A') }}</div>
-        </div>
-      {% endif %}
-      {% if assigned_name %}
-        <div class="field-item">
-          <div class="field-label">Assigned To</div>
-          <div class="field-value"><a href="{{ assigned_url }}">{{ assigned_name }}</a></div>
-        </div>
-      {% endif %}
-      {% if contact_name %}
-        <div class="field-item">
-          <div class="field-label">Related Contact</div>
-          <div class="field-value"><a href="{{ contact_url }}">{{ contact_name }}</a></div>
-        </div>
-      {% endif %}
-      {% if deal_name %}
-        <div class="field-item">
-          <div class="field-label">Related Deal</div>
-          <div class="field-value"><a href="{{ deal_url }}">{{ deal_name }}</a></div>
-        </div>
-      {% endif %}
-      <div class="field-item">
-        <div class="field-label">Logged</div>
-        <div class="field-value">{{ created|date('M j, Y') }}</div>
-      </div>
-      <div class="field-item">
-        <div class="field-label">Last Updated</div>
-        <div class="field-value">{{ changed|date('M j, Y') }}</div>
-      </div>
-    </div>
-  </div>
-
-  {# ─── Outcome ──────────────────────────────────────── #}
-  {% if outcome %}
-    <div class="notes-panel" style="background:#f0fdf4;border-color:#bbf7d0;">
-      <div class="notes-panel-label" style="color:#15803d;">
-        <i data-lucide="check-circle"></i> Outcome
-      </div>
-      <div class="notes-panel-text" style="color:#166534;">{{ outcome }}</div>
-    </div>
-  {% endif %}
-
-  {# ─── Notes ────────────────────────────────────────── #}
-  {% if notes %}
-    <div class="notes-panel">
-      <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
-      <div class="notes-panel-text">{{ notes }}</div>
-    </div>
-  {% endif %}
-
-  {# ─── Quick Links ──────────────────────────────────── #}
-  {% if contact_name or deal_name %}
-    <div class="details-panel" style="margin-top:1.5rem;">
-      <div class="details-panel-title">
-        <i data-lucide="link"></i> Related Records
-      </div>
-      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-        {% if contact_name %}
-          <a href="{{ contact_url }}" class="btn-secondary">
-            <i data-lucide="user-circle"></i> {{ contact_name }}
+          <a href="{{ contact_url }}" class="cqa-btn cqa-primary">
+            <i data-lucide="user-circle" width="14" height="14"></i>View Contact
           </a>
         {% endif %}
         {% if deal_name %}
-          <a href="{{ deal_url }}" class="btn-secondary">
-            <i data-lucide="trending-up"></i> {{ deal_name }}
+          <a href="{{ deal_url }}" class="cqa-btn cqa-secondary">
+            <i data-lucide="trending-up" width="14" height="14"></i>View Deal
           </a>
         {% endif %}
+        {% if can_edit %}
+          <button onclick="CRMInlineEdit.openModal({{ nid }}, 'activity')" class="cqa-btn cqa-secondary">
+            <i data-lucide="edit-2" width="14" height="14"></i>Edit
+          </button>
+        {% endif %}
+        <a href="/crm/all-activities" class="cqa-btn cqa-secondary">
+          <i data-lucide="arrow-left" width="14" height="14"></i>Back
+        </a>
+      </div>
+
+    </div>
+  </div>{# /.contact-hero #}
+
+  {# ── Stats row ─────────────────────────────────────────────── #}
+  <div class="cstats-grid">
+
+    <div class="cstat-card cstat-amber">
+      <div class="cstat-icon-wrap"><i data-lucide="tag" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ activity_type ? activity_type : '—' }}</div>
+        <div class="cstat-label">Type</div>
       </div>
     </div>
-  {% endif %}
 
-</div>{# /.crm-node-detail #}
+    <div class="cstat-card cstat-blue">
+      <div class="cstat-icon-wrap"><i data-lucide="check-circle" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ status ? status : 'Pending' }}</div>
+        <div class="cstat-label">Status</div>
+      </div>
+    </div>
+
+    <div class="cstat-card cstat-purple">
+      <div class="cstat-icon-wrap"><i data-lucide="calendar" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ activity_date ? activity_date|date('M j') : '—' }}</div>
+        <div class="cstat-label">Scheduled</div>
+      </div>
+    </div>
+
+    <div class="cstat-card cstat-green">
+      <div class="cstat-icon-wrap"><i data-lucide="clock" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ created|date('M j') }}</div>
+        <div class="cstat-label">Logged</div>
+      </div>
+    </div>
+
+  </div>{# /.cstats-grid #}
+
+  {# ── Two-column content grid ───────────────────────────────── #}
+  <div class="contact-content-grid">
+
+    {# Left column: activity details #}
+    <div class="contact-col">
+
+      <div class="ccontent-card">
+        <div class="ccard-header">
+          <div class="ccard-title">
+            <i data-lucide="info" width="16" height="16"></i>
+            <span>Activity Details</span>
+          </div>
+        </div>
+        <div class="fields-grid" style="padding:16px 20px 20px;">
+          <div class="field-item">
+            <div class="field-label">Title</div>
+            <div class="field-value">{{ title }}</div>
+          </div>
+          {% if activity_type %}
+            <div class="field-item">
+              <div class="field-label">Type</div>
+              <div class="field-value">
+                <span class="badge" style="background:rgba(245,158,11,0.12);color:#b45309;padding:3px 10px;border-radius:999px;font-weight:700;">{{ activity_type }}</span>
+              </div>
+            </div>
+          {% endif %}
+          {% if status %}
+            <div class="field-item">
+              <div class="field-label">Status</div>
+              <div class="field-value">
+                <span class="badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
+              </div>
+            </div>
+          {% endif %}
+          {% if activity_date %}
+            <div class="field-item">
+              <div class="field-label">Date &amp; Time</div>
+              <div class="field-value">{{ activity_date|date('F j, Y') }} at {{ activity_date|date('g:i A') }}</div>
+            </div>
+          {% endif %}
+          {% if assigned_name %}
+            <div class="field-item">
+              <div class="field-label">Assigned To</div>
+              <div class="field-value"><a href="{{ assigned_url }}">{{ assigned_name }}</a></div>
+            </div>
+          {% endif %}
+          {% if contact_name %}
+            <div class="field-item">
+              <div class="field-label">Related Contact</div>
+              <div class="field-value"><a href="{{ contact_url }}">{{ contact_name }}</a></div>
+            </div>
+          {% endif %}
+          {% if deal_name %}
+            <div class="field-item">
+              <div class="field-label">Related Deal</div>
+              <div class="field-value"><a href="{{ deal_url }}">{{ deal_name }}</a></div>
+            </div>
+          {% endif %}
+          <div class="field-item">
+            <div class="field-label">Logged</div>
+            <div class="field-value">{{ created|date('M j, Y') }}</div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Last Updated</div>
+            <div class="field-value">{{ changed|date('M j, Y') }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>{# /.contact-col (left) #}
+
+    {# Right column: outcome + notes + related records #}
+    <div class="contact-col">
+
+      {% if outcome %}
+        <div class="ccontent-card">
+          <div class="ccard-header">
+            <div class="ccard-title" style="color:#15803d;">
+              <i data-lucide="check-circle" width="16" height="16" style="stroke:#10b981;"></i>
+              <span>Outcome</span>
+            </div>
+          </div>
+          <div style="padding:14px 20px 18px;">
+            <p style="margin:0;font-size:14px;color:#166534;line-height:1.6;">{{ outcome }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if notes %}
+        <div class="notes-panel">
+          <div class="notes-panel-label"><i data-lucide="file-text"></i> Notes</div>
+          <div class="notes-panel-text">{{ notes }}</div>
+        </div>
+      {% endif %}
+
+      {% if contact_name or deal_name %}
+        <div class="ccontent-card">
+          <div class="ccard-header">
+            <div class="ccard-title">
+              <i data-lucide="link" width="16" height="16"></i>
+              <span>Related Records</span>
+            </div>
+          </div>
+          <div class="ctimeline-list">
+            {% if contact_name %}
+              <a href="{{ contact_url }}" class="ctl-item">
+                <div class="ctl-dot dot-blue"></div>
+                <div class="ctl-body">
+                  <div class="ctl-title">{{ contact_name }}</div>
+                  <div class="ctl-meta">
+                    <span class="ctl-chip chip-blue">Contact</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="ctl-arrow" width="13" height="13"></i>
+              </a>
+            {% endif %}
+            {% if deal_name %}
+              <a href="{{ deal_url }}" class="ctl-item">
+                <div class="ctl-dot dot-purple"></div>
+                <div class="ctl-body">
+                  <div class="ctl-title">{{ deal_name }}</div>
+                  <div class="ctl-meta">
+                    <span class="ctl-chip chip-purple">Deal</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="ctl-arrow" width="13" height="13"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>{# /.contact-col (right) #}
+
+  </div>{# /.contact-content-grid #}
+
+</div>{# /.crm-activity-detail #}
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {

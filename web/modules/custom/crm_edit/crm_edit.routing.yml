@@ -56,6 +56,7 @@ crm_edit.ajax_save:
     _controller: '\Drupal\crm_edit\Controller\InlineEditController::ajaxSave'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: "TRUE"
   methods: [POST]
 
 crm_edit.ajax_validate:
@@ -64,6 +65,7 @@ crm_edit.ajax_validate:
     _controller: '\Drupal\crm_edit\Controller\InlineEditController::ajaxValidate'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: "TRUE"
   methods: [POST]
 crm_edit.modal_form:
   path: "/crm/edit/modal/form"
@@ -71,6 +73,7 @@ crm_edit.modal_form:
     _controller: '\Drupal\crm_edit\Controller\ModalEditController::getEditForm'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: "TRUE"
   methods: [GET]
 
 crm_edit.ajax_delete:
@@ -79,6 +82,7 @@ crm_edit.ajax_delete:
     _controller: '\Drupal\crm_edit\Controller\DeleteController::ajaxDelete'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: "TRUE"
   methods: [POST]
 
 crm_edit.ajax_create_form:
@@ -87,6 +91,7 @@ crm_edit.ajax_create_form:
     _controller: '\Drupal\crm_edit\Controller\AddController::getCreateForm'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: "TRUE"
   methods: [GET]
 
 crm_edit.ajax_create:
@@ -95,6 +100,7 @@ crm_edit.ajax_create:
     _controller: '\Drupal\crm_edit\Controller\AddController::ajaxCreate'
   requirements:
     _permission: "access content"
+    _user_is_logged_in: "TRUE"
   methods: [POST]
 
 crm_edit.add_contact:

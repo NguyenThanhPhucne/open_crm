@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * QuickAdd Controller for CRM entities.
@@ -66,7 +67,7 @@ class QuickAddController extends ControllerBase {
   public function contactSubmit(Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
     }
 
@@ -133,7 +134,7 @@ class QuickAddController extends ControllerBase {
         'status' => 'success',
         'message' => 'Contact created successfully: ' . $data['name'],
         'entity_id' => $contact->id(),
-        'redirect' => '/crm/my-contacts',
+        'redirect' => '/node/' . $contact->id(),
       ]);
 
     } catch (\Exception $e) {
@@ -188,7 +189,7 @@ class QuickAddController extends ControllerBase {
   public function dealSubmit(Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
     }
 
@@ -199,6 +200,13 @@ class QuickAddController extends ControllerBase {
         return new JsonResponse([
           'status' => 'error',
           'message' => 'Please enter deal name and value.',
+        ], 400);
+      }
+
+      if (empty($data['contact'])) {
+        return new JsonResponse([
+          'status' => 'error',
+          'message' => 'Please select a contact for this deal.',
         ], 400);
       }
 
@@ -236,8 +244,8 @@ class QuickAddController extends ControllerBase {
         'field_amount' => ['value' => $data['amount']],
         'field_stage' => !empty($data['stage']) ? ['target_id' => $data['stage']] : NULL,
         'field_closing_date' => !empty($data['closing_date']) ? ['value' => $data['closing_date']] : NULL,
-        'field_related_contact' => !empty($data['contact']) ? ['target_id' => $data['contact']] : NULL,
-        'field_related_organization' => $org_id ? ['target_id' => $org_id] : NULL,
+        'field_contact' => !empty($data['contact']) ? ['target_id' => $data['contact']] : NULL,
+        'field_organization' => $org_id ? ['target_id' => $org_id] : NULL,
         'field_probability' => ['value' => $probability],
         'field_owner' => ['target_id' => \Drupal::currentUser()->id()],
         'uid' => \Drupal::currentUser()->id(),
@@ -252,14 +260,14 @@ class QuickAddController extends ControllerBase {
         'status' => 'success',
         'message' => 'Deal created successfully: ' . $data['title'],
         'entity_id' => $deal->id(),
-        'redirect' => '/crm/my-pipeline',
+        'redirect' => '/node/' . $deal->id(),
       ]);
 
     } catch (\Exception $e) {
       \Drupal::logger('crm_quickadd')->error('Deal creation error: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse([
         'status' => 'error',
-        'message' => 'An error occurred. Please try again.',
+        'message' => $e->getMessage(),
       ], 500);
     }
   }
@@ -290,7 +298,7 @@ class QuickAddController extends ControllerBase {
   public function organizationSubmit(Request $request) {
     // Validate CSRF token.
     $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
       return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
     }
 
@@ -325,7 +333,7 @@ class QuickAddController extends ControllerBase {
         'status' => 'success',
         'message' => 'Organization created successfully: ' . $data['name'],
         'entity_id' => $org->id(),
-        'redirect' => '/crm/my-organizations',
+        'redirect' => '/node/' . $org->id(),
       ]);
 
     } catch (\Exception $e) {
@@ -341,21 +349,35 @@ class QuickAddController extends ControllerBase {
    * Check for duplicate phone/email.
    */
   public function checkDuplicate(Request $request) {
+    // Must be authenticated.
+    if (\Drupal::currentUser()->isAnonymous()) {
+      return new JsonResponse(['exists' => false, 'message' => 'Unauthorized.'], 403);
+    }
+
+    // CSRF protection.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
+      return new JsonResponse(['exists' => false, 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
       $field = $data['field'] ?? '';
       $value = $data['value'] ?? '';
 
-      if (empty($field) || empty($value)) {
+      // Strict whitelist — only allow checking these two fields to prevent
+      // arbitrary field enumeration/injection attacks.
+      $allowed_fields = ['field_email', 'field_phone'];
+      if (!in_array($field, $allowed_fields, TRUE) || empty($value)) {
         return new JsonResponse(['exists' => false]);
       }
 
       $query = \Drupal::entityQuery('node')
         ->condition('type', 'contact')
         ->condition($field, $value)
-        ->accessCheck(FALSE)
+        ->accessCheck(TRUE)
         ->range(0, 1);
-      
+
       $results = $query->execute();
 
       return new JsonResponse([

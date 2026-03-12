@@ -998,6 +998,7 @@
   border: 1.5px solid #2563eb;
   background: #fff;
   text-decoration: none;
+  cursor: pointer;
   transition: background 0.15s;
   flex-shrink: 0;
 }
@@ -1391,6 +1392,230 @@
 .ctl-item:hover .ctl-arrow {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ENTITY-SPECIFIC HERO VARIANTS — Deal / Organization / Activity
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Wrapper (matches .crm-contact-detail) ───────────────────── */
+.crm-deal-detail,
+.crm-org-detail,
+.crm-activity-detail {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  color: #1e293b;
+  animation: contactFadeIn 0.35s ease both;
+}
+
+/* Shared breadcrumb */
+.crm-deal-detail .detail-breadcrumb,
+.crm-org-detail .detail-breadcrumb,
+.crm-activity-detail .detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 1.25rem;
+}
+.crm-deal-detail .detail-breadcrumb a,
+.crm-org-detail .detail-breadcrumb a,
+.crm-activity-detail .detail-breadcrumb a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+.crm-deal-detail .detail-breadcrumb a:hover,
+.crm-org-detail .detail-breadcrumb a:hover,
+.crm-activity-detail .detail-breadcrumb a:hover {
+  color: #3b82f6;
+}
+.crm-deal-detail .detail-breadcrumb i,
+.crm-org-detail .detail-breadcrumb i,
+.crm-activity-detail .detail-breadcrumb i {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Deal hero cover (purple) ──────────────────────────────── */
+.deal-cover {
+  height: 148px;
+  background: linear-gradient(130deg, #2d1b69 0%, #7c3aed 50%, #6d28d9 100%);
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+.deal-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.deal-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 90% at 80% 50%,
+    rgba(139, 92, 246, 0.3) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Organization hero cover (green) ──────────────────────── */
+.org-cover {
+  height: 148px;
+  background: linear-gradient(130deg, #064e3b 0%, #059669 50%, #10b981 100%);
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+.org-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.org-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 90% at 80% 50%,
+    rgba(16, 185, 129, 0.3) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Activity hero cover (amber) ──────────────────────────── */
+.activity-cover {
+  height: 148px;
+  background: linear-gradient(130deg, #78350f 0%, #d97706 50%, #f59e0b 100%);
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+.activity-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.activity-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 90% at 80% 50%,
+    rgba(245, 158, 11, 0.3) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Icon-based entity avatar (deal / org / activity) ──────── */
+.entity-avatar-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 24px;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.entity-avatar-icon i,
+.entity-avatar-icon svg {
+  width: 44px;
+  height: 44px;
+  stroke: #fff;
+  flex-shrink: 0;
+}
+.deal-avatar-icon {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+.org-avatar-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.org-avatar-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+.activity-avatar-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* ── Deal amount display in hero area ─────────────────────── */
+.deal-amount-hero {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 6px;
+}
+.deal-amount-hero-currency {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.deal-amount-hero-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+/* ── Activity status chips (inline in hero) ───────────────── */
+.cstat-red:hover {
+  border-top-color: #ef4444;
+}
+.cstat-red .cstat-icon-wrap {
+  background: #fef2f2;
+}
+.cstat-red .cstat-icon-wrap i,
+.cstat-red .cstat-icon-wrap svg {
+  stroke: #ef4444;
+}
+
+/* ── Timeline dot colors for deal (amber = related entity) ─── */
+.ctl-item .dot-amber {
+  background: #fde68a;
+  box-shadow: 0 0 0 2px #fbbf24;
+}
+.ctl-item .dot-green {
+  background: #bbf7d0;
+  box-shadow: 0 0 0 2px #4ade80;
+}
+.ctl-chip.chip-amber {
+  background: #fffbeb;
+  color: #d97706;
+}
+.ctl-chip.chip-green {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* ── Responsive adjustments for new entity wrappers ─────────── */
+@media (max-width: 600px) {
+  .crm-deal-detail,
+  .crm-org-detail,
+  .crm-activity-detail {
+    padding: 0 0 32px;
+  }
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */

@@ -1,58 +1,107 @@
 <div class="quickadd-modal-wrapper">
   <div class="quickadd-form-container">
-    <div class="quickadd-header">
-      <h2>
-        <i data-lucide="briefcase"></i>
-        Quick Add Deal
-      </h2>
-      <button class="quickadd-close" onclick="window.history.back()">
+
+    {# ── Colored header band ── #}
+    <div class="quickadd-header qa-deal">
+      <div class="qa-header-left">
+        <div class="qa-header-icon">
+          <i data-lucide="trending-up"></i>
+        </div>
+        <div>
+          <div class="qa-header-title">New Deal</div>
+          <div class="qa-header-sub">Create a new sales opportunity</div>
+        </div>
+      </div>
+      <button class="quickadd-close" onclick="window.history.back()" title="Close">
         <i data-lucide="x"></i>
       </button>
     </div>
 
+    {# ── Form body ── #}
     <form id="quickadd-deal-form" class="quickadd-form">
+
+      {# Deal info #}
+      <div class="qa-section-label">Deal Information</div>
+
       <div class="form-row">
         <div class="form-group full-width">
-          <label for="deal-title" class="required">Deal Name</label>
-          <input type="text" id="deal-title" name="title" required placeholder="Deal with ABC Company">
+          <label for="deal-title" class="required">
+            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            Deal Name
+          </label>
+          <div class="input-wrap">
+            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            <input type="text" id="deal-title" name="title" required placeholder="Deal with ABC Company">
+          </div>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="deal-amount" class="required">Value</label>
-          <input type="number" id="deal-amount" name="amount" required step="1000" placeholder="1000000">
+          <label for="deal-amount" class="required">
+            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Deal Value
+          </label>
+          <div class="amount-wrap">
+            <span class="amount-currency">VND</span>
+            <input type="number" id="deal-amount" name="amount" required step="1000" placeholder="50,000,000">
+          </div>
         </div>
         <div class="form-group">
-          <label for="deal-stage">Stage</label>
-          <select id="deal-stage" name="stage" required>
-            {{ stage_options|raw }}
-          </select>
+          <label for="deal-stage">
+            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Pipeline Stage
+          </label>
+          <div class="qa-select-wrap">
+            <select id="deal-stage" name="stage" required>
+              {{ stage_options|raw }}
+            </select>
+          </div>
         </div>
       </div>
+
+      {# Pipeline details #}
+      <div class="qa-section-label">Pipeline Details</div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="deal-contact">Contact</label>
-          <select id="deal-contact" name="contact">
-            {{ contact_options|raw }}
-          </select>
+          <label for="deal-contact" class="required">
+            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            Primary Contact
+          </label>
+          <div class="qa-select-wrap">
+            <select id="deal-contact" name="contact" required>
+              {{ contact_options|raw }}
+            </select>
+          </div>
         </div>
         <div class="form-group">
-          <label for="deal-closing-date">Expected Close Date</label>
-          <input type="date" id="deal-closing-date" name="closing_date">
+          <label for="deal-closing-date">
+            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Expected Close Date
+          </label>
+          <div class="input-wrap">
+            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" id="deal-closing-date" name="closing_date">
+          </div>
         </div>
       </div>
 
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
-        <button type="submit" class="btn-primary">
-          <i data-lucide="save"></i>
-          Save Deal
-        </button>
-      </div>
-
-      <div id="quickadd-message" class="alert" style="display:none;"></div>
     </form>
+
+    {# ── Status message ── #}
+    <div id="quickadd-message" class="quickadd-alert" style="display:none;"></div>
+
+    {# ── Sticky footer actions ── #}
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" onclick="window.history.back()">
+        Cancel
+      </button>
+      <button type="submit" form="quickadd-deal-form" class="btn-primary qa-deal-submit">
+        <i data-lucide="save"></i>
+        Save Deal
+      </button>
+    </div>
+
   </div>
 </div>
