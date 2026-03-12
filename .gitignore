@@ -50,9 +50,17 @@
 !/web/sites/*/default.settings.php
 
 # ========== User Uploaded Files ==========
-/web/sites/*/files/
+# Track uploaded files (user-pictures, import-templates, etc.)
+# Only ignore Drupal-generated/cache subdirectories
 /web/sites/*/private/
-!/web/sites/default/files/.htaccess
+/web/sites/*/files/css/
+/web/sites/*/files/js/
+/web/sites/*/files/php/
+/web/sites/*/files/styles/
+/web/sites/*/files/config_*/
+/web/sites/*/files/sync-current/
+/web/sites/*/files/sync/
+/web/sites/*/files/crm_custom_tables.css
 
 # ========== Cache & Generated Files ==========
 /web/sites/simpletest/
