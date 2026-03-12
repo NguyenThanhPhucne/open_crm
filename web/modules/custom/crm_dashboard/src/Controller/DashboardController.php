@@ -1840,35 +1840,30 @@ class DashboardController extends ControllerBase {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 55%, #7c3aed 100%);
+      background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 60%, #f5f0ff 100%);
       border-radius: 16px;
+      border: 1px solid #dde8ff;
+      border-top: 3px solid #2563eb;
       padding: 26px 32px;
       margin-bottom: 28px;
-      color: white;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
     }
 
     .dashboard-hero::before {
       content: '';
       position: absolute;
-      top: -40%;
-      right: -5%;
-      width: 380px;
-      height: 380px;
-      background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+      top: -30%;
+      right: -3%;
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .dashboard-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -60%;
-      left: 25%;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-      pointer-events: none;
+      display: none;
     }
 
     .hero-left {
@@ -1879,7 +1874,7 @@ class DashboardController extends ControllerBase {
     .hero-greeting {
       font-size: 23px;
       font-weight: 700;
-      color: white;
+      color: #0f172a;
       margin-bottom: 7px;
       letter-spacing: -0.01em;
     }
@@ -1889,12 +1884,12 @@ class DashboardController extends ControllerBase {
       align-items: center;
       gap: 6px;
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.72);
+      color: #64748b;
       font-weight: 500;
     }
 
     .hero-date i {
-      opacity: 0.75;
+      opacity: 0.6;
     }
 
     .hero-actions {
@@ -1922,31 +1917,31 @@ class DashboardController extends ControllerBase {
     }
 
     .hero-btn-primary {
-      background: white;
-      color: #2563eb;
-      border-color: white;
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
     }
 
     .hero-btn-primary:hover {
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+      color: #ffffff;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
 
     .hero-btn-outline {
-      background: rgba(255, 255, 255, 0.13);
-      color: white;
-      border-color: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(4px);
+      background: #ffffff;
+      color: #2563eb;
+      border-color: #dbeafe;
     }
 
     .hero-btn-outline:hover {
-      background: rgba(255, 255, 255, 0.22);
-      border-color: rgba(255, 255, 255, 0.45);
-      color: white;
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: #1d4ed8;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
     }
 
     /* ================================================================
