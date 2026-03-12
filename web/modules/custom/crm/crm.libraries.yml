@@ -81,3 +81,15 @@ node_detail_styles:
   dependencies:
     - core/drupal
     - crm/crm_layout
+
+node_form_styles:
+  version: 1.0
+  css:
+    theme:
+      css/crm-node-form.css: {}
+  js:
+    js/crm-node-form.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupal.form
