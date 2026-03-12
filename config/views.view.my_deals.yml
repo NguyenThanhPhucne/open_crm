@@ -15,9 +15,9 @@ dependencies:
     - datetime
     - node
 id: my_deals
-label: 'My Deals'
+label: "My Deals"
 module: views
-description: 'Danh sách cơ hội của tôi'
+description: "Danh sách cơ hội của tôi"
 tag: CRM
 base_table: node_field_data
 base_field: nid
@@ -28,7 +28,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'My Pipeline'
+      title: "My Pipeline"
       fields:
         title:
           id: title
@@ -46,9 +46,9 @@ display:
           plugin_id: field
           label: Amount
           settings:
-            thousand_separator: ','
+            thousand_separator: ","
             decimal_separator: .
-            suffix: ' VND'
+            suffix: " VND"
         field_stage:
           id: field_stage
           table: node__field_stage
@@ -63,13 +63,13 @@ display:
           plugin_id: field
           label: Probability
           settings:
-            suffix: '%'
+            suffix: "%"
         field_closing_date:
           id: field_closing_date
           table: node__field_closing_date
           field: field_closing_date
           plugin_id: field
-          label: 'Close Date'
+          label: "Close Date"
           settings:
             format_type: medium
         field_contact:
@@ -99,40 +99,40 @@ display:
           exclude: false
           alter:
             alter_text: false
-            text: ''
+            text: ""
             make_link: false
-            path: ''
+            path: ""
             absolute: false
             external: false
             replace_spaces: false
             path_case: none
             trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
+            alt: ""
+            rel: ""
+            link_class: ""
+            prefix: ""
+            suffix: ""
+            target: ""
             nl2br: false
             max_length: 0
             word_boundary: true
             ellipsis: true
             more_link: false
-            more_link_text: ''
-            more_link_path: ''
+            more_link_text: ""
+            more_link_path: ""
             strip_tags: false
             trim: false
-            preserve_tags: ''
+            preserve_tags: ""
             html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
+          element_type: ""
+          element_class: ""
+          element_label_type: ""
+          element_label_class: ""
           element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
+          element_wrapper_type: ""
+          element_wrapper_class: ""
           element_default_classes: false
-          empty: ''
+          empty: ""
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
@@ -163,7 +163,7 @@ display:
           default_action: default
           default_argument_type: current_user
           default_argument_options:
-            user: '0'
+            user: "0"
           summary:
             sort_order: asc
             number_of_records: 0
@@ -177,7 +177,7 @@ display:
           table: node_field_data
           field: status
           plugin_id: boolean
-          value: '1'
+          value: "1"
         type:
           id: type
           table: node_field_data
@@ -191,45 +191,44 @@ display:
           field: title
           plugin_id: string
           operator: contains
-          value: ''
+          value: ""
           exposed: true
           expose:
             operator_id: title_op
-            label: 'Deal Name'
-            description: 'Search by deal name'
+            label: "Deal Name"
+            description: "Search by deal name"
             use_operator: false
             operator: title_op
             identifier: title
             required: false
             remember: false
-            placeholder: 'Enter deal name...'
+            placeholder: "Enter deal name..."
       style:
         type: table
         options:
           grouping:
-            -
-              field: field_stage
+            - field: field_stage
               rendered: true
               rendered_strip: false
-          row_class: ''
+          row_class: ""
           default_row_class: true
-      display_extenders: {  }
+      display_extenders: {}
     cache_metadata:
       max-age: -1
       contexts:
-        - 'languages:language_content'
-        - 'languages:language_interface'
+        - "languages:language_content"
+        - "languages:language_interface"
         - url
         - url.query_args
         - user
-        - 'user.node_grants:view'
+        - "user.node_grants:view"
       tags:
-        - 'config:field.storage.node.field_amount'
-        - 'config:field.storage.node.field_closing_date'
-        - 'config:field.storage.node.field_contact'
-        - 'config:field.storage.node.field_organization'
-        - 'config:field.storage.node.field_probability'
-        - 'config:field.storage.node.field_stage'
+        - "config:field.storage.node.field_amount"
+        - "config:field.storage.node.field_closing_date"
+        - "config:field.storage.node.field_contact"
+        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_probability"
+        - "config:field.storage.node.field_stage"
   page_1:
     id: page_1
     display_title: Page
@@ -245,7 +244,7 @@ display:
           content:
             value: |-
               <div style="text-align: right; margin-bottom: 20px;">
-                      <a href="/node/add/deal" class="button button--primary" style="
+                      <a href="/crm/add/deal" class="button button--primary" style="
                         display: inline-flex;
                         align-items: center;
                         gap: 8px;
@@ -266,21 +265,21 @@ display:
                       </a>
                     </div>
             format: full_html
-      display_extenders: {  }
+      display_extenders: {}
       path: crm/my-deals
     cache_metadata:
       max-age: -1
       contexts:
-        - 'languages:language_content'
-        - 'languages:language_interface'
+        - "languages:language_content"
+        - "languages:language_interface"
         - url
         - url.query_args
         - user
-        - 'user.node_grants:view'
+        - "user.node_grants:view"
       tags:
-        - 'config:field.storage.node.field_amount'
-        - 'config:field.storage.node.field_closing_date'
-        - 'config:field.storage.node.field_contact'
-        - 'config:field.storage.node.field_organization'
-        - 'config:field.storage.node.field_probability'
-        - 'config:field.storage.node.field_stage'
+        - "config:field.storage.node.field_amount"
+        - "config:field.storage.node.field_closing_date"
+        - "config:field.storage.node.field_contact"
+        - "config:field.storage.node.field_organization"
+        - "config:field.storage.node.field_probability"
+        - "config:field.storage.node.field_stage"

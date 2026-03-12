@@ -145,7 +145,7 @@
   gap: 12px;
 }
 
-.btn {
+.crm-user-profile .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -158,20 +158,20 @@
   font-size: 14px;
 }
 
-.btn-primary {
+.crm-user-profile .btn-primary {
   background: white;
   color: #3b82f6 !important;
   border: 1.5px solid #3b82f6;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn-primary svg,
-.btn-primary i {
+.crm-user-profile .btn-primary svg,
+.crm-user-profile .btn-primary i {
   color: #3b82f6;
   stroke: #3b82f6;
 }
 
-.btn-primary:hover {
+.crm-user-profile .btn-primary:hover {
   background: #eff6ff;
   color: #3b82f6 !important;
   border-color: #3b82f6;
@@ -180,32 +180,32 @@
   text-decoration: none;
 }
 
-.btn-primary:active {
+.crm-user-profile .btn-primary:active {
   background: #dbeafe;
   color: #2563eb !important;
   border-color: #2563eb;
 }
 
-.btn-primary:focus {
+.crm-user-profile .btn-primary:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.btn-secondary {
+.crm-user-profile .btn-secondary {
   background: white;
   color: #64748b !important;
   border: 1.5px solid #cbd5e1;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn-secondary svg,
-.btn-secondary i {
+.crm-user-profile .btn-secondary svg,
+.crm-user-profile .btn-secondary i {
   color: #64748b;
   stroke: #64748b;
 }
 
-.btn-secondary:hover {
+.crm-user-profile .btn-secondary:hover {
   background: #f8fafc;
   color: #475569 !important;
   border-color: #94a3b8;
@@ -214,13 +214,13 @@
   text-decoration: none;
 }
 
-.btn-secondary:active {
+.crm-user-profile .btn-secondary:active {
   background: #f1f5f9;
   color: #334155 !important;
   border-color: #64748b;
 }
 
-.btn-secondary:focus {
+.crm-user-profile .btn-secondary:focus {
   outline: 2px solid #cbd5e1;
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(203, 213, 225, 0.15);

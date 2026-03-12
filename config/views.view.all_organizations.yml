@@ -231,7 +231,7 @@ display:
           content:
             value: |-
               <div style="text-align: right; margin-bottom: 20px;">
-                      <a href="/node/add/organization" class="button button--primary" style="
+                      <a href="/crm/add/organization" class="button button--primary" style="
                         display: inline-flex;
                         align-items: center;
                         gap: 8px;

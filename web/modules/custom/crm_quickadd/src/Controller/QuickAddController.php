@@ -3,6 +3,7 @@
 namespace Drupal\crm_quickadd\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Cache\Cache;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
@@ -63,6 +64,12 @@ class QuickAddController extends ControllerBase {
    * Submit contact quick add form.
    */
   public function contactSubmit(Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
       
@@ -119,6 +126,9 @@ class QuickAddController extends ControllerBase {
       ]);
       $contact->save();
 
+      // Invalidate list caches so views reflect new contact immediately
+      Cache::invalidateTags(['node_list']);
+
       return new JsonResponse([
         'status' => 'success',
         'message' => 'Contact created successfully: ' . $data['name'],
@@ -157,7 +167,7 @@ class QuickAddController extends ControllerBase {
     // Get stages for dropdown
     $stages = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
-      ->loadTree('crm_deal_stage');
+      ->loadTree('pipeline_stage');
     $stage_options = '';
     foreach ($stages as $stage) {
       $selected = $stage->name === 'New' ? ' selected' : '';
@@ -176,6 +186,12 @@ class QuickAddController extends ControllerBase {
    * Submit deal quick add form.
    */
   public function dealSubmit(Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
       
@@ -229,6 +245,9 @@ class QuickAddController extends ControllerBase {
       ]);
       $deal->save();
 
+      // Invalidate list caches so pipeline views reflect new deal immediately
+      Cache::invalidateTags(['node_list']);
+
       return new JsonResponse([
         'status' => 'success',
         'message' => 'Deal created successfully: ' . $data['title'],
@@ -269,6 +288,12 @@ class QuickAddController extends ControllerBase {
    * Submit organization quick add form.
    */
   public function organizationSubmit(Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
       
@@ -292,6 +317,9 @@ class QuickAddController extends ControllerBase {
         'status' => 1,
       ]);
       $org->save();
+
+      // Invalidate list caches so organization views reflect new org immediately
+      Cache::invalidateTags(['node_list']);
 
       return new JsonResponse([
         'status' => 'success',

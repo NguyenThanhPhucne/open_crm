@@ -76,6 +76,7 @@ function _crm_actions_build_navbar() {
       'icon' => 'users',
       'active' => str_contains($current_path, '/crm/my-contacts') ||
                   str_contains($current_path, '/crm/all-contacts') ||
+                  str_contains($current_path, '/crm/add/contact') ||
                   str_contains($current_path, '/node/add/contact'),
     ],
     [

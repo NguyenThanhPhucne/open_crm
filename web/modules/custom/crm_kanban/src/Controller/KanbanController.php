@@ -394,7 +394,7 @@ HTML;
     </div>
     <div class="page-actions">
       <a href="{$list_url}" class="btn-secondary"><i data-lucide="list"></i> List view</a>
-      <a href="/node/add/deal" class="btn-primary"><i data-lucide="plus-circle"></i> Add Deal</a>
+      <a href="/crm/add/deal" class="btn-primary"><i data-lucide="plus-circle"></i> Add Deal</a>
     </div>
   </div>
 
@@ -508,7 +508,7 @@ HTML;
     // Initialize Lucide icons
     lucide.createIcons();
     if (window.CRM) {
-      CRM.initKeyboardShortcuts({ addUrl: '/node/add/deal', searchId: null });
+      CRM.initKeyboardShortcuts({ addUrl: '/crm/add/deal', searchId: null });
       CRM.renderShortcutHints([{ key: 'N', label: 'New deal' }]);
     }
 
@@ -555,6 +555,12 @@ HTML;
 
     // Variables for reverting card movement
     let pendingMove = null;
+
+    // CSRF token helper for authenticated AJAX calls.
+    async function getCsrfToken() {
+      const r = await fetch('/session/token');
+      return await r.text();
+    }
     
     // Deal Closing Modal Functions
     function showDealModal(dealId) {
@@ -620,8 +626,10 @@ HTML;
           formData.append('contract', contractFile);
         }
         
+        const csrfToken = await getCsrfToken();
         const response = await fetch('/crm/my-pipeline/update-stage', {
           method: 'POST',
+          headers: { 'X-CSRF-Token': csrfToken },
           body: formData
         });
         
@@ -730,10 +738,12 @@ HTML;
             
             // Otherwise, update immediately
             try {
+              const csrfToken = await getCsrfToken();
               const response = await fetch('/crm/my-pipeline/update-stage', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
+                  'X-CSRF-Token': csrfToken,
                 },
                 body: JSON.stringify({
                   deal_id: dealId,
@@ -798,21 +808,24 @@ HTML;
     if (!$deal_id || !$stage_id) {
       return new JsonResponse(['success' => FALSE, 'message' => 'Missing parameters: deal_id=' . $deal_id . ', stage_id=' . $stage_id], 400);
     }
-    
-    // Validate and map stage value (accept both numeric term IDs and string values)
-    $valid_stages = ['qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
-    $stage_mapping = [1 => 'qualified', 2 => 'proposal', 3 => 'negotiation', 5 => 'closed_won', 6 => 'closed_lost'];
-    
-    // Convert numeric term ID to string value if needed
-    if (is_numeric($stage_id)) {
-      if (!isset($stage_mapping[$stage_id])) {
+
+    // CSRF validation.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['success' => FALSE, 'message' => 'CSRF validation failed'], 403);
+    }
+
+    // Resolve stage_id to a numeric taxonomy term ID.
+    // Regular drag-drop sends numeric string term IDs; the closing modal sends 'closed_won'.
+    if ($stage_id === 'closed_won') {
+      $numeric_stage_id = 5; // Term ID 5 = Won in pipeline_stage vocab
+    } elseif (is_numeric($stage_id)) {
+      $numeric_stage_id = (int) $stage_id;
+      $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($numeric_stage_id);
+      if (!$term || $term->bundle() !== 'pipeline_stage') {
         return new JsonResponse(['success' => FALSE, 'message' => 'Invalid stage ID: ' . $stage_id], 400);
       }
-      $stage_id = $stage_mapping[$stage_id];
-    }
-    
-    // Validate string stage value
-    if (!in_array($stage_id, $valid_stages)) {
+    } else {
       return new JsonResponse(['success' => FALSE, 'message' => 'Invalid stage value: ' . $stage_id], 400);
     }
     
@@ -823,8 +836,8 @@ HTML;
         return new JsonResponse(['success' => FALSE, 'message' => 'Deal not found'], 404);
       }
       
-      // If moving to Won (closed_won)
-      if ($stage_id === 'closed_won') {
+      // If moving to Won (term ID 5 in pipeline_stage vocabulary).
+      if ($numeric_stage_id === 5) {
         // Validate closing date
         if (!$closing_date) {
           return new JsonResponse(['success' => FALSE, 'message' => 'Closing date is required'], 400);
@@ -883,15 +896,15 @@ HTML;
         }
       }
       
-      // Update stage (keep as string value for consistency)
+      // Update stage as entity_reference (field_stage targets taxonomy_term, vocab pipeline_stage).
       if ($deal->hasField('field_stage')) {
-        $deal->set('field_stage', $stage_id);
+        $deal->set('field_stage', ['target_id' => $numeric_stage_id]);
       }
       $deal->save();
-      
-      // Clear entity cache so dashboard shows updated data
+
+      // Clear entity cache so dashboard and views show updated data immediately.
       \Drupal::entityTypeManager()->getStorage('node')->resetCache([$deal_id]);
-      \Drupal\Core\Cache\Cache::invalidateTags(['node:' . $deal_id]);
+      \Drupal\Core\Cache\Cache::invalidateTags(['node:' . $deal_id, 'node_list']);
       
       // TODO: Send email notification to manager when deal is won
       // Can be implemented using Drupal's Mail API or Rules module

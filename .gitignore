@@ -48,10 +48,16 @@
 /web/sites/*/settings.ddev.php
 /web/sites/*/services.yml
 !/web/sites/*/default.settings.php
+# Environment variable files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
 
 # ========== User Uploaded Files ==========
-# Track uploaded files (user-pictures, import-templates, etc.)
-# Only ignore Drupal-generated/cache subdirectories
+# Track: import-templates, .htaccess (needed on fresh install)
+# Ignore: Drupal-generated/cache subdirectories and runtime user data
 /web/sites/*/private/
 /web/sites/*/files/css/
 /web/sites/*/files/js/
@@ -61,6 +67,10 @@
 /web/sites/*/files/sync-current/
 /web/sites/*/files/sync/
 /web/sites/*/files/crm_custom_tables.css
+/web/sites/*/files/crm_imports/
+/web/sites/*/files/contracts/
+/web/sites/*/files/user-pictures/
+!/web/sites/*/files/user-pictures/Admin_avatar.jpg
 
 # ========== Cache & Generated Files ==========
 /web/sites/simpletest/
@@ -90,6 +100,8 @@
 *.sql
 *.sql.gz
 !db/latest.sql.gz
+# Exception: SQL schema/migration scripts inside scripts/ are safe to commit
+!scripts/**/*.sql
 *.mysql
 *.dump
 *.sqlite
@@ -172,7 +184,6 @@ yarn.lock
 *.backup
 *.orig
 .gitignore.old
-web/sites/*/php/
 
 # ========== PHP Code Style Cache ==========
 *.php_cs.cache
@@ -187,8 +198,6 @@ Vagrantfile.local
 !README.md
 !CONTRIBUTING.md
 !CODE_OF_CONDUCT.md
-!/web/INSTALL.txt
-!/web/README.md
 
 # ========== Core Test Fixtures (Keep) ==========
 # Don't ignore core test fixtures

@@ -235,7 +235,7 @@ class AllActivitiesController extends ControllerBase {
     };
     $th_cls = fn($f) => $sort_field === $f ? ' class="th-sort th-sorted"' : ' class="th-sort"';
 
-    $add_url     = '/node/add/activity';
+    $add_url     = '/crm/add/activity';
     $e_search    = Html::escape($search_name);
     $page_title  = $is_my_view ? 'My Activities' : 'All Activities';
     $page_sub    = $is_my_view ? 'Activities assigned to you' : 'All CRM activities across the team';

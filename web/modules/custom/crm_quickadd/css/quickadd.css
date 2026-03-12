@@ -173,8 +173,8 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.btn-primary,
-.btn-secondary {
+.quickadd-form-container .btn-primary,
+.quickadd-form-container .btn-secondary {
   padding: 10px 20px;
   border-radius: 6px;
   font-size: 14px;
@@ -188,51 +188,51 @@
   font-family: inherit;
 }
 
-.btn-primary {
+.quickadd-form-container .btn-primary {
   background: white;
   color: #3b82f6 !important;
   border: 1.5px solid #3b82f6;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn-primary svg {
+.quickadd-form-container .btn-primary svg {
   color: #3b82f6;
   stroke: #3b82f6;
 }
 
-.btn-primary:hover {
+.quickadd-form-container .btn-primary:hover {
   background: #eff6ff;
   color: #3b82f6 !important;
   border-color: #3b82f6;
 }
 
-.btn-primary:active {
+.quickadd-form-container .btn-primary:active {
   background: #dbeafe;
   color: #2563eb !important;
   border-color: #2563eb;
   transform: scale(0.98);
 }
 
-.btn-primary:focus {
+.quickadd-form-container .btn-primary:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.btn-primary:disabled {
+.quickadd-form-container .btn-primary:disabled {
   background: #f3f4f6;
   color: #9ca3af !important;
   border-color: #d1d5db;
   cursor: not-allowed;
 }
 
-.btn-secondary {
+.quickadd-form-container .btn-secondary {
   background: white;
   color: #374151;
   border: 1px solid #d1d5db;
 }
 
-.btn-secondary:hover {
+.quickadd-form-container .btn-secondary:hover {
   background: #f9fafb;
 }
 
@@ -319,23 +319,23 @@
 }
 
 /* Loading state */
-.btn-primary.loading {
+.quickadd-form-container .btn-primary.loading {
   opacity: 0.7;
   pointer-events: none;
 }
 
-.btn-primary.loading::after {
+.quickadd-form-container .btn-primary.loading::after {
   content: "";
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid rgba(59, 130, 246, 0.25);
+  border-top-color: #3b82f6;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+  animation: quickadd-spin 0.6s linear infinite;
   margin-left: 8px;
 }
 
-@keyframes spin {
+@keyframes quickadd-spin {
   to {
     transform: rotate(360deg);
   }

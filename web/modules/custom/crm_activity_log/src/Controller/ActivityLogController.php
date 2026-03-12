@@ -3,6 +3,7 @@
 namespace Drupal\crm_activity_log\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Cache\Cache;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
@@ -105,6 +106,12 @@ class ActivityLogController extends ControllerBase {
    * Log call submit.
    */
   public function logCallSubmit($contact, Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
 
@@ -153,6 +160,9 @@ class ActivityLogController extends ControllerBase {
         $contact_node->save();
       }
 
+      // Invalidate caches so activity tab and dashboard reflect new activity immediately
+      Cache::invalidateTags(['node:' . $contact, 'node_list']);
+
       return new JsonResponse([
         'status' => 'success',
         'message' => 'Call logged successfully.',
@@ -190,6 +200,12 @@ class ActivityLogController extends ControllerBase {
    * Schedule meeting submit.
    */
   public function scheduleMeetingSubmit($contact, Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['status' => 'error', 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
 
@@ -228,6 +244,9 @@ class ActivityLogController extends ControllerBase {
         'status' => 1,
       ]);
       $activity->save();
+
+      // Invalidate caches so activity tab reflects scheduled meeting immediately
+      Cache::invalidateTags(['node:' . $contact, 'node_list']);
 
       return new JsonResponse([
         'status' => 'success',

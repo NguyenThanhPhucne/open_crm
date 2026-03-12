@@ -5,6 +5,17 @@
 
 // Global CRMInlineEdit object for modal functionality
 window.CRMInlineEdit = {
+  // Cached CSRF token (fetched once per page load)
+  _csrfToken: null,
+
+  getCsrfToken: async function () {
+    if (!this._csrfToken) {
+      const resp = await fetch("/session/token");
+      this._csrfToken = (await resp.text()).trim();
+    }
+    return this._csrfToken;
+  },
+
   openModal: function (nid, type) {
     // Show loading overlay
     const loadingHtml =
@@ -94,14 +105,26 @@ window.CRMInlineEdit = {
       });
     }
 
-    // ESC key to close
-    const escHandler = (e) => {
+    // Keyboard shortcuts for the edit modal
+    const editKeyHandler = (e) => {
       if (e.key === "Escape") {
+        document.removeEventListener("keydown", editKeyHandler);
         this.closeModal();
-        document.removeEventListener("keydown", escHandler);
+      } else if (
+        // Ctrl+Enter or Cmd+Enter anywhere → save
+        // Plain Enter when NOT focused inside a textarea → save
+        (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ||
+        (e.key === "Enter" && document.activeElement?.tagName !== "TEXTAREA")
+      ) {
+        const activeTag = document.activeElement?.tagName;
+        // Don't intercept if a submit/button is focused (browser handles it)
+        if (activeTag === "BUTTON" || activeTag === "A") return;
+        e.preventDefault();
+        document.removeEventListener("keydown", editKeyHandler);
+        this.saveModal(form);
       }
     };
-    document.addEventListener("keydown", escHandler);
+    document.addEventListener("keydown", editKeyHandler);
   },
 
   saveModal: function (form) {
@@ -132,44 +155,50 @@ window.CRMInlineEdit = {
       modal.classList.add("is-saving");
     }
 
-    // Submit via AJAX with JSON
-    fetch("/crm/edit/ajax/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(jsonData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Save toast message to localStorage and reload
-          localStorage.setItem(
-            "crmToast",
-            JSON.stringify({
-              message: "Changes saved successfully!",
-              type: "success",
-            }),
-          );
-          this.closeModal();
+    // Submit via AJAX with JSON (CSRF-protected)
+    this.getCsrfToken().then((csrfToken) => {
+      fetch("/crm/edit/ajax/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify(jsonData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // Save toast message to localStorage and reload
+            localStorage.setItem(
+              "crmToast",
+              JSON.stringify({
+                message: "Changes saved successfully!",
+                type: "success",
+              }),
+            );
+            this.closeModal();
 
-          // Reload page immediately to show updated data
-          setTimeout(() => location.reload(), 100);
-        } else {
-          // Show error message (don't reload if there's an error)
-          this.showMessage(data.message || "Error saving changes", "error");
+            // Reload page immediately to show updated data
+            setTimeout(() => location.reload(), 100);
+          } else {
+            // Show error message (don't reload if there's an error)
+            this.showMessage(data.message || "Error saving changes", "error");
+            if (modal) {
+              modal.classList.remove("is-saving");
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Save error:", error);
+          this.showMessage(
+            "Failed to save changes. Please try again.",
+            "error",
+          );
           if (modal) {
             modal.classList.remove("is-saving");
           }
-        }
-      })
-      .catch((error) => {
-        console.error("Save error:", error);
-        this.showMessage("Failed to save changes. Please try again.", "error");
-        if (modal) {
-          modal.classList.remove("is-saving");
-        }
-      });
+        });
+    }); // end getCsrfToken
   },
 
   showMessage: function (message, type) {
@@ -232,10 +261,12 @@ window.CRMInlineEdit = {
       setTimeout(() => overlay.remove(), 300);
     };
 
-    proceedBtn.addEventListener("click", () => {
+    const proceedAction = () => {
       closeModal();
       setTimeout(() => this.showDeleteWarning(nid, type, title), 300);
-    });
+    };
+
+    proceedBtn.addEventListener("click", proceedAction);
 
     closeBtn.addEventListener("click", closeModal);
 
@@ -245,13 +276,19 @@ window.CRMInlineEdit = {
       }
     });
 
-    const escHandler = (e) => {
+    const keyHandler = (e) => {
       if (e.key === "Escape") {
+        document.removeEventListener("keydown", keyHandler);
         closeModal();
-        document.removeEventListener("keydown", escHandler);
+      } else if (e.key === "Enter") {
+        document.removeEventListener("keydown", keyHandler);
+        proceedAction();
       }
     };
-    document.addEventListener("keydown", escHandler);
+    document.addEventListener("keydown", keyHandler);
+
+    // Focus the proceed button so Enter intent is obvious
+    setTimeout(() => proceedBtn.focus(), 50);
   },
 
   showDeleteWarning: function (nid, type, title) {
@@ -325,10 +362,12 @@ window.CRMInlineEdit = {
       setTimeout(() => overlay.remove(), 300);
     };
 
-    understandBtn.addEventListener("click", () => {
+    const understandAction = () => {
       closeModal();
       setTimeout(() => this.showDeleteFinalConfirm(nid, type, title), 300);
-    });
+    };
+
+    understandBtn.addEventListener("click", understandAction);
 
     closeBtn.addEventListener("click", closeModal);
 
@@ -338,13 +377,19 @@ window.CRMInlineEdit = {
       }
     });
 
-    const escHandler = (e) => {
+    const keyHandler = (e) => {
       if (e.key === "Escape") {
+        document.removeEventListener("keydown", keyHandler);
         closeModal();
-        document.removeEventListener("keydown", escHandler);
+      } else if (e.key === "Enter") {
+        document.removeEventListener("keydown", keyHandler);
+        understandAction();
       }
     };
-    document.addEventListener("keydown", escHandler);
+    document.addEventListener("keydown", keyHandler);
+
+    // Focus the understand button so Enter intent is obvious
+    setTimeout(() => understandBtn.focus(), 50);
   },
 
   showDeleteFinalConfirm: function (nid, type, title) {
@@ -420,10 +465,20 @@ window.CRMInlineEdit = {
       }
     });
 
-    // Handle delete action
-    deleteBtn.addEventListener("click", () => {
+    const deleteAction = () => {
       if (confirmInput.value.trim() === title) {
         this.performDelete(nid, type, title, confirmInput.value.trim());
+      }
+    };
+
+    // Handle delete action
+    deleteBtn.addEventListener("click", deleteAction);
+
+    // Enter on the input triggers delete when name matches
+    confirmInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !deleteBtn.disabled) {
+        e.preventDefault();
+        deleteAction();
       }
     });
 
@@ -458,54 +513,57 @@ window.CRMInlineEdit = {
       modal.classList.add("is-deleting");
     }
 
-    fetch("/crm/edit/ajax/delete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        nid: nid,
-        type: type,
-        confirmation: confirmation || title,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Save toast message to localStorage and reload
-          localStorage.setItem(
-            "crmToast",
-            JSON.stringify({
-              message: data.message || "Deleted successfully!",
-              type: "success",
-            }),
-          );
+    this.getCsrfToken().then((csrfToken) => {
+      fetch("/crm/edit/ajax/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({
+          nid: nid,
+          type: type,
+          confirmation: confirmation || title,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // Save toast message to localStorage and reload
+            localStorage.setItem(
+              "crmToast",
+              JSON.stringify({
+                message: data.message || "Deleted successfully!",
+                type: "success",
+              }),
+            );
 
-          // Close delete modal
-          const overlay =
-            document.getElementById("crm-delete-step3") ||
-            document.getElementById("crm-delete-step2") ||
-            document.getElementById("crm-delete-step1");
-          if (overlay) {
-            overlay.remove();
+            // Close delete modal
+            const overlay =
+              document.getElementById("crm-delete-step3") ||
+              document.getElementById("crm-delete-step2") ||
+              document.getElementById("crm-delete-step1");
+            if (overlay) {
+              overlay.remove();
+            }
+
+            // Reload page immediately to show updated data
+            setTimeout(() => location.reload(), 100);
+          } else {
+            this.showMessage(data.message || "Error deleting", "error");
+            if (modal) {
+              modal.classList.remove("is-deleting");
+            }
           }
-
-          // Reload page immediately to show updated data
-          setTimeout(() => location.reload(), 100);
-        } else {
-          this.showMessage(data.message || "Error deleting", "error");
+        })
+        .catch((error) => {
+          console.error("Delete error:", error);
+          this.showMessage("Failed to delete. Please try again.", "error");
           if (modal) {
             modal.classList.remove("is-deleting");
           }
-        }
-      })
-      .catch((error) => {
-        console.error("Delete error:", error);
-        this.showMessage("Failed to delete. Please try again.", "error");
-        if (modal) {
-          modal.classList.remove("is-deleting");
-        }
-      });
+        });
+    }); // end getCsrfToken
   },
 
   openAddModal: function (type) {
@@ -576,14 +634,23 @@ window.CRMInlineEdit = {
       });
     }
 
-    // ESC key to close
-    const escHandler = (e) => {
+    // Keyboard shortcuts for the add modal
+    const addKeyHandler = (e) => {
       if (e.key === "Escape") {
+        document.removeEventListener("keydown", addKeyHandler);
         this.closeModal();
-        document.removeEventListener("keydown", escHandler);
+      } else if (
+        (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ||
+        (e.key === "Enter" && document.activeElement?.tagName !== "TEXTAREA")
+      ) {
+        const activeTag = document.activeElement?.tagName;
+        if (activeTag === "BUTTON" || activeTag === "A") return;
+        e.preventDefault();
+        document.removeEventListener("keydown", addKeyHandler);
+        this.saveAddModal(form);
       }
     };
-    document.addEventListener("keydown", escHandler);
+    document.addEventListener("keydown", addKeyHandler);
   },
 
   saveAddModal: function (form) {
@@ -618,95 +685,98 @@ window.CRMInlineEdit = {
       lucide.createIcons();
     }
 
-    // Send AJAX request
-    fetch("/crm/edit/ajax/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success) {
-          if (statusDiv) {
-            statusDiv.className = "save-status success";
-            statusDiv.innerHTML =
-              '<i data-lucide="check-circle"></i> ' +
-              (result.message || "Created successfully!");
+    // Send AJAX request (CSRF-protected)
+    this.getCsrfToken().then((csrfToken) => {
+      fetch("/crm/edit/ajax/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.success) {
+            if (statusDiv) {
+              statusDiv.className = "save-status success";
+              statusDiv.innerHTML =
+                '<i data-lucide="check-circle"></i> ' +
+                (result.message || "Created successfully!");
+              if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+              }
+            }
+
+            // Save toast message to localStorage and redirect
+            localStorage.setItem(
+              "crmToast",
+              JSON.stringify({
+                message: result.message || "Created successfully!",
+                type: "success",
+              }),
+            );
+
+            // Close modal and redirect immediately
+            setTimeout(() => {
+              this.closeModal();
+              if (result.nid) {
+                // Redirect to new entity or reload page
+                window.location.href = "/node/" + result.nid;
+              } else {
+                location.reload();
+              }
+            }, 100);
+          } else {
+            // Show error
+            if (statusDiv) {
+              statusDiv.className = "save-status error";
+              statusDiv.innerHTML =
+                '<i data-lucide="alert-circle"></i> ' +
+                (result.message || "Error creating content");
+              if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+              }
+            }
+
+            // Restore button
+            saveBtn.innerHTML = originalBtnHtml;
+            saveBtn.disabled = false;
             if (typeof lucide !== "undefined") {
               lucide.createIcons();
             }
-          }
 
-          // Save toast message to localStorage and redirect
-          localStorage.setItem(
-            "crmToast",
-            JSON.stringify({
-              message: result.message || "Created successfully!",
-              type: "success",
-            }),
-          );
-
-          // Close modal and redirect immediately
-          setTimeout(() => {
-            this.closeModal();
-            if (result.nid) {
-              // Redirect to new entity or reload page
-              window.location.href = "/node/" + result.nid;
-            } else {
-              location.reload();
+            // Show field errors if any
+            if (result.errors) {
+              Object.keys(result.errors).forEach((fieldName) => {
+                const fieldWrapper = form
+                  .querySelector(`[name="${fieldName}"]`)
+                  ?.closest(".form-field");
+                if (fieldWrapper) {
+                  const errorDiv = document.createElement("div");
+                  errorDiv.className = "field-error";
+                  errorDiv.textContent = result.errors[fieldName];
+                  fieldWrapper.appendChild(errorDiv);
+                }
+              });
             }
-          }, 100);
-        } else {
-          // Show error
+          }
+        })
+        .catch((error) => {
+          console.error("Create error:", error);
           if (statusDiv) {
             statusDiv.className = "save-status error";
             statusDiv.innerHTML =
-              '<i data-lucide="alert-circle"></i> ' +
-              (result.message || "Error creating content");
+              '<i data-lucide="alert-circle"></i> Failed to create. Please try again.';
             if (typeof lucide !== "undefined") {
               lucide.createIcons();
             }
           }
-
           // Restore button
           saveBtn.innerHTML = originalBtnHtml;
           saveBtn.disabled = false;
-          if (typeof lucide !== "undefined") {
-            lucide.createIcons();
-          }
-
-          // Show field errors if any
-          if (result.errors) {
-            Object.keys(result.errors).forEach((fieldName) => {
-              const fieldWrapper = form
-                .querySelector(`[name="${fieldName}"]`)
-                ?.closest(".form-field");
-              if (fieldWrapper) {
-                const errorDiv = document.createElement("div");
-                errorDiv.className = "field-error";
-                errorDiv.textContent = result.errors[fieldName];
-                fieldWrapper.appendChild(errorDiv);
-              }
-            });
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Create error:", error);
-        if (statusDiv) {
-          statusDiv.className = "save-status error";
-          statusDiv.innerHTML =
-            '<i data-lucide="alert-circle"></i> Failed to create. Please try again.';
-          if (typeof lucide !== "undefined") {
-            lucide.createIcons();
-          }
-        }
-        // Restore button
-        saveBtn.innerHTML = originalBtnHtml;
-        saveBtn.disabled = false;
-      });
+        });
+    }); // end getCsrfToken
   },
 };
 

@@ -579,12 +579,14 @@ function crm_preprocess_views_view(array &$variables) {
   $view = $variables['view'];
 
   $crm_list_views = [
-    'my_contacts'      => ['icon' => 'users',      'label' => 'contacts'],
-    'my_deals'         => ['icon' => 'briefcase',  'label' => 'deals'],
-    'my_activities'    => ['icon' => 'activity',   'label' => 'activities'],
-    'my_organizations' => ['icon' => 'building-2', 'label' => 'organizations'],
-    'all_contacts'     => ['icon' => 'users',      'label' => 'contacts'],
-    'all_organizations'=> ['icon' => 'building-2', 'label' => 'organizations'],
+    'my_contacts'      => ['icon' => 'users',      'label' => 'contacts',      'type' => 'contacts'],
+    'my_deals'         => ['icon' => 'briefcase',  'label' => 'deals',         'type' => 'deals'],
+    'my_activities'    => ['icon' => 'calendar',   'label' => 'activities',    'type' => 'activities'],
+    'my_organizations' => ['icon' => 'building-2', 'label' => 'organizations', 'type' => 'organizations'],
+    'all_contacts'     => ['icon' => 'users',      'label' => 'contacts',      'type' => 'contacts'],
+    'all_organizations'=> ['icon' => 'building-2', 'label' => 'organizations', 'type' => 'organizations'],
+    'all_activities'   => ['icon' => 'calendar',   'label' => 'activities',    'type' => 'activities'],
+    'all_deals'        => ['icon' => 'briefcase',  'label' => 'deals',         'type' => 'deals'],
   ];
 
   if (!isset($crm_list_views[$view->id()])) {
@@ -598,24 +600,52 @@ function crm_preprocess_views_view(array &$variables) {
     return;
   }
 
-  $info = $crm_list_views[$view->id()];
+  $info    = $crm_list_views[$view->id()];
   $account = \Drupal::currentUser();
 
+  // Per-type descriptions and add-record links (used for logged-in users).
+  $descriptions = [
+    'contacts'      => 'Keep all your client details organized and easy to find.',
+    'deals'         => 'Track your pipeline stages and close more revenue.',
+    'activities'    => 'Log calls, emails, and meetings to stay on top of every interaction.',
+    'organizations' => 'Manage all the companies and accounts you work with.',
+  ];
+  $add_map = [
+    'contacts'      => ['url' => '/crm/add/contact',      'icon' => 'user-plus',    'label' => 'Add Contact'],
+    'deals'         => ['url' => '/crm/add/deal',         'icon' => 'trending-up',  'label' => 'Add Deal'],
+    'activities'    => ['url' => '/crm/add/activity',     'icon' => 'calendar-plus','label' => 'Log Activity'],
+    'organizations' => ['url' => '/crm/add/organization', 'icon' => 'building-2',   'label' => 'Add Organization'],
+  ];
+
+  $type = $info['type'];
+
   if ($account->isAnonymous()) {
-    $title = 'No ' . $info['label'] . ' in the system yet.';
-    $subtitle = 'Check back later, or <a href="/user/login">log in</a> to start adding records.';
-  } else {
-    $title = 'No ' . $info['label'] . ' found.';
-    $subtitle = 'Try adjusting your search filters, or create a new record to get started.';
+    $title   = 'No ' . $info['label'] . ' yet';
+    $sub     = 'Sign in to your CRM account to view and manage ' . $info['label'] . '.';
+    $actions =
+      '<a href="/login" class="crm-empty-cta">' .
+        '<i data-lucide="log-in"></i> Sign In to Continue' .
+      '</a>';
+  }
+  else {
+    $add     = $add_map[$type];
+    $title   = 'No ' . $info['label'] . ' found';
+    $sub     = $descriptions[$type];
+    $actions =
+      '<a href="' . $add['url'] . '" class="crm-empty-cta">' .
+        '<i data-lucide="' . $add['icon'] . '"></i> ' . $add['label'] .
+      '</a>';
   }
 
   $variables['empty'] = [
     '#markup' => \Drupal\Core\Render\Markup::create(
-      '<div class="crm-empty-state">' .
+      '<div class="crm-empty-state" style="text-align:center;">' .
         '<div class="crm-empty-icon"><i data-lucide="' . $info['icon'] . '"></i></div>' .
         '<h3 class="crm-empty-title">' . $title . '</h3>' .
-        '<p class="crm-empty-sub">' . $subtitle . '</p>' .
+        '<p class="crm-empty-sub" style="text-align:center;">' . $sub . '</p>' .
+        '<div class="crm-empty-actions">' . $actions . '</div>' .
       '</div>'
     ),
+    '#attached' => ['library' => ['crm_actions/global_nav']],
   ];
 }

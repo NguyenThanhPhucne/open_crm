@@ -476,8 +476,8 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.btn-primary,
-.btn-secondary {
+.activity-form-container .btn-primary,
+.activity-form-container .btn-secondary {
   padding: 10px 20px;
   border-radius: 6px;
   font-size: 14px;
@@ -491,32 +491,32 @@
   font-family: inherit;
 }
 
-.btn-primary {
+.activity-form-container .btn-primary {
   background: #3b82f6;
   color: white;
 }
 
-.btn-primary:hover {
+.activity-form-container .btn-primary:hover {
   background: #2563eb;
 }
 
-.btn-primary:disabled {
+.activity-form-container .btn-primary:disabled {
   background: #9ca3af;
   cursor: not-allowed;
 }
 
-.btn-primary svg {
+.activity-form-container .btn-primary svg {
   width: 16px;
   height: 16px;
 }
 
-.btn-secondary {
+.activity-form-container .btn-secondary {
   background: white;
   color: #374151;
   border: 1px solid #d1d5db;
 }
 
-.btn-secondary:hover {
+.activity-form-container .btn-secondary:hover {
   background: #f9fafb;
 }
 
@@ -543,23 +543,23 @@
 }
 
 /* Loading state */
-.btn-primary.loading {
+.activity-form-container .btn-primary.loading {
   opacity: 0.7;
   pointer-events: none;
 }
 
-.btn-primary.loading::after {
+.activity-form-container .btn-primary.loading::after {
   content: "";
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+  animation: activity-spin 0.6s linear infinite;
   margin-left: 8px;
 }
 
-@keyframes spin {
+@keyframes activity-spin {
   to {
     transform: rotate(360deg);
   }

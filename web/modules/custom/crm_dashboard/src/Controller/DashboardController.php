@@ -2000,19 +2000,19 @@ class DashboardController extends ControllerBase {
         </div>
       </div>
       <div class="hero-actions">
-        <a href="/node/add/contact" class="hero-action-btn hero-btn-primary">
+        <a href="/crm/add/contact" class="hero-action-btn hero-btn-primary">
           <i data-lucide="user-plus" width="15" height="15"></i>
           <span>New Contact</span>
         </a>
-        <a href="/node/add/organization" class="hero-action-btn hero-btn-outline">
+        <a href="/crm/add/organization" class="hero-action-btn hero-btn-outline">
           <i data-lucide="building-2" width="15" height="15"></i>
           <span>New Organization</span>
         </a>
-        <a href="/node/add/deal" class="hero-action-btn hero-btn-outline">
+        <a href="/crm/add/deal" class="hero-action-btn hero-btn-outline">
           <i data-lucide="plus-circle" width="15" height="15"></i>
           <span>New Deal</span>
         </a>
-        <a href="/node/add/activity" class="hero-action-btn hero-btn-outline">
+        <a href="/crm/add/activity" class="hero-action-btn hero-btn-outline">
           <i data-lucide="calendar-plus" width="15" height="15"></i>
           <span>Log Activity</span>
         </a>

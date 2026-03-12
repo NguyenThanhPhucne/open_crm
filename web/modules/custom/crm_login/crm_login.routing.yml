@@ -7,11 +7,18 @@ crm_login.login:
     _permission: "access content"
     _user_is_logged_in: "FALSE"
 
-# Redirect old /user/login to new /login
-user.login.redirect:
-  path: "/user/login"
+crm_login.access_denied:
+  path: "/access-denied"
   defaults:
-    _controller: '\Drupal\crm_login\Controller\RedirectController::redirectToLogin'
+    _controller: '\Drupal\crm_login\Controller\ErrorPageController::accessDenied'
+    _title: "Access Denied"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "FALSE"
+    _access: "TRUE"
+
+crm_login.not_found:
+  path: "/page-not-found"
+  defaults:
+    _controller: '\Drupal\crm_login\Controller\ErrorPageController::notFound'
+    _title: "Page Not Found"
+  requirements:
+    _access: "TRUE"

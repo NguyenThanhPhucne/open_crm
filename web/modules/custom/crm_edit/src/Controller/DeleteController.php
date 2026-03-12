@@ -4,6 +4,7 @@ namespace Drupal\crm_edit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\Cache;
 use Drupal\node\NodeInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +18,12 @@ class DeleteController extends ControllerBase {
    * AJAX Delete handler.
    */
   public function ajaxDelete(Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['success' => false, 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     $data = json_decode($request->getContent(), TRUE);
     
     if (!isset($data['nid']) || !isset($data['type'])) {
@@ -70,7 +77,11 @@ class DeleteController extends ControllerBase {
     
     // Perform deletion
     try {
+      $nid_to_delete = $node->id();
       $node->delete();
+
+      // Invalidate caches so lists/dashboard update immediately
+      Cache::invalidateTags(['node:' . $nid_to_delete, 'node_list']);
       
       // Log the deletion
       \Drupal::logger('crm_edit')->notice('Deleted @type: @title (ID: @nid) by user @user', [

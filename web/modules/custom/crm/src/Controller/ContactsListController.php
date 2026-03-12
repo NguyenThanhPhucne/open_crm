@@ -3,6 +3,7 @@
 namespace Drupal\crm\Controller;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeInterface;
@@ -116,7 +117,11 @@ class ContactsListController extends ControllerBase {
 
     try {
       // Delete the contact.
+      $nid_deleted = $node->id();
       $node->delete();
+
+      // Invalidate caches so list views update immediately without waiting
+      Cache::invalidateTags(['node:' . $nid_deleted, 'node_list']);
 
       return new JsonResponse([
         'status' => 'success',

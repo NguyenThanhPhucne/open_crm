@@ -391,7 +391,7 @@ display:
           admin_label: ""
           plugin_id: text_custom
           empty: true
-          content: '<p>No contacts found. <a href="/node/add/contact">Add a contact</a>.</p>'
+          content: '<p>No contacts found. <a href="/crm/add/contact">Add a contact</a>.</p>'
           tokenize: false
       sorts:
         created:

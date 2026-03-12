@@ -4,6 +4,7 @@ namespace Drupal\crm_edit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\Cache;
 use Drupal\node\NodeInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -452,10 +453,12 @@ class InlineEditController extends ControllerBase {
           lucide.createIcons();
           
           try {
+            const csrfToken = await fetch('/session/token').then(r => r.text());
             const response = await fetch('/crm/edit/ajax/save', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
               },
               body: JSON.stringify(data)
             });
@@ -544,6 +547,12 @@ class InlineEditController extends ControllerBase {
    * AJAX Save handler.
    */
   public function ajaxSave(Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['success' => false, 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     $data = json_decode($request->getContent(), TRUE);
     
     if (!isset($data['nid']) || !isset($data['type'])) {
@@ -594,24 +603,36 @@ class InlineEditController extends ControllerBase {
             }
           }
           
-          // Handle other empty values
-          if ($value === '' && !in_array($field_type, ['string', 'string_long', 'text', 'text_long', 'text_with_summary'])) {
-            // For numeric/date fields, skip empty strings
-            continue;
+          // Handle empty values for clearable fields — allow user to blank out a field
+          if ($value === '' || $value === null) {
+            if (in_array($field_type, ['decimal', 'float', 'integer', 'datetime', 'date', 'timestamp'])) {
+              // Numeric/date: set to NULL to clear properly
+              $node->set($field_name, NULL);
+              continue;
+            }
           }
-          
+
           $node->set($field_name, $value);
         }
       }
-      
+
       $node->save();
-      
+
+      // Invalidate caches so views, dashboard, and detail pages reflect changes immediately
+      Cache::invalidateTags(['node:' . $node->id(), 'node_list']);
+      \Drupal::entityTypeManager()->getStorage('node')->resetCache([$node->id()]);
+
       return new JsonResponse([
         'success' => true,
         'message' => 'Content updated successfully',
         'nid' => $node->id(),
+        'title' => $node->getTitle(),
       ]);
     } catch (\Exception $e) {
+      \Drupal::logger('crm_edit')->error('ajaxSave error for nid @nid: @msg', [
+        '@nid' => $data['nid'] ?? '?',
+        '@msg' => $e->getMessage(),
+      ]);
       return new JsonResponse([
         'success' => false,
         'message' => 'Error saving: ' . $e->getMessage(),

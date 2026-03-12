@@ -3,6 +3,7 @@
 namespace Drupal\crm_edit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Render\Markup;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -176,6 +177,12 @@ class AddController extends ControllerBase {
    * Create new entity via AJAX.
    */
   public function ajaxCreate(Request $request) {
+    // Validate CSRF token.
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token)) {
+      return new JsonResponse(['success' => false, 'message' => 'CSRF token validation failed.'], 403);
+    }
+
     try {
       $data = json_decode($request->getContent(), TRUE);
       $type = $data['type'] ?? null;
@@ -221,7 +228,10 @@ class AddController extends ControllerBase {
       
       $node = Node::create($node_data);
       $node->save();
-      
+
+      // Invalidate list caches so views/dashboard reflect new entity immediately
+      Cache::invalidateTags(['node_list']);
+
       \Drupal::logger('crm_edit')->info('Created new @type: @title (nid: @nid) by user @user', [
         '@type' => $type,
         '@title' => $node->getTitle(),
@@ -296,15 +306,62 @@ class AddController extends ControllerBase {
   protected function generateCreateModalHTML($type, $fields) {
     $type_label = ucfirst($type);
     
+    // Map type to icon and accent color
+    $type_icon_map = [
+      'contact' => 'user-plus',
+      'deal'    => 'trending-up',
+      'organization' => 'building-2',
+      'activity' => 'calendar-plus',
+    ];
+    $type_icon = $type_icon_map[$type] ?? 'plus-circle';
+
+    // Contextual placeholder text for each known field
+    $placeholder_map = [
+      // Title — per type (resolved below)
+      'title' => [
+        'contact'      => 'e.g. John Smith',
+        'deal'         => 'e.g. Enterprise License Q1 2026',
+        'organization' => 'e.g. Acme Corporation',
+        'activity'     => 'e.g. Follow-up call with John',
+      ],
+      // Contact / shared
+      'field_email'          => 'e.g. john@company.com',
+      'field_phone'          => 'e.g. +1 (555) 000-0000',
+      'field_mobile'         => 'e.g. +1 (555) 999-1234',
+      'field_job_title'      => 'e.g. Sales Manager',
+      'field_position'       => 'e.g. CEO, Developer, Consultant…',
+      'field_linkedin'       => 'e.g. https://linkedin.com/in/username',
+      'field_website'        => 'e.g. https://www.company.com',
+      'field_address'        => 'e.g. 123 Main St, New York, NY 10001',
+      'field_city'           => 'e.g. Ho Chi Minh City',
+      'field_country'        => 'e.g. Vietnam',
+      'field_notes'          => 'Add any additional notes…',
+      'field_description'    => 'Describe in detail…',
+      'field_tags'           => 'e.g. VIP, enterprise, hot-lead',
+      // Deal-specific
+      'field_value'          => 'e.g. 50000',
+      'field_deal_value'     => 'e.g. 50000',
+      'field_amount'         => 'e.g. 50000',
+      'field_probability'    => 'e.g. 75',
+      'field_expected_revenue' => 'e.g. 1000000',
+      // Organization-specific
+      'field_employees'      => 'e.g. 250',
+      'field_employee_count' => 'e.g. 250',
+      'field_revenue'        => 'e.g. 5000000',
+    ];
+
     ob_start();
     ?>
-    <div class="crm-modal-container add-modal">
-      <div class="crm-modal-header">
-        <h2>
-          <i data-lucide="plus-circle"></i>
-          Create New <?= $type_label ?>
-        </h2>
-        <button class="crm-modal-close" type="button">
+    <div class="crm-modal-container add-modal add-modal-<?= $type ?>">
+      <div class="crm-modal-header add-modal-header">
+        <div class="add-modal-header-icon">
+          <i data-lucide="<?= $type_icon ?>"></i>
+        </div>
+        <div class="add-modal-header-text">
+          <h2>Create New <?= $type_label ?></h2>
+          <p class="add-modal-subtitle">Fill in the details below to add a new <?= strtolower($type_label) ?> to your CRM</p>
+        </div>
+        <button class="crm-modal-close" type="button" aria-label="Close">
           <i data-lucide="x"></i>
         </button>
       </div>
@@ -322,33 +379,46 @@ class AddController extends ControllerBase {
                 $field_name = $field['name'];
                 $field_type = $field['type'];
                 $field_settings = $field['settings'];
+                $field_label_str = (string)($field['label'] ?? $field_name);
                 $value = htmlspecialchars($field['value'] ?? '');
-                
+                $req_attr = $field['required'] ? 'required' : '';
+
+                // Resolve contextual placeholder
+                if ($field_name === 'title') {
+                  $ph = $placeholder_map['title'][$type] ?? 'Enter ' . strtolower($type_label) . ' name';
+                } elseif (isset($placeholder_map[$field_name])) {
+                  $ph = $placeholder_map[$field_name];
+                } else {
+                  $ph = 'Enter ' . strtolower($field_label_str) . '…';
+                }
+                $ph = htmlspecialchars($ph);
+                $select_prompt = htmlspecialchars('Select ' . strtolower($field_label_str) . '…');
+
                 // Render appropriate input based on field type
                 switch ($field_type) {
                   case 'string':
                   case 'email':
                   case 'telephone':
                     $input_type = $field_type === 'email' ? 'email' : ($field_type === 'telephone' ? 'tel' : 'text');
-                    echo '<input type="' . $input_type . '" name="' . $field_name . '" value="' . $value . '" ' . ($field['required'] ? 'required' : '') . ' />';
+                    echo '<input type="' . $input_type . '" name="' . $field_name . '" value="' . $value . '" placeholder="' . $ph . '" ' . $req_attr . ' />';
                     break;
-                    
+
                   case 'text':
                   case 'text_long':
                   case 'string_long':
-                    echo '<textarea name="' . $field_name . '" rows="4" ' . ($field['required'] ? 'required' : '') . '>' . $value . '</textarea>';
+                    echo '<textarea name="' . $field_name . '" rows="4" placeholder="' . $ph . '" ' . $req_attr . '>' . $value . '</textarea>';
                     break;
-                    
+
                   case 'text_with_summary':
-                    echo '<textarea name="' . $field_name . '" rows="6" ' . ($field['required'] ? 'required' : '') . '>' . $value . '</textarea>';
+                    echo '<textarea name="' . $field_name . '" rows="6" placeholder="' . $ph . '" ' . $req_attr . '>' . $value . '</textarea>';
                     break;
-                    
+
                   case 'integer':
                   case 'decimal':
                   case 'float':
-                    echo '<input type="number" name="' . $field_name . '" value="' . $value . '" step="' . ($field_type === 'integer' ? '1' : '0.01') . '" ' . ($field['required'] ? 'required' : '') . ' />';
+                    echo '<input type="number" name="' . $field_name . '" value="' . $value . '" placeholder="' . $ph . '" step="' . ($field_type === 'integer' ? '1' : '0.01') . '" ' . $req_attr . ' />';
                     break;
-                    
+
                   case 'boolean':
                     $checked = $value ? 'checked' : '';
                     echo '<label class="checkbox-label">';
@@ -356,16 +426,16 @@ class AddController extends ControllerBase {
                     echo '<span>' . ($field_settings['on_label'] ?? 'Yes') . '</span>';
                     echo '</label>';
                     break;
-                    
+
                   case 'datetime':
                   case 'timestamp':
-                    echo '<input type="datetime-local" name="' . $field_name . '" value="' . $value . '" ' . ($field['required'] ? 'required' : '') . ' />';
+                    echo '<input type="datetime-local" name="' . $field_name . '" value="' . $value . '" ' . $req_attr . ' />';
                     break;
-                    
+
                   case 'list_string':
                   case 'list_integer':
-                    echo '<select name="' . $field_name . '" ' . ($field['required'] ? 'required' : '') . '>';
-                    echo '<option value="">- Select -</option>';
+                    echo '<select name="' . $field_name . '" ' . $req_attr . '>';
+                    echo '<option value="" disabled selected hidden>' . $select_prompt . '</option>';
                     if (!empty($field_settings['allowed_values'])) {
                       foreach ($field_settings['allowed_values'] as $key => $label) {
                         $selected = ($value == $key) ? 'selected' : '';
@@ -374,23 +444,24 @@ class AddController extends ControllerBase {
                     }
                     echo '</select>';
                     break;
-                    
+
                   case 'entity_reference':
                     $target_type = $field_settings['target_type'] ?? null;
-                    echo '<select name="' . $field_name . '" ' . ($field['required'] ? 'required' : '') . '>';
-                    echo '<option value="">- Select -</option>';
-                    
+                    $ref_prompt = $target_type === 'user'
+                      ? 'Choose a user…'
+                      : $select_prompt;
+                    echo '<select name="' . $field_name . '" ' . $req_attr . '>';
+                    echo '<option value="" disabled selected hidden>' . htmlspecialchars($ref_prompt) . '</option>';
+
                     if ($target_type === 'user') {
-                      // Load users for assignment
                       $users = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['status' => 1]);
                       foreach ($users as $user) {
-                        if ($user->id() > 0) { // Skip anonymous
+                        if ($user->id() > 0) {
                           $selected = ($value == $user->id()) ? 'selected' : '';
                           echo '<option value="' . $user->id() . '" ' . $selected . '>' . htmlspecialchars($user->getDisplayName() ?? '') . '</option>';
                         }
                       }
                     } elseif ($target_type === 'taxonomy_term') {
-                      // Load taxonomy terms
                       $target_bundles = $field_settings['target_bundles'] ?? [];
                       if (!empty($target_bundles)) {
                         foreach ($target_bundles as $vocabulary) {
@@ -402,7 +473,6 @@ class AddController extends ControllerBase {
                         }
                       }
                     } elseif ($target_type === 'node') {
-                      // Load related nodes
                       $target_bundles = $field_settings['target_bundles'] ?? [];
                       if (!empty($target_bundles)) {
                         $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => $target_bundles]);
@@ -412,12 +482,12 @@ class AddController extends ControllerBase {
                         }
                       }
                     }
-                    
+
                     echo '</select>';
                     break;
-                    
+
                   default:
-                    echo '<input type="text" name="' . $field_name . '" value="' . $value . '" ' . ($field['required'] ? 'required' : '') . ' />';
+                    echo '<input type="text" name="' . $field_name . '" value="' . $value . '" placeholder="' . $ph . '" ' . $req_attr . ' />';
                     break;
                 }
               ?>
@@ -429,16 +499,19 @@ class AddController extends ControllerBase {
           <?php endforeach; ?>
         </div>
         
-        <div class="crm-modal-footer">
-          <div class="save-status"></div>
-          <button type="button" class="btn-cancel">
-            <i data-lucide="x"></i>
-            <span>Cancel</span>
-          </button>
-          <button type="submit" class="btn-save save-btn">
-            <i data-lucide="plus-circle"></i>
-            <span>Create <?= $type_label ?></span>
-          </button>
+        <div class="crm-modal-footer add-modal-footer">
+          <span class="required-hint"><span class="required-mark">*</span> Required fields</span>
+          <div class="add-modal-footer-actions">
+            <div class="save-status"></div>
+            <button type="button" class="btn-cancel">
+              <i data-lucide="x"></i>
+              <span>Cancel</span>
+            </button>
+            <button type="submit" class="btn-save save-btn">
+              <i data-lucide="<?= $type_icon ?>"></i>
+              <span>Create <?= $type_label ?></span>
+            </button>
+          </div>
         </div>
       </form>
     </div>

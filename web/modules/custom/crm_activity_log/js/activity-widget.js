@@ -1,6 +1,19 @@
 (function ($, Drupal, drupalSettings) {
   "use strict";
 
+  // Cache CSRF token for the lifetime of this page
+  let _csrfToken = null;
+  function getCsrfToken() {
+    return _csrfToken
+      ? Promise.resolve(_csrfToken)
+      : fetch("/session/token")
+          .then((r) => r.text())
+          .then((t) => {
+            _csrfToken = t.trim();
+            return _csrfToken;
+          });
+  }
+
   Drupal.behaviors.crmActivityLog = {
     attach: function (context, settings) {
       // Initialize Lucide icons
@@ -64,37 +77,48 @@
         // Determine endpoint
         const endpoint = "/crm/activity/" + type + "/" + contactId + "/submit";
 
-        // Submit to endpoint
-        fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.status === "success") {
-              showMessage($message, data.message, "success");
-
-              // Redirect after 1 second
-              setTimeout(function () {
-                if (data.redirect) {
-                  window.location.href = data.redirect;
-                } else {
-                  window.history.back();
-                }
-              }, 1000);
-            } else {
-              showMessage($message, data.message || "Có lỗi xảy ra.", "error");
-              $button.removeClass("loading").prop("disabled", false);
-            }
+        // Submit to endpoint (CSRF-protected)
+        getCsrfToken().then((csrfToken) => {
+          fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+            },
+            body: JSON.stringify(formData),
           })
-          .catch((error) => {
-            console.error("Error:", error);
-            showMessage($message, "Có lỗi xảy ra. Vui lòng thử lại.", "error");
-            $button.removeClass("loading").prop("disabled", false);
-          });
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "success") {
+                showMessage($message, data.message, "success");
+
+                // Redirect after 1 second
+                setTimeout(function () {
+                  if (data.redirect) {
+                    window.location.href = data.redirect;
+                  } else {
+                    window.history.back();
+                  }
+                }, 1000);
+              } else {
+                showMessage(
+                  $message,
+                  data.message || "Có lỗi xảy ra.",
+                  "error",
+                );
+                $button.removeClass("loading").prop("disabled", false);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              showMessage(
+                $message,
+                "Có lỗi xảy ra. Vui lòng thử lại.",
+                "error",
+              );
+              $button.removeClass("loading").prop("disabled", false);
+            });
+        }); // end getCsrfToken
       }
 
       /**

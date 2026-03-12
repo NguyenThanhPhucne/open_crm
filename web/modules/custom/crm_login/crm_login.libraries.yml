@@ -10,3 +10,9 @@ login_form:
     - core/drupal
     - core/drupalSettings
     - core/jquery.once
+
+error_pages:
+  version: 1.0
+  css:
+    theme:
+      css/error-pages.css: {}

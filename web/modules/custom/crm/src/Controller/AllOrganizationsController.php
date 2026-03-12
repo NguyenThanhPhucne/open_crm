@@ -178,7 +178,7 @@ class AllOrganizationsController extends ControllerBase {
     $organizations_url = $current_path;
     $deals_url         = $can_manage ? '/crm/all-deals'         : '/crm/my-deals';
     $activities_url    = $can_manage ? '/crm/all-activities'    : '/crm/my-activities';
-    $add_url           = '/node/add/organization';
+    $add_url           = '/crm/add/organization';
 
     // ── Pagination helper ─────────────────────────────────────────────────────
     $page_url = function ($p) use ($search_name, $search_industry, $search_status, $sort_field, $sort_dir, $per_page, $current_path) {
