@@ -139,6 +139,7 @@ $new_body = <<<'HTML'
 
 .qac-btn-login:hover {
   background: #1d4ed8;
+  color: white;
   border-color: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(37,99,235,0.35);
@@ -295,7 +296,7 @@ $new_body = <<<'HTML'
       <p id="qac-hero-subtitle">Your workspace for customers, deals &amp; growth</p>
     </div>
     <div class="qac-hero-actions" id="qac-hero-actions">
-      <a href="/user/login" class="qac-btn qac-btn-login" id="qac-login-link">
+      <a href="/login" class="qac-btn qac-btn-login" id="qac-login-link">
         <i data-lucide="log-in"></i>
         <span>Sign In</span>
       </a>
