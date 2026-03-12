@@ -110,6 +110,7 @@ $new_body = <<<'HTML'
 .qac-btn-white:hover {
   background: #1d4ed8;
   border-color: #1d4ed8;
+  color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(37,99,235,0.35);
 }
