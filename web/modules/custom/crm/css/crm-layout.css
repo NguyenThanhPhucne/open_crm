@@ -192,3 +192,22 @@ body.path-crm,
     width: 100%;
   }
 }
+
+/* ── White background override ─────────────────────────────────────
+ * Gin theme (blue accent) sets --gin-bg-app: rgb(248,250,254) on body.
+ * Override to pure white for the homepage (path-frontpage) and all
+ * CRM node pages so they are consistent with other content pages.
+ * ------------------------------------------------------------------ */
+body.path-frontpage,
+body.page-node-type-page {
+  background: #ffffff !important;
+}
+
+body.path-frontpage .layout-container,
+body.path-frontpage .page-content,
+body.path-frontpage .region-content,
+body.page-node-type-page .layout-container,
+body.page-node-type-page .page-content,
+body.page-node-type-page .region-content {
+  background: #ffffff;
+}
