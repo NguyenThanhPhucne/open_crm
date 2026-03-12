@@ -153,8 +153,8 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 1.1rem;
-  background: #fff;
-  color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
   border: 1.5px solid #2563eb;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -164,20 +164,24 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
-    color 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
 .btn-primary:hover {
-  background: #eff6ff;
+  background: #1d4ed8;
   border-color: #1d4ed8;
-  color: #1d4ed8;
+  color: #ffffff;
   text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
-  background: #dbeafe;
-  border-color: #1d4ed8;
-  color: #1d4ed8;
+  background: #1e40af;
+  border-color: #1e40af;
+  color: #ffffff;
+  transform: none;
 }
 
 .btn-primary:focus-visible {

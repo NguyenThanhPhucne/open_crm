@@ -11,12 +11,13 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  color: #495057;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
   text-decoration: none;
   font-weight: 500;
+  font-size: 13px;
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
@@ -25,9 +26,9 @@
 
 .crm-back-link:hover,
 .button--back:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-  color: #212529;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
   text-decoration: none;
   transform: translateX(-2px);
 }
@@ -133,15 +134,15 @@
    DRUPAL BUTTON OVERRIDES - CLEAN MINIMAL STYLE
    ============================================ */
 
-/* Primary buttons - Blue outline style */
+/* Primary buttons - Solid blue (ClickUp style) */
 .button--primary,
 .button.button--primary,
 button.button--primary,
 input.button--primary {
-  background: white !important;
-  color: #3b82f6 !important;
-  border: 1.5px solid #3b82f6 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1.5px solid #2563eb !important;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2) !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
 }
@@ -156,21 +157,21 @@ input.button--primary {
 .button.button--primary:hover,
 button.button--primary:hover,
 input.button--primary:hover {
-  background: #eff6ff !important;
-  color: #3b82f6 !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  transform: none !important;
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+  transform: translateY(-1px) !important;
 }
 
 .button--primary:active,
 .button.button--primary:active,
 button.button--primary:active,
 input.button--primary:active {
-  background: #dbeafe !important;
-  color: #2563eb !important;
-  border-color: #2563eb !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  background: #1e40af !important;
+  color: #ffffff !important;
+  border-color: #1e40af !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
   transform: none !important;
 }
 
@@ -183,14 +184,14 @@ input.button--primary:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
 
-/* Action buttons - Same style as primary */
+/* Action buttons - Solid blue (ClickUp style) */
 .button--action,
 .button.button--action,
 a.button--action {
-  background: white !important;
-  color: #3b82f6 !important;
-  border: 1.5px solid #3b82f6 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1.5px solid #2563eb !important;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2) !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
 }
@@ -198,20 +199,20 @@ a.button--action {
 .button--action:hover,
 .button.button--action:hover,
 a.button--action:hover {
-  background: #eff6ff !important;
-  color: #3b82f6 !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  transform: none !important;
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+  transform: translateY(-1px) !important;
   text-decoration: none;
 }
 
 .button--action:active,
 .button.button--action:active,
 a.button--action:active {
-  background: #dbeafe !important;
-  color: #2563eb !important;
-  border-color: #2563eb !important;
+  background: #1e40af !important;
+  color: #ffffff !important;
+  border-color: #1e40af !important;
 }
 
 /* Secondary/Cancel buttons - Gray outline style */
@@ -271,21 +272,22 @@ a.button--action:active {
   transform: none !important;
 }
 
-/* Form submit buttons */
+/* Form submit buttons - Solid blue */
 #edit-submit,
 input[type="submit"] {
-  background: white !important;
-  color: #3b82f6 !important;
-  border: 1.5px solid #3b82f6 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1.5px solid #2563eb !important;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2) !important;
   font-weight: 600 !important;
 }
 
 #edit-submit:hover,
 input[type="submit"]:hover {
-  background: #eff6ff !important;
-  color: #3b82f6 !important;
-  border-color: #3b82f6 !important;
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
 }
 
 /* Responsive */

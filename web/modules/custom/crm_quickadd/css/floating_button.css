@@ -14,31 +14,31 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: white;
-  color: #3b82f6;
-  border: 2px solid #3b82f6;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .crm-fab-button:hover {
-  background: #eff6ff;
-  color: #3b82f6;
-  border-color: #3b82f6;
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+  background: #1d4ed8;
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5);
 }
 
 .crm-fab-button.active {
   transform: rotate(45deg) scale(1.05);
-  background: #fee2e2;
-  color: #ef4444;
-  border-color: #ef4444;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
 }
 
 .crm-fab-menu {

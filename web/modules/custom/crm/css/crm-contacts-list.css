@@ -46,16 +46,16 @@
 }
 
 .crm-contacts-table thead {
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .crm-contacts-table th {
   padding: 12px 16px;
   text-align: left;
-  font-weight: 600;
-  font-size: 13px;
-  color: #666;
+  font-weight: 700;
+  font-size: 12px;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -66,8 +66,8 @@
 }
 
 .crm-contacts-table tbody tr:hover {
-  background-color: #fafafa;
-  box-shadow: inset 0 0 0 1px #e8f4ff;
+  background-color: #f8fafc;
+  box-shadow: inset 3px 0 0 #3b82f6;
 }
 
 .crm-contacts-table tbody tr:last-child {
@@ -83,15 +83,15 @@
 /* ========== CONTACT NAME COLUMN ========== */
 
 .crm-contact__name {
-  font-weight: 500;
-  color: #1a73e8;
+  font-weight: 600;
+  color: #2563eb;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .crm-contact__name:hover {
-  color: #1557b0;
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
