@@ -439,13 +439,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var heroActions = document.getElementById('qac-hero-actions');
     if (heroActions) {
       heroActions.innerHTML =
-        '<a href="/node/add/contact" class="qac-btn qac-btn-white">' +
+        '<a href="/crm/add/contact" class="qac-btn qac-btn-white">' +
           '<i data-lucide="user-plus"></i><span>New Contact</span>' +
         '</a>' +
-        '<a href="/node/add/organization" class="qac-btn qac-btn-outline">' +
+        '<a href="/crm/add/organization" class="qac-btn qac-btn-outline">' +
           '<i data-lucide="building-2"></i><span>New Organization</span>' +
         '</a>' +
-        '<a href="/node/add/deal" class="qac-btn qac-btn-outline">' +
+        '<a href="/crm/add/deal" class="qac-btn qac-btn-outline">' +
           '<i data-lucide="plus-circle"></i><span>New Deal</span>' +
         '</a>';
     }

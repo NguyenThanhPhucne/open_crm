@@ -76,8 +76,7 @@ function _crm_actions_build_navbar() {
       'icon' => 'users',
       'active' => str_contains($current_path, '/crm/my-contacts') ||
                   str_contains($current_path, '/crm/all-contacts') ||
-                  str_contains($current_path, '/crm/add/contact') ||
-                  str_contains($current_path, '/node/add/contact'),
+                  str_contains($current_path, '/crm/add/contact'),
     ],
     [
       'url' => $is_admin ? '/crm/all-deals' : '/crm/my-deals',
@@ -127,7 +126,7 @@ function _crm_actions_build_navbar() {
   $nav_html .= '<div class="crm-nav-right">';
   if ($is_anonymous) {
     // This branch is no longer reachable — hook_page_top guards anonymous out.
-    $nav_html .= '<a href="/user/login" class="crm-login-btn">';
+    $nav_html .= '<a href="/login" class="crm-login-btn">';
     $nav_html .= '<i data-lucide="log-in" width="14" height="14"></i><span>Login</span></a>';
   }
   $nav_html .= '</div>';
