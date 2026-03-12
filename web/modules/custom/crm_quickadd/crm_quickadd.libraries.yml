@@ -1,5 +1,5 @@
 quickadd:
-  version: 1.0
+  version: 3.2
   css:
     theme:
       css/quickadd.css: {}
@@ -9,7 +9,8 @@ quickadd:
     - core/drupal
     - core/drupalSettings
     - core/jquery
-    - core/jquery.once
+    - core/once
+    - crm_edit/inline_edit
 
 floating_button:
   version: 1.0

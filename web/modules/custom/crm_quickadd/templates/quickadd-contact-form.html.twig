@@ -1,146 +1,98 @@
+{#
+  Template: quickadd-contact-form.html.twig
+  Uses the same HTML structure as the inline-edit add modal (add-modal-contact)
+#}
 <div class="quickadd-modal-wrapper">
-  <div class="quickadd-form-container">
+  <div class="crm-modal-container add-modal add-modal-contact">
 
-    {# ── Colored header band ── #}
-    <div class="quickadd-header qa-contact">
-      <div class="qa-header-left">
-        <div class="qa-header-icon">
-          <i data-lucide="user-plus"></i>
-        </div>
-        <div>
-          <div class="qa-header-title">New Contact</div>
-          <div class="qa-header-sub">Add a contact to your CRM</div>
-        </div>
+    <div class="crm-modal-header add-modal-header">
+      <div class="add-modal-header-icon">
+        <i data-lucide="user-plus"></i>
       </div>
-      <button class="quickadd-close" onclick="window.history.back()" title="Close">
+      <div class="add-modal-header-text">
+        <h2>New Contact</h2>
+        <p class="add-modal-subtitle">Add a contact to your CRM</p>
+      </div>
+      <button class="crm-modal-close" type="button" onclick="window.history.back()" aria-label="Close">
         <i data-lucide="x"></i>
       </button>
     </div>
 
-    {# ── Form body ── #}
-    <form id="quickadd-contact-form" class="quickadd-form">
+    <form id="quickadd-contact-form" class="crm-modal-form add-form" data-type="contact">
+      <div class="crm-modal-body">
 
-      {# Basic info #}
-      <div class="qa-section-label">Basic Information</div>
+        <div class="form-field required-field">
+          <label class="required">Full Name<span class="required-mark">*</span></label>
+          <input type="text" id="contact-name" name="name" required
+                 placeholder="e.g. Nguyễn Văn An" autocomplete="off">
+        </div>
 
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label for="contact-name" class="required">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            Full Name
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <input type="text" id="contact-name" name="name" required placeholder="e.g. Nguyễn Văn An">
+        <div class="form-field required-field">
+          <label class="required">Phone Number<span class="required-mark">*</span></label>
+          <input type="tel" id="contact-phone" name="phone" required
+                 placeholder="+84 901 234 567">
+          <span class="field-error" id="phone-validation" style="display:none;"></span>
+        </div>
+
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" id="contact-email" name="email"
+                 placeholder="name@company.com">
+          <span class="field-error" id="email-validation" style="display:none;"></span>
+        </div>
+
+        <div class="form-field">
+          <label>Job Title</label>
+          <input type="text" id="contact-position" name="position"
+                 placeholder="Sales Manager">
+        </div>
+
+        <div class="form-field">
+          <label>Customer Type</label>
+          <select id="contact-customer-type" name="customer_type">
+            {{ type_options|raw }}
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Lead Source</label>
+          <select id="contact-source" name="source">
+            {{ source_options|raw }}
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Company</label>
+          <select id="contact-organization" name="organization">
+            {{ org_options|raw }}
+          </select>
+        </div>
+
+        {# Inline new company creation #}
+        <div id="inline-org-fields" style="display:none;">
+          <div class="form-field required-field">
+            <label class="required">New Company Name<span class="required-mark">*</span></label>
+            <input type="text" id="inline-org-name" name="organization_name"
+                   placeholder="ABC Company Ltd.">
           </div>
         </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="contact-phone" class="required">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.69 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.07 4.18 2 2 0 0 1 5.07 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L9.91 9.91a16 16 0 0 0 6 6l.41-.41a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.92z"/></svg>
-            Phone Number
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.69 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.07 4.18 2 2 0 0 1 5.07 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L9.91 9.91a16 16 0 0 0 6 6l.41-.41a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.92z"/></svg>
-            <input type="tel" id="contact-phone" name="phone" required placeholder="+84 901 234 567">
-          </div>
-          <span class="validation-message" id="phone-validation"></span>
-        </div>
-        <div class="form-group">
-          <label for="contact-email">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-            Email Address
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-            <input type="email" id="contact-email" name="email" placeholder="name@company.com">
-          </div>
-          <span class="validation-message" id="email-validation"></span>
-        </div>
-      </div>
+      </div>{# /.crm-modal-body #}
 
-      {# Role & type #}
-      <div class="qa-section-label">Role &amp; Classification</div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="contact-position">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            Job Title
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            <input type="text" id="contact-position" name="position" placeholder="Sales Manager">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="contact-customer-type">Customer Type</label>
-          <div class="qa-select-wrap">
-            <select id="contact-customer-type" name="customer_type">
-              {{ type_options|raw }}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {# Origin & company #}
-      <div class="qa-section-label">Source &amp; Company</div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="contact-source">Lead Source</label>
-          <div class="qa-select-wrap">
-            <select id="contact-source" name="source">
-              {{ source_options|raw }}
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="contact-organization">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M2 22h20"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9 14h.01"/><path d="M15 14h.01"/></svg>
-            Company
-          </label>
-          <div class="qa-select-wrap">
-            <select id="contact-organization" name="organization">
-              {{ org_options|raw }}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {# Inline new org creation panel #}
-      <div id="inline-org-fields" class="inline-fields" style="display:none;">
-        <div class="qa-section-label">New Company Details</div>
-        <div class="form-group full-width">
-          <label for="inline-org-name">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M2 22h20"/></svg>
-            Company Name
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M2 22h20"/></svg>
-            <input type="text" id="inline-org-name" name="organization_name" placeholder="ABC Company Ltd.">
-          </div>
+      <div class="crm-modal-footer add-modal-footer">
+        <span class="required-hint"><span class="required-mark">*</span> Required fields</span>
+        <div class="add-modal-footer-actions">
+          <div class="save-status" id="quickadd-message"></div>
+          <button type="button" class="btn-cancel" onclick="window.history.back()">
+            <i data-lucide="x"></i><span>Cancel</span>
+          </button>
+          <button type="submit" form="quickadd-contact-form" class="btn-save save-btn qa-contact-submit">
+            <i data-lucide="user-check"></i><span>Save Contact</span>
+          </button>
         </div>
       </div>
 
     </form>
-
-    {# ── Status message ── #}
-    <div id="quickadd-message" class="quickadd-alert" style="display:none;"></div>
-    <div id="quickadd-message-legacy" class="alert" style="display:none;"></div>
-
-    {# ── Sticky footer actions ── #}
-    <div class="form-actions">
-      <button type="button" class="btn-secondary" onclick="window.history.back()">
-        Cancel
-      </button>
-      <button type="submit" form="quickadd-contact-form" class="btn-primary qa-contact-submit">
-        <i data-lucide="save"></i>
-        Save Contact
-      </button>
-    </div>
 
   </div>
 </div>

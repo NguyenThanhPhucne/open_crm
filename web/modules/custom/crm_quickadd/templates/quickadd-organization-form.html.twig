@@ -1,96 +1,67 @@
+{#
+  Template: quickadd-organization-form.html.twig
+  Uses the same HTML structure as the inline-edit add modal (add-modal-organization)
+#}
 <div class="quickadd-modal-wrapper">
-  <div class="quickadd-form-container">
+  <div class="crm-modal-container add-modal add-modal-organization">
 
-    {# ── Colored header band ── #}
-    <div class="quickadd-header qa-org">
-      <div class="qa-header-left">
-        <div class="qa-header-icon">
-          <i data-lucide="building-2"></i>
-        </div>
-        <div>
-          <div class="qa-header-title">New Organization</div>
-          <div class="qa-header-sub">Add a new company or organization</div>
-        </div>
+    <div class="crm-modal-header add-modal-header">
+      <div class="add-modal-header-icon">
+        <i data-lucide="building-2"></i>
       </div>
-      <button class="quickadd-close" onclick="window.history.back()" title="Close">
+      <div class="add-modal-header-text">
+        <h2>New Organization</h2>
+        <p class="add-modal-subtitle">Add a new company or organization</p>
+      </div>
+      <button class="crm-modal-close" type="button" onclick="window.history.back()" aria-label="Close">
         <i data-lucide="x"></i>
       </button>
     </div>
 
-    {# ── Form body ── #}
-    <form id="quickadd-organization-form" class="quickadd-form">
+    <form id="quickadd-organization-form" class="crm-modal-form add-form" data-type="organization">
+      <div class="crm-modal-body">
 
-      {# Company info #}
-      <div class="qa-section-label">Company Information</div>
-
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label for="org-name" class="required">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M2 22h20"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9 14h.01"/><path d="M15 14h.01"/></svg>
-            Company Name
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M2 22h20"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9 14h.01"/><path d="M15 14h.01"/></svg>
-            <input type="text" id="org-name" name="name" required placeholder="ABC Corporation Ltd.">
-          </div>
+        <div class="form-field required-field">
+          <label class="required">Company Name<span class="required-mark">*</span></label>
+          <input type="text" id="org-name" name="name" required
+                 placeholder="ABC Corporation Ltd." autocomplete="off">
         </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label for="org-website">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10A15.3 15.3 0 0 1 8 12a15.3 15.3 0 0 1 4-10z"/></svg>
-            Website
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10A15.3 15.3 0 0 1 8 12a15.3 15.3 0 0 1 4-10z"/></svg>
-            <input type="url" id="org-website" name="website" placeholder="https://example.com">
-          </div>
+        <div class="form-field">
+          <label>Website</label>
+          <input type="url" id="org-website" name="website"
+                 placeholder="https://example.com">
         </div>
-      </div>
 
-      {# Industry & address #}
-      <div class="qa-section-label">Details</div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="org-industry">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Industry
-          </label>
-          <div class="qa-select-wrap">
-            <select id="org-industry" name="industry">
-              {{ industry_options|raw }}
-            </select>
-          </div>
+        <div class="form-field">
+          <label>Industry</label>
+          <select id="org-industry" name="industry">
+            {{ industry_options|raw }}
+          </select>
         </div>
-        <div class="form-group">
-          <label for="org-address">
-            <svg class="lbl-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Address
-          </label>
-          <div class="input-wrap">
-            <svg class="input-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <input type="text" id="org-address" name="address" placeholder="123 Main St, City, Country">
-          </div>
+
+        <div class="form-field">
+          <label>Address</label>
+          <input type="text" id="org-address" name="address"
+                 placeholder="123 Main St, City">
+        </div>
+
+      </div>{# /.crm-modal-body #}
+
+      <div class="crm-modal-footer add-modal-footer">
+        <span class="required-hint"><span class="required-mark">*</span> Required fields</span>
+        <div class="add-modal-footer-actions">
+          <div class="save-status" id="quickadd-message"></div>
+          <button type="button" class="btn-cancel" onclick="window.history.back()">
+            <i data-lucide="x"></i><span>Cancel</span>
+          </button>
+          <button type="submit" form="quickadd-organization-form" class="btn-save save-btn qa-org-submit">
+            <i data-lucide="building-2"></i><span>Save Organization</span>
+          </button>
         </div>
       </div>
 
     </form>
-
-    {# ── Status message ── #}
-    <div id="quickadd-message" class="quickadd-alert" style="display:none;"></div>
-
-    {# ── Sticky footer actions ── #}
-    <div class="form-actions">
-      <button type="button" class="btn-secondary" onclick="window.history.back()">
-        Cancel
-      </button>
-      <button type="submit" form="quickadd-organization-form" class="btn-primary qa-org-submit">
-        <i data-lucide="save"></i>
-        Save Organization
-      </button>
-    </div>
 
   </div>
 </div>

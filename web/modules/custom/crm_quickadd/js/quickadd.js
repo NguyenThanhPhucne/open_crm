@@ -59,7 +59,7 @@
         })
         .then(function (html) {
           var doc = new DOMParser().parseFromString(html, "text/html");
-          var container = doc.querySelector(".quickadd-form-container");
+          var container = doc.querySelector(".crm-modal-container");
           if (!container) {
             CRMQuickAdd.closeModal();
             return;
@@ -72,7 +72,7 @@
           // Override every close / cancel control
           overlay
             .querySelectorAll(
-              '[onclick*="history.back"], .quickadd-close, .btn-secondary',
+              '[onclick*="history.back"], .quickadd-close, .crm-modal-close, .btn-secondary, .btn-cancel',
             )
             .forEach(function (btn) {
               btn.removeAttribute("onclick");
@@ -251,7 +251,7 @@
 
       /* ── Submit handler ─────────────────────────────────────────────── */
       function submitForm(type, $form) {
-        const $container = $form.closest(".quickadd-form-container");
+        const $container = $form.closest(".crm-modal-container");
         const $button = $container.find('[type="submit"]');
         const $message = $container.find("#quickadd-message");
 
