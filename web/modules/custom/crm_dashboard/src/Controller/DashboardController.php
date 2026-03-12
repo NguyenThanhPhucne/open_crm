@@ -599,6 +599,8 @@ class DashboardController extends ControllerBase {
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
     * {
       margin: 0;
       padding: 0;
@@ -606,8 +608,8 @@ class DashboardController extends ControllerBase {
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
       min-height: 100vh;
       padding: 20px;
       color: #1e293b;
@@ -787,8 +789,8 @@ class DashboardController extends ControllerBase {
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin-bottom: 32px;
+      gap: 12px;
+      margin-bottom: 28px;
     }
     
     .main-content {
@@ -841,17 +843,20 @@ class DashboardController extends ControllerBase {
     
     .stat-card {
       background: white;
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 10px;
+      padding: 14px 18px;
+      border: 1px solid #e9edf2;
+      border-left: 3px solid var(--stat-color, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
       cursor: pointer;
       text-decoration: none;
       color: inherit;
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
     
     /* Color accent backgrounds for each stat-card variant */
@@ -921,43 +926,32 @@ class DashboardController extends ControllerBase {
     }
     
     .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--stat-color, linear-gradient(90deg, #3b82f6, #8b5cf6));
-      opacity: 0;
-      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: none;
     }
     
     .stat-card:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-      transform: translateY(-4px);
-      border-color: var(--stat-color, #cbd5e1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+      transform: translateY(-2px);
       background: var(--stat-bg, white);
     }
     
     .stat-card:active {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      transform: translateY(0);
     }
     
-    .stat-card:hover::before {
-      opacity: 1;
-    }
-    
+    /* Old .stat-header hidden; layout now uses .stat-icon + .stat-body side by side */
     .stat-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
+      display: none;
     }
-    
+
+    .stat-body {
+      flex: 1;
+      min-width: 0;
+    }
+
     .stat-icon {
-      width: 48px;
-      height: 48px;
+      width: 42px;
+      height: 42px;
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -966,8 +960,8 @@ class DashboardController extends ControllerBase {
     }
     
     .stat-icon i {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       stroke-width: 2;
     }
     
@@ -1032,25 +1026,26 @@ class DashboardController extends ControllerBase {
     }
     
     .stat-label {
-      font-size: 11px;
-      color: #64748b;
-      font-weight: 700;
+      font-size: 10.5px;
+      color: #94a3b8;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.09em;
+      margin-bottom: 2px;
     }
     
     .stat-value {
-      font-size: 36px;
+      font-size: 24px;
       font-weight: 800;
       color: #0f172a;
       line-height: 1;
-      margin-bottom: 8px;
+      margin-bottom: 3px;
       letter-spacing: -0.02em;
-      text-align: center;
+      text-align: left;
     }
     
     .stat-desc {
-      font-size: 13px;
+      font-size: 11.5px;
       color: #94a3b8;
       font-weight: 500;
     }
@@ -1059,12 +1054,10 @@ class DashboardController extends ControllerBase {
     .stat-trend {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
+      gap: 4px;
+      font-size: 11.5px;
       font-weight: 600;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #f1f5f9;
+      margin-top: 3px;
     }
     
     .stat-trend.positive {
@@ -1083,9 +1076,10 @@ class DashboardController extends ControllerBase {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      font-size: 10px;
     }
     
     .stat-trend.positive .stat-trend-icon {
@@ -1963,12 +1957,12 @@ class DashboardController extends ControllerBase {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
-      color: #64748b;
+      color: #b0b8c8;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 12px 2px 2px;
+      letter-spacing: 0.12em;
+      padding: 10px 0 2px;
     }
 
     .stats-row-label:first-child {
@@ -1979,7 +1973,7 @@ class DashboardController extends ControllerBase {
       content: '';
       flex: 1;
       height: 1px;
-      background: #e2e8f0;
+      background: #eaedf2;
     }
 
     @media (max-width: 768px) {
@@ -2034,211 +2028,201 @@ class DashboardController extends ControllerBase {
     <div class="stats-grid">
       <div class="stats-row-label">Core Metrics</div>
       <a href="{$contacts_url}" class="stat-card stat-card-blue">
-        <div class="stat-header">
-          <div class="stat-icon blue">
-            <i data-lucide="users" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Contacts</div>
+        <div class="stat-icon blue">
+          <i data-lucide="users" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$contacts_count}</div>
-        <div class="stat-desc">Active contacts</div>
-        <div class="stat-trend positive">
-          <span class="stat-trend-icon">↑</span>
-          <span>+{$contacts_this_week} this week</span>
+        <div class="stat-body">
+          <div class="stat-label">Contacts</div>
+          <div class="stat-value">{$contacts_count}</div>
+          <div class="stat-trend positive">
+            <span class="stat-trend-icon">↑</span>
+            <span>+{$contacts_this_week} this week</span>
+          </div>
         </div>
       </a>
       
       <a href="{$organizations_url}" class="stat-card stat-card-pink">
-        <div class="stat-header">
-          <div class="stat-icon pink">
-            <i data-lucide="building-2" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Organizations</div>
+        <div class="stat-icon pink">
+          <i data-lucide="building-2" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$orgs_count}</div>
-        <div class="stat-desc">Companies</div>
-        <div class="stat-trend positive">
-          <span class="stat-trend-icon">↑</span>
-          <span>+{$orgs_this_month} this month</span>
+        <div class="stat-body">
+          <div class="stat-label">Organizations</div>
+          <div class="stat-value">{$orgs_count}</div>
+          <div class="stat-trend positive">
+            <span class="stat-trend-icon">↑</span>
+            <span>+{$orgs_this_month} this month</span>
+          </div>
         </div>
       </a>
       
       <a href="{$deals_url}" class="stat-card stat-card-orange">
-        <div class="stat-header">
-          <div class="stat-icon orange">
-            <i data-lucide="briefcase" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Deals</div>
+        <div class="stat-icon orange">
+          <i data-lucide="briefcase" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$deals_count}</div>
-        <div class="stat-desc">In pipeline</div>
+        <div class="stat-body">
+          <div class="stat-label">Deals</div>
+          <div class="stat-value">{$deals_count}</div>
+          <div class="stat-desc">In pipeline</div>
+        </div>
       </a>
       
       <a href="{$deals_url}" class="stat-card stat-card-teal">
-        <div class="stat-header">
-          <div class="stat-icon green">
-            <i data-lucide="dollar-sign" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Total Value</div>
+        <div class="stat-icon green">
+          <i data-lucide="dollar-sign" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$total_value_display}</div>
-        <div class="stat-desc">Deal value</div>
+        <div class="stat-body">
+          <div class="stat-label">Total Value</div>
+          <div class="stat-value">{$total_value_display}</div>
+          <div class="stat-desc">Deal value</div>
+        </div>
       </a>
       
       <div class="stats-row-label">Deal Performance</div>
       <a href="{$pipeline_url}" class="stat-card stat-card-green">
-        <div class="stat-header">
-          <div class="stat-icon green">
-            <i data-lucide="trending-up" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Won</div>
+        <div class="stat-icon green">
+          <i data-lucide="trending-up" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$won_count}</div>
-        <div class="stat-desc">{$won_value_display} revenue</div>
+        <div class="stat-body">
+          <div class="stat-label">Won Deals</div>
+          <div class="stat-value">{$won_count}</div>
+          <div class="stat-desc">{$won_value_display} revenue</div>
+        </div>
       </a>
       
       <a href="{$pipeline_url}" class="stat-card stat-card-red">
-        <div class="stat-header">
-          <div class="stat-icon red">
-            <i data-lucide="trending-down" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Lost</div>
+        <div class="stat-icon red">
+          <i data-lucide="trending-down" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$lost_count}</div>
-        <div class="stat-desc">{$lost_value_display} lost</div>
+        <div class="stat-body">
+          <div class="stat-label">Lost Deals</div>
+          <div class="stat-value">{$lost_count}</div>
+          <div class="stat-desc">{$lost_value_display} lost</div>
+        </div>
       </a>
       
       <a href="{$pipeline_url}" class="stat-card stat-card-pink">
-        <div class="stat-header">
-          <div class="stat-icon pink">
-            <i data-lucide="target" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Win Rate</div>
+        <div class="stat-icon pink">
+          <i data-lucide="target" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$win_rate}%</div>
-        <div class="stat-desc">Deals won rate</div>
+        <div class="stat-body">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-value">{$win_rate}%</div>
+          <div class="stat-desc">Deals won rate</div>
+        </div>
       </a>
       
       <a href="{$activities_url}" class="stat-card stat-card-cyan">
-        <div class="stat-header">
-          <div class="stat-icon cyan">
-            <i data-lucide="activity" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Activities</div>
+        <div class="stat-icon cyan">
+          <i data-lucide="activity" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$activities_count}</div>
-        <div class="stat-desc">Tasks & calls</div>
-        <div class="stat-trend positive">
-          <span class="stat-trend-icon">↑</span>
-          <span>+{$activities_this_week} this week</span>
+        <div class="stat-body">
+          <div class="stat-label">Activities</div>
+          <div class="stat-value">{$activities_count}</div>
+          <div class="stat-trend positive">
+            <span class="stat-trend-icon">↑</span>
+            <span>+{$activities_this_week} this week</span>
+          </div>
         </div>
       </a>
       
       <div class="stats-row-label">Pipeline Intelligence</div>
       <a href="{$pipeline_url}" class="stat-card stat-card-purple">
-        <div class="stat-header">
-          <div class="stat-icon blue">
-            <i data-lucide="percent" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Conversion</div>
+        <div class="stat-icon blue">
+          <i data-lucide="percent" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$conversion_rate}%</div>
-        <div class="stat-desc">Overall conversion</div>
+        <div class="stat-body">
+          <div class="stat-label">Conversion</div>
+          <div class="stat-value">{$conversion_rate}%</div>
+          <div class="stat-desc">Overall rate</div>
+        </div>
       </a>
       
       <a href="{$deals_url}" class="stat-card stat-card-purple">
-        <div class="stat-header">
-          <div class="stat-icon purple">
-            <i data-lucide="bar-chart-3" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Avg Deal</div>
+        <div class="stat-icon purple">
+          <i data-lucide="bar-chart-3" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$avg_deal_display}</div>
-        <div class="stat-desc">Average value</div>
+        <div class="stat-body">
+          <div class="stat-label">Avg Deal</div>
+          <div class="stat-value">{$avg_deal_display}</div>
+          <div class="stat-desc">Average value</div>
+        </div>
       </a>
       
       <!-- Enhanced Metrics Row 1 -->
       <a href="{$activities_url}" class="stat-card stat-card-red">
-        <div class="stat-header">
-          <div class="stat-icon red">
-            <i data-lucide="alert-circle" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Overdue</div>
+        <div class="stat-icon red">
+          <i data-lucide="alert-circle" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$overdue_activities}</div>
-        <div class="stat-desc">Activities overdue</div>
-        <div class="stat-trend negative" style="margin-top: auto;">
-          <span class="stat-trend-icon">!</span>
-          <span>Needs attention</span>
+        <div class="stat-body">
+          <div class="stat-label">Overdue</div>
+          <div class="stat-value">{$overdue_activities}</div>
+          <div class="stat-trend negative">
+            <span class="stat-trend-icon">!</span>
+            <span>Needs attention</span>
+          </div>
         </div>
       </a>
       
       <a href="{$pipeline_url}" class="stat-card stat-card-indigo">
-        <div class="stat-header">
-          <div class="stat-icon indigo">
-            <i data-lucide="layers" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Active Pipeline</div>
+        <div class="stat-icon indigo">
+          <i data-lucide="layers" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$active_value_display}</div>
-        <div class="stat-desc">Open opportunities</div>
+        <div class="stat-body">
+          <div class="stat-label">Active Pipeline</div>
+          <div class="stat-value">{$active_value_display}</div>
+          <div class="stat-desc">Open opportunities</div>
+        </div>
       </a>
       
       <div class="stats-row-label">Weekly Focus</div>
       <a href="{$deals_url}" class="stat-card stat-card-emerald">
-        <div class="stat-header">
-          <div class="stat-icon emerald">
-            <i data-lucide="dollar-sign" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">This Week</div>
+        <div class="stat-icon emerald">
+          <i data-lucide="dollar-sign" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$revenue_this_week_display}</div>
-        <div class="stat-desc">{$revenue_this_week_count} deals closed</div>
-        <div class="stat-trend positive">
-          <span class="stat-trend-icon">↑</span>
-          <span>Weekly revenue</span>
+        <div class="stat-body">
+          <div class="stat-label">This Week</div>
+          <div class="stat-value">{$revenue_this_week_display}</div>
+          <div class="stat-trend positive">
+            <span class="stat-trend-icon">↑</span>
+            <span>{$revenue_this_week_count} deals closed</span>
+          </div>
         </div>
       </a>
       
       <a href="{$deals_url}" class="stat-card stat-card-sky">
-        <div class="stat-header">
-          <div class="stat-icon sky">
-            <i data-lucide="calendar-check" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Due This Week</div>
+        <div class="stat-icon sky">
+          <i data-lucide="calendar-check" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$due_this_week}</div>
-        <div class="stat-desc">Deals closing soon</div>
-        <div class="stat-trend positive" style="margin-top: auto;">
-          <span class="stat-trend-icon">📅</span>
-          <span>Urgent matters</span>
+        <div class="stat-body">
+          <div class="stat-label">Due This Week</div>
+          <div class="stat-value">{$due_this_week}</div>
+          <div class="stat-desc">Deals closing soon</div>
         </div>
       </a>
       
       <!-- Enhanced Metrics Row 2 -->
       <a href="{$pipeline_url}" class="stat-card stat-card-amber">
-        <div class="stat-header">
-          <div class="stat-icon amber">
-            <i data-lucide="clock" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">Avg Cycle</div>
+        <div class="stat-icon amber">
+          <i data-lucide="clock" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$avg_days_in_pipeline}</div>
-        <div class="stat-desc">Days in pipeline</div>
+        <div class="stat-body">
+          <div class="stat-label">Avg Cycle</div>
+          <div class="stat-value">{$avg_days_in_pipeline}<span style="font-size:14px;font-weight:600;color:#94a3b8">d</span></div>
+          <div class="stat-desc">Days in pipeline</div>
+        </div>
       </a>
       
       <a href="{$contacts_url}" class="stat-card stat-card-violet">
-        <div class="stat-header">
-          <div class="stat-icon violet">
-            <i data-lucide="user-plus" width="24" height="24"></i>
-          </div>
-          <div class="stat-label">New Contacts</div>
+        <div class="stat-icon violet">
+          <i data-lucide="user-plus" width="20" height="20"></i>
         </div>
-        <div class="stat-value">{$new_contacts}</div>
-        <div class="stat-desc">This month</div>
-        <div class="stat-trend positive">
-          <span class="stat-trend-icon">↑</span>
-          <span>Pipeline filling</span>
+        <div class="stat-body">
+          <div class="stat-label">New Contacts</div>
+          <div class="stat-value">{$new_contacts}</div>
+          <div class="stat-trend positive">
+            <span class="stat-trend-icon">↑</span>
+            <span>This month</span>
+          </div>
         </div>
       </a>
     </div>
