@@ -15,6 +15,7 @@ $new_body = <<<'HTML'
   max-width: 1320px;
   margin: 0 auto;
   padding: 28px 24px 64px;
+  background: #ffffff;
   animation: qacFadeIn 0.3s ease;
 }
 
@@ -194,7 +195,7 @@ $new_body = <<<'HTML'
 .qac-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 22px rgba(0,0,0,0.09);
-  background: #fafbfc;
+  background: #ffffff;
 }
 
 .qac-card-top {
