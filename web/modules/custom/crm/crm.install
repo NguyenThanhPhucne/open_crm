@@ -56,13 +56,15 @@ function crm_update_9001(&$sandbox) {
         
         foreach ($nodes as $node) {
           // Set created_by to node creator if not set
-          if (!$node->hasField('field_created_by')) {
-            $node->field_created_by = $node->getOwnerId();
+          if ($node->hasField('field_created_by') && $node->get('field_created_by')->isEmpty()) {
+            $owner_id = $node->getOwnerId() ?: 1;  // Fallback to admin user (ID 1)
+            $node->set('field_created_by', $owner_id);
           }
           
-          // Set updated_by to current user
-          if (!$node->hasField('field_updated_by')) {
-            $node->field_updated_by = \Drupal::currentUser()->id();
+          // Set updated_by to current user if not set
+          if ($node->hasField('field_updated_by') && $node->get('field_updated_by')->isEmpty()) {
+            $current_user_id = \Drupal::currentUser()->id() ?: 1;  // Fallback to admin
+            $node->set('field_updated_by', $current_user_id);
           }
           
           $node->save();
