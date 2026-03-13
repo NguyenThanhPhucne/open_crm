@@ -26,7 +26,7 @@
             <img src="{{ logo_url }}" alt="{{ title }}">
           </div>
         {% else %}
-          <div class="contact-avatar-placeholder" style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:24px;">
+          <div class="contact-avatar-placeholder org-avatar-placeholder">
             <span class="contact-avatar-initial">{{ initial }}</span>
           </div>
         {% endif %}
@@ -46,7 +46,7 @@
         {% if industry or tags %}
           <div class="contact-roles">
             {% if industry %}
-              <span class="contact-role-badge" style="background:rgba(16,185,129,0.12);color:#059669;">{{ industry }}</span>
+              <span class="contact-role-badge contact-role-badge-green">{{ industry }}</span>
             {% endif %}
             {% for tag in tags %}
               <span class="contact-role-badge">{{ tag }}</span>
@@ -166,7 +166,7 @@
             <span>Organization Details</span>
           </div>
         </div>
-        <div class="fields-grid" style="padding:16px 20px 20px;">
+        <div class="fields-grid detail-fields-grid">
           <div class="field-item">
             <div class="field-label">Organization Name</div>
             <div class="field-value">{{ title }}</div>
@@ -233,7 +233,7 @@
             <i data-lucide="users" width="16" height="16"></i>
             <span>Contacts</span>
             {% if contacts_count > contacts|length %}
-              <span style="font-size:0.75rem;color:#94a3b8;font-weight:400;">({{ contacts|length }} of {{ contacts_count }})</span>
+              <span class="detail-subtle-count">({{ contacts|length }} of {{ contacts_count }})</span>
             {% endif %}
           </div>
           <a href="/crm/all-contacts" class="cview-all-link">
@@ -261,10 +261,10 @@
             {% endfor %}
           </div>
         {% else %}
-          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+          <div class="empty-state detail-empty-state">
             <i data-lucide="users"></i>
             <p>No contacts yet</p>
-            <a href="/crm/add/contact" class="cqa-btn cqa-primary" style="margin-top:10px;">Add Contact</a>
+            <a href="/crm/add/contact" class="cqa-btn cqa-primary detail-empty-action">Add Contact</a>
           </div>
         {% endif %}
       </div>
@@ -301,10 +301,10 @@
             {% endfor %}
           </div>
         {% else %}
-          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+          <div class="empty-state detail-empty-state">
             <i data-lucide="trending-up"></i>
             <p>No deals yet</p>
-            <a href="/crm/add/deal" class="cqa-btn cqa-primary" style="margin-top:10px;">Add Deal</a>
+            <a href="/crm/add/deal" class="cqa-btn cqa-primary detail-empty-action">Add Deal</a>
           </div>
         {% endif %}
       </div>

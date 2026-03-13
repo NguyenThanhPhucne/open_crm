@@ -1,4 +1,4 @@
-crm_navigation.navigation_styles:
+navigation_styles:
   version: VERSION
   css:
     theme:

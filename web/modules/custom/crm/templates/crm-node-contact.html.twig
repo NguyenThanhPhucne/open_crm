@@ -140,7 +140,7 @@
             <span>Contact Details</span>
           </div>
         </div>
-        <div class="fields-grid" style="padding:16px 20px 20px;">
+        <div class="fields-grid detail-fields-grid">
           <div class="field-item">
             <div class="field-label">Full Name</div>
             <div class="field-value">{{ title }}</div>
@@ -204,8 +204,8 @@
         </div>
 
         {% if tags %}
-          <div style="padding:0 20px 16px;">
-            <div class="field-label" style="margin-bottom:6px;">Tags</div>
+          <div class="detail-section-pad">
+            <div class="field-label detail-section-label">Tags</div>
             <div class="tags-row">
               {% for tag in tags %}
                 <span class="tag-chip">{{ tag }}</span>
@@ -259,10 +259,10 @@
             {% endfor %}
           </div>
         {% else %}
-          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+          <div class="empty-state detail-empty-state">
             <i data-lucide="trending-up"></i>
             <p>No deals yet</p>
-            <a href="/crm/add/deal" class="cqa-btn cqa-primary" style="margin-top:10px;">Add Deal</a>
+            <a href="/crm/add/deal" class="cqa-btn cqa-primary detail-empty-action">Add Deal</a>
           </div>
         {% endif %}
       </div>
@@ -301,10 +301,10 @@
             {% endfor %}
           </div>
         {% else %}
-          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+          <div class="empty-state detail-empty-state">
             <i data-lucide="activity"></i>
             <p>No activities yet</p>
-            <a href="/crm/add/activity" class="cqa-btn cqa-primary" style="margin-top:10px;">Add Activity</a>
+            <a href="/crm/add/activity" class="cqa-btn cqa-primary detail-empty-action">Add Activity</a>
           </div>
         {% endif %}
       </div>

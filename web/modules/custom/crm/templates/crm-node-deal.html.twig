@@ -39,16 +39,16 @@
 
         <div class="contact-roles">
           {% if stage_name %}
-            <span class="contact-role-badge" style="background:rgba(139,92,246,0.12);color:#6d28d9;">{{ stage_name }}</span>
+            <span class="contact-role-badge contact-role-badge-purple">{{ stage_name }}</span>
           {% endif %}
           {% if probability %}
-            <span class="contact-role-badge" style="background:#f0f9ff;color:#0369a1;">{{ probability }}% probability</span>
+            <span class="contact-role-badge contact-role-badge-blue">{{ probability }}% probability</span>
           {% endif %}
         </div>
 
         <div class="contact-meta-row">
           {% if amount %}
-            <span class="contact-meta-chip" style="font-size:1.3rem;font-weight:800;color:#0f172a;">
+            <span class="contact-meta-chip contact-meta-chip-strong">
               ${{ amount|number_format(0, '.', ',') }}
             </span>
           {% endif %}
@@ -157,7 +157,7 @@
             <span>Deal Details</span>
           </div>
         </div>
-        <div class="fields-grid" style="padding:16px 20px 20px;">
+        <div class="fields-grid detail-fields-grid">
           <div class="field-item">
             <div class="field-label">Deal Name</div>
             <div class="field-value">{{ title }}</div>
@@ -215,7 +215,7 @@
           {% if lost_reason %}
             <div class="field-item">
               <div class="field-label">Lost Reason</div>
-              <div class="field-value" style="color:#ef4444;">{{ lost_reason }}</div>
+              <div class="field-value field-value-danger">{{ lost_reason }}</div>
             </div>
           {% endif %}
           <div class="field-item">
@@ -277,10 +277,10 @@
             {% endfor %}
           </div>
         {% else %}
-          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+          <div class="empty-state detail-empty-state">
             <i data-lucide="activity"></i>
             <p>No activities yet for this deal</p>
-            <a href="/crm/add/activity" class="cqa-btn cqa-primary" style="margin-top:10px;">Add Activity</a>
+            <a href="/crm/add/activity" class="cqa-btn cqa-primary detail-empty-action">Add Activity</a>
           </div>
         {% endif %}
       </div>

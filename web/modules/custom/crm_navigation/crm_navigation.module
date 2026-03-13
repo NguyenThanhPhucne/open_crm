@@ -49,16 +49,16 @@ function crm_navigation_form_alter(&$form, FormStateInterface $form_state, $form
     $current_path = \Drupal::service('path.current')->getPath();
     
     if (strpos($form_id, 'contact') !== FALSE) {
-      $cancel_route = 'view.my_contacts.page_1';
+      $cancel_route = 'crm.my_contacts';
     }
     elseif (strpos($form_id, 'deal') !== FALSE) {
-      $cancel_route = 'view.my_deals.page_1';
+      $cancel_route = 'crm.my_deals';
     }
     elseif (strpos($form_id, 'activity') !== FALSE) {
-      $cancel_route = 'view.my_activities.page_1';
+      $cancel_route = 'crm.my_activities';
     }
     elseif (strpos($form_id, 'organization') !== FALSE) {
-      $cancel_route = 'view.all_organizations.page_1';
+      $cancel_route = 'crm.all_organizations';
     }
     else {
       $cancel_route = 'crm_dashboard.dashboard';
@@ -91,51 +91,6 @@ function crm_navigation_preprocess_page(&$variables) {
   if (preg_match('/^(crm_|view\.(my_|all_))/', $current_route)) {
     $variables['#attached']['library'][] = 'crm_navigation/navigation_styles';
   }
-  
-  // Add back button to entity view pages
-  if (preg_match('/^entity\.node\.canonical$/', $current_route)) {
-    $node = \Drupal::routeMatch()->getParameter('node');
-    
-    if ($node && in_array($node->bundle(), ['contact', 'deal', 'activity', 'organization'])) {
-      $back_url = \Drupal::service('crm_navigation.helper')->getContextBackUrl($node->bundle());
-      
-      $variables['page']['content']['back_button'] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['crm-page-back-button']],
-        '#weight' => -100,
-        'link' => [
-          '#type' => 'link',
-          '#title' => t('← Back to list'),
-          '#url' => $back_url,
-          '#attributes' => [
-            'class' => ['button', 'button--secondary', 'crm-back-link'],
-          ],
-        ],
-      ];
-      
-      // Add quick navigation
-      $variables['page']['content']['quick_nav'] = [
-        '#weight' => -99,
-        'nav' => \Drupal::service('crm_navigation.helper')->getNavigationBar(),
-      ];
-    }
-  }
-  
-  // Add navigation bar to CRM list pages (views)
-  if (preg_match('/^view\.(my_contacts|my_deals|my_activities|all_organizations)/', $current_route)) {
-    $variables['page']['content']['quick_nav'] = [
-      '#weight' => -100,
-      'nav' => \Drupal::service('crm_navigation.helper')->getNavigationBar(),
-    ];
-  }
-  
-  // Add navigation to dashboard
-  if ($current_route === 'crm_dashboard.dashboard' || $current_route === 'crm_dashboard.admin') {
-    $variables['page']['content']['quick_nav'] = [
-      '#weight' => -100,
-      'nav' => \Drupal::service('crm_navigation.helper')->getNavigationBar(),
-    ];
-  }
 }
 
 /**
@@ -152,3 +107,5 @@ function crm_navigation_library_info_build() {
     ],
   ];
 }
+
+

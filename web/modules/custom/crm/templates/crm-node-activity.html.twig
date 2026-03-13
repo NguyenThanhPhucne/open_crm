@@ -39,7 +39,7 @@
 
         <div class="contact-roles">
           {% if activity_type %}
-            <span class="contact-role-badge" style="background:rgba(245,158,11,0.12);color:#b45309;">{{ activity_type }}</span>
+            <span class="contact-role-badge contact-role-badge-amber">{{ activity_type }}</span>
           {% endif %}
           {% if status %}
             <span class="contact-role-badge badge status-badge status-{{ status_class|replace({'status-':''}) }}">{{ status }}</span>
@@ -145,7 +145,7 @@
             <span>Activity Details</span>
           </div>
         </div>
-        <div class="fields-grid" style="padding:16px 20px 20px;">
+        <div class="fields-grid detail-fields-grid">
           <div class="field-item">
             <div class="field-label">Title</div>
             <div class="field-value">{{ title }}</div>
@@ -154,7 +154,7 @@
             <div class="field-item">
               <div class="field-label">Type</div>
               <div class="field-value">
-                <span class="badge" style="background:rgba(245,158,11,0.12);color:#b45309;padding:3px 10px;border-radius:999px;font-weight:700;">{{ activity_type }}</span>
+                <span class="badge contact-role-badge contact-role-badge-amber">{{ activity_type }}</span>
               </div>
             </div>
           {% endif %}
@@ -209,13 +209,13 @@
       {% if outcome %}
         <div class="ccontent-card">
           <div class="ccard-header">
-            <div class="ccard-title" style="color:#15803d;">
-              <i data-lucide="check-circle" width="16" height="16" style="stroke:#10b981;"></i>
+            <div class="ccard-title outcome-title">
+              <i data-lucide="check-circle" width="16" height="16"></i>
               <span>Outcome</span>
             </div>
           </div>
-          <div style="padding:14px 20px 18px;">
-            <p style="margin:0;font-size:14px;color:#166534;line-height:1.6;">{{ outcome }}</p>
+          <div class="outcome-body">
+            <p class="outcome-text">{{ outcome }}</p>
           </div>
         </div>
       {% endif %}
