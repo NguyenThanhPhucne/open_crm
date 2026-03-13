@@ -18,9 +18,9 @@
 
   // Global state for form management
   var CRMNodeForm = {
-    forms: {},                       // State per form
-    validateOnChange: true,          // Enable real-time validation
-    autoSaveDelay: 3000,             // Auto-save after 3s inactivity
+    forms: {}, // State per form
+    validateOnChange: true, // Enable real-time validation
+    autoSaveDelay: 3000, // Auto-save after 3s inactivity
   };
 
   // Field groupings per content type — pairs will be put side-by-side
@@ -76,11 +76,28 @@
 
   // Field validation rules
   const VALIDATION_RULES = {
-    "field-email": { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Invalid email address" },
-    "field-phone": { pattern: /^[\d\s\-\+\(\)]+$/, message: "Invalid phone number" },
-    "field-website": { pattern: /^https?:\/\/.+/, message: "Invalid URL (must start with http/https)" },
-    "field-amount": { type: "number", min: 0, message: "Amount must be 0 or greater" },
-    "field-employees-count": { type: "number", min: 0, message: "Employee count must be 0 or greater" },
+    "field-email": {
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "Invalid email address",
+    },
+    "field-phone": {
+      pattern: /^[\d\s\-\+\(\)]+$/,
+      message: "Invalid phone number",
+    },
+    "field-website": {
+      pattern: /^https?:\/\/.+/,
+      message: "Invalid URL (must start with http/https)",
+    },
+    "field-amount": {
+      type: "number",
+      min: 0,
+      message: "Amount must be 0 or greater",
+    },
+    "field-employees-count": {
+      type: "number",
+      min: 0,
+      message: "Employee count must be 0 or greater",
+    },
   };
 
   /**
@@ -123,7 +140,8 @@
 
       const row = document.createElement("div");
       row.className = "crm-form-row";
-      row.style.cssText = "display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;";
+      row.style.cssText =
+        "display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;";
 
       el1.parentNode.insertBefore(row, el1);
       row.appendChild(el1);
@@ -138,14 +156,14 @@
     sections.forEach(({ before, label }) => {
       const el = findFieldWrapper(region, before);
       if (!el) return;
-      
+
       const divider = document.createElement("div");
       divider.className = "crm-form-section-label";
-      divider.style.cssText = 
+      divider.style.cssText =
         "font-weight: 600; font-size: 13px; text-transform: uppercase; color: #666; " +
         "margin: 20px 0 10px 0; letter-spacing: 0.5px;";
       divider.textContent = label;
-      
+
       el.parentNode.insertBefore(divider, el);
     });
   }
@@ -161,7 +179,7 @@
       originalValues: {},
       currentValues: {},
       serverValues: {},
-      fieldStates: {},           // Track per-field state
+      fieldStates: {}, // Track per-field state
       isDirty: false,
       isSaving: false,
       autoSaveTimer: null,
@@ -347,13 +365,14 @@
     if (!indicator) {
       indicator = document.createElement("div");
       indicator.className = "crm-unsaved-indicator";
-      indicator.style.cssText = 
+      indicator.style.cssText =
         "background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 12px; " +
         "margin-bottom: 15px; border-radius: 4px; font-size: 13px; color: #856404;";
       form.insertBefore(indicator, form.firstChild);
     }
 
-    indicator.innerHTML = "⚠ You have unsaved changes. Click Save to save your work.";
+    indicator.innerHTML =
+      "⚠ You have unsaved changes. Click Save to save your work.";
     indicator.style.display = "block";
   }
 
@@ -374,7 +393,11 @@
       if (!isValid) {
         e.preventDefault();
         if (window.CRM && window.CRM.toast) {
-          window.CRM.toast("Please fix validation errors before saving", "error", 3000);
+          window.CRM.toast(
+            "Please fix validation errors before saving",
+            "error",
+            3000,
+          );
         }
 
         // Scroll to first error
@@ -402,7 +425,9 @@
     attach(context) {
       once("crm-node-form", ".crm-node-form", context).forEach((form) => {
         // Generate form ID
-        var formId = form.getAttribute("id") || "crm-form-" + Math.random().toString(36).substr(2, 9);
+        var formId =
+          form.getAttribute("id") ||
+          "crm-form-" + Math.random().toString(36).substr(2, 9);
         if (!form.getAttribute("id")) {
           form.setAttribute("id", formId);
         }
@@ -453,7 +478,13 @@
           errors[0].scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        console.log("[CRM Node Form] Initialized form: " + formId + " (type: " + type + ")");
+        console.log(
+          "[CRM Node Form] Initialized form: " +
+            formId +
+            " (type: " +
+            type +
+            ")",
+        );
       });
     },
   };

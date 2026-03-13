@@ -1,12 +1,12 @@
 /**
  * CRM Content Type Model Upgrades
- * 
+ *
  * Enhancements to content types:
  * 1. Contact: Add validation rules, improve field constraints
  * 2. Organization: Add certification fields, improve structure
  * 3. Deal: Add revenue tracking, probability validation
  * 4. Activity: Add outcome tracking, better scheduling
- * 
+ *
  * This module extends the CRM content types with production-grade improvements.
  */
 
@@ -15,7 +15,7 @@
 
   /**
    * Content Type Improvement Hooks
-   * 
+   *
    * These hooks run when content types are created or modified
    * to enforce better validation and structure.
    */
@@ -51,7 +51,7 @@
           }
 
           console.log("[CRM Type Improve] Contact form enhanced");
-        }
+        },
       );
     },
   };
@@ -70,7 +70,9 @@
           }
 
           // Validate revenue field (must be >= 0)
-          var revenueField = form.querySelector('[name*="field_annual_revenue"]');
+          var revenueField = form.querySelector(
+            '[name*="field_annual_revenue"]',
+          );
           if (revenueField) {
             revenueField.addEventListener("blur", function () {
               validateRevenue(this);
@@ -81,7 +83,7 @@
           setupOrganizationSizeAutoCalculation(form);
 
           console.log("[CRM Type Improve] Organization form enhanced");
-        }
+        },
       );
     },
   };
@@ -109,7 +111,7 @@
 
           // Close date must be after today
           var closeDateField = form.querySelector(
-            '[name*="field_expected_close_date"]'
+            '[name*="field_expected_close_date"]',
           );
           if (closeDateField) {
             closeDateField.addEventListener("blur", function () {
@@ -121,7 +123,7 @@
           setupDealExpectedRevenueCalculation(form);
 
           console.log("[CRM Type Improve] Deal form enhanced");
-        }
+        },
       );
     },
   };
@@ -148,7 +150,7 @@
           }
 
           console.log("[CRM Type Improve] Activity form enhanced");
-        }
+        },
       );
     },
   };

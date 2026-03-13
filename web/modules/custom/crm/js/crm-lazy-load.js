@@ -30,12 +30,12 @@
 
   // Global state management for lazy loading
   var CRMLazyLoad = {
-    lists: {},                    // State per list
-    csrfToken: null,              // Cache CSRF token
+    lists: {}, // State per list
+    csrfToken: null, // Cache CSRF token
     maxRetries: 3,
-    retryDelays: [1000, 2000, 5000],  // Exponential backoff
-    loadTimeout: 8000,            // 8 second timeout per request
-    scrollDebounceMs: 300,        // Debounce scroll events
+    retryDelays: [1000, 2000, 5000], // Exponential backoff
+    loadTimeout: 8000, // 8 second timeout per request
+    scrollDebounceMs: 300, // Debounce scroll events
     useIntersectionObserver: true, // Use modern API if available
   };
 
@@ -46,8 +46,8 @@
     attach: function (context) {
       // Find all list containers
       jQuery(
-        ".view-display-id-default, table.crm-entities-list, .crm-lazy-list", 
-        context
+        ".view-display-id-default, table.crm-entities-list, .crm-lazy-list",
+        context,
       )
         .once("crm-lazy-load")
         .each(function () {
@@ -76,16 +76,16 @@
       $element: $list,
       isLoading: false,
       currentPage: 0,
-      loadedPages: {},           // Cache of loaded items
+      loadedPages: {}, // Cache of loaded items
       totalItems: parseInt($list.attr("data-total-items") || 0),
       itemsPerPage: parseInt($list.attr("data-items-per-page") || 25),
       hasMore: true,
-      inFlightRequests: {},      // Track ongoing requests
+      inFlightRequests: {}, // Track ongoing requests
       lastLoadTime: 0,
       retryAttempt: 0,
       conflictedItems: {},
-      observer: null,            // Intersection observer instance
-      scrollTimer: null,         // Debounce timer
+      observer: null, // Intersection observer instance
+      scrollTimer: null, // Debounce timer
     };
 
     var listState = CRMLazyLoad.lists[listId];
@@ -96,7 +96,10 @@
       addLoadingIndicator(listId);
 
       // Use Intersection Observer if available
-      if (CRMLazyLoad.useIntersectionObserver && "IntersectionObserver" in window) {
+      if (
+        CRMLazyLoad.useIntersectionObserver &&
+        "IntersectionObserver" in window
+      ) {
         initializeIntersectionObserver(listId);
       } else {
         // Fallback to scroll listener with debounce
@@ -115,7 +118,7 @@
           listState.totalItems +
           " items, " +
           listState.itemsPerPage +
-          " per page)"
+          " per page)",
       );
     }
   }
@@ -129,8 +132,10 @@
 
     // Get the last row or the list itself as the sentinel
     var sentinel = jQuery(
-      '<div class="crm-lazy-load__sentinel" id="' + listId + '-sentinel"' +
-      ' style="height: 10px; visibility: hidden;"></div>'
+      '<div class="crm-lazy-load__sentinel" id="' +
+        listId +
+        '-sentinel"' +
+        ' style="height: 10px; visibility: hidden;"></div>',
     );
 
     $list.after(sentinel);
@@ -140,7 +145,11 @@
       function (entries) {
         entries.forEach(function (entry) {
           // Load more when sentinel becomes visible
-          if (entry.isIntersecting && listState.hasMore && !listState.isLoading) {
+          if (
+            entry.isIntersecting &&
+            listState.hasMore &&
+            !listState.isLoading
+          ) {
             loadMoreItems(listId);
           }
         });
@@ -148,7 +157,7 @@
       {
         rootMargin: "300px", // Start loading 300px before reaching end
         threshold: 0.01,
-      }
+      },
     );
 
     // Observe sentinel
@@ -162,13 +171,17 @@
   function addLoadingIndicator(listId) {
     var $list = jQuery("#" + listId);
     var $indicator = jQuery(
-      '<div class="crm-lazy-load__indicator" id="' + listId + '-indicator"' +
-      ' style="display: none; padding: 20px; text-align: center;">' +
-      '<div class="crm-lazy-load__spinner" style="display: inline-block; width: 20px; height: 20px; ' +
-      'border: 3px solid #f3f3f3; border-top: 3px solid #0066cc; border-radius: 50%; ' +
-      'animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;"></div>' +
-      '<span id="' + listId + '-indicator-text">Loading more items...</span>' +
-      '</div>'
+      '<div class="crm-lazy-load__indicator" id="' +
+        listId +
+        '-indicator"' +
+        ' style="display: none; padding: 20px; text-align: center;">' +
+        '<div class="crm-lazy-load__spinner" style="display: inline-block; width: 20px; height: 20px; ' +
+        "border: 3px solid #f3f3f3; border-top: 3px solid #0066cc; border-radius: 50%; " +
+        'animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;"></div>' +
+        '<span id="' +
+        listId +
+        '-indicator-text">Loading more items...</span>' +
+        "</div>",
     );
 
     // Add spinner animation style if not exists
@@ -241,14 +254,18 @@
     $indicator.show();
 
     // Update indicator text with attempt count
-    var indicatorText = attemptCount > 0
-      ? "Loading more items... (attempt " + (attemptCount + 1) + ")"
-      : "Loading more items...";
+    var indicatorText =
+      attemptCount > 0
+        ? "Loading more items... (attempt " + (attemptCount + 1) + ")"
+        : "Loading more items...";
     jQuery("#" + listId + "-indicator-text").text(indicatorText);
 
     console.log(
-      "[CRM Lazy Load] Loading page " + nextPage + " for " + listId +
-      (attemptCount > 0 ? " (attempt " + (attemptCount + 1) + ")" : "")
+      "[CRM Lazy Load] Loading page " +
+        nextPage +
+        " for " +
+        listId +
+        (attemptCount > 0 ? " (attempt " + (attemptCount + 1) + ")" : ""),
     );
 
     // Build request URL
@@ -272,7 +289,7 @@
       method: "GET",
       headers: {
         "X-Requested-With": "XMLHttpRequest",
-        "Accept": "text/html",
+        Accept: "text/html",
       },
       credentials: "same-origin",
       signal: controller.signal,
@@ -324,13 +341,16 @@
             timestamp: Date.now(),
           };
           listState.lastLoadTime = Date.now();
-          listState.retryAttempt = 0;  // Reset retry counter on success
+          listState.retryAttempt = 0; // Reset retry counter on success
 
           // Hide indicator
           $indicator.hide();
 
           console.log(
-            "[CRM Lazy Load] Loaded " + $newRows.length + " items for " + listId
+            "[CRM Lazy Load] Loaded " +
+              $newRows.length +
+              " items for " +
+              listId,
           );
 
           // Trigger custom event for other scripts
@@ -348,14 +368,19 @@
         console.error("[CRM Lazy Load] Error loading items", error);
 
         // Retry logic with exponential backoff
-        if (attemptCount < CRMLazyLoad.maxRetries &&
-            (!errorMsg.includes("LIST_NOT_FOUND") &&
-             !errorMsg.includes("ACCESS_DENIED"))) {
-
+        if (
+          attemptCount < CRMLazyLoad.maxRetries &&
+          !errorMsg.includes("LIST_NOT_FOUND") &&
+          !errorMsg.includes("ACCESS_DENIED")
+        ) {
           var delay = CRMLazyLoad.retryDelays[attemptCount] || 5000;
           console.log(
-            "[CRM Lazy Load] Retry " + (attemptCount + 1) +
-            " after " + delay + "ms for " + listId
+            "[CRM Lazy Load] Retry " +
+              (attemptCount + 1) +
+              " after " +
+              delay +
+              "ms for " +
+              listId,
           );
 
           listState.retryAttempt = attemptCount + 1;
@@ -373,7 +398,11 @@
 
           // Show error toast
           if (window.CRM && window.CRM.toast) {
-            window.CRM.toast("Error loading more items: " + errorMsg, "error", 4000);
+            window.CRM.toast(
+              "Error loading more items: " + errorMsg,
+              "error",
+              4000,
+            );
           }
 
           // Show retry button
@@ -397,7 +426,8 @@
 
     $newRows.each(function () {
       var $row = jQuery(this);
-      var entityId = $row.attr("data-entity-id") || $row.find("td:first").text();
+      var entityId =
+        $row.attr("data-entity-id") || $row.find("td:first").text();
 
       // Check if row already exists
       var $existing = target.find("[data-entity-id='" + entityId + "']");
@@ -422,7 +452,7 @@
 
     var $retryBtn = jQuery(
       '<button class="crm-btn crm-btn--secondary" style="margin-top: 10px;">' +
-      '↻ Retry</button>'
+        "↻ Retry</button>",
     );
 
     $retryBtn.on("click", function (e) {
@@ -458,7 +488,10 @@
         listState.lastLoadTime = 0;
 
         // Remove loaded items
-        listState.$element.find("tbody tr, .crm-list-row").not(":first").remove();
+        listState.$element
+          .find("tbody tr, .crm-list-row")
+          .not(":first")
+          .remove();
       }
     },
 
@@ -472,9 +505,12 @@
     getLoadedItemCount: function (listId) {
       var count = 0;
       if (CRMLazyLoad.lists[listId]) {
-        jQuery.each(CRMLazyLoad.lists[listId].loadedPages, function (page, info) {
-          count += info.count;
-        });
+        jQuery.each(
+          CRMLazyLoad.lists[listId].loadedPages,
+          function (page, info) {
+            count += info.count;
+          },
+        );
       }
       return count;
     },

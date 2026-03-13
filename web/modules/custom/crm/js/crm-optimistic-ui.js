@@ -28,12 +28,12 @@
 
   // Global state management for forms
   var CRMOptimisticUI = {
-    forms: {},                  // Track state for each form
-    csrfToken: null,            // Cache CSRF token
+    forms: {}, // Track state for each form
+    csrfToken: null, // Cache CSRF token
     maxRetries: 3,
-    retryDelays: [1000, 2000, 5000],  // Exponential backoff
-    saveTimeout: 5000,          // 5 second timeout
-    autoSaveDelay: 2000,        // Auto-save after 2 seconds of inactivity
+    retryDelays: [1000, 2000, 5000], // Exponential backoff
+    saveTimeout: 5000, // 5 second timeout
+    autoSaveDelay: 2000, // Auto-save after 2 seconds of inactivity
   };
 
   /**
@@ -65,7 +65,7 @@
       originalValues: {},
       currentValues: {},
       lastServerValues: {},
-      fieldStates: {},            // Track state per field
+      fieldStates: {}, // Track state per field
       isDirty: false,
       isSaving: false,
       saveAttempt: 0,
@@ -89,12 +89,12 @@
     $form.on("change", "input, textarea, select", function () {
       var $field = jQuery(this);
       var fieldName = $field.attr("name");
-      
+
       if (fieldName) {
         var newValue = $field.val();
         formState.currentValues[fieldName] = newValue;
         formState.isDirty = true;
-        
+
         // Initialize field state if not exists
         if (!formState.fieldStates[fieldName]) {
           formState.fieldStates[fieldName] = {
@@ -107,22 +107,22 @@
             validationAttempt: false,
           };
         }
-        
+
         // Update field state
         var fieldState = formState.fieldStates[fieldName];
         fieldState.localValue = newValue;
         fieldState.isDirty = true;
-        
+
         // Show instant visual feedback
         updateFieldOptimistic($field, fieldState);
-        
+
         // Clear validation error when user edits
         if (fieldState.hasError) {
           $field.removeClass("is-error");
           fieldState.hasError = false;
           fieldState.errorMessage = null;
         }
-        
+
         // Debounced auto-save (optional)
         clearTimeout(formState.autoSaveTimer);
         // formState.autoSaveTimer = setTimeout(function () {
@@ -175,7 +175,7 @@
 
     // Reset attempt counter for new submission
     formState.saveAttempt = 0;
-    
+
     // Perform the save
     performFormSave($form, formState);
   }
@@ -191,13 +191,18 @@
 
     // Visual feedback
     $submitBtn.prop("disabled", true).addClass("is-loading");
-    
-    var toastMsg = formState.saveAttempt > 0 
-      ? "Retrying... (attempt " + (formState.saveAttempt + 1) + ")"
-      : "Saving changes...";
-    
+
+    var toastMsg =
+      formState.saveAttempt > 0
+        ? "Retrying... (attempt " + (formState.saveAttempt + 1) + ")"
+        : "Saving changes...";
+
     if (!formState.currentToastEl) {
-      formState.currentToastEl = window.CRM.toast(toastMsg, "info", CRMOptimisticUI.saveTimeout + 1000);
+      formState.currentToastEl = window.CRM.toast(
+        toastMsg,
+        "info",
+        CRMOptimisticUI.saveTimeout + 1000,
+      );
     } else {
       // Update existing toast
       var msgEl = formState.currentToastEl.querySelector(".crm-toast__msg");
@@ -205,7 +210,7 @@
     }
 
     var formData = new FormData($form[0]);
-    
+
     // Ensure CSRF token is included
     if (!formData.has("_csrf_token")) {
       var csrfToken = getCsrfToken();
@@ -215,7 +220,8 @@
     }
 
     // Create unique request ID for server-side deduplication
-    var requestId = formId + "_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+    var requestId =
+      formId + "_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
     formData.append("_request_id", requestId);
 
     // Send AJAX request with timeout
@@ -239,9 +245,13 @@
           // Handle specific HTTP errors
           if (response.status === 409) {
             // Conflict - data changed on server
-            throw new Error("CONFLICT: Data was modified by another user. Please refresh and try again.");
+            throw new Error(
+              "CONFLICT: Data was modified by another user. Please refresh and try again.",
+            );
           } else if (response.status === 403) {
-            throw new Error("Access denied. You may not have permission to save this form.");
+            throw new Error(
+              "Access denied. You may not have permission to save this form.",
+            );
           } else if (response.status === 422) {
             throw new Error("Validation error. Please check your inputs.");
           }
@@ -258,7 +268,8 @@
         if (data.values) {
           jQuery.each(data.values, function (fieldName, value) {
             formState.lastServerValues[fieldName] = value;
-            formState.originalValues[fieldName] = formState.currentValues[fieldName];
+            formState.originalValues[fieldName] =
+              formState.currentValues[fieldName];
           });
         } else {
           // If no values returned, assume all current values are now server values
@@ -284,14 +295,22 @@
         var errorMsg = error.message || "Unknown error";
 
         // Retry logic with exponential backoff
-        if (attemptCount < CRMOptimisticUI.maxRetries && 
-            (!error.message.includes("Validation error") && 
-             !error.message.includes("Access denied") &&
-             !error.message.includes("CONFLICT"))) {
-          
+        if (
+          attemptCount < CRMOptimisticUI.maxRetries &&
+          !error.message.includes("Validation error") &&
+          !error.message.includes("Access denied") &&
+          !error.message.includes("CONFLICT")
+        ) {
           var delay = CRMOptimisticUI.retryDelays[attemptCount] || 5000;
-          console.log("[CRM Optimistic UI] Retry " + (attemptCount + 1) + " after " + delay + "ms", error);
-          
+          console.log(
+            "[CRM Optimistic UI] Retry " +
+              (attemptCount + 1) +
+              " after " +
+              delay +
+              "ms",
+            error,
+          );
+
           formState.saveAttempt = attemptCount + 1;
           setTimeout(function () {
             performFormSave($form, formState);
@@ -299,12 +318,12 @@
         } else {
           // Final error - show recovery options
           console.error("[CRM Optimistic UI] Save failed after retries", error);
-          
+
           window.CRM.toast("✗ Error: " + errorMsg, "error", 5000);
-          
+
           // Rollback to original values
           rollbackFormValues($form, formState);
-          
+
           // Show recovery button
           showRecoveryButton($form, formState);
         }
@@ -372,7 +391,7 @@
 
     var $recoveryBtn = jQuery(
       "<button type='button' class='crm-btn crm-btn--secondary' style='margin-top: 10px;'>" +
-      "↻ Retry Save</button>"
+        "↻ Retry Save</button>",
     );
 
     $recoveryBtn.on("click", function (e) {
@@ -383,7 +402,7 @@
 
     $recoveryContainer.html(
       "<p style='color: #d9534f; padding: 10px; background: #f8d7da; border-radius: 4px; margin: 10px 0;'>" +
-      "Error saving form. Changes are still in the form. You can try again.</p>"
+        "Error saving form. Changes are still in the form. You can try again.</p>",
     );
     $recoveryContainer.append($recoveryBtn);
   }
@@ -413,7 +432,6 @@
     return null;
   }
 
-
   /**
    * Initialize toast notification system if not already done.
    */
@@ -428,13 +446,14 @@
       if (!container) {
         container = document.createElement("div");
         container.id = "crm-toast-container";
-        container.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;";
+        container.style.cssText =
+          "position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;";
         document.body.appendChild(container);
       }
 
       var toastEl = document.createElement("div");
       toastEl.className = "crm-toast crm-toast--" + type;
-      toastEl.style.cssText = 
+      toastEl.style.cssText =
         "margin-bottom: 10px; padding: 12px 16px; border-radius: 4px; display: flex; align-items: center; " +
         "box-shadow: 0 2px 8px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out; font-size: 14px;";
 
@@ -464,10 +483,10 @@
       toastEl.style.borderLeft = "4px solid " + borderColors[type];
 
       var icons = {
-        success: '✓',
-        error: '✗',
-        info: 'ℹ',
-        warn: '⚠',
+        success: "✓",
+        error: "✗",
+        info: "ℹ",
+        warn: "⚠",
       };
 
       toastEl.innerHTML =
@@ -499,13 +518,15 @@
       }, duration);
 
       // Manual close button
-      toastEl.querySelector(".crm-toast__close").addEventListener("click", function () {
-        clearTimeout(timer);
-        toastEl.classList.add("is-fading");
-        setTimeout(function () {
-          toastEl.remove();
-        }, 300);
-      });
+      toastEl
+        .querySelector(".crm-toast__close")
+        .addEventListener("click", function () {
+          clearTimeout(timer);
+          toastEl.classList.add("is-fading");
+          setTimeout(function () {
+            toastEl.remove();
+          }, 300);
+        });
 
       return toastEl;
     };
