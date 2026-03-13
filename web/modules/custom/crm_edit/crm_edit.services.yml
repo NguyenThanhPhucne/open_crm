@@ -1,0 +1,14 @@
+services:
+  crm_edit.query_cache:
+    class: Drupal\crm_edit\Service\QueryCacheService
+    arguments:
+      - "@cache.default"
+      - "@database"
+      - "@entity_type.manager"
+      - "@logger.channel.default"
+
+  crm_edit.optimized_query:
+    class: Drupal\crm_edit\Service\OptimizedQueryService
+    arguments:
+      - "@database"
+      - "@entity_type.manager"

@@ -1,0 +1,167 @@
+/**
+ * @file
+ * Inline Editing Styling
+ *
+ * Styles for editable cells and inline edit states.
+ */
+
+/* Editable cells - normal state */
+td.is-inline-editable {
+  position: relative;
+  transition: background-color 0.15s;
+}
+
+td.is-inline-editable:not(.is-editing) {
+  background-color: transparent;
+}
+
+td.is-inline-editable::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 85%,
+    rgba(33, 150, 243, 0.3) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+/* Hover state */
+td.is-inline-editable.is-editable-hover {
+  background-color: rgba(33, 150, 243, 0.04);
+}
+
+td.is-inline-editable.is-editable-hover::before {
+  opacity: 1;
+}
+
+/* Hint: show edit icon on hover */
+td.is-inline-editable::after {
+  content: "✎";
+  position: absolute;
+  top: 0;
+  right: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: #2196f3;
+  font-size: 0.85rem;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+td.is-inline-editable.is-editable-hover::after {
+  opacity: 0.6;
+}
+
+/* Editing state */
+td.is-editing {
+  background-color: #f5f5f5;
+  padding: 0.25rem 0.5rem !important;
+}
+
+td.is-editing input,
+td.is-editing textarea,
+td.is-editing select {
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+}
+
+td.is-editing input[type="text"],
+td.is-editing textarea,
+td.is-editing select {
+  border: 2px solid #2196f3 !important;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* Saving state */
+.crm-inline-edit__saving {
+  color: #ff9800;
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crm-inline-edit__saving::after {
+  content: "";
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid rgba(255, 152, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: #ff9800;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Success state */
+.crm-inline-edit__success {
+  color: #4caf50;
+  font-weight: bold;
+  animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Error state */
+.crm-inline-edit__error {
+  color: #f44336;
+  font-weight: bold;
+  animation: shake 0.4s;
+}
+
+/* Inline edit focus effect */
+td.is-editing input:focus,
+td.is-editing textarea:focus,
+td.is-editing select:focus {
+  outline: none;
+  border-color: #1976d2 !important;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15);
+}
+
+/* Help text for inline edits */
+.crm-inline-edit__help {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  td.is-inline-editable::after {
+    display: none;
+  }
+
+  td.is-inline-editable {
+    cursor: pointer;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

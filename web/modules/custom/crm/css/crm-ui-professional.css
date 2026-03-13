@@ -1,0 +1,648 @@
+/**
+ * CRM Professional UI/UX Styling
+ * 
+ * Provides ClickUp-style professional design:
+ * - Modern table design with proper spacing
+ * - Professional form styling
+ * - Clean button designs
+ * - Advanced typography
+ * - Accessibility improvements
+ * - Responsive design
+ * - Loading indicators
+ * - Toast notifications
+ * - Field validation visual feedback
+ * - Dark mode support (optional)
+ */
+
+:root {
+  /* Colors - Professional palette */
+  --crm-primary: #0066cc;
+  --crm-primary-light: #e6f0ff;
+  --crm-primary-dark: #003399;
+  --crm-success: #27ae60;
+  --crm-success-light: #e8f8f0;
+  --crm-warning: #f39c12;
+  --crm-warning-light: #fef8e8;
+  --crm-danger: #d9534f;
+  --crm-danger-light: #f8d7da;
+  --crm-info: #5bc0de;
+  --crm-info-light: #d1ecf1;
+  --crm-text: #333333;
+  --crm-text-secondary: #666666;
+  --crm-text-light: #999999;
+  --crm-border: #ddd;
+  --crm-bg: #ffffff;
+  --crm-bg-alt: #f5f5f5;
+  --crm-shadow: rgba(0, 0, 0, 0.08);
+  --crm-shadow-md: rgba(0, 0, 0, 0.12);
+}
+
+/* ===== TABLES & LIST VIEWS ===== */
+
+table.crm-entities-list,
+.view-display-id-default {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--crm-bg);
+  font-size: 14px;
+}
+
+table.crm-entities-list thead,
+table.crm-entities-list tbody {
+  display: table-row-group;
+}
+
+table.crm-entities-list th {
+  background: var(--crm-bg-alt);
+  border-bottom: 2px solid var(--crm-border);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--crm-text);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+table.crm-entities-list tr {
+  border-bottom: 1px solid var(--crm-border);
+  transition: background-color 0.2s ease;
+}
+
+table.crm-entities-list tbody tr:hover {
+  background-color: var(--crm-bg-alt);
+  box-shadow: inset 0 0 0 1px var(--crm-shadow);
+}
+
+table.crm-entities-list td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  color: var(--crm-text);
+}
+
+table.crm-entities-list td a {
+  color: var(--crm-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+table.crm-entities-list td a:hover {
+  color: var(--crm-primary-dark);
+  text-decoration: underline;
+}
+
+/* Inline edit cells */
+table.crm-entities-list td[data-field-editable="true"] {
+  cursor: pointer;
+  position: relative;
+  background: transparent;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+table.crm-entities-list td[data-field-editable="true"]:hover {
+  background: var(--crm-primary-light);
+  outline: 1px dashed var(--crm-primary);
+}
+
+table.crm-entities-list td[data-field-editable="true"]::after {
+  content: "✎";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  font-size: 12px;
+  color: var(--crm-primary);
+  transition: opacity 0.2s ease;
+}
+
+table.crm-entities-list td[data-field-editable="true"]:hover::after {
+  opacity: 1;
+}
+
+/* Status badges */
+td .status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-badge.status-active {
+  background: var(--crm-success-light);
+  color: var(--crm-success);
+}
+
+.status-badge.status-inactive {
+  background: var(--crm-danger-light);
+  color: var(--crm-danger);
+}
+
+.status-badge.status-pending {
+  background: var(--crm-warning-light);
+  color: var(--crm-warning);
+}
+
+/* ===== FORMS ===== */
+
+.form-item {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-item label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--crm-text);
+  font-size: 13px;
+  display: block;
+}
+
+.form-item label .form-required::after {
+  content: " *";
+  color: var(--crm-danger);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--crm-border);
+  border-radius: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--crm-bg);
+  color: var(--crm-text);
+  transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--crm-primary);
+  box-shadow: 0 0 0 3px var(--crm-primary-light);
+  background: var(--crm-bg);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background: var(--crm-bg-alt);
+  color: var(--crm-text-light);
+  cursor: not-allowed;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px;
+  padding-right: 32px;
+}
+
+/* Form field with errors */
+.form-item.form-item--error input,
+.form-item.form-item--error textarea,
+.form-item.form-item--error select,
+input.is-error,
+textarea.is-error,
+select.is-error {
+  border-color: var(--crm-danger);
+  background: var(--crm-danger-light);
+}
+
+.form-item .form-item--error-message,
+.crm-field-error {
+  color: var(--crm-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== BUTTONS ===== */
+
+button,
+.crm-btn,
+input[type="submit"],
+input[type="button"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.crm-btn--primary,
+button[type="submit"],
+input[type="submit"] {
+  background: var(--crm-primary);
+  color: white;
+}
+
+.crm-btn--primary:hover,
+button[type="submit"]:hover,
+input[type="submit"]:hover {
+  background: var(--crm-primary-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.crm-btn--primary:active {
+  transform: scale(0.98);
+}
+
+.crm-btn--secondary {
+  background: var(--crm-bg-alt);
+  color: var(--crm-text);
+  border: 1px solid var(--crm-border);
+}
+
+.crm-btn--secondary:hover {
+  border-color: var(--crm-primary);
+  color: var(--crm-primary);
+}
+
+.crm-btn--danger {
+  background: var(--crm-danger);
+  color: white;
+}
+
+.crm-btn--danger:hover {
+  background: #c9302c;
+  box-shadow: 0 2px 8px rgba(217, 83, 79, 0.3);
+}
+
+.crm-btn:disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.crm-btn.is-loading {
+  position: relative;
+  color: transparent;
+}
+
+.crm-btn.is-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== ALERTS & MESSAGES ===== */
+
+.crm-alert,
+.alert {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.crm-alert--success,
+.alert-success {
+  background: var(--crm-success-light);
+  color: var(--crm-success);
+  border-left-color: var(--crm-success);
+}
+
+.crm-alert--danger,
+.alert-danger {
+  background: var(--crm-danger-light);
+  color: var(--crm-danger);
+  border-left-color: var(--crm-danger);
+}
+
+.crm-alert--warning,
+.alert-warning {
+  background: var(--crm-warning-light);
+  color: var(--crm-warning);
+  border-left-color: var(--crm-warning);
+}
+
+.crm-alert--info,
+.alert-info {
+  background: var(--crm-info-light);
+  color: var(--crm-info);
+  border-left-color: var(--crm-info);
+}
+
+/* ===== TOAST NOTIFICATIONS ===== */
+
+#crm-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+  font-size: 14px;
+}
+
+.crm-toast {
+  background: white;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px var(--crm-shadow-md);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.crm-toast.is-fading {
+  animation: slideOut 0.3s ease-out forwards;
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(400px); opacity: 0; }
+}
+
+.crm-toast--success {
+  border-left: 4px solid var(--crm-success);
+  color: var(--crm-success);
+}
+
+.crm-toast--error {
+  border-left: 4px solid var(--crm-danger);
+  color: var(--crm-danger);
+}
+
+.crm-toast--warning {
+  border-left: 4px solid var(--crm-warning);
+  color: var(--crm-warning);
+}
+
+.crm-toast--info {
+  border-left: 4px solid var(--crm-info);
+  color: var(--crm-info);
+}
+
+.crm-toast__msg {
+  flex: 1;
+  font-weight: 500;
+}
+
+.crm-toast__close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0;
+  margin: 0;
+  transition: opacity 0.2s ease;
+}
+
+.crm-toast__close:hover {
+  opacity: 1;
+}
+
+/* ===== FORM SECTIONS ===== */
+
+.crm-form-section-label {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--crm-text-secondary);
+  margin: 20px 0 10px 0;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.crm-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.crm-unsaved-indicator {
+  background: var(--crm-warning-light);
+  border-left: 4px solid var(--crm-warning);
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--crm-warning);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Field changed indicator */
+input.is-changed,
+textarea.is-changed,
+select.is-changed {
+  background: #fffacd !important;
+}
+
+input.is-dirty,
+textarea.is-dirty,
+select.is-dirty {
+  border-color: var(--crm-primary);
+}
+
+/* ===== LOADING INDICATORS ===== */
+
+.crm-lazy-load__indicator {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--crm-text-secondary);
+}
+
+.crm-lazy-load__spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--crm-bg-alt);
+  border-top-color: var(--crm-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--crm-primary);
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+}
+
+.skip-link:focus {
+  left: 0;
+  top: 0;
+  background: var(--crm-primary);
+  color: white;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+  .crm-form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  table.crm-entities-list {
+    font-size: 12px;
+  }
+
+  table.crm-entities-list th,
+  table.crm-entities-list td {
+    padding: 10px 12px;
+  }
+
+  #crm-toast-container {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+  }
+
+  .crm-toast {
+    margin-bottom: 8px;
+  }
+
+  button,
+  .crm-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  textarea,
+  select {
+    padding: 8px 10px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .crm-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  table.crm-entities-list {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .form-item {
+    margin-bottom: 12px;
+  }
+
+  button,
+  .crm-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===== DARK MODE SUPPORT (Optional) ===== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --crm-text: #e0e0e0;
+    --crm-text-secondary: #b0b0b0;
+    --crm-text-light: #808080;
+    --crm-border: #404040;
+    --crm-bg: #1e1e1e;
+    --crm-bg-alt: #2d2d2d;
+    --crm-shadow: rgba(0, 0, 0, 0.3);
+    --crm-shadow-md: rgba(0, 0, 0, 0.5);
+  }
+
+  table.crm-entities-list tbody tr:hover {
+    background-color: rgba(0, 102, 204, 0.1);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  textarea,
+  select {
+    background: var(--crm-bg);
+    color: var(--crm-text);
+    border-color: var(--crm-border);
+  }
+
+  .crm-btn--secondary {
+    background: var(--crm-bg-alt);
+    color: var(--crm-text);
+  }
+
+  .crm-toast {
+    background: var(--crm-bg-alt);
+  }
+}

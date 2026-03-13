@@ -1,0 +1,9 @@
+services:
+  crm_data_quality.phone_validator:
+    class: Drupal\crm_data_quality\Service\PhoneValidatorService
+
+  crm_data_quality.soft_delete:
+    class: Drupal\crm_data_quality\Service\SoftDeleteService
+    arguments:
+      - "@entity_type.manager"
+      - "@database"

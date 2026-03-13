@@ -105,3 +105,39 @@ node_form_styles:
     - core/drupal
     - core/once
     - core/drupal.form
+
+crm_optimistic_ui:
+  version: 1.0
+  css:
+    theme:
+      css/crm-optimistic-ui.css: {}
+  js:
+    js/crm-optimistic-ui.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+
+crm_inline_edit:
+  version: 1.0
+  css:
+    theme:
+      css/crm-inline-edit.css: {}
+  js:
+    js/crm-inline-edit.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+
+crm_lazy_load:
+  version: 1.0
+  css:
+    theme:
+      css/crm-lazy-load.css: {}
+  js:
+    js/crm-lazy-load.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once

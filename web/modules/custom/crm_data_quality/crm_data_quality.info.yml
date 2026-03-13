@@ -1,0 +1,8 @@
+name: "CRM Data Quality & Integrity"
+description: "Ensures data quality, sync, and production readiness for CRM entities"
+type: module
+core_version_requirement: "^10 || ^11"
+package: "CRM"
+dependencies:
+  - drupal:node
+  - drupal:user

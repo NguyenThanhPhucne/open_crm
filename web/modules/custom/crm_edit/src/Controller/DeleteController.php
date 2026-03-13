@@ -76,10 +76,20 @@ class DeleteController extends ControllerBase {
       ], 400);
     }
     
-    // Perform deletion
+    // Perform soft-delete (mark as deleted instead of hard-delete)
     try {
       $nid_to_delete = $node->id();
-      $node->delete();
+      
+      // Use soft-delete if service exists, otherwise fall back to hard delete
+      if (\Drupal::hasService('crm_data_quality.soft_delete')) {
+        $soft_delete_service = \Drupal::service('crm_data_quality.soft_delete');
+        $soft_delete_service->softDelete($node);
+        $deletion_message = "{$type_label} '{$title}' has been deleted.";
+      } else {
+        // Fallback: hard delete if soft-delete module not enabled
+        $node->delete();
+        $deletion_message = "{$type_label} '{$title}' has been permanently deleted.";
+      }
 
       // Invalidate caches so lists/dashboard update immediately
       Cache::invalidateTags(['node:' . $nid_to_delete, 'node_list']);
@@ -94,7 +104,7 @@ class DeleteController extends ControllerBase {
       
       return new JsonResponse([
         'success' => true,
-        'message' => "{$type_label} '{$title}' has been permanently deleted.",
+        'message' => $deletion_message,
         'nid' => $nid,
       ]);
     } catch (\Exception $e) {

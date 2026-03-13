@@ -624,6 +624,7 @@ function crm_page_attachments(array &$attachments) {
   // Get the current route.
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
+  $current_path = \Drupal::service('path.current')->getPath();
   
   // List of CRM route prefixes that should have full-width layout.
   $crm_routes = [
@@ -653,6 +654,31 @@ function crm_page_attachments(array &$attachments) {
     if ($view_id === 'all_contacts') {
       $attachments['#attached']['library'][] = 'crm/contacts_list';
     }
+  }
+
+  // PHASE 2: Attach optimistic UI to all CRM forms (create/edit)
+  if (
+    strpos($route_name, 'node.add') === 0 ||
+    strpos($route_name, 'node.edit') === 0 ||
+    preg_match('/^node\.(contact|deal|activity|organization)\.(add|edit)$/', $route_name)
+  ) {
+    $attachments['#attached']['library'][] = 'crm/crm_optimistic_ui';
+  }
+
+  // PHASE 2: Attach inline editing and lazy loading to views
+  if (
+    strpos($current_path, '/crm/') === 0 ||
+    preg_match('/(all-contacts|all-deals|all-activities|all-organizations|my-contacts|my-deals|my-activities)/', $current_path)
+  ) {
+    $attachments['#attached']['library'][] = 'crm/crm_inline_edit';
+    $attachments['#attached']['library'][] = 'crm/crm_lazy_load';
+  }
+
+  // PHASE 2: Also attach to views displayed via AJAX (inline pagination/filtering)
+  $request = \Drupal::request();
+  if ($request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
+    $attachments['#attached']['library'][] = 'crm/crm_inline_edit';
+    $attachments['#attached']['library'][] = 'crm/crm_lazy_load';
   }
 }
 

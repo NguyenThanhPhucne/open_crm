@@ -1,0 +1,207 @@
+<?php
+
+/**
+ * @file
+ * CRM Data Quality module - Phase 1 Critical implementations
+ *
+ * Handles:
+ * 1. Email & Phone field requirements
+ * 2. Email uniqueness constraint
+ * 3. Soft-delete support
+ * 4. Data sync improvements
+ * 5. Phone format normalization
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
+
+/**
+ * Helper: Check if a field exists on a bundle.
+ */
+function _crm_data_quality_field_exists($field_name, $entity_type = 'node') {
+  try {
+    $field = \Drupal\field\Entity\FieldStorageConfig::loadByName($entity_type, $field_name);
+    return $field !== NULL;
+  } catch (\Exception $e) {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Makes email & phone fields required for contacts and organizations.
+ */
+function crm_data_quality_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Contact creation/edit forms
+  if (preg_match('/^node_(contact|organization)_(form|edit_form)$/', $form_id)) {
+    // Email REQUIRED
+    if (isset($form['field_email'])) {
+      $form['field_email']['#required'] = TRUE;
+      $form['field_email']['widget'][0]['#required'] = TRUE;
+      if (isset($form['field_email']['widget'][0]['value'])) {
+        $form['field_email']['widget'][0]['value']['#required'] = TRUE;
+      }
+    }
+    
+    // Phone REQUIRED (for contact)
+    if (strpos($form_id, 'contact') !== FALSE && isset($form['field_phone'])) {
+      $form['field_phone']['#required'] = TRUE;
+      $form['field_phone']['widget'][0]['#required'] = TRUE;
+      if (isset($form['field_phone']['widget'][0]['value'])) {
+        $form['field_phone']['widget'][0]['value']['#required'] = TRUE;
+      }
+    }
+    
+    // Add custom validation
+    $form['#validate'][] = 'crm_data_quality_contact_form_validate';
+  }
+}
+
+/**
+ * Custom validation for contact form.
+ */
+function crm_data_quality_contact_form_validate(&$form, FormStateInterface $form_state) {
+  $email = $form_state->getValue(['field_email', 0, 'value']);
+  $phone = $form_state->getValue(['field_phone', 0, 'value']);
+  $nid = $form_state->getFormObject()->getEntity()->id();
+  
+  // Check email format
+  if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $form_state->setErrorByName('field_email', t('Invalid email format.'));
+  }
+  
+  // Check email uniqueness (exclude current node and deleted records)
+  if (!empty($email)) {
+    $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+      ->condition('type', 'contact')
+      ->condition('field_email', $email)
+      ->accessCheck(FALSE);
+    
+    // Only check deleted field if it exists
+    if (_crm_data_quality_field_exists('field_deleted_at')) {
+      $query->condition('field_deleted_at', NULL, 'IS NULL');
+    }
+    
+    $existing = $query->execute();
+    
+    if (!empty($existing)) {
+      $existing_id = reset($existing);
+      if ($existing_id != $nid) {
+        $form_state->setErrorByName('field_email', 
+          t('This email is already in use by another contact.'));
+      }
+    }
+  }
+  
+  // Check phone format (VN format)
+  if (!empty($phone)) {
+    $validator = \Drupal::service('crm_data_quality.phone_validator');
+    $result = $validator->validate($phone);
+    if (!$result['valid']) {
+      $form_state->setErrorByName('field_phone', $result['message']);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_query_alter().
+ *
+ * Automatically hide soft-deleted records from queries (unless explicitly requested).
+ */
+function crm_data_quality_entity_query_alter(QueryInterface &$query) {
+  // CRITICAL: Only apply to node queries - don't default to 'node' if entity_type not set
+  $entity_type = $query->getMetaData('entity_type');
+  
+  // Skip if entity_type is not explicitly set as 'node'
+  // This prevents applying the filter to block_content, taxonomy, and other entity types
+  if ($entity_type !== 'node') {
+    return;
+  }
+
+  // Skip if explicitly marked to include deleted
+  if ($query->getMetaData('include_deleted')) {
+    return;
+  }
+
+  // Only filter if field_deleted_at exists on node entity type
+  if (!_crm_data_quality_field_exists('field_deleted_at', 'node')) {
+    return;
+  }
+
+  // Skip if user is admin and viewing a detail page (they need to see deleted records)
+  $current_user = \Drupal::currentUser();
+  if ($current_user->hasPermission('administer nodes') && 
+      \Drupal::routeMatch()->getRouteName() === 'entity.node.canonical') {
+    return;
+  }
+
+  // Filter out soft-deleted records (wrapped in try-catch for safety)
+  try {
+    $query->condition('field_deleted_at', NULL, 'IS NULL');
+  } catch (\Exception $e) {
+    // If the condition fails (e.g., field not in scope), silently skip
+    // This prevents blocking operations while maintaining safety in normal operation
+    if (\Drupal::state()->get('crm_data_quality.debug', FALSE)) {
+      \Drupal::logger('crm_data_quality')->debug(
+        'Soft-delete filter skipped: @message',
+        ['@message' => $e->getMessage()]
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Handle timestamps and data normalization.
+ */
+function crm_data_quality_node_presave(NodeInterface $node) {
+  // Normalize phone number if field exists
+  if ($node->bundle() === 'contact' && $node->hasField('field_phone')) {
+    if (!$node->get('field_phone')->isEmpty()) {
+      $validator = \Drupal::service('crm_data_quality.phone_validator');
+      $phone_val = $node->get('field_phone')->value;
+      $normalized = $validator->normalize($phone_val);
+      if ($normalized) {
+        $node->set('field_phone', $normalized);
+      }
+    }
+  }
+
+  // Similarly for organization phone
+  if ($node->bundle() === 'organization' && $node->hasField('field_phone')) {
+    if (!$node->get('field_phone')->isEmpty()) {
+      $validator = \Drupal::service('crm_data_quality.phone_validator');
+      $phone_val = $node->get('field_phone')->value;
+      $normalized = $validator->normalize($phone_val);
+      if ($normalized) {
+        $node->set('field_phone', $normalized);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_access().
+ *
+ * Prevent access to soft-deleted nodes (except for admins viewing directly).
+ */
+function crm_data_quality_node_access($node, $op, $account) {
+  if (!($node instanceof NodeInterface)) {
+    return;
+  }
+  
+  // Allow admins full access
+  if ($account->hasPermission('administer nodes')) {
+    return;
+  }
+
+  // Check soft-delete flag - prevent non-admin access
+  if ($node->hasField('field_deleted_at') && 
+      !$node->get('field_deleted_at')->isEmpty()) {
+    return \Drupal\Core\Access\AccessResult::forbidden('This record has been deleted.');
+  }
+}

@@ -1,0 +1,95 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for crm_edit module.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Creates database indexes for query optimization.
+ */
+function crm_edit_install() {
+  crm_edit_create_indexes();
+}
+
+/**
+ * Create database indexes for performance optimization.
+ *
+ * Helps with:
+ * - Filtering by type (contact, deal, etc.)
+ * - Filtering by status (active, archived, etc.)
+ * - Soft-delete queries (field_deleted_at IS NULL)
+ * - Email/phone lookups
+ * - Sorting by creation/modification date
+ */
+function crm_edit_create_indexes() {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+
+  // List of indexes to create using direct SQL
+  $indexes = [
+    // node_field_data indexes
+    ['table' => 'node_field_data', 'name' => 'idx_nfd_type_created', 'sql' => 'ALTER TABLE {node_field_data} ADD INDEX idx_nfd_type_created (type, created)'],
+    ['table' => 'node_field_data', 'name' => 'idx_nfd_type_status', 'sql' => 'ALTER TABLE {node_field_data} ADD INDEX idx_nfd_type_status (type, status)'],
+    ['table' => 'node_field_data', 'name' => 'idx_nfd_type_changed', 'sql' => 'ALTER TABLE {node_field_data} ADD INDEX idx_nfd_type_changed (type, changed)'],
+    
+    // Field-specific indexes (only create if tables exist)
+    ['table' => 'node__field_deleted_at', 'name' => 'idx_nfda_deleted_at', 'sql' => 'ALTER TABLE {node__field_deleted_at} ADD INDEX idx_nfda_deleted_at (field_deleted_at_value)'],
+    ['table' => 'node__field_email', 'name' => 'idx_nfe_email', 'sql' => 'ALTER TABLE {node__field_email} ADD INDEX idx_nfe_email (field_email_value)'],
+    ['table' => 'node__field_phone', 'name' => 'idx_nfp_phone', 'sql' => 'ALTER TABLE {node__field_phone} ADD INDEX idx_nfp_phone (field_phone_value)'],
+    ['table' => 'node__field_owner', 'name' => 'idx_nfo_owner', 'sql' => 'ALTER TABLE {node__field_owner} ADD INDEX idx_nfo_owner (field_owner_target_id)'],
+    ['table' => 'node__field_organization', 'name' => 'idx_nforg_org', 'sql' => 'ALTER TABLE {node__field_organization} ADD INDEX idx_nforg_org (field_organization_target_id)'],
+  ];
+
+  foreach ($indexes as $index_info) {
+    $table = $index_info['table'];
+    $name = $index_info['name'];
+    $sql = $index_info['sql'];
+
+    try {
+      // Check if table exists
+      if (!$schema->tableExists($table)) {
+        \Drupal::logger('crm_edit')->debug(
+          'Table @table does not exist, skipping index @name',
+          ['@table' => $table, '@name' => $name]
+        );
+        continue;
+      }
+
+      // Check if index already exists
+      if ($schema->indexExists($table, $name)) {
+        \Drupal::logger('crm_edit')->debug(
+          'Index @name already exists on table @table',
+          ['@name' => $name, '@table' => $table]
+        );
+        continue;
+      }
+
+      // Create the index using direct SQL
+      $database->query($sql);
+      \Drupal::logger('crm_edit')->info(
+        'Created index @name on table @table',
+        ['@name' => $name, '@table' => $table]
+      );
+    } catch (\Exception $e) {
+      // Index might already exist or table might have changed
+      \Drupal::logger('crm_edit')->warning(
+        'Could not create index @name on table @table: @error',
+        [
+          '@name' => $name,
+          '@table' => $table,
+          '@error' => $e->getMessage(),
+        ]
+      );
+    }
+  }
+}
+
+/**
+ * PHASE 2: Add database indexes for query optimization.
+ */
+function crm_edit_update_9001() {
+  crm_edit_create_indexes();
+}

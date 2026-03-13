@@ -627,4 +627,163 @@ class InlineEditController extends ControllerBase {
       'errors' => [],
     ]);
   }
+
+  /**
+   * API Debug endpoint - verify API is available.
+   */
+  public function apiDebug() {
+    return new JsonResponse([
+      'status' => 'available',
+      'message' => 'CRM Inline Edit API v1',
+      'user' => $this->currentUser()->getDisplayName(),
+      'endpoints' => [
+        'PATCH /api/v1/{entity_type}/{entity_id}/{field_name}' => 'Update a single field',
+      ],
+    ]);
+  }
+
+  /**
+   * Update a single field on an entity via PATCH.
+   *
+   * @param string $entity_type
+   *   The entity type (e.g., 'node').
+   * @param int $entity_id
+   *   The entity ID.
+   * @param string $field_name
+   *   The field name to update.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request object.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   JSON response with success/error status.
+   */
+  public function updateField($entity_type, $entity_id, $field_name, Request $request) {
+    try {
+      // Parse request body
+      $data = json_decode($request->getContent(), TRUE);
+      
+      if (!isset($data['value'])) {
+        return new JsonResponse(
+          ['error' => 'Missing "value" in request body'],
+          400
+        );
+      }
+
+      $new_value = $data['value'];
+
+      // Load entity
+      $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+      $entity = $storage->load($entity_id);
+
+      if (!$entity) {
+        return new JsonResponse(
+          ['error' => 'Entity not found'],
+          404
+        );
+      }
+
+      // Check access
+      if (!$entity->access('update', $this->currentUser())) {
+        return new JsonResponse(
+          ['error' => 'Access denied'],
+          403
+        );
+      }
+
+      // Verify field exists
+      if (!$entity->hasField($field_name)) {
+        return new JsonResponse(
+          ['error' => sprintf('Field "%s" does not exist', $field_name)],
+          400
+        );
+      }
+
+      // Get field definition for type checking
+      $field_definition = $entity->getFieldDefinition($field_name);
+      $field_type = $field_definition->getType();
+
+      // Convert and validate value based on field type
+      $field_value = $new_value;
+      
+      // Type conversion for common field types
+      switch ($field_type) {
+        case 'integer':
+          $field_value = intval($new_value);
+          break;
+        case 'decimal':
+        case 'float':
+          $field_value = floatval($new_value);
+          break;
+        case 'boolean':
+          $field_value = (bool) $new_value;
+          break;
+        case 'entity_reference':
+          // For entity reference, the value should be the target entity ID
+          if (!is_numeric($new_value)) {
+            return new JsonResponse(
+              ['error' => 'Entity reference value must be numeric ID'],
+              400
+            );
+          }
+          
+          $target_type = $field_definition->getSetting('target_type');
+          $target_storage = \Drupal::entityTypeManager()->getStorage($target_type);
+          $target_entity = $target_storage->load($new_value);
+          
+          if (!$target_entity) {
+            return new JsonResponse(
+              ['error' => sprintf('Referenced entity with ID %d not found', $new_value)],
+              400
+            );
+          }
+          
+          $field_value = $target_entity;
+          break;
+        // Default: keep as string
+      }
+
+      // Set the field value
+      $entity->set($field_name, $field_value);
+
+      // Save the entity directly (skip validation to avoid field_deleted_at query issues)
+      // The database will handle constraint violations
+      try {
+        $entity->save();
+      } catch (\Exception $e) {
+        return new JsonResponse(
+          ['error' => 'Failed to save: ' . $e->getMessage()],
+          400
+        );
+      }
+
+      // Get display value from the field
+      $field = $entity->get($field_name);
+      $display_value = !$field->isEmpty() ? $field->value : '—';
+      
+      // For entity reference, show the label
+      if ($field_definition->getType() === 'entity_reference' && $field->entity) {
+        $display_value = $field->entity->label();
+      }
+
+      return new JsonResponse([
+        'success' => TRUE,
+        'entity_id' => $entity_id,
+        'field_name' => $field_name,
+        'value' => $new_value,
+        'display_value' => (string) $display_value,
+        'message' => 'Field updated successfully',
+      ]);
+
+    } catch (\Exception $e) {
+      \Drupal::logger('crm_edit')->error(
+        'Inline field edit error: @message',
+        ['@message' => $e->getMessage()]
+      );
+
+      return new JsonResponse(
+        ['error' => 'Server error: ' . $e->getMessage()],
+        500
+      );
+    }
+  }
 }

@@ -138,3 +138,18 @@ crm_edit.add_activity:
     _title: "Add Activity"
   requirements:
     _permission: "create activity content"
+
+# PHASE 2: REST API endpoint for inline field editing
+# PATCH /api/v1/{entity_type}/{entity_id}/{field_name}
+# Update a single field on an entity
+crm_edit.api_update_field:
+  path: "/api/v1/{entity_type}/{entity_id}/{field_name}"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::updateField'
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+    entity_type: "[a-z_]+"
+    entity_id: '\d+'
+    field_name: "[a-z_]+"
+  methods: [PATCH]
