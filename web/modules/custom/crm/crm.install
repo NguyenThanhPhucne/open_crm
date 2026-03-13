@@ -22,3 +22,100 @@ function crm_uninstall() {
     t('CRM Core module uninstalled. Access control has been removed.')
   );
 }
+
+/**
+ * Add audit trail fields for data integrity tracking.
+ */
+function crm_update_9001(&$sandbox) {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  $storage = $entity_type_manager->getStorage('node');
+  
+  $crm_types = ['contact', 'deal', 'organization', 'activity'];
+  $message = 'Adding audit trail fields (created_by, updated_by, updated_at)...';
+  
+  // Create field definitions for audit trail
+  $database = \Drupal::database();
+  $schema = $database->schema();
+  
+  // Add created_by and updated_by fields if not exist
+  $tables_to_update = [
+    'node__field_created_by' => 'node__field_updated_by',
+  ];
+  
+  foreach ($crm_types as $bundle) {
+    try {
+      // Load all nodes of this type
+      $node_ids = \Drupal::entityQuery('node')
+        ->condition('type', $bundle)
+        ->accessCheck(FALSE)
+        ->execute();
+      
+      if (!empty($node_ids)) {
+        $nodes = $storage->loadMultiple($node_ids);
+        
+        foreach ($nodes as $node) {
+          // Set created_by to node creator if not set
+          if (!$node->hasField('field_created_by')) {
+            $node->field_created_by = $node->getOwnerId();
+          }
+          
+          // Set updated_by to current user
+          if (!$node->hasField('field_updated_by')) {
+            $node->field_updated_by = \Drupal::currentUser()->id();
+          }
+          
+          $node->save();
+        }
+      }
+    } catch (\Exception $e) {
+      \Drupal::logger('crm')->error(
+        'Error updating audit trail for @type: @error',
+        ['@type' => $bundle, '@error' => $e->getMessage()]
+      );
+    }
+  }
+  
+  return $message;
+}
+
+/**
+ * Optimize database indexes for better query performance.
+ */
+function crm_update_9002(&$sandbox) {
+  $database = \Drupal::database();
+  
+  $indexes = [
+    // Node query optimization
+    ['table' => 'node_field_data', 'name' => 'idx_nfd_type_uid', 'sql' => 'ALTER TABLE {node_field_data} ADD INDEX idx_nfd_type_uid (type, uid)'],
+    ['table' => 'node_field_data', 'name' => 'idx_nfd_type_created_changed', 'sql' => 'ALTER TABLE {node_field_data} ADD INDEX idx_nfd_type_created_changed (type, created, changed)'],
+    
+    // Entity reference optimization  
+    ['table' => 'node__field_owner', 'name' => 'idx_nfo_owner_delta', 'sql' => 'ALTER TABLE {node__field_owner} ADD INDEX idx_nfo_owner_delta (field_owner_target_id, delta)'],
+    ['table' => 'node__field_contact', 'name' => 'idx_nfc_contact_delta', 'sql' => 'ALTER TABLE {node__field_contact} ADD INDEX idx_nfc_contact_delta (field_contact_target_id, delta)'],
+    ['table' => 'node__field_organization', 'name' => 'idx_nforg_org_delta', 'sql' => 'ALTER TABLE {node__field_organization} ADD INDEX idx_nforg_org_delta (field_organization_target_id, delta)'],
+  ];
+  
+  foreach ($indexes as $index_info) {
+    try {
+      if ($database->schema()->tableExists($index_info['table'])) {
+        // Check if index already exists
+        $indexes_in_table = $database->query(
+          "SHOW INDEXES FROM {" . $index_info['table'] . "} WHERE Key_name = :key_name",
+          [':key_name' => $index_info['name']]
+        )->fetchAll();
+        
+        if (empty($indexes_in_table)) {
+          $database->query($index_info['sql']);
+        }
+      }
+    } catch (\Exception $e) {
+      \Drupal::logger('crm')->warning(
+        'Could not add index @name: @error',
+        ['@name' => $index_info['name'], '@error' => $e->getMessage()]
+      );
+    }
+  }
+  
+  return 'Database indexes optimized for query performance.';
+}

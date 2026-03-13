@@ -1,138 +1,390 @@
 {#
 /**
  * @file
- * Modern Contacts List Template
+ * Enhanced Contacts List Template
  *
- * Displays contacts with:
- * - Sorted by recently updated/created (newest first)
- * - Badges for "New" and "Recently Updated"
- * - Relative timestamps
- * - Delete/Edit actions with AJAX handling
- * - Responsive design
+ * Features:
+ * - Responsive tables (mobile-friendly)
+ * - Real-time inline editing with data sync
+ * - Instant field updates (no page reload)
+ * - Conflict detection for concurrent edits
+ * - Loading states and validation feedback
+ * - Professional ClickUp-style design
  */
 #}
 
-<div class="crm-contacts-wrapper">
-  {# Header with title and action buttons #}
-  <div class="crm-contacts-header">
-    <h1>{{ 'Contacts'|t }}</h1>
+<div class="contacts-wrapper">
+  {# Header #}
+  <div class="contacts-header">
+    <div class="header-left">
+      <h1>Contacts</h1>
+      <span class="filter-count">{{ contacts|length }} contacts</span>
+    </div>
     
-    <div class="crm-contacts-actions">
-      <a href="/crm/add/contact" class="button button--primary">
-        {{ 'Add Contact'|t }}
+    <div class="header-actions">
+      <a href="/crm/add/contact" class="btn btn-primary">
+        <i data-lucide="plus" width="16" height="16"></i>Add Contact
       </a>
-      
       {% if ai_autocomplete_enabled %}
-        <a href="{{ path('crm_ai_autocomplete.generate_contact') }}" class="button button--secondary">
-          {{ 'Generate Contact with AI'|t }}
+        <a href="{{ path('crm_ai_autocomplete.generate_contact') }}" class="btn btn-secondary">
+          <i data-lucide="sparkles" width="16" height="16"></i>AI Generate
         </a>
       {% endif %}
     </div>
   </div>
 
-  {# Contacts table #}
+  {# Contacts Table #}
   {% if contacts|length > 0 %}
-    <table class="crm-contacts-table">
-      <thead>
-        <tr>
-          <th scope="col">{{ 'Contact Name'|t }}</th>
-          <th scope="col">{{ 'Company'|t }}</th>
-          <th scope="col">{{ 'Email'|t }}</th>
-          <th scope="col">{{ 'Owner'|t }}</th>
-          <th scope="col">{{ 'Last Updated'|t }}</th>
-          <th scope="col" style="text-align: right;">{{ 'Actions'|t }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for contact in contacts %}
-          <tr class="crm-row" data-nid="{{ contact.nid }}">
-            {# Contact name #}
-            <td>
-              <a href="{{ path('entity.node.canonical', {'node': contact.nid}) }}" class="crm-contact-link">
-                {{ contact.name }}
-              </a>
-            </td>
-            
-            {# Organization/Company #}
-            <td>{{ contact.organization }}</td>
-            
-            {# Email #}
-            <td>{{ contact.email }}</td>
-            
-            {# Owner #}
-            <td>{{ contact.owner }}</td>
-            
-            {# Last Updated with badges #}
-            <td>
-              <div class="crm-timestamp-wrapper">
-                <span class="crm-timestamp" data-timestamp="{{ contact.changed }}">{{ contact.changed_relative }}</span>
-                
-                {% if contact.is_new %}
-                  <span class="crm-badge crm-badge-new" title="{{ 'Created within 10 minutes'|t }}">
-                    {{ 'New'|t }}
-                  </span>
-                {% endif %}
-                
-                {% if contact.is_updated %}
-                  <span class="crm-badge crm-badge-recent" title="{{ 'Updated within 10 minutes'|t }}">
-                    {{ 'Updated'|t }}
-                  </span>
-                {% endif %}
-              </div>
-            </td>
-            
-            {# Actions (Edit, Delete) #}
-            <td style="text-align: right;">
-              <div class="crm-actions">
-                 <a href="/crm/edit/contact/{{ contact.nid }}" 
-                   class="button button--small button--edit" 
-                   title="{{ 'Edit contact'|t }}">
-                  {{ 'Edit'|t }}
-                </a>
-                
-                <button type="button" 
-                        class="button button--small button--danger crm-contact__delete-btn"
-                        data-nid="{{ contact.nid }}"
-                        data-name="{{ contact.name }}"
-                        title="{{ 'Delete contact'|t }}">
-                  {{ 'Delete'|t }}
-                </button>
-              </div>
-            </td>
+    <div class="table-wrapper">
+      <table class="crm-entities-list" id="crm-contacts-table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Company</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Updated</th>
+            <th scope="col" style="text-align: right;">Actions</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for contact in contacts %}
+            <tr class="contact-row" id="contact-row-{{ contact.nid }}" data-entity-id="{{ contact.nid }}" data-entity-type="contact">
+              
+              {# Name (Link) #}
+              <td data-label="Name">
+                <a href="/node/{{ contact.nid }}" class="contact-name-link">
+                  {{ contact.name }}
+                </a>
+              </td>
+
+              {# Company #}
+              <td data-label="Company" data-field-name="field_organization" data-editable="true" data-entity-id="{{ contact.nid }}">
+                <span class="field-display-value">{{ contact.organization ?? '—' }}</span>
+              </td>
+
+              {# Email (Editable) #}
+              <td data-label="Email" data-field-name="field_email" data-editable="true" data-entity-id="{{ contact.nid }}">
+                <span class="field-display-value">{{ contact.email ?? '—' }}</span>
+              </td>
+
+              {# Phone (Editable) #}
+              <td data-label="Phone" data-field-name="field_phone" data-editable="true" data-entity-id="{{ contact.nid }}">
+                <span class="field-display-value">{{ contact.phone ?? '—' }}</span>
+              </td>
+
+              {# Owner #}
+              <td data-label="Owner">
+                <span class="badge badge-info">{{ contact.owner_name ?? 'Unassigned' }}</span>
+              </td>
+
+              {# Last Updated #}
+              <td data-label="Updated" class="td-time">
+                <span class="text-muted text-small">
+                  {{ contact.changed_relative ?? 'just now' }}
+                </span>
+              </td>
+
+              {# Actions #}
+              <td style="text-align: right;">
+                <div class="action-buttons">
+                  <a href="/crm/edit/contact/{{ contact.nid }}" class="btn btn-sm btn-secondary" title="Edit full form">
+                    <i data-lucide="edit-2" width="14" height="14"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-danger delete-btn" data-nid="{{ contact.nid }}" data-name="{{ contact.name }}" title="Delete contact">
+                    <i data-lucide="trash-2" width="14" height="14"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
-    <div class="crm-empty-state">
-      <p>{{ 'No contacts found.'|t }}</p>
-      <a href="/crm/add/contact" class="button button--primary">
-        {{ 'Create your first contact'|t }}
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <i data-lucide="users" width="48" height="48"></i>
+      </div>
+      <h2>No contacts yet</h2>
+      <p>Get started by creating your first contact</p>
+      <a href="/crm/add/contact" class="btn btn-primary">
+        <i data-lucide="plus" width="16" height="16"></i>Create Contact
       </a>
     </div>
   {% endif %}
 </div>
 
-{# Modal for delete confirmation #}
-<div id="crm-delete-modal" class="crm-modal" style="display: none;">
-  <div class="crm-modal-content">
-    <div class="crm-modal-header">
-      <h2>{{ 'Confirm Delete'|t }}</h2>
-      <button type="button" class="crm-modal-close" aria-label="{{ 'Close modal'|t }}">×</button>
+{# Delete Confirmation Modal #}
+<div id="delete-modal" class="modal" style="display: none;">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Delete Contact?</h2>
+      <button type="button" class="modal-close" aria-label="Close">&times;</button>
     </div>
-    
-    <div class="crm-modal-body">
-      <p>{{ 'Are you sure you want to delete:'|t }} <strong id="delete-contact-name"></strong>?</p>
-      <p class="crm-modal-warning">{{ 'This action cannot be undone.'|t }}</p>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong id="delete-name"></strong>?</p>
+      <p class="text-muted text-small">This action cannot be undone.</p>
     </div>
-    
-    <div class="crm-modal-footer">
-      <button type="button" class="button button--secondary crm-modal-cancel">
-        {{ 'Cancel'|t }}
-      </button>
-      <button type="button" class="button button--danger crm-modal-delete">
-        {{ 'Delete'|t }}
-      </button>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+      <button type="button" class="btn btn-danger modal-confirm">Delete</button>
     </div>
   </div>
 </div>
+
+<style>
+/* Wrapper */
+.contacts-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Header */
+.contacts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 16px;
+}
+
+.contacts-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.filter-count {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Table styling */
+.crm-entities-list tbody tr:hover td {
+  background: #f0f7ff;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  background: white;
+  border-radius: 8px;
+  color: #6b7280;
+}
+
+.empty-state-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty-state h2 {
+  margin: 12px 0 8px;
+  color: #374151;
+}
+
+.empty-state p {
+  margin: 8px 0 24px;
+  color: #6b7280;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 200ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  position: relative;
+  z-index: 10;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  animation: slideUp 200ms ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 150ms ease;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.modal-body p {
+  margin: 8px 0;
+  color: #374151;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contacts-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+
+  .action-buttons {
+    width: 100%;
+    flex-direction: row;
+  }
+
+  .action-buttons .btn {
+    flex: 1;
+  }
+}
+</style>
+
+<script>
+(function () {
+  // Initialize data sync for contact table
+  if (window.CRMDataSync) {
+    const contacts = document.querySelectorAll('[data-entity-id][data-entity-type="contact"]');
+    contacts.forEach(row => {
+      const entityId = row.dataset.entityId;
+      window.CRMDataSync.initEntity('node', entityId);
+    });
+  }
+
+  // Delete functionality
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const nid = this.dataset.nid;
+      const name = this.dataset.name;
+      const modal = document.getElementById('delete-modal');
+      document.getElementById('delete-name').textContent = name;
+      modal.style.display = 'flex';
+
+      const confirmBtn = modal.querySelector('.modal-confirm');
+      const cancelBtn = modal.querySelector('.modal-cancel');
+      const closeBtn = modal.querySelector('.modal-close');
+
+      const closeModal = () => { modal.style.display = 'none'; };
+
+      confirmBtn.onclick = () => {
+        window.location.href = '/node/' + nid + '/delete';
+      };
+
+      cancelBtn.onclick = closeModal;
+      closeBtn.onclick = closeModal;
+
+      modal.querySelector('.modal-overlay').onclick = closeModal;
+    });
+  });
+})();
+</script>

@@ -11,6 +11,15 @@ inline_edit:
     - core/drupal
     - core/drupalSettings
 
+data_sync:
+  version: 1.0
+  js:
+    js/data-sync.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
 lucide:
   version: latest
   js:

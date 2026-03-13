@@ -6,6 +6,13 @@ services:
       - "@logger.factory"
       - "@entity_type.manager"
 
+  crm.audit_trail_service:
+    class: Drupal\crm\Service\AuditTrailService
+    arguments:
+      - "@entity_type.manager"
+      - "@logger.factory"
+      - "@database"
+
   crm.dashboard_security_service:
     class: Drupal\crm\Service\CRMDashboardSecurityService
     arguments:
