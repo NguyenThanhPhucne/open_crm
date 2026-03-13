@@ -13,6 +13,51 @@
 (function (Drupal, jQuery) {
   "use strict";
 
+  let csrfToken = null;
+
+  function getCsrfToken() {
+    if (csrfToken) {
+      return Promise.resolve(csrfToken);
+    }
+
+    return fetch("/session/token", { credentials: "same-origin" })
+      .then((response) => response.text())
+      .then((token) => {
+        csrfToken = token.trim();
+        return csrfToken;
+      });
+  }
+
+  function refreshContactsWrapper() {
+    const currentWrapper = document.querySelector(".crm-contacts-wrapper");
+    if (!currentWrapper) {
+      return Promise.resolve(false);
+    }
+
+    return fetch(window.location.href, { credentials: "same-origin" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const newWrapper = doc.querySelector(".crm-contacts-wrapper");
+        if (!newWrapper) {
+          return false;
+        }
+
+        currentWrapper.replaceWith(newWrapper);
+        Drupal.attachBehaviors(newWrapper);
+        return true;
+      })
+      .catch((error) => {
+        console.error("Contacts wrapper refresh error:", error);
+        return false;
+      });
+  }
+
   /**
    * Initialize delete buttons and modal functionality.
    */
@@ -29,10 +74,9 @@
         jQuery(this).on("click", function (e) {
           e.preventDefault();
           const nid = jQuery(this).data("nid");
-          const contactName = jQuery(this)
-            .closest("tr")
-            .find(".crm-contact__name")
-            .text();
+          const contactName =
+            jQuery(this).data("name") ||
+            jQuery(this).closest("tr").find(".crm-contact-link").text().trim();
 
           // Show confirmation modal.
           showDeleteConfirmation(nid, contactName);
@@ -133,42 +177,36 @@
     confirmBtn.prop("disabled", true).text("Deleting...");
 
     // Send AJAX request to delete the contact.
-    jQuery.ajax({
-      url: `/api/contacts/${nid}/delete`,
-      type: "POST",
-      dataType: "json",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      success: function (response) {
+    getCsrfToken()
+      .then(function (token) {
+        return jQuery.ajax({
+          url: `/api/contacts/${nid}/delete`,
+          type: "POST",
+          dataType: "json",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRF-Token": token,
+          },
+        });
+      })
+      .done(function (response) {
         if (response.status === "success") {
-          // Remove row with animation.
-          contactRow
-            .addClass("crm-contact--deleting")
-            .fadeOut(300, function () {
-              jQuery(this).remove();
+          modal.removeClass("crm-modal--visible");
 
-              // Close modal.
-              modal.removeClass("crm-modal--visible");
+          window.CRM &&
+            CRM.toast("Contact deleted — removed from your CRM.", "success");
 
-              // Show success notification.
-              window.CRM &&
-                CRM.toast(
-                  "Contact deleted — removed from your CRM.",
-                  "success",
-                );
-
-              // Check if table is now empty.
-              if (jQuery(".crm-contacts-table tbody tr").length === 0) {
-                showEmptyState();
-              }
-            });
+          refreshContactsWrapper().then(function (refreshed) {
+            if (!refreshed) {
+              window.location.reload();
+            }
+          });
         } else {
           window.CRM &&
             CRM.toast(response.message || "Failed to delete contact.", "error");
         }
-      },
-      error: function (jqXHR, textStatus, errorThrown) {
+      })
+      .fail(function (jqXHR) {
         let errorMessage = "Failed to delete contact. Please try again.";
 
         if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
@@ -176,38 +214,19 @@
         }
 
         window.CRM && CRM.toast(errorMessage, "error");
-      },
-      complete: function () {
+      })
+      .always(function () {
         // Restore button state.
         confirmBtn.prop("disabled", false).text(originalText);
-      },
-    });
+      });
   }
-
-  /**
-   * Show empty state when all contacts are deleted.
-   */
-  function showEmptyState() {
-    jQuery(".crm-contacts-table").fadeOut(300, function () {
-      const emptyStateHTML = `
-        <div class="crm-empty-state">
-          <div class="crm-empty-state__icon">📇</div>
-          <h2 class="crm-empty-state__title">No contacts yet</h2>
-          <p class="crm-empty-state__message">Get started by adding your first contact.</p>
-          <a href="/crm/contacts/add" class="btn btn-primary crm-empty-state__cta">Add New Contact</a>
-        </div>
-      `;
-      jQuery(this).after(emptyStateHTML);
-    });
-  }
-
   /**
    * Update relative times (e.g., "2 minutes ago").
    *
    * Formats timestamps to human-readable relative times.
    */
   function updateRelativeTimes() {
-    jQuery(".crm-contact__timestamp").each(function () {
+    jQuery(".crm-timestamp, .crm-contact__timestamp").each(function () {
       const timestamp = jQuery(this).data("timestamp");
       if (timestamp) {
         const relativeTime = getRelativeTime(timestamp);

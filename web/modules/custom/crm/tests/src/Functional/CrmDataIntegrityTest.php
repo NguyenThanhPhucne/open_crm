@@ -4,6 +4,7 @@ namespace Drupal\crm_test\Tests;
 
 use Drupal\Tests\BrowserTestBase;
 use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Tests for CRM data integrity validations.
@@ -100,28 +101,35 @@ class CrmDataIntegrityTest extends BrowserTestBase {
   }
 
   /**
-   * Test stage format normalization.
+   * Test stage field stores a taxonomy reference.
    */
-  public function testStageFormatNormalization() {
+  public function testStageFieldStoresTaxonomyReference() {
     $this->drupalLogin($this->repUser);
+
+    $won_stage = Term::create([
+      'vid' => 'pipeline_stage',
+      'name' => 'Won',
+    ]);
+    $won_stage->save();
 
     // Create contact
     $contact = Node::create(['type' => 'contact', 'title' => 'Contact']);
     $contact->save();
 
-    // Create deal with numeric stage (legacy)
+    // Create deal with a taxonomy stage reference
     $deal = Node::create([
       'type' => 'deal',
       'title' => 'Legacy Deal',
       'field_amount' => 50000,
       'field_contact' => $contact->id(),
-      'field_stage' => 5, // Numeric value (old format)
+      'field_stage' => ['target_id' => $won_stage->id()],
     ]);
     $deal->save();
 
-    // After presave, should be converted to string
+    // The saved stage should remain a valid taxonomy reference.
     $deal = Node::load($deal->id());
-    $this->assertEqual($deal->get('field_stage')->value, 'closed_won');
+    $this->assertEqual((int) $deal->get('field_stage')->target_id, (int) $won_stage->id());
+    $this->assertEqual($deal->get('field_stage')->entity->label(), 'Won');
   }
 
   /**

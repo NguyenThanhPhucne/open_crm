@@ -190,27 +190,38 @@ class DataIntegrityCommands extends DrushCommand {
     $deals = $this->entityTypeManager->getStorage('node')
       ->loadByProperties(['type' => 'deal']);
 
+    $term_ids = $this->getPipelineStageIds();
     $stage_mapping = [
-      '0' => 'qualified',
+      '0' => 'new',
       '1' => 'qualified',
       '2' => 'proposal',
       '3' => 'negotiation',
       '4' => 'negotiation',
-      '5' => 'closed_won',
-      '6' => 'closed_lost',
+      '5' => 'won',
+      '6' => 'lost',
+      'closed_won' => 'won',
+      'closed_lost' => 'lost',
     ];
 
     $count = 0;
     foreach ($deals as $deal) {
-      $stage = $deal->get('field_stage')->value;
+      if ($deal->get('field_stage')->isEmpty()) {
+        continue;
+      }
 
-      // If stage is numeric, map it to string
-      if (is_numeric($stage) && isset($stage_mapping[$stage])) {
-        $deal->set('field_stage', $stage_mapping[$stage]);
+      $term = $deal->get('field_stage')->entity;
+      if ($term && $term->bundle() === 'pipeline_stage') {
+        continue;
+      }
+
+      $stage = strtolower(trim((string) $deal->get('field_stage')->getString()));
+
+      if (isset($stage_mapping[$stage]) && isset($term_ids[$stage_mapping[$stage]])) {
+        $deal->set('field_stage', ['target_id' => $term_ids[$stage_mapping[$stage]]]);
         $deal->save();
         $count++;
         $this->logger()->notice(sprintf(
-          'Updated deal #%d: %d → %s',
+          'Updated deal #%d: %s → %s',
           $deal->id(),
           $stage,
           $stage_mapping[$stage]
@@ -219,6 +230,24 @@ class DataIntegrityCommands extends DrushCommand {
     }
 
     $this->logger()->notice(sprintf('✓ Normalized %d deals', $count));
+  }
+
+  /**
+   * Get pipeline stage term IDs keyed by normalized label.
+   *
+   * @return array<string,int>
+   *   Example: ['new' => 1, 'qualified' => 2].
+   */
+  protected function getPipelineStageIds() {
+    $terms = $this->entityTypeManager->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'pipeline_stage']);
+
+    $stage_ids = [];
+    foreach ($terms as $term) {
+      $stage_ids[strtolower($term->label())] = (int) $term->id();
+    }
+
+    return $stage_ids;
   }
 
   /**

@@ -137,8 +137,6 @@ class KanbanController extends ControllerBase {
         $pipeline_value += $totals_by_stage[$sid];
       }
     }
-    $total_value_all = array_sum($totals_by_stage);
-
     // Format values
     $fmt_pipeline = '$' . ($pipeline_value >= 1000000
       ? number_format($pipeline_value / 1000000, 1) . 'M'
@@ -407,9 +405,9 @@ HTML;
     $html .= <<<HTML
 <div class="pipeline-page" id="pg-wrap">
   <div class="stats-bar">
-    <span class="stat-chip blue"><i data-lucide="kanban-square"></i>{$total_count} total deals</span>
-    <span class="stat-chip amber"><i data-lucide="trending-up"></i>{$fmt_pipeline} in pipeline</span>
-    <span class="stat-chip green"><i data-lucide="trophy"></i>{$won_count} won</span>
+    <span class="stat-chip blue" id="kanban-total-chip"><i data-lucide="kanban-square"></i>{$total_count} total deals</span>
+    <span class="stat-chip amber" id="kanban-pipeline-chip"><i data-lucide="trending-up"></i>{$fmt_pipeline} in pipeline</span>
+    <span class="stat-chip green" id="kanban-won-chip"><i data-lucide="trophy"></i>{$won_count} won</span>
   </div>
 
   <div class="page-header">
@@ -437,8 +435,8 @@ HTML;
       </select>
       <span class="flt-sel-arr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 4 7 9 12 4"/></svg></span>
     </div>
-    <span class="stat-chip blue" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
-    <span class="stat-chip green" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
+    <span class="stat-chip blue" id="kanban-filter-total-chip" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
+    <span class="stat-chip green" id="kanban-filter-pipeline-chip" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
     <span id="filter-count" class="filter-count"></span>
   </div>
 
@@ -457,16 +455,16 @@ HTML;
       
       $html .= <<<HTML
       
-      <div class="kanban-column">
+      <div class="kanban-column" data-stage="{$stage_id}" data-stage-name="{$stage_info['name']}">
         <div class="column-header" style="border-color:{$stage_info['color']}">
           <div class="column-title">
             <span class="col-dot" style="background:{$stage_info['color']}"></span>
             <h3>{$stage_info['name']}</h3>
             <span class="column-count">{$count}</span>
           </div>
-          <div class="column-total" style="color:{$stage_info['color']}">{$total_formatted}</div>
+          <div class="column-total" data-total-value="{$total}" style="color:{$stage_info['color']}">{$total_formatted}</div>
         </div>
-        <div class="column-cards" data-stage="{$stage_id}">
+        <div class="column-cards" data-stage="{$stage_id}" data-stage-name="{$stage_info['name']}" data-stage-color="{$stage_info['color']}">
 HTML;
 
       if (empty($deals)) {
@@ -505,7 +503,7 @@ HTML;
 
           $search_text = htmlspecialchars(strtolower($deal['title'] . ' ' . $org_display . ' ' . $owner_display), ENT_QUOTES, 'UTF-8');
           $html .= <<<HTML
-          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}" data-search-text="{$search_text}">
+          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}" data-deal-value="{$val}" data-search-text="{$search_text}">
             <div class="card-actions">
               <a href="/node/{$deal['nid']}" class="ca-btn" title="View"><i data-lucide="eye"></i></a>
               <button type="button" class="ca-btn" title="Edit" onclick="if(window.CRMInlineEdit)CRMInlineEdit.openModal({$deal['nid']},'deal');else location='/node/{$deal['nid']}/edit';"><i data-lucide="pencil"></i></button>
@@ -573,12 +571,138 @@ HTML;
     const _kstage = document.getElementById('kanban-stage-filter');
     const _kc = document.getElementById('filter-count');
     const _ksClear = document.getElementById('kanban-search-clear');
+    const _kanbanTotalChip = document.getElementById('kanban-total-chip');
+    const _kanbanPipelineChip = document.getElementById('kanban-pipeline-chip');
+    const _kanbanWonChip = document.getElementById('kanban-won-chip');
+    const _kanbanFilterTotalChip = document.getElementById('kanban-filter-total-chip');
+    const _kanbanFilterPipelineChip = document.getElementById('kanban-filter-pipeline-chip');
 
     // Prefix-match: true if any word in text starts with query.
     function crmWordMatch(text, q) {
       if (!q) return true;
       if (text.startsWith(q)) return true;
       return text.split(/[\s\-_\/]+/).some(function(w){ return w.startsWith(q); });
+    }
+
+    function formatCurrencyShort(value) {
+      if (value >= 1000000) return '$' + (value / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (value >= 1000) return '$' + Math.round(value / 1000) + 'K';
+      return '$' + Math.round(value);
+    }
+
+    function getColumnCards(cardOrColumn) {
+      if (!cardOrColumn) return null;
+      return cardOrColumn.classList && cardOrColumn.classList.contains('column-cards')
+        ? cardOrColumn
+        : cardOrColumn.closest('.column-cards');
+    }
+
+    function getStageMeta(columnCards) {
+      const stageName = (columnCards?.dataset.stageName || '').toLowerCase();
+      return {
+        isWon: stageName.includes('won'),
+        isLost: stageName.includes('lost'),
+        isClosed: stageName.includes('closed'),
+      };
+    }
+
+    function applyCardStageAppearance(card) {
+      const columnCards = getColumnCards(card);
+      if (!columnCards) return;
+      const stageColor = columnCards.dataset.stageColor || '#3b82f6';
+      card.style.borderLeftColor = stageColor;
+      const valueEl = card.querySelector('.deal-value');
+      if (valueEl) valueEl.style.color = stageColor;
+    }
+
+    function ensureColumnEmptyState(columnCards) {
+      if (!columnCards) return;
+      const cards = columnCards.querySelectorAll('.deal-card');
+      const emptyState = columnCards.querySelector('.empty-state');
+      if (cards.length === 0 && !emptyState) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.innerHTML = '<i data-lucide="inbox" width="32" height="32"></i><div>No deals</div>';
+        columnCards.appendChild(empty);
+        lucide.createIcons();
+      }
+      if (cards.length > 0 && emptyState) {
+        emptyState.remove();
+      }
+    }
+
+    function updateColumnSummary(columnCards) {
+      if (!columnCards) return;
+      const column = columnCards.closest('.kanban-column');
+      if (!column) return;
+      const cards = Array.from(columnCards.querySelectorAll('.deal-card'));
+      const countEl = column.querySelector('.column-count');
+      const totalEl = column.querySelector('.column-total');
+      const totalValue = cards.reduce(function(sum, card) {
+        return sum + (parseFloat(card.dataset.dealValue || '0') || 0);
+      }, 0);
+      if (countEl) {
+        countEl.textContent = cards.filter(function(card) {
+          return !card.classList.contains('card-hidden');
+        }).length;
+      }
+      if (totalEl) {
+        totalEl.dataset.totalValue = String(totalValue);
+        totalEl.textContent = formatCurrencyShort(totalValue);
+      }
+      ensureColumnEmptyState(columnCards);
+    }
+
+    function updateBoardSummary() {
+      const cards = Array.from(document.querySelectorAll('.deal-card'));
+      let totalDeals = 0;
+      let wonDeals = 0;
+      let pipelineValue = 0;
+
+      cards.forEach(function(card) {
+        const columnCards = getColumnCards(card);
+        if (!columnCards) return;
+        const value = parseFloat(card.dataset.dealValue || '0') || 0;
+        const stageMeta = getStageMeta(columnCards);
+        totalDeals += 1;
+        if (stageMeta.isWon) {
+          wonDeals += 1;
+        }
+        else if (!stageMeta.isLost && !stageMeta.isClosed) {
+          pipelineValue += value;
+        }
+      });
+
+      if (_kanbanTotalChip) _kanbanTotalChip.innerHTML = '<i data-lucide="kanban-square"></i>' + totalDeals + ' total deals';
+      if (_kanbanPipelineChip) _kanbanPipelineChip.innerHTML = '<i data-lucide="trending-up"></i>' + formatCurrencyShort(pipelineValue) + ' in pipeline';
+      if (_kanbanWonChip) _kanbanWonChip.innerHTML = '<i data-lucide="trophy"></i>' + wonDeals + ' won';
+      if (_kanbanFilterTotalChip) _kanbanFilterTotalChip.innerHTML = '<i data-lucide="kanban-square"></i>' + totalDeals + ' deals';
+      if (_kanbanFilterPipelineChip) _kanbanFilterPipelineChip.innerHTML = '<i data-lucide="trending-up"></i>' + formatCurrencyShort(pipelineValue);
+      lucide.createIcons();
+    }
+
+    function syncBoardState(columns) {
+      const columnList = columns && columns.length ? Array.from(columns) : Array.from(document.querySelectorAll('.column-cards'));
+      columnList.forEach(function(columnCards) {
+        Array.from(columnCards.querySelectorAll('.deal-card')).forEach(applyCardStageAppearance);
+        updateColumnSummary(columnCards);
+      });
+      updateBoardSummary();
+    }
+
+    function showToast(message, tone) {
+      const existing = document.querySelector('.crm-kanban-toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      const isError = tone === 'error';
+      toast.className = 'crm-kanban-toast';
+      toast.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.16);z-index:9999;background:' + (isError ? '#dc2626' : '#0f766e') + ';color:#fff;font-weight:600;';
+      toast.innerHTML = '<i data-lucide="' + (isError ? 'alert-circle' : 'check-circle') + '" width="18" height="18"></i><span>' + message + '</span>';
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      window.setTimeout(function() {
+        toast.remove();
+      }, 2200);
     }
 
     function applyKanbanFilter() {
@@ -614,6 +738,7 @@ HTML;
     if (_ks) { _ks.addEventListener('input', applyKanbanFilter); }
     if (_kstage) { _kstage.addEventListener('change', applyKanbanFilter); }
     if (_ksClear) { _ksClear.addEventListener('click', function(){ if(_ks){_ks.value='';} applyKanbanFilter(); _ks && _ks.focus(); }); }
+    syncBoardState();
 
     // Variables for reverting card movement
     let pendingMove = null;
@@ -642,6 +767,8 @@ HTML;
       // Revert the card if pending
       if (pendingMove) {
         pendingMove.from.appendChild(pendingMove.item);
+        syncBoardState([pendingMove.from, pendingMove.to]);
+        applyKanbanFilter();
         pendingMove = null;
       }
     }
@@ -698,23 +825,14 @@ HTML;
         const result = await response.json();
         
         if (result.success) {
-          // Clear pending move
+          const movedColumns = pendingMove ? [pendingMove.from, pendingMove.to] : [];
           pendingMove = null;
-          
-          // Close modal and reload
           document.getElementById('dealClosingModal').classList.remove('active');
-          
-          // Show success message
-          const successDiv = document.createElement('div');
-          successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px;';
-          successDiv.innerHTML = '<i data-lucide="check-circle" width="20" height="20"></i><span>✅ Deal closed successfully!</span>';
-          document.body.appendChild(successDiv);
-          lucide.createIcons();
-          
-          setTimeout(() => {
-            // Redirect to dashboard to see updated stats
-            window.location.href = '/crm/dashboard';
-          }, 1500);
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          syncBoardState(movedColumns);
+          applyKanbanFilter();
+          showToast('Deal closed successfully');
         } else {
           errorText.textContent = result.message || 'An error occurred. Please try again.';
           errorMsg.classList.add('show');
@@ -791,6 +909,8 @@ HTML;
               from: evt.from,
               to: evt.to
             };
+            syncBoardState([evt.from, evt.to]);
+            applyKanbanFilter();
             
             // If moving to Won (stage 5), show modal
             if (newStage === '5') {
@@ -816,21 +936,25 @@ HTML;
               const result = await response.json();
               
               if (result.success) {
-                // Clear pending move
                 pendingMove = null;
-                // Reload page to update totals
-                window.location.reload();
+                syncBoardState([evt.from, evt.to]);
+                applyKanbanFilter();
+                showToast('Deal stage updated');
               } else {
-                alert('Error updating deal stage');
                 // Revert the move
                 evt.from.appendChild(evt.item);
+                syncBoardState([evt.from, evt.to]);
+                applyKanbanFilter();
+                showToast(result.message || 'Error updating deal stage', 'error');
                 pendingMove = null;
               }
             } catch (error) {
               console.error('Error:', error);
-              alert('Error updating deal stage');
               // Revert the move
               evt.from.appendChild(evt.item);
+              syncBoardState([evt.from, evt.to]);
+              applyKanbanFilter();
+              showToast('Error updating deal stage', 'error');
               pendingMove = null;
             }
           }
@@ -849,7 +973,7 @@ HTML;
   public function updateStage(Request $request) {
     // Check if this is a form submission (multipart/form-data or application/x-www-form-urlencoded)
     $content_type = $request->headers->get('Content-Type', '');
-    $is_form_submission = strpos($content_type, 'form') !== FALSE || 
+    $is_form_submission = strpos($content_type, 'form') !== FALSE ||
                           strpos($content_type, 'multipart') !== FALSE;
     
     if ($is_form_submission) {

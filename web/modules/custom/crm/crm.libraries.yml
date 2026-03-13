@@ -27,6 +27,17 @@ user_profile_styles:
     - crm/crm_layout
     - crm/crm-design-system
 
+user_edit_styles:
+  version: 1.0
+  css:
+    theme:
+      css/user-edit.css: {}
+  js:
+    js/user-edit.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
 crm_layout:
   version: 1.0
   css:

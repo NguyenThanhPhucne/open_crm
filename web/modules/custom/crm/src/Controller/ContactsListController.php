@@ -6,8 +6,10 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 use Drupal\node\NodeInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -66,8 +68,17 @@ class ContactsListController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   JSON response with status and message.
    */
-  public function deleteContact($nid) {
+  public function deleteContact(Request $request, $nid) {
     $account = $this->currentUser();
+
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
+      return new JsonResponse([
+        'status' => 'error',
+        'message' => 'CSRF token validation failed.',
+        'code' => 403,
+      ], 403);
+    }
 
     // Load the contact.
     $node = $this->entityTypeManager->getStorage('node')->load($nid);
@@ -231,11 +242,19 @@ class ContactsListController extends ControllerBase {
       }
 
       // Build contact data.
+      $organization_name = '';
+      if ($node->hasField('field_organization') && !$node->get('field_organization')->isEmpty()) {
+        $organization = $node->get('field_organization')->entity;
+        if ($organization) {
+          $organization_name = $organization->label();
+        }
+      }
+
       $contact_data = [
         'nid' => $node->id(),
         'name' => $node->label(),
         'email' => $node->hasField('field_email') ? $node->get('field_email')->value : '',
-        'organization' => $node->hasField('field_organization') ? $node->get('field_organization')->value : '',
+        'organization' => $organization_name,
         'owner' => $owner_name,
         'created' => $created,
         'created_relative' => $created_relative,

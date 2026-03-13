@@ -16,6 +16,135 @@ window.CRMInlineEdit = {
     return this._csrfToken;
   },
 
+  getRowId: function (nid, type) {
+    const rowPrefixMap = {
+      contact: "contact-row-",
+      deal: "deal-row-",
+      organization: "org-row-",
+      activity: "activity-row-",
+    };
+
+    return (rowPrefixMap[type] || type + "-row-") + nid;
+  },
+
+  refreshEntityRow: function (nid, type) {
+    const rowId = this.getRowId(nid, type);
+    const currentRow = document.getElementById(rowId);
+    if (!currentRow) {
+      return Promise.resolve(false);
+    }
+
+    return fetch(window.location.href, { credentials: "same-origin" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+        return response.text();
+      })
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const newRow = doc.getElementById(rowId);
+        if (!newRow) {
+          return false;
+        }
+
+        currentRow.replaceWith(newRow);
+        newRow.style.transition = "background-color 0.5s ease";
+        newRow.style.backgroundColor = "#dcfce7";
+        setTimeout(() => {
+          newRow.style.backgroundColor = "";
+        }, 900);
+
+        document.dispatchEvent(new CustomEvent("crm:results-swapped"));
+        return true;
+      })
+      .catch((error) => {
+        console.error("Row refresh error:", error);
+        return false;
+      });
+  },
+
+  refreshListSections: function () {
+    const resultsWrap = document.getElementById("crm-results-wrap");
+    if (!resultsWrap) {
+      return Promise.resolve(false);
+    }
+
+    return fetch(window.location.href, { credentials: "same-origin" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+        return response.text();
+      })
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const newResultsWrap = doc.getElementById("crm-results-wrap");
+        const currentStatsBar = document.querySelector(".stats-bar");
+        const newStatsBar = doc.querySelector(".stats-bar");
+        const currentCount = document.querySelector(".filter-count");
+        const newCount = doc.querySelector(".filter-count");
+
+        if (!newResultsWrap) {
+          return false;
+        }
+
+        resultsWrap.innerHTML = newResultsWrap.innerHTML;
+
+        if (currentStatsBar && newStatsBar) {
+          currentStatsBar.innerHTML = newStatsBar.innerHTML;
+        }
+
+        if (currentCount && newCount) {
+          currentCount.textContent = newCount.textContent;
+        }
+
+        document.dispatchEvent(new CustomEvent("crm:results-swapped"));
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+        return true;
+      })
+      .catch((error) => {
+        console.error("List refresh error:", error);
+        return false;
+      });
+  },
+
+  refreshCurrentView: function (nid, type, data) {
+    return this.refreshEntityRow(nid, type).then((refreshedRow) => {
+      if (refreshedRow) {
+        return true;
+      }
+
+      return this.refreshListSections().then((refreshedList) => {
+        if (refreshedList) {
+          return true;
+        }
+
+        const rowEl = document.getElementById(this.getRowId(nid, type));
+        if (rowEl) {
+          rowEl.style.transition = "background-color 0.5s ease";
+          rowEl.style.backgroundColor = "#dcfce7";
+          const timeCell = rowEl.querySelector(".td-time");
+          if (timeCell) timeCell.textContent = "just now";
+          if (data.title) {
+            const nameLink = rowEl.querySelector("[class$='-name-link']");
+            if (nameLink) nameLink.textContent = data.title;
+          }
+          return true;
+        }
+
+        if (window.location.pathname.startsWith("/node/")) {
+          window.location.reload();
+          return true;
+        }
+
+        return false;
+      });
+    });
+  },
+
   openModal: function (nid, type) {
     // Show loading overlay
     const loadingHtml =
@@ -172,26 +301,8 @@ window.CRMInlineEdit = {
             const overlay = document.getElementById("crm-modal-overlay");
             if (overlay) overlay.remove();
 
-            // Flash the edited row green + update visible cells
-            const typeRowPrefix = {
-              contact: "contact-row-",
-              deal: "deal-row-",
-              organization: "org-row-",
-              activity: "activity-row-",
-            };
-            const rowEl = document.getElementById(
-              (typeRowPrefix[type] || type + "-row-") + nid,
-            );
-            if (rowEl) {
-              rowEl.style.transition = "background-color 0.5s ease";
-              rowEl.style.backgroundColor = "#dcfce7";
-              const timeCell = rowEl.querySelector(".td-time");
-              if (timeCell) timeCell.textContent = "just now";
-              if (data.title) {
-                const nameLink = rowEl.querySelector("[class$='-name-link']");
-                if (nameLink) nameLink.textContent = data.title;
-              }
-            }
+            // Keep the current view in sync whether we're on a list or detail page.
+            this.refreshCurrentView(nid, type, data);
 
             // Show toast immediately
             if (window.CRM && window.CRM.toast) {
@@ -205,9 +316,6 @@ window.CRMInlineEdit = {
                 }),
               );
             }
-
-            // Reload after short delay to sync all field values in the row
-            setTimeout(() => location.reload(), 1200);
           } else {
             // Show error message (don't reload if there's an error)
             this.showMessage(data.message || "Error saving changes", "error");
@@ -587,46 +695,11 @@ window.CRMInlineEdit = {
               );
             }
 
-            // Remove the row from DOM with a fast fade — no page reload needed
-            const rowPrefixMap = {
-              contact: "contact-row-",
-              deal: "deal-row-",
-              organization: "org-row-",
-              activity: "activity-row-",
-            };
-            const rowId = (rowPrefixMap[type] || type + "-row-") + nid;
-            const row = document.getElementById(rowId);
-            if (row) {
-              row.style.transition = "opacity 0.25s ease, transform 0.25s ease";
-              row.style.opacity = "0";
-              row.style.transform = "translateX(-12px)";
-              setTimeout(() => {
-                row.remove();
-                // Decrement the "Showing X–Y of Z" counter
-                const countEl = document.querySelector(".filter-count");
-                if (countEl) {
-                  countEl.textContent = countEl.textContent.replace(
-                    /of (\d+)/,
-                    function (_, n) {
-                      return "of " + Math.max(0, parseInt(n, 10) - 1);
-                    },
-                  );
-                }
-                // Decrement first stat chip number
-                const firstChip = document.querySelector(".stat-chip");
-                if (firstChip) {
-                  firstChip.innerHTML = firstChip.innerHTML.replace(
-                    /^(\d+)/,
-                    function (_, n) {
-                      return Math.max(0, parseInt(n, 10) - 1);
-                    },
-                  );
-                }
-              }, 260);
-            } else {
-              // Row not found in DOM — fall back to reload
-              setTimeout(() => location.reload(), 100);
-            }
+            this.refreshListSections().then((refreshed) => {
+              if (!refreshed) {
+                setTimeout(() => location.reload(), 100);
+              }
+            });
           } else {
             this.showMessage(data.message || "Error deleting", "error");
             if (modal) {

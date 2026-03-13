@@ -555,7 +555,8 @@
   gap: 1.25rem 2rem;
 }
 
-.field-item {
+.detail-fields-grid {
+  padding: 16px 20px 20px;
 }
 
 .field-label {
@@ -645,6 +646,14 @@
   font-weight: 500;
 }
 
+.detail-section-pad {
+  padding: 0 20px 16px;
+}
+
+.detail-section-label {
+  margin-bottom: 6px;
+}
+
 /* ── Deal amount hero ─────────────────────────────────── */
 .deal-amount-hero {
   display: flex;
@@ -698,6 +707,10 @@
   color: #94a3b8;
 }
 
+.detail-empty-state {
+  padding: 2.5rem 1.5rem;
+}
+
 .empty-state i {
   width: 32px;
   height: 32px;
@@ -708,6 +721,70 @@
 .empty-state p {
   font-size: 0.875rem;
   margin: 0;
+}
+
+.detail-empty-action {
+  margin-top: 10px;
+}
+
+.detail-inline-action {
+  margin-top: 6px;
+}
+
+.detail-subtle-count {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.field-value-danger {
+  color: #ef4444;
+}
+
+.contact-role-badge-purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #6d28d9;
+}
+
+.contact-role-badge-blue {
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.contact-role-badge-green {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.contact-role-badge-amber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+.contact-meta-chip-strong {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.outcome-title {
+  color: #15803d;
+}
+
+.outcome-title i,
+.outcome-title svg {
+  stroke: #10b981;
+}
+
+.outcome-body {
+  padding: 14px 20px 18px;
+}
+
+.outcome-text {
+  margin: 0;
+  font-size: 14px;
+  color: #166534;
+  line-height: 1.6;
 }
 
 /* ── Breadcrumb override ──────────────────────────────── */
@@ -954,6 +1031,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.org-avatar-placeholder {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 24px;
 }
 .contact-avatar-initial {
   color: #fff;

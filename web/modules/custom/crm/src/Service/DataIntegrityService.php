@@ -186,20 +186,22 @@ class DataIntegrityService {
    *   Array of invalid stage entries.
    */
   public function validateStageFormat() {
-    $valid_stages = ['qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
-    
+    $valid_stage_ids = array_values($this->getPipelineStageIds());
+
     $deals_query = \Drupal::database()->select('node__field_stage', 'fs')
-      ->fields('fs', ['entity_id', 'field_stage_value'])
+      ->fields('fs', ['entity_id', 'field_stage_target_id'])
       ->condition('fs.bundle', 'deal')
+      ->condition('fs.deleted', 0)
       ->execute();
 
     $invalid = [];
     foreach ($deals_query as $row) {
-      if (!in_array($row->field_stage_value, $valid_stages)) {
+      $stage_target_id = (int) $row->field_stage_target_id;
+      if (!in_array($stage_target_id, $valid_stage_ids, TRUE)) {
         $invalid[] = [
           'deal_id' => $row->entity_id,
-          'stage_value' => $row->field_stage_value,
-          'valid_options' => implode(', ', $valid_stages),
+          'stage_value' => $stage_target_id,
+          'valid_options' => implode(', ', array_keys($this->getPipelineStageIds())),
         ];
       }
     }
@@ -217,29 +219,61 @@ class DataIntegrityService {
    *   Array with actual deal counts.
    */
   public function verifyDashboardStatistics($user_id = NULL) {
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('type', 'deal')
-      ->accessCheck(FALSE);
+    $stage_ids = $this->getPipelineStageIds();
+    $won_stage_id = $stage_ids['won'] ?? NULL;
+    $lost_stage_id = $stage_ids['lost'] ?? NULL;
 
-    if ($user_id) {
-      $query->condition('field_owner', $user_id);
+    $buildQuery = function () use ($user_id) {
+      $query = $this->entityTypeManager->getStorage('node')->getQuery()
+        ->condition('type', 'deal')
+        ->accessCheck(FALSE);
+
+      if ($user_id) {
+        $query->condition('field_owner', $user_id);
+      }
+
+      return $query;
+    };
+
+    $won_count = 0;
+    if ($won_stage_id) {
+      $won_count = $buildQuery()
+        ->condition('field_stage', $won_stage_id)
+        ->count()
+        ->execute();
     }
 
-    $won_count = $query
-      ->condition('field_stage', 'closed_won')
-      ->count()
-      ->execute();
-
-    $lost_count = $query
-      ->condition('field_stage', 'closed_lost')
-      ->count()
-      ->execute();
+    $lost_count = 0;
+    if ($lost_stage_id) {
+      $lost_count = $buildQuery()
+        ->condition('field_stage', $lost_stage_id)
+        ->count()
+        ->execute();
+    }
 
     return [
       'actual_won' => $won_count,
       'actual_lost' => $lost_count,
       'total_closed' => $won_count + $lost_count,
     ];
+  }
+
+  /**
+   * Get pipeline stage term IDs keyed by normalized label.
+   *
+   * @return array<string,int>
+   *   Example: ['new' => 1, 'qualified' => 2, 'proposal' => 3].
+   */
+  protected function getPipelineStageIds() {
+    $terms = $this->entityTypeManager->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'pipeline_stage']);
+
+    $stage_ids = [];
+    foreach ($terms as $term) {
+      $stage_ids[strtolower($term->label())] = (int) $term->id();
+    }
+
+    return $stage_ids;
   }
 
   /**

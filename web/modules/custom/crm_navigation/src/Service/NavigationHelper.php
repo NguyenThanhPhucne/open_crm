@@ -56,22 +56,22 @@ class NavigationHelper {
       ],
       'contacts' => [
         'title' => $this->t('My Contacts'),
-        'route' => 'view.my_contacts.page_1',
+        'route' => 'crm.my_contacts',
         'icon' => 'users',
       ],
       'deals' => [
         'title' => $this->t('My Deals'),
-        'route' => 'view.my_deals.page_1',
+        'route' => 'crm.my_deals',
         'icon' => 'briefcase',
       ],
       'activities' => [
         'title' => $this->t('My Activities'),
-        'route' => 'view.my_activities.page_1',
+        'route' => 'crm.my_activities',
         'icon' => 'calendar-clock',
       ],
       'organizations' => [
         'title' => $this->t('Organizations'),
-        'route' => 'view.all_organizations.page_1',
+        'route' => 'crm.all_organizations',
         'icon' => 'building-2',
       ],
     ];
@@ -122,10 +122,10 @@ class NavigationHelper {
   public function getContextBackUrl($entity_type = NULL) {
     // Map entity types to their list views
     $entity_routes = [
-      'contact' => 'view.my_contacts.page_1',
-      'deal' => 'view.my_deals.page_1',
-      'activity' => 'view.my_activities.page_1',
-      'organization' => 'view.all_organizations.page_1',
+      'contact' => 'crm.my_contacts',
+      'deal' => 'crm.my_deals',
+      'activity' => 'crm.my_activities',
+      'organization' => 'crm.all_organizations',
     ];
 
     if ($entity_type && isset($entity_routes[$entity_type])) {

@@ -234,6 +234,110 @@ function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for user_form.
+ */
+function crm_form_user_form_alter(&$form, FormStateInterface $form_state) {
+  $form_object = $form_state->getFormObject();
+  if (!method_exists($form_object, 'getEntity')) {
+    return;
+  }
+
+  /** @var \Drupal\user\UserInterface|null $account */
+  $account = $form_object->getEntity();
+  if (!$account) {
+    return;
+  }
+
+  $display_name = trim((string) $account->getDisplayName()) ?: 'User';
+  $display_name = ucfirst($display_name);
+  $email = (string) $account->getEmail();
+  $initial = strtoupper(mb_substr($display_name, 0, 1));
+  $is_own_profile = ((int) \Drupal::currentUser()->id() === (int) $account->id());
+  $subtitle = $is_own_profile
+    ? 'Keep your profile, credentials, language, and team settings aligned with the CRM workspace.'
+    : 'Update this team member\'s account details, preferences, and access settings.';
+
+  $team_name = 'No team assigned';
+  if ($account->hasField('field_team') && !$account->get('field_team')->isEmpty() && $account->get('field_team')->entity) {
+    $team_name = $account->get('field_team')->entity->label();
+  }
+
+  $member_since = \Drupal::service('date.formatter')->format($account->getCreatedTime(), 'custom', 'M Y');
+  $profile_url = \Drupal\Core\Url::fromRoute('crm.user_profile', ['user' => $account->id()])->toString();
+  $dashboard_url = '/crm/dashboard';
+
+  $has_picture = FALSE;
+  $user_picture_markup = '<div class="crm-user-edit-avatar crm-user-edit-avatar--placeholder"><span class="avatar-initial">'
+    . htmlspecialchars($initial, ENT_QUOTES, 'UTF-8')
+    . '</span></div>';
+  if ($account->hasField('user_picture') && !$account->get('user_picture')->isEmpty() && $account->get('user_picture')->entity) {
+    $picture = $account->get('user_picture')->entity;
+    $file_uri = $picture->getFileUri();
+    $image_style = \Drupal::entityTypeManager()->getStorage('image_style')->load('thumbnail');
+    $picture_url = $image_style
+      ? $image_style->buildUrl($file_uri)
+      : \Drupal::service('file_url_generator')->generateAbsoluteString($file_uri);
+    $user_picture_markup = '<img src="' . htmlspecialchars($picture_url, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($display_name, ENT_QUOTES, 'UTF-8') . '" class="crm-user-edit-avatar" />';
+    $has_picture = TRUE;
+  }
+
+  $hero_html = '<div class="crm-user-edit-hero">'
+    . '<div class="crm-user-edit-cover"></div>'
+    . '<div class="crm-user-edit-hero__body">'
+    . '<div class="crm-user-edit-avatar-section">'
+    . $user_picture_markup
+    . '<span class="crm-user-edit-avatar-status' . ($has_picture ? ' is-custom' : '') . '"></span>'
+    . '</div>'
+    . '<div class="crm-user-edit-identity">'
+    . '<div class="crm-user-edit-hero__eyebrow">Account settings</div>'
+    . '<div class="crm-user-edit-name-row">'
+    . '<h1 class="crm-user-edit-hero__title">' . htmlspecialchars($display_name, ENT_QUOTES, 'UTF-8') . '</h1>'
+    . '<a href="' . htmlspecialchars($profile_url, ENT_QUOTES, 'UTF-8') . '" class="crm-user-edit-inline-link">View profile</a>'
+    . '</div>'
+    . '<p class="crm-user-edit-hero__subtitle">' . htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8') . '</p>'
+    . '<div class="crm-user-edit-hero__meta">'
+    . '<span class="crm-user-edit-meta-chip">' . htmlspecialchars($email ?: 'No email address', ENT_QUOTES, 'UTF-8') . '</span>'
+    . '<span class="crm-user-edit-meta-chip">' . htmlspecialchars($team_name, ENT_QUOTES, 'UTF-8') . '</span>'
+    . '<span class="crm-user-edit-meta-chip">Joined ' . htmlspecialchars($member_since, ENT_QUOTES, 'UTF-8') . '</span>'
+    . '</div></div>'
+    . '<div class="crm-user-edit-quick-actions">'
+    . '<a href="' . htmlspecialchars($profile_url, ENT_QUOTES, 'UTF-8') . '" class="crm-user-edit-btn crm-user-edit-btn--primary">Open Profile</a>'
+    . '<a href="' . htmlspecialchars($dashboard_url, ENT_QUOTES, 'UTF-8') . '" class="crm-user-edit-btn crm-user-edit-btn--secondary">CRM Dashboard</a>'
+    . '</div></div></div>';
+
+  $form['#attributes']['class'][] = 'crm-user-edit-form';
+  $form['#attached']['library'][] = 'crm/user_edit_styles';
+
+  if (isset($form['actions']['submit']['#attributes']['class'])) {
+    $form['actions']['submit']['#attributes']['class'][] = 'crm-user-edit-submit';
+  }
+  else {
+    $form['actions']['submit']['#attributes']['class'] = ['crm-user-edit-submit'];
+  }
+
+  if (isset($form['actions']['#attributes']['class'])) {
+    $form['actions']['#attributes']['class'][] = 'crm-user-edit-actions';
+  }
+  else {
+    $form['actions']['#attributes']['class'] = ['crm-user-edit-actions'];
+  }
+
+  foreach (['account', 'user_picture', 'user_picture_wrapper', 'timezone', 'roles', 'status', 'field_team', 'gin_theme_settings'] as $key) {
+    if (isset($form[$key]['#attributes']['class'])) {
+      $form[$key]['#attributes']['class'][] = 'crm-user-edit-section-target';
+    }
+    elseif (isset($form[$key])) {
+      $form[$key]['#attributes']['class'] = ['crm-user-edit-section-target'];
+    }
+  }
+
+  $form['crm_user_edit_header'] = [
+    '#markup' => Markup::create($hero_html),
+    '#weight' => -200,
+  ];
+}
+
+/**
  * Implements hook_node_presave().
  *
  * Comprehensive validation for CRM entities:
@@ -246,7 +350,6 @@ function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 function crm_node_presave(NodeInterface $node) {
   $bundle = $node->bundle();
   $current_user = \Drupal::currentUser();
-  $valid_stages = ['qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
 
   // DEALS - Comprehensive validation
   if ($bundle === 'deal') {
@@ -264,18 +367,13 @@ function crm_node_presave(NodeInterface $node) {
       // field_stage is an entity_reference to pipeline_stage; read target_id.
       $stage_tid = (int) $node->get('field_stage')->target_id;
 
-      // Map known taxonomy term IDs to stage key strings for validation.
-      $stage_map = [1 => 'qualified', 2 => 'qualified', 3 => 'proposal', 4 => 'negotiation', 5 => 'closed_won', 6 => 'closed_lost'];
-
-      if (!isset($stage_map[$stage_tid])) {
-        // Unknown TID — verify it actually belongs to pipeline_stage vocab.
-        $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($stage_tid);
-        if (!$term || $term->bundle() !== 'pipeline_stage') {
-          throw new \InvalidArgumentException(
-            sprintf('Invalid stage term ID: %d. Must reference a valid pipeline_stage term.', $stage_tid)
-          );
-        }
-        // Term exists in vocab but not in map — allow it.
+      // Validate directly against the taxonomy vocabulary instead of a stale
+      // hard-coded stage map so custom terms remain valid.
+      $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($stage_tid);
+      if (!$term || $term->bundle() !== 'pipeline_stage') {
+        throw new \InvalidArgumentException(
+          sprintf('Invalid stage term ID: %d. Must reference a valid pipeline_stage term.', $stage_tid)
+        );
       }
     }
 

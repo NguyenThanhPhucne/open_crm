@@ -322,11 +322,17 @@
 
       /* ── Duplicate phone/email check ────────────────────────────────── */
       function checkDuplicate(field, value, selector) {
-        fetch("/crm/quickadd/check-duplicate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ field: field, value: value }),
-        })
+        getCsrfToken()
+          .then((csrfToken) =>
+            fetch("/crm/quickadd/check-duplicate", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": csrfToken,
+              },
+              body: JSON.stringify({ field: field, value: value }),
+            }),
+          )
           .then((r) => r.json())
           .then((data) => {
             if (data.exists) {

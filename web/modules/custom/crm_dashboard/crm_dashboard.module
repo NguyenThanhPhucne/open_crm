@@ -60,8 +60,12 @@ function crm_dashboard_node_update($node) {
   
   if ($node->bundle() === 'deal') {
     // Check if stage has changed - this is critical for pipeline refresh
-    $original_stage = $node->original->get('field_stage')->value ?? null;
-    $new_stage = $node->get('field_stage')->value ?? null;
+    $original_stage = (!empty($node->original) && !$node->original->get('field_stage')->isEmpty())
+      ? (int) $node->original->get('field_stage')->target_id
+      : null;
+    $new_stage = !$node->get('field_stage')->isEmpty()
+      ? (int) $node->get('field_stage')->target_id
+      : null;
     
     if ($original_stage !== $new_stage) {
       // Stage changed - refresh entire pipeline view

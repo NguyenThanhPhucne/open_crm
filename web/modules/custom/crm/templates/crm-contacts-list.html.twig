@@ -18,13 +18,13 @@
     <h1>{{ 'Contacts'|t }}</h1>
     
     <div class="crm-contacts-actions">
-      <a href="{{ path('node.add', {'node_type': 'contact'}) }}" class="button button--primary">
-        ➕ {{ 'Add Contact'|t }}
+      <a href="/crm/add/contact" class="button button--primary">
+        {{ 'Add Contact'|t }}
       </a>
       
       {% if ai_autocomplete_enabled %}
         <a href="{{ path('crm_ai_autocomplete.generate_contact') }}" class="button button--secondary">
-          ✨ {{ 'Generate Contact with AI'|t }}
+          {{ 'Generate Contact with AI'|t }}
         </a>
       {% endif %}
     </div>
@@ -65,17 +65,17 @@
             {# Last Updated with badges #}
             <td>
               <div class="crm-timestamp-wrapper">
-                <span class="crm-timestamp">{{ contact.changed_relative }}</span>
+                <span class="crm-timestamp" data-timestamp="{{ contact.changed }}">{{ contact.changed_relative }}</span>
                 
                 {% if contact.is_new %}
                   <span class="crm-badge crm-badge-new" title="{{ 'Created within 10 minutes'|t }}">
-                    ✨ {{ 'New'|t }}
+                    {{ 'New'|t }}
                   </span>
                 {% endif %}
                 
                 {% if contact.is_updated %}
                   <span class="crm-badge crm-badge-recent" title="{{ 'Updated within 10 minutes'|t }}">
-                    ⚡ {{ 'Updated'|t }}
+                    {{ 'Updated'|t }}
                   </span>
                 {% endif %}
               </div>
@@ -84,7 +84,7 @@
             {# Actions (Edit, Delete) #}
             <td style="text-align: right;">
               <div class="crm-actions">
-                <a href="{{ path('entity.node.edit_form', {'node': contact.nid}) }}" 
+                 <a href="/crm/edit/contact/{{ contact.nid }}" 
                    class="button button--small button--edit" 
                    title="{{ 'Edit contact'|t }}">
                   {{ 'Edit'|t }}
@@ -106,8 +106,8 @@
   {% else %}
     <div class="crm-empty-state">
       <p>{{ 'No contacts found.'|t }}</p>
-      <a href="{{ path('node.add', {'node_type': 'contact'}) }}" class="button button--primary">
-        ➕ {{ 'Create your first contact'|t }}
+      <a href="/crm/add/contact" class="button button--primary">
+        {{ 'Create your first contact'|t }}
       </a>
     </div>
   {% endif %}
