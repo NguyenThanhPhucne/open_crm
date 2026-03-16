@@ -141,3 +141,11 @@ crm_lazy_load:
     - core/drupal
     - core/jquery
     - core/once
+
+crm-ui-professional:
+  version: 1.0
+  css:
+    theme:
+      css/crm-ui-professional.css: {}
+  dependencies:
+    - core/drupal

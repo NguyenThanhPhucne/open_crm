@@ -672,6 +672,7 @@ function crm_page_attachments(array &$attachments) {
   ) {
     $attachments['#attached']['library'][] = 'crm/crm_inline_edit';
     $attachments['#attached']['library'][] = 'crm/crm_lazy_load';
+    $attachments['#attached']['library'][] = 'crm/crm-ui-professional';
   }
 
   // PHASE 2: Also attach to views displayed via AJAX (inline pagination/filtering)
