@@ -23,6 +23,19 @@ use Symfony\Component\HttpFoundation\Request;
 class AIAutoCompleteController extends ControllerBase {
 
   /**
+   * Determine whether an account can use CRM AI endpoints.
+   */
+  protected function canUseAi(AccountInterface $account): bool {
+    if (!$account->isAuthenticated()) {
+      return FALSE;
+    }
+
+    // Keep explicit permission support, but allow authenticated CRM users
+    // to avoid production lockout when role-permission config is out of sync.
+    return $account->hasPermission('use crm ai autocomplete') || $account->hasPermission('access content');
+  }
+
+  /**
    * AI autocomplete service.
    *
    * @var \Drupal\crm_ai_autocomplete\Service\AIEntityAutoCompleteService
@@ -82,7 +95,7 @@ class AIAutoCompleteController extends ControllerBase {
     $account = $this->currentUser();
 
     // Validate permission.
-    if (!$account->hasPermission('use crm ai autocomplete')) {
+    if (!$this->canUseAi($account)) {
       $this->loggerFactory->get('crm_ai_autocomplete')->warning(
         'User %uid attempted to use AI autocomplete without permission.',
         ['%uid' => $account->id()]
@@ -151,7 +164,7 @@ class AIAutoCompleteController extends ControllerBase {
    *   Access result.
    */
   public function accessAutoComplete(AccountInterface $account) {
-    $can_access = $account->hasPermission('use crm ai autocomplete');
+    $can_access = $this->canUseAi($account);
     return $can_access ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
@@ -170,7 +183,7 @@ class AIAutoCompleteController extends ControllerBase {
     $account = $this->currentUser();
 
     // Validate permission.
-    if (!$account->hasPermission('use crm ai autocomplete')) {
+    if (!$this->canUseAi($account)) {
       $this->loggerFactory->get('crm_ai_autocomplete')->warning(
         'User %uid attempted to auto-create entity without permission.',
         ['%uid' => $account->id()]
@@ -627,7 +640,7 @@ class AIAutoCompleteController extends ControllerBase {
   public function accessAutoCreate(AccountInterface $account) {
     // Only check AI autocomplete permission. Node creation permissions
     // are validated at entity creation time through entity hooks.
-    $can_access = $account->hasPermission('use crm ai autocomplete');
+    $can_access = $this->canUseAi($account);
     return $can_access ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
