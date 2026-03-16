@@ -45,14 +45,13 @@
   Drupal.behaviors.crmLazyLoad = {
     attach: function (context) {
       // Find all list containers
-      jQuery(
+      once(
+        "crm-lazy-load",
         ".view-display-id-default, table.crm-entities-list, .crm-lazy-list",
         context,
-      )
-        .once("crm-lazy-load")
-        .each(function () {
-          initializeLazyLoadForList(this);
-        });
+      ).forEach(function (element) {
+        initializeLazyLoadForList(element);
+      });
     },
   };
 
