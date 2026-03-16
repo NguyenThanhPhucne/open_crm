@@ -298,9 +298,10 @@ class AllContactsController extends ControllerBase {
     // ── HTML output ───────────────────────────────────────────────────────────
     $html = <<<HTML
 <script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b}
+  body{font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;background:#f8fafc;color:#1e293b}
 
   /* ── Page shell ── */
   .contacts-page{max-width:1400px;margin:0 auto;animation:fadeIn .3s ease}
@@ -315,16 +316,16 @@ class AllContactsController extends ControllerBase {
   .stat-chip i{width:14px;height:14px}
 
   /* ── Page header card ── */
-  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);flex-wrap:wrap}
+  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 4px 12px 0 rgba(0,0,0,0.04);flex-wrap:wrap}
   .page-header-left{display:flex;flex-direction:column;gap:6px}
   .page-title{font-size:22px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:10px;letter-spacing:-.02em}
   .page-title i{color:#3b82f6;width:24px;height:24px}
   .page-subtitle{font-size:13px;color:#64748b}
   .page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
   /* ── Outlined button base ── */
-  .btn-primary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
-  .btn-primary{color:#2563eb;border:1.5px solid #2563eb}
-  .btn-primary:hover{background:#eff6ff;border-color:#1d4ed8;color:#1d4ed8}
+  .btn-primary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+  .btn-primary {color:#2563eb;border:1.5px solid #2563eb box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);}
+  .btn-primary:hover {background:#eff6ff;border-color:#1d4ed8;color:#1d4ed8 transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.15);}
   .btn-primary:active{background:#dbeafe}
   .btn-primary:focus-visible{outline:2px solid #3b82f6;outline-offset:2px}
   .btn-primary i{width:15px;height:15px;color:inherit}
@@ -335,24 +336,24 @@ class AllContactsController extends ControllerBase {
   .btn-generate i{width:15px;height:15px;color:inherit}
 
   /* ── Filter bar ── */
-  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;border:1px solid #e5e7eb;border-radius: 16px;background:#fff;transition:border-color .15s,box-shadow .15s}
   .filter-input-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .filter-input-wrap i,.filter-input-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#3b82f6;pointer-events:none;z-index:2;flex-shrink:0}
   .filter-input{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:none !important;font-size:14px !important;color:#1e293b;outline:none;box-sizing:border-box !important;background:transparent !important;display:block;box-shadow:none !important}
   .filter-input:focus{outline:none}
   .filter-input::placeholder{color:#9ca3af}
-  .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,color .15s,border-color .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
+  .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius: 16px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,color .15s,border-color .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
   .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
   .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
-  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:8px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
+  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius: 16px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;box-sizing:border-box}
   .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
   .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
 
   /* ── Table card ── */
-  .table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
   .contacts-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-  .contacts-table thead tr{background:linear-gradient(to right,#f8fafc,#f1f5f9);border-bottom:2px solid #e2e8f0}
+  .contacts-table thead tr { background:rgba(248,250,252,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
   .contacts-table th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;white-space:nowrap;overflow:hidden}
   .contacts-table th.th-action{text-align:right}
   .contacts-table tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
@@ -387,7 +388,7 @@ class AllContactsController extends ControllerBase {
   .cell-phone a,.cell-email a{color:#374151;text-decoration:none;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .cell-phone a:hover,.cell-email a:hover{color:#3b82f6}
   .td-empty-val{color:#cbd5e1;font-style:italic;font-size:12px}
-  .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .badge{display:inline-block;padding:2px 7px;border-radius: 16px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .cell-owner{display:flex;align-items:center;gap:4px;font-size:11px;color:#475569;overflow:hidden}
   .cell-owner span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cell-owner i{width:10px;height:10px;color:#d1d5db;opacity:.8;flex-shrink:0}
@@ -416,7 +417,7 @@ class AllContactsController extends ControllerBase {
   .empty-state-sub{font-size:14px;color:#64748b;margin:0 auto 16px;max-width:480px}
   .empty-state-tips{display:flex;justify-content:center;margin:0;padding:0;list-style:none}
   .empty-state-tips li{display:block}
-  .empty-state-tips a{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 16px;border:1px solid #dbeafe;border-radius:10px;background:#f8fbff;font-size:13px;font-weight:700;color:#1e3a8a;text-decoration:none;transition:all .15s}
+  .empty-state-tips a{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 16px;border:1px solid #dbeafe;border-radius: 16px;background:#f8fbff;font-size:13px;font-weight:700;color:#1e3a8a;text-decoration:none;transition:all .15s}
   .empty-state-tips a:hover{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;transform:translateY(-1px)}
 
   /* ── Pagination ── */
@@ -435,21 +436,21 @@ class AllContactsController extends ControllerBase {
   .contacts-table th,.contacts-table td{box-sizing:border-box}
   /* ── ClickUp-inspired UX additions ── */
   /* Sticky thead */
-  .contacts-table thead tr{position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0}
+  .contacts-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0 }
   /* Sort headers */
   .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
   .sort-ic{width:9px;height:12px;margin-left:4px;vertical-align:-1px;color:#cbd5e1;transition:color .12s}.th-sort:hover .sort-ic,.th-sorted .sort-ic,.sort-ic.asc,.sort-ic.desc{color:#3b82f6}
   .th-sort a,.th-sort a:visited{color:inherit;text-decoration:none;display:flex;align-items:center;gap:0}
   /* Checkbox col */
   .col-chk{width:40px}.th-chk,.td-chk{padding:10px 4px 10px 14px !important;box-sizing:border-box}
-  .row-chk,.chk-all{width:15px;height:15px;border-radius:4px;cursor:pointer;accent-color:#3b82f6;flex-shrink:0}
+  .row-chk,.chk-all{width:15px;height:15px;border-radius: 16px;cursor:pointer;accent-color:#3b82f6;flex-shrink:0}
   /* Hover reveals actions */
   .cell-actions .crm-row-action{opacity:1;pointer-events:auto;transform:none;transition:opacity .12s,transform .12s}
   .contacts-table tbody tr:hover .cell-actions .crm-row-action{opacity:1;pointer-events:auto;transform:translateX(0)}
   .contacts-table tbody tr:hover .cell-actions .crm-row-action.btn-edit{color:#2563eb}
   .contacts-table tbody tr:hover .cell-actions .crm-row-action.btn-delete{color:#dc2626}
   /* Bulk floating toolbar */
-  #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
+  #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius: 16px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
   #bulk-bar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
   .bk-ct{font-weight:700;color:#93c5fd;min-width:70px}.bk-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
   .btn-bulk{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:none;background:transparent;color:#e2e8f0;font-size:12px;font-weight:500;cursor:pointer;transition:background .12s;white-space:nowrap}.btn-bulk:hover{background:rgba(255,255,255,.12)}.btn-bulk svg{width:13px;height:13px;color:inherit;flex-shrink:0}
@@ -459,11 +460,11 @@ class AllContactsController extends ControllerBase {
   .filter-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 4px 3px 10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:12px;font-weight:500;line-height:1}
   .chip-x{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;text-decoration:none;color:#1d4ed8;font-size:15px;line-height:1;transition:background .12s}.chip-x:hover{background:#bfdbfe}
   /* Density toggle */
-  .dn-wrap{display:flex;gap:2px;margin-right:4px}.dn-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;padding:0;color:#94a3b8}.dn-btn:hover,.dn-btn.on{border-color:#2563eb;color:#2563eb;background:#eff6ff}.dn-btn svg{pointer-events:none;width:12px;height:12px}
+  .dn-wrap{display:flex;gap:2px;margin-right:4px}.dn-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius: 16px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;padding:0;color:#94a3b8}.dn-btn:hover,.dn-btn.on{border-color:#2563eb;color:#2563eb;background:#eff6ff}.dn-btn svg{pointer-events:none;width:12px;height:12px}
   .is-compact .contacts-table td,.is-compact .contacts-table th{padding-top:5px !important;padding-bottom:5px !important}
   .is-roomy .contacts-table td,.is-roomy .contacts-table th{padding-top:14px !important;padding-bottom:14px !important}
   /* Page size */
-  .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
+  .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius: 16px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
 </style>
 HTML;
 

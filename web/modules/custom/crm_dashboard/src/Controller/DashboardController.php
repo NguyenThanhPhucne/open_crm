@@ -648,7 +648,7 @@ class DashboardController extends ControllerBase {
       flex-direction: column;
       gap: 12px;
       padding: 20px;
-      border-radius: 12px;
+      border-radius: 16px;
       border: 1px solid #e5e7eb;
       background: white;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -668,7 +668,7 @@ class DashboardController extends ControllerBase {
     .crm-card-icon {
       width: 40px;
       height: 40px;
-      border-radius: 10px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -829,7 +829,7 @@ class DashboardController extends ControllerBase {
       align-items: center;
       gap: 4px;
       padding: 4px 8px;
-      border-radius: 6px;
+      border-radius: 16px;
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
@@ -846,7 +846,7 @@ class DashboardController extends ControllerBase {
     
     .stat-card {
       background: white;
-      border-radius: 10px;
+      border-radius: 16px;
       padding: 14px 18px;
       border: 1px solid #e9edf2;
       border-left: 3px solid var(--stat-color, #e2e8f0);
@@ -955,7 +955,7 @@ class DashboardController extends ControllerBase {
     .stat-icon {
       width: 42px;
       height: 42px;
-      border-radius: 10px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1133,10 +1133,10 @@ class DashboardController extends ControllerBase {
     
     .section-card {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 24px;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 4px 12px 0 rgba(0,0,0,0.04);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
@@ -1199,7 +1199,7 @@ class DashboardController extends ControllerBase {
       gap: 4px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       padding: 6px 12px;
-      border-radius: 6px;
+      border-radius: 16px;
     }
     
     .view-all-link:hover {
@@ -1232,7 +1232,7 @@ class DashboardController extends ControllerBase {
     
     .activity-list::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 4px;
+      border-radius: 16px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
@@ -1246,7 +1246,7 @@ class DashboardController extends ControllerBase {
       align-items: flex-start;
       gap: 12px;
       padding: 14px;
-      border-radius: 8px;
+      border-radius: 16px;
       transition: all 0.15s ease;
       border: 1px solid transparent;
       cursor: pointer;
@@ -1335,7 +1335,7 @@ class DashboardController extends ControllerBase {
       color: #d1d5db;
     }
       padding: 2px 8px;
-      border-radius: 4px;
+      border-radius: 16px;
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
@@ -1385,7 +1385,7 @@ class DashboardController extends ControllerBase {
 
     .deal-list::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 4px;
+      border-radius: 16px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -1398,7 +1398,7 @@ class DashboardController extends ControllerBase {
       align-items: center;
       gap: 12px;
       padding: 14px;
-      border-radius: 10px;
+      border-radius: 16px;
       border: 1px solid #f1f5f9;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       text-decoration: none;
@@ -1473,7 +1473,7 @@ class DashboardController extends ControllerBase {
     .deal-stage {
       display: inline-block;
       padding: 4px 10px;
-      border-radius: 12px;
+      border-radius: 16px;
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
@@ -1502,7 +1502,7 @@ class DashboardController extends ControllerBase {
     
     .chart-card {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 24px;
       border: 1px solid #e2e8f0;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -1783,7 +1783,7 @@ class DashboardController extends ControllerBase {
 
     .recent-list::-webkit-scrollbar { width: 4px; }
     .recent-list::-webkit-scrollbar-track { background: transparent; }
-    .recent-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .recent-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 16px; }
     .recent-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
     .recent-item {
@@ -1791,7 +1791,7 @@ class DashboardController extends ControllerBase {
       align-items: center;
       gap: 12px;
       padding: 10px 12px;
-      border-radius: 8px;
+      border-radius: 16px;
       transition: all 0.15s ease;
       border: 1px solid transparent;
       text-decoration: none;
@@ -1855,7 +1855,7 @@ class DashboardController extends ControllerBase {
     .pipeline-stage-mini {
       display: inline-block;
       padding: 2px 7px;
-      border-radius: 10px;
+      border-radius: 16px;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
@@ -1935,7 +1935,7 @@ class DashboardController extends ControllerBase {
       align-items: center;
       gap: 7px;
       padding: 9px 18px;
-      border-radius: 8px;
+      border-radius: 16px;
       font-size: 13px;
       font-weight: 600;
       text-decoration: none;

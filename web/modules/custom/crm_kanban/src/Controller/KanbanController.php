@@ -221,9 +221,10 @@ class KanbanController extends ControllerBase {
     $html = <<<'HTML'
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b}
+  body{font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;background:#f8fafc;color:#1e293b}
   /* ── Page wrapper ── */
   .pipeline-page{padding:0;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -235,15 +236,15 @@ class KanbanController extends ControllerBase {
   .stat-chip.amber{background:#fffbeb;color:#b45309;border-color:#fde68a}
   .stat-chip i{width:14px;height:14px;flex-shrink:0}
   /* ── Page header ── */
-  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);flex-wrap:wrap}
+  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 4px 12px 0 rgba(0,0,0,0.04);flex-wrap:wrap}
   .page-header-left{display:flex;flex-direction:column;gap:4px}
   .page-title{font-size:20px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:9px;letter-spacing:-.02em}
   .page-title i{color:#3b82f6;width:22px;height:22px}
   .page-subtitle{font-size:12px;color:#64748b}
   .page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
-  .btn-primary,.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;border:1.5px solid}
-  .btn-primary{color:#2563eb;border-color:#2563eb;background:#fff}
-  .btn-primary:hover{background:#eff6ff;border-color:#1d4ed8;color:#1d4ed8}
+  .btn-primary,.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;border:1.5px solid}
+  .btn-primary {color:#2563eb;border-color:#2563eb;background:#fff box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);}
+  .btn-primary:hover {background:#eff6ff;border-color:#1d4ed8;color:#1d4ed8 transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.15);}
   .btn-secondary{color:#475569;border-color:#e2e8f0;background:#fff}
   .btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
   .btn-primary i,.btn-secondary i{width:15px;height:15px;color:inherit}
@@ -254,13 +255,13 @@ class KanbanController extends ControllerBase {
   .kanban-container::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
   .kanban-container::-webkit-scrollbar-thumb:hover{background:#94a3b8}
   .kanban-board{display:flex;flex-wrap:nowrap;gap:10px;padding-bottom:12px;width:100%;align-items:flex-start}
-  .kanban-column{background:#f1f5f9;border-radius:12px;display:flex;flex-direction:column;min-height:100px;max-height:calc(100vh - 310px);flex:1 1 0;min-width:260px;max-width:320px}
+  .kanban-column{background:#f1f5f9;border-radius: 16px;display:flex;flex-direction:column;min-height:100px;max-height:calc(100vh - 310px);flex:1 1 0;min-width:260px;max-width:320px}
   /* ── Column header ── */
   .column-header{padding:10px 10px 8px;border-bottom:2px solid;background:#fff;border-radius:12px 12px 0 0}
   .column-title{display:flex;align-items:center;gap:6px;margin-bottom:4px}
   .col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
   .column-title h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151;flex:1;word-break:break-word}
-  .column-count{background:#e2e8f0;color:#64748b;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+  .column-count{background:#e2e8f0;color:#64748b;padding:1px 6px;border-radius: 16px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
   .column-total{font-size:13px;font-weight:700;margin-top:0;padding-left:14px}
   /* ── Column cards ── */
   .column-cards{padding:8px 8px 30px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:60px}
@@ -268,7 +269,7 @@ class KanbanController extends ControllerBase {
   .column-cards::-webkit-scrollbar-track{background:transparent}
   .column-cards::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
   /* ── Deal card ── */
-  .deal-card{position:relative;background:#fff;border-radius:10px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
+  .deal-card{position:relative;background:#fff;border-radius: 16px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
   .deal-card:hover{box-shadow:0 5px 15px rgba(0,0,0,.11);transform:translateY(-2px)}
   .deal-card.sortable-ghost{opacity:.4;background:#e2e8f0}
   .deal-card.sortable-drag{opacity:.85;transform:rotate(1.5deg);cursor:grabbing}
@@ -284,7 +285,7 @@ class KanbanController extends ControllerBase {
   /* ── Hover-reveal card actions ── */
   .card-actions{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
   .deal-card:hover .card-actions{opacity:1}
-  .ca-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;color:#94a3b8;text-decoration:none;transition:background .12s,color .12s;background:rgba(255,255,255,.9)}
+  .ca-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius: 16px;color:#94a3b8;text-decoration:none;transition:background .12s,color .12s;background:rgba(255,255,255,.9)}
   .ca-btn:hover{background:#eff6ff;color:#2563eb}
   .ca-btn i{width:12px;height:12px;flex-shrink:0}
   /* ── Empty state ── */
@@ -297,26 +298,26 @@ class KanbanController extends ControllerBase {
   @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
   .modal-header{padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px}
   .modal-header h2{font-size:18px;font-weight:700;color:#1e293b;flex:1;margin:0}
-  .modal-icon{width:36px;height:36px;background:linear-gradient(135deg,#10b981,#059669);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff}
+  .modal-icon{width:36px;height:36px;background:linear-gradient(135deg,#10b981,#059669);border-radius: 16px;display:flex;align-items:center;justify-content:center;color:#fff}
   .modal-icon i{width:18px;height:18px}
   .modal-body{padding:20px 24px}
-  .info-box{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#92400e;display:flex;gap:10px}
+  .info-box{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius: 16px;margin-bottom:16px;font-size:13px;color:#92400e;display:flex;gap:10px}
   .info-box i{flex-shrink:0;margin-top:2px;width:16px;height:16px}
   .form-group{margin-bottom:16px}
   .form-label{display:flex;align-items:center;gap:6px;font-weight:600;color:#1e293b;margin-bottom:6px;font-size:13px}
   .form-label .required{color:#ef4444}
-  .form-input{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;transition:border-color .2s,box-shadow .2s;outline:none}
+  .form-input{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius: 16px;font-size:14px;transition:border-color .2s,box-shadow .2s;outline:none}
   .form-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
-  .file-upload-zone{border:2px dashed #cbd5e1;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+  .file-upload-zone{border:2px dashed #cbd5e1;border-radius: 16px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
   .file-upload-zone:hover,.file-upload-zone.has-file{border-color:#10b981;background:#f0fdf4}
-  .file-icon{width:44px;height:44px;background:#e2e8f0;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;color:#64748b}
+  .file-icon{width:44px;height:44px;background:#e2e8f0;border-radius: 16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;color:#64748b}
   .file-upload-zone.has-file .file-icon{background:#d1fae5;color:#10b981}
   .file-icon i{width:22px;height:22px}
   .file-instructions{font-size:13px;color:#64748b;margin-bottom:4px}
   .file-name{font-size:13px;color:#10b981;font-weight:600;margin-top:6px}
   .file-hint{font-size:12px;color:#94a3b8}
   .modal-actions{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end}
-  .modal-btn{padding:9px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s;border:1.5px solid;display:inline-flex;align-items:center;gap:7px}
+  .modal-btn{padding:9px 18px;border-radius: 16px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s;border:1.5px solid;display:inline-flex;align-items:center;gap:7px}
   .modal-btn i{width:14px;height:14px}
   .modal-btn-cancel{background:#fff;color:#64748b;border-color:#cbd5e1}
   .modal-btn-cancel:hover{background:#f8fafc;border-color:#94a3b8}
@@ -326,33 +327,33 @@ class KanbanController extends ControllerBase {
   .modal-btn-confirm.loading{position:relative;color:transparent}
   .modal-btn-confirm.loading::after{content:'';position:absolute;width:14px;height:14px;top:50%;left:50%;margin:-7px 0 0 -7px;border:2px solid #2563eb;border-radius:50%;border-top-color:transparent;animation:spin .6s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .error-message{background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;align-items:center;gap:8px}
+  .error-message{background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius: 16px;font-size:13px;margin-top:12px;display:none;align-items:center;gap:8px}
   .error-message.show{display:flex}
   .error-message i{width:14px;height:14px;flex-shrink:0}
   /* ── Time ago ── */
   .time-ago{font-size:9.5px;color:#94a3b8;line-height:1;white-space:nowrap}
   /* ── Due badge ── */
-  .due-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
+  .due-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius: 16px;letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
   .due-badge i{width:9px;height:9px;flex-shrink:0}
   .due-badge.urgent{background:#fef2f2;color:#dc2626}
   .due-badge.soon{background:#fffbeb;color:#d97706}
   /* ── Board filter bar ── */
-  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;border:1px solid #e5e7eb;border-radius: 16px;background:#fff;transition:border-color .15s,box-shadow .15s}
   .filter-input-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .filter-input-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#3b82f6;pointer-events:none;z-index:2;flex-shrink:0;stroke-width:2.2}
   .filter-input{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:none !important;font-size:14px !important;color:#1e293b;outline:none;box-sizing:border-box !important;background:transparent !important;display:block;box-shadow:none !important}
   .filter-input:focus{outline:none}
   .filter-input::placeholder{color:#9ca3af}
-  .filter-select-wrap{display:flex;align-items:center;height:40px;min-width:160px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;transition:border-color .15s,box-shadow .15s;overflow:hidden}
+  .filter-select-wrap{display:flex;align-items:center;height:40px;min-width:160px;border:1px solid #e5e7eb;border-radius: 16px;background:#fff;transition:border-color .15s,box-shadow .15s;overflow:hidden}
   .filter-select-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
   .flt-sel-ico{display:flex;align-items:center;justify-content:center;padding:0 6px 0 10px;flex-shrink:0;color:#3b82f6;pointer-events:none}.flt-sel-ico i{width:15px;height:15px;display:block;flex-shrink:0}
   .flt-sel-arr{display:flex;align-items:center;padding:0 9px 0 2px;flex-shrink:0;color:#9ca3af;pointer-events:none}.flt-sel-arr svg{width:13px;height:13px;display:block}
   .filter-select{flex:1;height:100%;min-width:0;border:none !important;padding:0 2px !important;font-size:14px !important;color:#1e293b;background:transparent;outline:none !important;cursor:pointer;appearance:none;-webkit-appearance:none;box-shadow:none !important}
-  .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+  .btn-filter-apply{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius: 16px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
   .btn-filter-apply:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
   .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
-  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:8px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0}
+  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius: 16px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0}
   .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
   .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
   .card-hidden{display:none!important}
@@ -460,8 +461,8 @@ HTML;
       </select>
       <span class="flt-sel-arr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 4 7 9 12 4"/></svg></span>
     </div>
-    <span class="stat-chip blue" id="kanban-filter-total-chip" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
-    <span class="stat-chip green" id="kanban-filter-pipeline-chip" style="height:40px;border-radius:8px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
+    <span class="stat-chip blue" id="kanban-filter-total-chip" style="height:40px;border-radius: 16px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
+    <span class="stat-chip green" id="kanban-filter-pipeline-chip" style="height:40px;border-radius: 16px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
     <span id="filter-count" class="filter-count"></span>
   </div>
 
@@ -721,7 +722,7 @@ HTML;
       const toast = document.createElement('div');
       const isError = tone === 'error';
       toast.className = 'crm-kanban-toast';
-      toast.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.16);z-index:9999;background:' + (isError ? '#dc2626' : '#0f766e') + ';color:#fff;font-weight:600;';
+      toast.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius: 16px;box-shadow:0 12px 30px rgba(15,23,42,.16);z-index:9999;background:' + (isError ? '#dc2626' : '#0f766e') + ';color:#fff;font-weight:600;';
       toast.innerHTML = '<i data-lucide="' + (isError ? 'alert-circle' : 'check-circle') + '" width="18" height="18"></i><span>' + message + '</span>';
       document.body.appendChild(toast);
       lucide.createIcons();
