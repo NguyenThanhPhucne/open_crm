@@ -159,9 +159,15 @@ class UserProfileController extends ControllerBase {
       '#current_user_id' => \Drupal::currentUser()->id(),
       '#is_own_profile' => $is_own_profile,
       '#cache' => [
-        'max-age' => 300,
-        'contexts' => ['user'],
-        'tags' => ['user:' . $uid],
+        'max-age' => 0,
+        'contexts' => ['user', 'route'],
+        'tags' => [
+          'user:' . $uid,
+          'node_list:contact',
+          'node_list:deal',
+          'node_list:organization',
+          'node_list:activity',
+        ],
       ],
       '#attached' => [
         'library' => [
@@ -178,6 +184,7 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -190,6 +197,7 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -202,6 +210,7 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_assigned_staff', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -214,6 +223,7 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_assigned_to', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -226,8 +236,9 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_assigned_to', $uid)
-      ->sort('created', 'DESC')
+      ->sort('changed', 'DESC')
       ->range(0, $limit)
       ->accessCheck(FALSE);
     
@@ -240,15 +251,27 @@ class UserProfileController extends ControllerBase {
         ->loadMultiple($nids);
       
       foreach ($nodes as $node) {
+        $activity_type = 'Activity';
+        if ($node->hasField('field_type') && !$node->get('field_type')->isEmpty() && $node->get('field_type')->entity) {
+          $activity_type = $node->get('field_type')->entity->label();
+        }
+        elseif ($node->hasField('field_activity_type') && !$node->get('field_activity_type')->isEmpty() && $node->get('field_activity_type')->entity) {
+          $activity_type = $node->get('field_activity_type')->entity->label();
+        }
+
+        $activity_date = '';
+        if ($node->hasField('field_datetime') && !$node->get('field_datetime')->isEmpty()) {
+          $activity_date = $node->get('field_datetime')->value;
+        }
+        elseif ($node->hasField('field_activity_date') && !$node->get('field_activity_date')->isEmpty()) {
+          $activity_date = $node->get('field_activity_date')->value;
+        }
+
         $activities[] = [
           'id' => $node->id(),
           'title' => $node->label(),
-          'type' => $node->hasField('field_activity_type') && !$node->get('field_activity_type')->isEmpty()
-            ? $node->get('field_activity_type')->entity->label()
-            : 'Activity',
-          'date' => $node->hasField('field_activity_date') && !$node->get('field_activity_date')->isEmpty()
-            ? $node->get('field_activity_date')->value
-            : '',
+          'type' => $activity_type,
+          'date' => $activity_date,
           'url' => $node->toUrl()->toString(),
         ];
       }
@@ -264,6 +287,7 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->accessCheck(FALSE);
     $nids = $query->execute();
@@ -273,7 +297,10 @@ class UserProfileController extends ControllerBase {
         ->getStorage('node')
         ->loadMultiple($nids);
       foreach ($nodes as $node) {
-        if ($node->hasField('field_deal_value') && !$node->get('field_deal_value')->isEmpty()) {
+        if ($node->hasField('field_amount') && !$node->get('field_amount')->isEmpty()) {
+          $total += (float) $node->get('field_amount')->value;
+        }
+        elseif ($node->hasField('field_deal_value') && !$node->get('field_deal_value')->isEmpty()) {
           $total += (float) $node->get('field_deal_value')->value;
         }
       }
@@ -288,6 +315,7 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('status', 1)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->sort('changed', 'DESC')
       ->range(0, $limit)
@@ -303,12 +331,18 @@ class UserProfileController extends ControllerBase {
       
       foreach ($nodes as $node) {
         $stage = '';
-        if ($node->hasField('field_deal_stage') && !$node->get('field_deal_stage')->isEmpty()) {
+        if ($node->hasField('field_stage') && !$node->get('field_stage')->isEmpty() && $node->get('field_stage')->entity) {
+          $stage = $node->get('field_stage')->entity->label();
+        }
+        elseif ($node->hasField('field_deal_stage') && !$node->get('field_deal_stage')->isEmpty() && $node->get('field_deal_stage')->entity) {
           $stage = $node->get('field_deal_stage')->entity->label();
         }
         
         $value = '';
-        if ($node->hasField('field_deal_value') && !$node->get('field_deal_value')->isEmpty()) {
+        if ($node->hasField('field_amount') && !$node->get('field_amount')->isEmpty()) {
+          $value = number_format($node->get('field_amount')->value, 0, ',', '.');
+        }
+        elseif ($node->hasField('field_deal_value') && !$node->get('field_deal_value')->isEmpty()) {
           $value = number_format($node->get('field_deal_value')->value, 0, ',', '.');
         }
         

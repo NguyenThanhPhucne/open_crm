@@ -41,20 +41,21 @@ class DashboardController extends ControllerBase {
     // Monday midnight of the current week (date('N') = 1 Mon … 7 Sun)
     $dow = (int) date('N', $now); // 1=Mon, 7=Sun
     $this_week_start = mktime(0, 0, 0, (int) date('n', $now), (int) date('j', $now) - ($dow - 1));
-    $last_week_start = $this_week_start - 604800;
     
     // Get dashboard metrics (filtered by user ownership for non-admins)
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $contacts_query->condition('field_owner', $user_id);
     }
     $contacts_count = $contacts_query->count()->execute();
-    
+
     // Contacts this week
     $contacts_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -64,18 +65,20 @@ class DashboardController extends ControllerBase {
 
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $orgs_query->condition('field_assigned_staff', $user_id);
     }
     $orgs_count = $orgs_query->count()->execute();
-    
+
     // Midnight on the 1st of the current month
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
     // Organizations this month
     $orgs_this_month_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -85,6 +88,7 @@ class DashboardController extends ControllerBase {
 
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $deals_query->condition('field_owner', $user_id);
@@ -93,6 +97,7 @@ class DashboardController extends ControllerBase {
 
     $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $activities_query->condition('field_assigned_to', $user_id);
@@ -102,6 +107,7 @@ class DashboardController extends ControllerBase {
     // Activities this week
     $activities_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -135,6 +141,7 @@ class DashboardController extends ControllerBase {
       // Count deals in this stage (filtered by current user for non-admins).
       $stage_query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
+        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->condition('field_stage', $stage_id)
         ->accessCheck(FALSE);
       if (!$is_admin && $user_id > 0) {
@@ -160,7 +167,9 @@ class DashboardController extends ControllerBase {
     $agg = \Drupal::database()->select('node_field_data', 'n');
     $agg->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
+    $agg->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $agg->condition('n.type', 'deal');
+    $agg->condition('fd.field_deleted_at_value', NULL, 'IS NULL');
     $agg->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
@@ -196,6 +205,7 @@ class DashboardController extends ControllerBase {
     // CRITICAL for task management and follow-up
     $overdue_activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_datetime', $now, '<=') // due date is today or earlier
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -211,6 +221,7 @@ class DashboardController extends ControllerBase {
     // Measures sales velocity and momentum
     $revenue_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_stage', $won_term_id)
       ->condition('changed', $this_week_start, '>=')
       ->accessCheck(FALSE);
@@ -258,6 +269,7 @@ class DashboardController extends ControllerBase {
     $closed_term_ids = array_filter([$won_term_id, $lost_term_id]);
     $due_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_closing_date', date('Y-m-d', $now), '>=')
       ->condition('field_closing_date', date('Y-m-d', $week_end), '<=')
       ->accessCheck(FALSE);
@@ -273,6 +285,7 @@ class DashboardController extends ControllerBase {
     // Indicates pipeline filling
     $new_contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -283,6 +296,7 @@ class DashboardController extends ControllerBase {
     // Get recent activities (last 30, filtered by current user for non-admins)
     $activity_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 30);
@@ -370,6 +384,7 @@ class DashboardController extends ControllerBase {
     // Get recent deals (last 8, newest-updated first, filtered by current user for non-admins)
     $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -454,6 +469,7 @@ class DashboardController extends ControllerBase {
     // ── Recent Contacts (last 8, sorted by changed DESC) ─────────────────────
     $rc_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -491,6 +507,7 @@ class DashboardController extends ControllerBase {
     // ── Recent Organizations (last 8, sorted by changed DESC) ─────────────────
     $ro_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -527,6 +544,7 @@ class DashboardController extends ControllerBase {
     // ── Recent Pipeline Deals (last 8, active only, sorted by changed DESC) ───
     $rp_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -969,9 +987,35 @@ class DashboardController extends ControllerBase {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      color: var(--stat-color, #334155) !important;
+      background: var(--stat-bg, #f8fafc);
+    }
+
+    .stat-card:hover .stat-icon,
+    .stat-card:focus .stat-icon,
+    .stat-card:focus-visible .stat-icon {
+      color: var(--stat-color, #334155) !important;
     }
     
     .stat-icon i {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    .stat-icon svg,
+    .section-title svg,
+    .view-all-link svg,
+    .recent-avatar svg,
+    .hero-action-btn svg,
+    .refresh-badge svg,
+    .activity-icon svg {
+      color: inherit !important;
+      stroke: currentColor !important;
+      fill: none !important;
+    }
+
+    .stat-icon svg {
       width: 20px;
       height: 20px;
       stroke-width: 2;
@@ -2479,10 +2523,32 @@ HTML;
   </div>
   
   <script>
+    function ensureLucideReady(callback) {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        callback();
+        return;
+      }
+      const existing = document.querySelector('script[data-lucide-fallback="1"]');
+      if (existing) {
+        existing.addEventListener('load', () => {
+          if (window.lucide && typeof window.lucide.createIcons === 'function') callback();
+        }, { once: true });
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js';
+      script.defer = true;
+      script.setAttribute('data-lucide-fallback', '1');
+      script.onload = () => {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') callback();
+      };
+      document.head.appendChild(script);
+    }
+
     // Real-time Data Synchronization System
     class DashboardSync {
       constructor() {
-        this.refreshInterval = 30000; // 30 seconds
+        this.refreshInterval = 5000; // 5 seconds
         this.isRefreshing = false;
         this.lastRefreshTime = Date.now();
         this.pollingTimer = null;
@@ -2493,6 +2559,7 @@ HTML;
         document.addEventListener('crm:activity-created', () => this.refreshDashboard());
         document.addEventListener('crm:deal-updated',     () => this.refreshDashboard());
         document.addEventListener('crm:stage-changed',    () => this.refreshDashboard());
+        window.addEventListener('focus', () => this.refreshDashboard());
 
         // Pause polling when tab is hidden, resume when visible
         document.addEventListener('visibilitychange', () => {
@@ -2534,70 +2601,34 @@ HTML;
         this.isRefreshing = true;
         this.showRefreshStatus('↻ ...');
         try {
-          const response = await fetch(window.location.href, {
+          const response = await fetch('/crm/dashboard/refresh?_=' + Date.now(), {
+            method: 'GET',
             cache: 'no-store',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            credentials: 'same-origin',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json'
+            }
           });
           if (!response.ok) throw new Error('HTTP ' + response.status);
-          const html = await response.text();
-          const doc = new DOMParser().parseFromString(html, 'text/html');
-
-          // Update stat cards
-          ['stat-value', 'stat-trend'].forEach(cls => {
-            const fresh = doc.querySelectorAll('.' + cls);
-            const live  = document.querySelectorAll('.' + cls);
-            fresh.forEach((el, i) => {
-              if (live[i] && live[i].innerHTML !== el.innerHTML) live[i].innerHTML = el.innerHTML;
-            });
-          });
-
-          // Update Recent Deals list
-          const freshDeals = doc.querySelector('.deal-list');
-          const liveDeals  = document.querySelector('.deal-list');
-          if (freshDeals && liveDeals) liveDeals.innerHTML = freshDeals.innerHTML;
-
-          // Update Recent Activities list
-          const freshActs = doc.querySelector('.activity-list');
-          const liveActs  = document.querySelector('.activity-list');
-          if (freshActs && liveActs) liveActs.innerHTML = freshActs.innerHTML;
-
-          // Update Recent Contacts list
-          const freshCtcs = doc.querySelector('.recent-contacts-list');
-          const liveCtcs  = document.querySelector('.recent-contacts-list');
-          if (freshCtcs && liveCtcs) liveCtcs.innerHTML = freshCtcs.innerHTML;
-
-          // Update Recent Organizations list
-          const freshOrgs = doc.querySelector('.recent-orgs-list');
-          const liveOrgs  = document.querySelector('.recent-orgs-list');
-          if (freshOrgs && liveOrgs) liveOrgs.innerHTML = freshOrgs.innerHTML;
-
-          // Update Recent Pipeline list
-          const freshPipe = doc.querySelector('.recent-pipeline-list');
-          const livePipe  = document.querySelector('.recent-pipeline-list');
-          if (freshPipe && livePipe) livePipe.innerHTML = freshPipe.innerHTML;
-
-          // Update Stage Chart data
-          const freshStage = doc.getElementById('stageChart');
-          if (freshStage && window_stageChart) {
-            const labels = JSON.parse(freshStage.dataset.labels || '[]');
-            const values = JSON.parse(freshStage.dataset.values || '[]');
-            window_stageChart.data.labels = labels;
-            window_stageChart.data.datasets[0].data = values;
-            window_stageChart.update('active');
+          const payload = await response.json();
+          if (!payload || !payload.success || !payload.metrics) {
+            throw new Error('Invalid refresh payload');
           }
 
-          // Update Value Chart data
-          const freshValue = doc.getElementById('valueChart');
-          if (freshValue && window_valueChart) {
+          this.applyMetrics(payload.metrics);
+          this.applyStageDistribution(payload.stage_distribution || {});
+
+          if (window_valueChart) {
             window_valueChart.data.datasets[0].data = [
-              parseFloat(freshValue.dataset.won   || 0),
-              parseFloat(freshValue.dataset.lost  || 0),
-              parseFloat(freshValue.dataset.active || 0)
+              Number(payload.metrics.won_value || 0),
+              Number(payload.metrics.lost_value || 0),
+              Number(payload.metrics.active_value || 0)
             ];
             window_valueChart.update('active');
           }
 
-          if (window.lucide) window.lucide.createIcons();
+          ensureLucideReady(() => window.lucide.createIcons());
 
           this.lastRefreshTime = Date.now();
           this.showRefreshStatus('↻ Live');
@@ -2607,6 +2638,96 @@ HTML;
         } finally {
           this.isRefreshing = false;
         }
+      }
+
+      applyMetrics(metrics) {
+        this.setCardValue('Contacts', Number(metrics.contacts || 0));
+        this.setCardTrend('Contacts', '+' + Number(metrics.contacts_this_week || 0) + ' this week');
+
+        this.setCardValue('Organizations', Number(metrics.organizations || 0));
+        this.setCardTrend('Organizations', '+' + Number(metrics.orgs_this_month || 0) + ' this month');
+
+        this.setCardValue('Deals', Number(metrics.deals || 0));
+        this.setCardValue('Total Value', metrics.total_value_display || '$0.0M');
+
+        this.setCardValue('Won Deals', Number(metrics.won || 0));
+        this.setCardDesc('Won Deals', (metrics.won_value_display || '$0.0M') + ' revenue');
+
+        this.setCardValue('Lost Deals', Number(metrics.lost || 0));
+        this.setCardDesc('Lost Deals', (metrics.lost_value_display || '$0.0M') + ' lost');
+
+        this.setCardValue('Win Rate', Number(metrics.win_rate || 0) + '%');
+
+        this.setCardValue('Activities', Number(metrics.activities || 0));
+        this.setCardTrend('Activities', '+' + Number(metrics.activities_this_week || 0) + ' this week');
+
+        this.setCardValue('Conversion', Number(metrics.conversion_rate || 0) + '%');
+        this.setCardValue('Avg Deal', metrics.avg_deal_display || '$0K');
+
+        this.setCardValue('Overdue', Number(metrics.overdue_activities || 0));
+        this.setCardValue('Active Pipeline', metrics.active_value_display || '$0.0M');
+
+        this.setCardValue('This Week', metrics.revenue_this_week_display || '$0.0M');
+        this.setCardTrend('This Week', Number(metrics.revenue_this_week_count || 0) + ' deals closed');
+
+        this.setCardValue('Due This Week', Number(metrics.due_this_week || 0));
+        this.setCardValue('Avg Cycle', Number(metrics.avg_days_in_pipeline || 0) + '<span style="font-size:14px;font-weight:600;color:#94a3b8">d</span>', true);
+
+        this.setCardValue('New Contacts', Number(metrics.new_contacts_this_month || 0));
+      }
+
+      applyStageDistribution(stageDistribution) {
+        if (!window_stageChart || !stageDistribution) return;
+        const labels = window_stageChart.data.labels || [];
+        const values = labels.map((label) => {
+          if (typeof stageDistribution[label] !== 'undefined') {
+            return Number(stageDistribution[label] || 0);
+          }
+          const lowerLabel = String(label).toLowerCase();
+          const key = Object.keys(stageDistribution).find((k) => String(k).toLowerCase() === lowerLabel);
+          return key ? Number(stageDistribution[key] || 0) : 0;
+        });
+        window_stageChart.data.datasets[0].data = values;
+        window_stageChart.update('active');
+      }
+
+      getCardByLabel(labelText) {
+        const cards = document.querySelectorAll('.stat-card');
+        for (const card of cards) {
+          const label = card.querySelector('.stat-label');
+          if (label && label.textContent && label.textContent.trim().toLowerCase() === labelText.toLowerCase()) {
+            return card;
+          }
+        }
+        return null;
+      }
+
+      setCardValue(labelText, value, isHtml = false) {
+        const card = this.getCardByLabel(labelText);
+        if (!card) return;
+        const valueEl = card.querySelector('.stat-value');
+        if (!valueEl) return;
+        if (isHtml) {
+          valueEl.innerHTML = String(value);
+        } else {
+          valueEl.textContent = String(value);
+        }
+      }
+
+      setCardDesc(labelText, value) {
+        const card = this.getCardByLabel(labelText);
+        if (!card) return;
+        const descEl = card.querySelector('.stat-desc');
+        if (!descEl) return;
+        descEl.textContent = String(value);
+      }
+
+      setCardTrend(labelText, value) {
+        const card = this.getCardByLabel(labelText);
+        if (!card) return;
+        const trendText = card.querySelector('.stat-trend span:last-child');
+        if (!trendText) return;
+        trendText.textContent = String(value);
       }
 
       showRefreshStatus(message, isError = false) {
@@ -2621,7 +2742,7 @@ HTML;
     // Initialize dashboard sync on page load
     document.addEventListener('DOMContentLoaded', () => {
       window.dashboardSync = new DashboardSync();
-      if (window.lucide) window.lucide.createIcons();
+      ensureLucideReady(() => window.lucide.createIcons());
     });
 
     // ── Chart instances (global so DashboardSync can update them) ────────────
@@ -3029,6 +3150,7 @@ HTML;
     // 1. Contacts
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $contacts_query->condition('field_owner', $user_id);
@@ -3038,6 +3160,7 @@ HTML;
     // 2. Organizations
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $orgs_query->condition('field_assigned_staff', $user_id);
@@ -3047,6 +3170,7 @@ HTML;
     // 3. Total Deals
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $deals_query->condition('field_owner', $user_id);
@@ -3056,16 +3180,61 @@ HTML;
     // 4. Activities
     $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $activities_query->condition('field_assigned_to', $user_id);
     }
     $activities_count = $activities_query->count()->execute();
+
+    $contacts_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'contact')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
+      ->condition('created', $this_week_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin && $user_id > 0) {
+      $contacts_this_week_query->condition('field_owner', $user_id);
+    }
+    $contacts_this_week = $contacts_this_week_query->count()->execute();
+
+    $orgs_this_month_query = \Drupal::entityQuery('node')
+      ->condition('type', 'organization')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
+      ->condition('created', $month_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin && $user_id > 0) {
+      $orgs_this_month_query->condition('field_assigned_staff', $user_id);
+    }
+    $orgs_this_month = $orgs_this_month_query->count()->execute();
+
+    $activities_this_week_query = \Drupal::entityQuery('node')
+      ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
+      ->condition('created', $this_week_start, '>=')
+      ->accessCheck(FALSE);
+    if (!$is_admin && $user_id > 0) {
+      $activities_this_week_query->condition('field_assigned_to', $user_id);
+    }
+    $activities_this_week = $activities_this_week_query->count()->execute();
+
+    $stage_distribution = [];
+    foreach ($stage_terms as $term) {
+      $stage_query = \Drupal::entityQuery('node')
+        ->condition('type', 'deal')
+        ->condition('field_deleted_at', NULL, 'IS NULL')
+        ->condition('field_stage', $term->id())
+        ->accessCheck(FALSE);
+      if (!$is_admin && $user_id > 0) {
+        $stage_query->condition('field_owner', $user_id);
+      }
+      $stage_distribution[$term->getName()] = (int) $stage_query->count()->execute();
+    }
     
     // 5. Won Deals
     $won_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('field_stage', $won_term_id)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $won_query->condition('field_owner', $user_id);
@@ -3076,6 +3245,7 @@ HTML;
     $lost_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('field_stage', $lost_term_id)
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $lost_query->condition('field_owner', $user_id);
@@ -3086,6 +3256,7 @@ HTML;
     $overdue_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->condition('field_datetime', $now, '<=')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $overdue_query->condition('field_assigned_to', $user_id);
@@ -3098,6 +3269,7 @@ HTML;
       ->condition('type', 'deal')
       ->condition('field_closing_date', date('Y-m-d', $now), '>=')
       ->condition('field_closing_date', date('Y-m-d', $week_end), '<=')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!empty($closed_tids)) {
       $due_this_week_query->condition('field_stage', $closed_tids, 'NOT IN');
@@ -3111,6 +3283,7 @@ HTML;
     $new_contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
       ->condition('created', $month_start, '>=')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $new_contacts_query->condition('field_owner', $user_id);
@@ -3122,6 +3295,7 @@ HTML;
       ->condition('type', 'deal')
       ->condition('field_stage', $won_term_id)
       ->condition('changed', $this_week_start, '>=')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $revenue_this_week_query->condition('field_owner', $user_id);
@@ -3146,7 +3320,9 @@ HTML;
     $agg2 = \Drupal::database()->select('node_field_data', 'n');
     $agg2->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg2->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
+    $agg2->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $agg2->condition('n.type', 'deal');
+    $agg2->condition('fd.field_deleted_at_value', NULL, 'IS NULL');
     $agg2->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id2  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id2 THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
@@ -3173,6 +3349,7 @@ HTML;
     // 13. Get recent activities
     $recent_activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
+      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 10);
@@ -3187,12 +3364,16 @@ HTML;
       'timestamp' => $now,
       'message' => 'Dashboard data refreshed in real-time',
       'is_admin' => $is_admin,
+      'stage_distribution' => $stage_distribution,
       'metrics' => [
         // Original 10 metrics
         'contacts' => $contacts_count,
+        'contacts_this_week' => $contacts_this_week,
         'organizations' => $orgs_count,
+        'orgs_this_month' => $orgs_this_month,
         'deals' => $deals_count,
         'activities' => $activities_count,
+        'activities_this_week' => $activities_this_week,
         'won' => $won_count,
         'lost' => $lost_count,
         'activities_recent' => $recent_activity_count,

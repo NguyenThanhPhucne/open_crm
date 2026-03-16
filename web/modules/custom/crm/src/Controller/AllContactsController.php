@@ -62,6 +62,7 @@ class AllContactsController extends ControllerBase {
     $build_query = function () use ($search_name, $search_email, $search_phone, $can_manage, $user_id) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'contact')
+        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->accessCheck(FALSE);
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
@@ -85,19 +86,19 @@ class AllContactsController extends ControllerBase {
     $month_start  = mktime(0, 0, 0, (int) date('n', $now), 1);
 
     // Total contacts (unfiltered, for stats chip)
-    $all_q = \Drupal::entityQuery('node')->condition('type', 'contact')->accessCheck(FALSE);
+    $all_q = \Drupal::entityQuery('node')->condition('type', 'contact')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $all_q->condition('field_owner', $user_id); }
     $total_all = (int) $all_q->count()->execute();
 
     // New this week
     $week_q = \Drupal::entityQuery('node')->condition('type', 'contact')
-      ->condition('created', $week_start, '>=')->accessCheck(FALSE);
+      ->condition('created', $week_start, '>=')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $week_q->condition('field_owner', $user_id); }
     $new_this_week = (int) $week_q->count()->execute();
 
     // New this month
     $month_q = \Drupal::entityQuery('node')->condition('type', 'contact')
-      ->condition('created', $month_start, '>=')->accessCheck(FALSE);
+      ->condition('created', $month_start, '>=')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $month_q->condition('field_owner', $user_id); }
     $new_this_month = (int) $month_q->count()->execute();
 
@@ -379,10 +380,18 @@ class AllContactsController extends ControllerBase {
   .cell-owner i{width:10px;height:10px;color:#d1d5db;opacity:.8;flex-shrink:0}
   .td-time{font-size:11px;color:#94a3b8;white-space:nowrap}
   .cell-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end}
-  .btn-action{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;color:#94a3b8;cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
-  .btn-action:hover.btn-edit{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-  .btn-action:hover.btn-delete{border-color:#dc2626;background:#fef2f2;color:#dc2626}
-  .btn-action i{width:13px;height:13px;color:inherit}
+  .crm-row-action{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;border:1.5px solid #dbe3ef;background:#fff;color:#475569;cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
+  .crm-row-action.btn-edit{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+  .crm-row-action.btn-delete{border-color:#fecaca;background:#fef2f2;color:#b91c1c}
+  .crm-row-action:hover.btn-edit{border-color:#2563eb;background:#eff6ff;color:#2563eb}
+  .crm-row-action:hover.btn-delete{border-color:#dc2626;background:#fef2f2;color:#dc2626}
+  .crm-row-action i,.crm-row-action svg{width:15px;height:15px;color:inherit;stroke:currentColor;stroke-width:2.3;opacity:1;display:block}
+  .crm-row-action.btn-edit,.crm-row-action.btn-edit svg{color:#64748b !important;stroke:currentColor !important;fill:none !important}
+  .crm-row-action.btn-delete,.crm-row-action.btn-delete svg{color:#64748b !important;stroke:currentColor !important;fill:none !important}
+  .crm-row-action.btn-edit,.crm-row-action.btn-edit svg{color:#1d4ed8 !important;stroke:#1d4ed8 !important}
+  .crm-row-action.btn-delete,.crm-row-action.btn-delete svg{color:#b91c1c !important;stroke:#b91c1c !important}
+  .contacts-table tbody tr:hover .crm-row-action.btn-edit,.contacts-table tbody tr:hover .crm-row-action.btn-edit svg{color:#2563eb;stroke:#2563eb !important}
+  .contacts-table tbody tr:hover .crm-row-action.btn-delete,.contacts-table tbody tr:hover .crm-row-action.btn-delete svg{color:#dc2626;stroke:#dc2626 !important}
 
   /* ── Empty state ── */
   .empty-state{text-align:center;padding:72px 30px}
@@ -418,8 +427,10 @@ class AllContactsController extends ControllerBase {
   .col-chk{width:40px}.th-chk,.td-chk{padding:10px 4px 10px 14px !important;box-sizing:border-box}
   .row-chk,.chk-all{width:15px;height:15px;border-radius:4px;cursor:pointer;accent-color:#3b82f6;flex-shrink:0}
   /* Hover reveals actions */
-  .cell-actions .btn-action{opacity:0;pointer-events:none;transform:translateX(3px);transition:opacity .12s,transform .12s}
-  .contacts-table tbody tr:hover .cell-actions .btn-action{opacity:1;pointer-events:auto;transform:translateX(0)}
+  .cell-actions .crm-row-action{opacity:1;pointer-events:auto;transform:none;transition:opacity .12s,transform .12s}
+  .contacts-table tbody tr:hover .cell-actions .crm-row-action{opacity:1;pointer-events:auto;transform:translateX(0)}
+  .contacts-table tbody tr:hover .cell-actions .crm-row-action.btn-edit{color:#2563eb}
+  .contacts-table tbody tr:hover .cell-actions .crm-row-action.btn-delete{color:#dc2626}
   /* Bulk floating toolbar */
   #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
   #bulk-bar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
@@ -584,10 +595,10 @@ EMPTY;
         // Action buttons
         $action_btns = '';
         if ($r['can_edit']) {
-          $action_btns .= '<button class="btn-action btn-edit" title="Edit" onclick="CRMInlineEdit.openModal(' . $r['id'] . ',\'contact\')">'
-            . '<i data-lucide="pencil"></i></button>';
-          $action_btns .= '<button class="btn-action btn-delete" title="Delete" onclick="CRMInlineEdit.confirmDelete(' . $r['id'] . ',\'contact\',\'' . $r['title_js'] . '\')">'
-            . '<i data-lucide="trash-2"></i></button>';
+          $action_btns .= '<button class="crm-row-action btn-edit" title="Edit" onclick="CRMInlineEdit.openModal(' . $r['id'] . ',\'contact\')">'
+            . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg></button>';
+          $action_btns .= '<button class="crm-row-action btn-delete" title="Delete" onclick="CRMInlineEdit.confirmDelete(' . $r['id'] . ',\'contact\',\'' . $r['title_js'] . '\')">'
+            . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
         }
 
         $html .= '<tr id="contact-row-' . $r['id'] . '">'
@@ -659,8 +670,30 @@ EMPTY;
 
     $html .= <<<JS
 <script>
+  function ensureLucideReady(callback) {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      callback();
+      return;
+    }
+    var existing = document.querySelector('script[data-lucide-fallback="1"]');
+    if (existing) {
+      existing.addEventListener('load', function () {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') callback();
+      }, { once: true });
+      return;
+    }
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js';
+    script.defer = true;
+    script.setAttribute('data-lucide-fallback', '1');
+    script.onload = function () {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') callback();
+    };
+    document.head.appendChild(script);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
-    if (window.lucide) lucide.createIcons();
+    ensureLucideReady(function () { window.lucide.createIcons(); });
     if (window.CRM) {
       CRM.initRealtimeSearch('crm-search-input');
       CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
@@ -668,7 +701,7 @@ EMPTY;
     }
   });
   document.addEventListener('crm:icons-refresh', function () {
-    if (window.lucide) lucide.createIcons();
+    ensureLucideReady(function () { window.lucide.createIcons(); });
   });
   // Bulk select — event delegation survives AJAX result swaps
   (function() {

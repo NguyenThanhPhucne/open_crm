@@ -625,8 +625,9 @@ class AIAutoCompleteController extends ControllerBase {
    *   Access result.
    */
   public function accessAutoCreate(AccountInterface $account) {
-    $can_access = $account->hasPermission('use crm ai autocomplete') &&
-                  $account->hasPermission('create contact content');
+    // Only check AI autocomplete permission. Node creation permissions
+    // are validated at entity creation time through entity hooks.
+    $can_access = $account->hasPermission('use crm ai autocomplete');
     return $can_access ? AccessResult::allowed() : AccessResult::forbidden();
   }
 

@@ -110,31 +110,24 @@ HTML;
       box-sizing: border-box;
     }
     
-    html, body {
-      width: 100%;
-      height: 100%;
-    }
-    
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       background: #ffffff;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin: 0;
       color: #1e293b;
       overflow-x: hidden;
     }
     
     .container {
-      max-width: 900px;
-      width: 100%;
-      height: 100%;
+      max-width: 980px;
+      width: min(980px, 100% - 32px);
+      margin: 0 auto;
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 24px;
+      padding: 40px 0;
       animation: fadeIn 0.3s ease-out;
     }
     
@@ -152,27 +145,26 @@ HTML;
       background: white;
       border: 1px solid #e2e8f0;
       border-radius: 14px;
-      padding: 48px 56px;
+      padding: 40px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.08);
-      display: flex;
-      gap: 56px;
-      align-items: flex-start;
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      gap: 40px;
+      align-items: start;
     }
     
     .left-content {
-      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      min-width: 260px;
+      min-width: 0;
     }
     
     .right-content {
-      flex: 1;
       display: flex;
       flex-direction: column;
-      min-width: 300px;
+      min-width: 0;
     }
     
     .icon-wrapper {
@@ -338,21 +330,22 @@ HTML;
     
     @media (max-width: 768px) {
       .container {
-        padding: 32px 20px;
+        width: min(100%, calc(100% - 20px));
+        padding: 24px 0;
       }
       
       .content-wrapper {
-        flex-direction: column;
-        gap: 32px;
-        padding: 36px 28px;
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 28px 20px;
       }
       
       .left-content {
-        min-width: auto;
+        min-width: 0;
       }
       
       .right-content {
-        min-width: auto;
+        min-width: 0;
       }
       
       .error-code {
