@@ -2033,15 +2033,15 @@ class DashboardController extends ControllerBase {
           <i data-lucide="user-plus" width="15" height="15"></i>
           <span>New Contact</span>
         </a>
-        <a href="/crm/add/organization" class="hero-action-btn hero-btn-outline">
+        <a href="/crm/add/organization" class="hero-action-btn hero-btn-primary">
           <i data-lucide="building-2" width="15" height="15"></i>
           <span>New Organization</span>
         </a>
-        <a href="/crm/add/deal" class="hero-action-btn hero-btn-outline">
+        <a href="/crm/add/deal" class="hero-action-btn hero-btn-primary">
           <i data-lucide="plus-circle" width="15" height="15"></i>
           <span>New Deal</span>
         </a>
-        <a href="/crm/add/activity" class="hero-action-btn hero-btn-outline">
+        <a href="/crm/add/activity" class="hero-action-btn hero-btn-primary">
           <i data-lucide="calendar-plus" width="15" height="15"></i>
           <span>Log Activity</span>
         </a>
