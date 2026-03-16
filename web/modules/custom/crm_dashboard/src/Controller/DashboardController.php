@@ -158,12 +158,15 @@ class DashboardController extends ControllerBase {
     // Use a single DB aggregate query instead of loading all deal entities into memory.
     $won_id  = (int) ($won_term_id  ?? 0);
     $lost_id = (int) ($lost_term_id ?? 0);
+    $has_deleted_at_table = \Drupal::database()->schema()->tableExists('node__field_deleted_at');
     $agg = \Drupal::database()->select('node_field_data', 'n');
     $agg->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
-    $agg->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $agg->condition('n.type', 'deal');
-    $agg->isNull('fd.field_deleted_at_value');
+    if ($has_deleted_at_table) {
+      $agg->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
+      $agg->isNull('fd.field_deleted_at_value');
+    }
     $agg->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
@@ -3284,12 +3287,15 @@ HTML;
     // 11. Deal Values — single DB aggregate query, no entity loading.
     $won_id2  = (int) ($won_term_id  ?? 0);
     $lost_id2 = (int) ($lost_term_id ?? 0);
+    $has_deleted_at_table = \Drupal::database()->schema()->tableExists('node__field_deleted_at');
     $agg2 = \Drupal::database()->select('node_field_data', 'n');
     $agg2->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg2->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
-    $agg2->leftJoin('node__field_deleted_at', 'fd2', 'fd2.entity_id = n.nid AND fd2.deleted = 0');
     $agg2->condition('n.type', 'deal');
-    $agg2->isNull('fd2.field_deleted_at_value');
+    if ($has_deleted_at_table) {
+      $agg2->leftJoin('node__field_deleted_at', 'fd2', 'fd2.entity_id = n.nid AND fd2.deleted = 0');
+      $agg2->isNull('fd2.field_deleted_at_value');
+    }
     $agg2->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id2  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id2 THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
