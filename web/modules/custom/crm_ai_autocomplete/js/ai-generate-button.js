@@ -1,75 +1,24 @@
 (function () {
-  // Debug logs storage
-  window.crmDebugLogs = [];
+  const CRM_DEBUG =
+    globalThis.location.search.includes("crmDebug=1") ||
+    globalThis.localStorage.getItem("crmDebug") === "1";
 
-  // Intercept console.log to also store in window
-  const originalLog = console.log;
-  console.log = function () {
-    window.crmDebugLogs.push(Array.from(arguments).join(" "));
-    originalLog.apply(console, arguments);
-  };
-
-  // Intercept console.error too
-  const originalError = console.error;
-  console.error = function () {
-    window.crmDebugLogs.push("ERROR: " + Array.from(arguments).join(" "));
-    originalError.apply(console, arguments);
-  };
-
-  // Function to show debug panel
-  function showDebugPanel() {
-    const panel = document.createElement("div");
-    panel.id = "crm-debug-panel";
-    panel.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 15px;
-      border-radius: 8px;
-      max-width: 400px;
-      max-height: 300px;
-      overflow-y: auto;
-      z-index: 10000;
-      font-family: monospace;
-      font-size: 12px;
-      border: 1px solid #444;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-
-    const closeBtn = document.createElement("button");
-    closeBtn.textContent = "✕";
-    closeBtn.style.cssText = `
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: none;
-      border: none;
-      color: #d4d4d4;
-      cursor: pointer;
-      font-size: 18px;
-    `;
-    closeBtn.onclick = () => panel.remove();
-
-    const logs = window.crmDebugLogs.map((log) => `<div>${log}</div>`).join("");
-    panel.innerHTML = `
-      <div style="margin-bottom: 10px; font-weight: bold; color: #4ec9b0;">🐛 CRM Debug Logs</div>
-      ${logs}
-    `;
-    panel.appendChild(closeBtn);
-    document.body.appendChild(panel);
+  function debugLog(...args) {
+    if (!CRM_DEBUG) {
+      return;
+    }
+    console.log(...args);
   }
 
-  // Check if there are logs from previous page
-  window.addEventListener("DOMContentLoaded", function () {
-    if (window.crmDebugLogs.length > 0) {
-      setTimeout(showDebugPanel, 100);
+  function debugError(...args) {
+    if (!CRM_DEBUG) {
+      return;
     }
-  });
+    console.error(...args);
+  }
 
   // Check if there's a pending toast from a previous page reload
-  window.addEventListener("DOMContentLoaded", function () {
+  globalThis.addEventListener("DOMContentLoaded", function () {
     const pendingToast = localStorage.getItem("crmToast");
     if (pendingToast) {
       try {
@@ -258,7 +207,7 @@
     // Render Lucide <i data-lucide="..."> icons inside the button.
     // Use a small delay to ensure the external Lucide script is fully evaluated.
     function initLucideIcons() {
-      if (window.lucide) {
+      if (globalThis.lucide) {
         lucide.createIcons();
       } else {
         setTimeout(initLucideIcons, 100);
@@ -274,11 +223,11 @@
 
   function resolveCsrfToken() {
     const metaToken = document.querySelector('meta[name="csrf-token"]');
-    if (metaToken && metaToken.content) {
+    if (metaToken?.content) {
       return Promise.resolve(metaToken.content);
     }
-    if (window.drupalSettings && window.drupalSettings.csrf_token) {
-      return Promise.resolve(window.drupalSettings.csrf_token);
+    if (globalThis.drupalSettings?.csrf_token) {
+      return Promise.resolve(globalThis.drupalSettings.csrf_token);
     }
     return fetch("/session/token", { credentials: "same-origin" })
       .then((resp) => resp.text())
@@ -288,10 +237,10 @@
   function crmAIGenerateSimple(button) {
     // Detect entity type from data attribute (set by #prefix buttons) or from the current URL.
     function detectEntityType() {
-      if (button.dataset && button.dataset.entityType) {
+      if (button.dataset?.entityType) {
         return button.dataset.entityType;
       }
-      const path = window.location.pathname;
+      const path = globalThis.location.pathname;
       if (path.includes("all-deals") || path.includes("my-deals"))
         return "deal";
       if (
@@ -304,7 +253,6 @@
       return "contact";
     }
     const entityType = detectEntityType();
-    const originalText = button.textContent;
     const originalHTML = button.innerHTML;
     button.disabled = true;
     button.classList.add("ai-generating");
@@ -339,19 +287,19 @@
         }),
       )
       .then((response) => {
-        console.log("API Response Status:", response.status);
+        debugLog("AI auto-create status:", response.status);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         // Try to parse as JSON, if it fails, log the response text
         return response.text().then((text) => {
-          console.log("API Response Text:", text.substring(0, 500));
+          debugLog("AI auto-create response body:", text.substring(0, 500));
           try {
             const data = JSON.parse(text);
-            console.log("API Response Data:", data);
+            debugLog("AI auto-create parsed:", data);
             return data;
           } catch (e) {
-            console.error(
+            debugError(
               "Response was not valid JSON. Raw response:",
               text.substring(0, 500),
             );
@@ -362,15 +310,12 @@
         });
       })
       .then((data) => {
-        console.log("Processing response, success:", data.success);
+        debugLog("AI auto-create success:", data.success);
         if (data.success) {
           // Save toast message to localStorage and redirect
           const provider = data.provider || "unknown";
-          console.log("Contact created with provider:", provider);
-          console.log("Redirecting to:", data.entity_url);
-          console.log(
-            "*** ALLOW 5 SECONDS TO READ THIS OUTPUT BEFORE REDIRECT ***",
-          );
+          debugLog("AI provider:", provider);
+          debugLog("Redirecting to:", data.entity_url);
 
           // Hide loading modal with fade-out, then redirect
           const entityLabel = entityType === "deal" ? "deal" : "contact";
@@ -383,7 +328,7 @@
           );
           hideLoadingModal(loadingOverlay, () => {
             setTimeout(() => {
-              window.location.href = data.entity_url;
+              globalThis.location.href = data.entity_url;
             }, 800);
           });
         } else {

@@ -1,5 +1,5 @@
 crm_shared:
-  version: 1.1
+  version: 1.2
   css:
     theme:
       css/crm-shared.css: {}
@@ -143,9 +143,11 @@ crm_lazy_load:
     - core/once
 
 crm-ui-professional:
-  version: 1.0
+  version: 1.4
   css:
     theme:
       css/crm-ui-professional.css: {}
+  js:
+    js/crm-list-toolbar.js: {}
   dependencies:
     - core/drupal

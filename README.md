@@ -85,52 +85,52 @@ open_crm/
 
 ## Custom Modules
 
-| Module | Purpose |
-| --- | --- |
-| crm | Core CRM controllers, listings, and access handling |
-| crm_actions | Action buttons in CRM views |
-| crm_activity_log | Contact activity logging widget |
-| crm_ai_autocomplete | AI autocomplete and auto-create endpoints |
-| crm_contact360 | Enhanced Contact 360 profile view |
-| crm_dashboard | KPI dashboard and refresh endpoint |
-| crm_data_quality | Data quality and production-readiness checks |
-| crm_edit | Inline edit, batch update, create/delete APIs |
-| crm_import | CSV import for CRM entities |
-| crm_import_export | Admin import/export tools |
-| crm_kanban | Deal pipeline board and stage updates |
-| crm_login | Custom login and error pages |
-| crm_navigation | CRM navigation helpers |
-| crm_notifications | Event-based email notifications |
-| crm_quickadd | Quick Add AJAX forms |
-| crm_register | Custom user registration |
-| crm_teams | Team-based access controls |
-| crm_workflow | CRM workflow automation rules |
+| Module              | Purpose                                             |
+| ------------------- | --------------------------------------------------- |
+| crm                 | Core CRM controllers, listings, and access handling |
+| crm_actions         | Action buttons in CRM views                         |
+| crm_activity_log    | Contact activity logging widget                     |
+| crm_ai_autocomplete | AI autocomplete and auto-create endpoints           |
+| crm_contact360      | Enhanced Contact 360 profile view                   |
+| crm_dashboard       | KPI dashboard and refresh endpoint                  |
+| crm_data_quality    | Data quality and production-readiness checks        |
+| crm_edit            | Inline edit, batch update, create/delete APIs       |
+| crm_import          | CSV import for CRM entities                         |
+| crm_import_export   | Admin import/export tools                           |
+| crm_kanban          | Deal pipeline board and stage updates               |
+| crm_login           | Custom login and error pages                        |
+| crm_navigation      | CRM navigation helpers                              |
+| crm_notifications   | Event-based email notifications                     |
+| crm_quickadd        | Quick Add AJAX forms                                |
+| crm_register        | Custom user registration                            |
+| crm_teams           | Team-based access controls                          |
+| crm_workflow        | CRM workflow automation rules                       |
 
 ## Key Routes
 
-| Route | Purpose |
-| --- | --- |
-| /crm/dashboard | Main dashboard |
-| /crm/dashboard/refresh | Dashboard refresh data endpoint |
-| /crm/my-contacts | My contacts list |
-| /crm/my-deals | My deals list |
-| /crm/my-organizations | My organizations list |
-| /crm/my-activities | My activities list |
-| /crm/all-contacts | All contacts list |
-| /crm/all-deals | All deals list |
-| /crm/all-organizations | All organizations list |
-| /crm/all-activities | All activities list |
-| /crm/my-pipeline | My deal pipeline |
-| /crm/all-pipeline | Team/global pipeline |
-| /crm/import | CSV import UI |
-| /crm/edit/ajax/delete | Delete API |
-| /api/v1/{entity_type}/{entity_id}/{field_name} | Inline update API |
-| /api/v1/batch-update | Batch update API |
-| /api/crm/ai/autocomplete | AI autocomplete API |
-| /api/crm/ai/auto-create | AI auto-create API |
-| /login | Custom login page |
-| /access-denied | Custom 403 page |
-| /page-not-found | Custom 404 page |
+| Route                                          | Purpose                         |
+| ---------------------------------------------- | ------------------------------- |
+| /crm/dashboard                                 | Main dashboard                  |
+| /crm/dashboard/refresh                         | Dashboard refresh data endpoint |
+| /crm/my-contacts                               | My contacts list                |
+| /crm/my-deals                                  | My deals list                   |
+| /crm/my-organizations                          | My organizations list           |
+| /crm/my-activities                             | My activities list              |
+| /crm/all-contacts                              | All contacts list               |
+| /crm/all-deals                                 | All deals list                  |
+| /crm/all-organizations                         | All organizations list          |
+| /crm/all-activities                            | All activities list             |
+| /crm/my-pipeline                               | My deal pipeline                |
+| /crm/all-pipeline                              | Team/global pipeline            |
+| /crm/import                                    | CSV import UI                   |
+| /crm/edit/ajax/delete                          | Delete API                      |
+| /api/v1/{entity_type}/{entity_id}/{field_name} | Inline update API               |
+| /api/v1/batch-update                           | Batch update API                |
+| /api/crm/ai/autocomplete                       | AI autocomplete API             |
+| /api/crm/ai/auto-create                        | AI auto-create API              |
+| /login                                         | Custom login page               |
+| /access-denied                                 | Custom 403 page                 |
+| /page-not-found                                | Custom 404 page                 |
 
 ## Operations
 

@@ -47,6 +47,10 @@ class AllOrganizationsController extends ControllerBase {
     $is_admin     = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
     $is_manager   = in_array('sales_manager', $current_user->getRoles());
     $can_manage   = $is_admin || $is_manager;
+    $current_path = $request->getPathInfo();
+    $is_my_view   = str_contains($current_path, 'my-organizations');
+    $org_fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', 'organization');
+    $has_deleted_at = isset($org_fields['field_deleted_at']);
 
     // ── Filter parameters ─────────────────────────────────────────────────────
     $search_name     = trim($request->query->get('search', ''));
@@ -59,10 +63,13 @@ class AllOrganizationsController extends ControllerBase {
     if (!in_array($sort_field, ['title', 'changed'])) { $sort_field = 'changed'; }
 
     // ── Query builder ─────────────────────────────────────────────────────────
-    $build_query = function () use ($search_name, $search_industry, $search_status, $can_manage, $user_id) {
+    $build_query = function () use ($search_name, $search_industry, $search_status, $can_manage, $is_my_view, $user_id, $has_deleted_at) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'organization')
-        ->accessCheck(FALSE);
+        ->accessCheck(TRUE);
+      if ($has_deleted_at) {
+        $q->notExists('field_deleted_at');
+      }
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
       }
@@ -72,7 +79,7 @@ class AllOrganizationsController extends ControllerBase {
       if ($search_status) {
         $q->condition('field_status', $search_status);
       }
-      if (!$can_manage && $user_id > 0) {
+      if ($is_my_view || (!$can_manage && $user_id > 0)) {
         $q->condition('field_assigned_staff', $user_id);
       }
       return $q;
@@ -82,18 +89,21 @@ class AllOrganizationsController extends ControllerBase {
     $now         = \Drupal::time()->getCurrentTime();
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
-    $total_q = \Drupal::entityQuery('node')->condition('type', 'organization')->accessCheck(FALSE);
-    if (!$can_manage && $user_id > 0) { $total_q->condition('field_assigned_staff', $user_id); }
+    $total_q = \Drupal::entityQuery('node')->condition('type', 'organization')->accessCheck(TRUE);
+    if ($has_deleted_at) { $total_q->notExists('field_deleted_at'); }
+    if ($is_my_view || (!$can_manage && $user_id > 0)) { $total_q->condition('field_assigned_staff', $user_id); }
     $total_all = (int) $total_q->count()->execute();
 
     $active_q = \Drupal::entityQuery('node')->condition('type', 'organization')
-      ->condition('field_status', 'active')->accessCheck(FALSE);
-    if (!$can_manage && $user_id > 0) { $active_q->condition('field_assigned_staff', $user_id); }
+      ->condition('field_status', 'active')->accessCheck(TRUE);
+    if ($has_deleted_at) { $active_q->notExists('field_deleted_at'); }
+    if ($is_my_view || (!$can_manage && $user_id > 0)) { $active_q->condition('field_assigned_staff', $user_id); }
     $total_active = (int) $active_q->count()->execute();
 
     $month_q = \Drupal::entityQuery('node')->condition('type', 'organization')
-      ->condition('created', $month_start, '>=')->accessCheck(FALSE);
-    if (!$can_manage && $user_id > 0) { $month_q->condition('field_assigned_staff', $user_id); }
+      ->condition('created', $month_start, '>=')->accessCheck(TRUE);
+    if ($has_deleted_at) { $month_q->notExists('field_deleted_at'); }
+    if ($is_my_view || (!$can_manage && $user_id > 0)) { $month_q->condition('field_assigned_staff', $user_id); }
     $new_this_month = (int) $month_q->count()->execute();
 
     // ── Paged results ─────────────────────────────────────────────────────────
@@ -119,6 +129,9 @@ class AllOrganizationsController extends ControllerBase {
     // ── Format rows ───────────────────────────────────────────────────────────
     $rows = [];
     foreach ($orgs as $org) {
+      if ($has_deleted_at && $org->hasField('field_deleted_at') && !$org->get('field_deleted_at')->isEmpty()) {
+        continue;
+      }
       $oid     = $org->id();
       $name    = $org->getTitle();
       $initial = strtoupper(mb_substr($name, 0, 1));
@@ -155,8 +168,8 @@ class AllOrganizationsController extends ControllerBase {
         if ($assigned_user) { $assigned_name = $assigned_user->getDisplayName(); }
       }
 
-      $can_edit = $can_manage ||
-        ($org->hasField('field_assigned_staff') && $org->get('field_assigned_staff')->target_id == $user_id);
+      $can_edit = $org->access('update', $this->currentUser());
+      $can_delete = $org->access('delete', $this->currentUser());
 
       $diff = $now - $org->getChangedTime();
       if ($diff < 60)         { $time_ago = 'just now'; }
@@ -193,6 +206,7 @@ class AllOrganizationsController extends ControllerBase {
         'assigned'      => Html::escape($assigned_name),
         'time_ago'      => $time_ago,
         'can_edit'      => $can_edit,
+        'can_delete'    => $can_delete,
         'title_js'      => addslashes($name),
       ];
     }
@@ -390,13 +404,17 @@ class AllOrganizationsController extends ControllerBase {
   .orgs-table tbody tr:hover .crm-row-action.btn-delete,.orgs-table tbody tr:hover .crm-row-action.btn-delete svg{color:#dc2626;stroke:#dc2626 !important}
 
   /* ── Empty state ── */
-  .empty-state{text-align:center;padding:72px 30px}
-  .empty-state-icon{width:64px;height:64px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-  .empty-state-icon i{width:30px;height:30px;color:#cbd5e1}
-  .empty-state-title{font-size:18px;font-weight:700;color:#334155;margin-bottom:6px}
-  .empty-state-sub{font-size:14px;color:#94a3b8;margin-bottom:24px}
-  .empty-state-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s}
-  .empty-state-btn:hover{background:#eff6ff}
+  .empty-state{padding:54px 24px;text-align:center}
+  .empty-state-panel{max-width:620px;margin:0 auto;padding:28px 26px;border:1px solid #d1fae5;border-radius:16px;background:linear-gradient(180deg,#ffffff 0%,#f0fdf4 100%);box-shadow:0 12px 30px rgba(6,95,70,.08);position:relative;overflow:hidden}
+  .empty-state-panel:before{content:"";position:absolute;inset:auto -70px -90px auto;width:220px;height:220px;background:radial-gradient(circle,#a7f3d0 0%,rgba(167,243,208,0) 72%);pointer-events:none}
+  .empty-state-icon{width:74px;height:74px;background:linear-gradient(145deg,#ecfdf5 0%,#d1fae5 100%);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid #86efac;box-shadow:0 8px 18px rgba(16,185,129,.14)}
+  .empty-state-icon i{width:34px;height:34px;color:#059669}
+  .empty-state-title{font-size:24px;line-height:1.15;font-weight:800;color:#0f172a;margin-bottom:8px;letter-spacing:-.01em}
+  .empty-state-sub{font-size:14px;color:#64748b;margin:0 auto 16px;max-width:480px}
+  .empty-state-tips{display:flex;justify-content:center;margin:0;padding:0;list-style:none}
+  .empty-state-tips li{display:block}
+  .empty-state-tips a{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 16px;border:1px solid #a7f3d0;border-radius:10px;background:#ecfdf5;font-size:13px;font-weight:700;color:#065f46;text-decoration:none;transition:all .15s}
+  .empty-state-tips a:hover{background:#d1fae5;border-color:#6ee7b7;color:#047857;transform:translateY(-1px)}
 
   /* ── Pagination ── */
   .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f1f5f9;background:#fafafa;flex-wrap:wrap;gap:10px}
@@ -574,10 +592,14 @@ HTML;
       $html .= <<<EMPTY
       <tr><td colspan="11">
         <div class="empty-state">
-          <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
-          <div class="empty-state-title">No organizations found</div>
-          <div class="empty-state-sub">Try adjusting your search filters or add a new organization.</div>
-          <a href="{$add_url}" class="empty-state-btn"><i data-lucide="plus-circle"></i> Add Organization</a>
+          <div class="empty-state-panel">
+            <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
+            <div class="empty-state-title">No organizations found</div>
+            <div class="empty-state-sub">No organization matches your current filters. You can add a new organization to start linking contacts and deals.</div>
+            <ul class="empty-state-tips">
+              <li><a href="{$add_url}"><i data-lucide="plus-circle"></i> Create new organization</a></li>
+            </ul>
+          </div>
         </div>
       </td></tr>
 EMPTY;
@@ -630,6 +652,8 @@ EMPTY;
         if ($r['can_edit']) {
           $action_btns .= '<button class="crm-row-action btn-edit" title="Edit" onclick="CRMInlineEdit.openModal(' . $r['id'] . ',\'organization\')">'
             . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg></button>';
+        }
+        if ($r['can_delete']) {
           $action_btns .= '<button class="crm-row-action btn-delete" title="Delete" onclick="CRMInlineEdit.confirmDelete(' . $r['id'] . ',\'organization\',\'' . $r['title_js'] . '\')">'
             . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
         }
@@ -694,6 +718,8 @@ EMPTY;
     $html .= '</div>'; // .table-card
     $html .= '</div>'; // #crm-results-wrap
     $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
+      . '<button class="btn-bulk" id="bulk-edit-btn" title="Edit selected">Edit selected</button>'
+      . '<button class="btn-bulk" id="bulk-delete-btn" title="Delete selected">Delete selected</button>'
       . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
       . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
       . ' Clear selection</button></div>';
@@ -728,51 +754,12 @@ EMPTY;
     if (window.CRM) {
       CRM.initRealtimeSearch('crm-search-input');
       CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
-      CRM.renderShortcutHints([{ key: 'N', label: 'New organization' }, { key: '/', label: 'Search' }, { key: 'Esc', label: 'Clear' }]);
+      CRM.initBulkActions({ entityType: 'organization' });
     }
   });
   document.addEventListener('crm:icons-refresh', function () {
     ensureLucideReady(function () { window.lucide.createIcons(); });
   });
-  // Bulk select — event delegation survives AJAX result swaps
-  (function() {
-    var bulkBar  = document.getElementById('bulk-bar');
-    if (!bulkBar) return;
-    var bkCount  = document.getElementById('bk-ct');
-    var clearBtn = document.getElementById('bulk-clear-btn');
-    function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
-    function refreshBulk() {
-      var sel = getRowChecks().filter(function(c) { return c.checked; });
-      if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
-      else { bulkBar.classList.remove('show'); }
-      var chkAll = document.getElementById('chk-all');
-      if (chkAll) {
-        var all = getRowChecks();
-        chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
-        chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
-      }
-    }
-    document.addEventListener('change', function(e) {
-      if (e.target && e.target.classList.contains('chk-all')) {
-        getRowChecks().forEach(function(c) { c.checked = e.target.checked; });
-        refreshBulk();
-      } else if (e.target && e.target.classList.contains('row-chk')) {
-        refreshBulk();
-      }
-    });
-    document.addEventListener('crm:results-swapped', function() {
-      bulkBar.classList.remove('show');
-      bkCount.textContent = '0 selected';
-    });
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function() {
-        getRowChecks().forEach(function(c) { c.checked = false; });
-        var chkAll = document.getElementById('chk-all');
-        if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
-        bulkBar.classList.remove('show');
-      });
-    }
-  })();
   // Density toggle
   (function() {
     var pgWrap  = document.getElementById('pg-wrap');

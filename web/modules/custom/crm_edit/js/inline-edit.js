@@ -551,18 +551,35 @@ window.CRMInlineEdit = {
             <div class="delete-entity-info">
               <h3>${title} <span class="entity-type-badge">${typeLabel}</span></h3>
             </div>
-            
-            <div class="final-confirmation">
-              <label for="delete-confirm-input">
-                To confirm deletion, type "<strong>${title}</strong>" below:
-              </label>
-              <input 
-                type="text" 
-                id="delete-confirm-input" 
-                class="delete-confirm-input"
-                placeholder="Type the ${type} name to confirm"
-                autocomplete="off"
-              />
+
+            <div class="delete-confirm-grid">
+              <div class="delete-risk-card">
+                <h4>
+                  <i data-lucide="alert-triangle"></i>
+                  Permanent action
+                </h4>
+                <p>This ${typeLabel.toLowerCase()} and linked references will be removed immediately from active lists.</p>
+                <ul>
+                  <li><i data-lucide="x-circle"></i> Cannot be undone</li>
+                  <li><i data-lucide="database-zap"></i> Database updates instantly</li>
+                  <li><i data-lucide="refresh-cw"></i> Dashboard and lists refresh automatically</li>
+                </ul>
+              </div>
+
+              <div class="final-confirmation">
+                <label for="delete-confirm-input">
+                  Type exact name to unlock delete:
+                  <strong>${title}</strong>
+                </label>
+                <input 
+                  type="text" 
+                  id="delete-confirm-input" 
+                  class="delete-confirm-input"
+                  placeholder="Type exactly: ${title}"
+                  autocomplete="off"
+                />
+                <p class="delete-match-status" aria-live="polite">Waiting for exact match</p>
+              </div>
             </div>
           </div>
           
@@ -590,6 +607,7 @@ window.CRMInlineEdit = {
 
     const confirmInput = overlay.querySelector("#delete-confirm-input");
     const deleteBtn = overlay.querySelector(".btn-delete-final");
+    const matchStatus = overlay.querySelector(".delete-match-status");
     const closeBtn = overlay.querySelector(".crm-modal-close");
 
     const closeModal = () => {
@@ -602,9 +620,17 @@ window.CRMInlineEdit = {
       if (confirmInput.value.trim() === title) {
         deleteBtn.disabled = false;
         deleteBtn.classList.add("enabled");
+        if (matchStatus) {
+          matchStatus.textContent = "Ready to delete";
+          matchStatus.classList.add("is-ready");
+        }
       } else {
         deleteBtn.disabled = true;
         deleteBtn.classList.remove("enabled");
+        if (matchStatus) {
+          matchStatus.textContent = "Waiting for exact match";
+          matchStatus.classList.remove("is-ready");
+        }
       }
     };
 

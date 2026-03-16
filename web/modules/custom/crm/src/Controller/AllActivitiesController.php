@@ -72,6 +72,8 @@ class AllActivitiesController extends ControllerBase {
     // Current path (serves both /crm/all-activities and /crm/my-activities)
     $current_path = $request->getPathInfo();
     $is_my_view   = str_contains($current_path, 'my-activities');
+    $activity_fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', 'activity');
+    $has_deleted_at = isset($activity_fields['field_deleted_at']);
 
     // ── Filter params ─────────────────────────────────────────────────────────
     $search_name  = trim($request->query->get('search', ''));
@@ -83,10 +85,13 @@ class AllActivitiesController extends ControllerBase {
     if (!in_array($sort_field, ['title', 'changed'])) { $sort_field = 'changed'; }
 
     // ── Query builder ─────────────────────────────────────────────────────────
-    $build_query = function () use ($search_name, $filter_type, $can_manage, $is_my_view, $user_id) {
+    $build_query = function () use ($search_name, $filter_type, $can_manage, $is_my_view, $user_id, $has_deleted_at) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'activity')
-        ->accessCheck(FALSE);
+        ->accessCheck(TRUE);
+      if ($has_deleted_at) {
+        $q->notExists('field_deleted_at');
+      }
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
       }
@@ -105,14 +110,16 @@ class AllActivitiesController extends ControllerBase {
     $now         = \Drupal::time()->getCurrentTime();
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
-    $all_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(FALSE);
+    $all_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(TRUE);
+    if ($has_deleted_at) { $all_q->notExists('field_deleted_at'); }
     if ($is_my_view || (!$can_manage && $user_id > 0)) {
       $all_q->condition('field_assigned_to', $user_id);
     }
     $total_all = (int) $all_q->count()->execute();
 
     // Upcoming: future datetime
-    $upcoming_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(FALSE);
+    $upcoming_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(TRUE);
+    if ($has_deleted_at) { $upcoming_q->notExists('field_deleted_at'); }
     $now_iso = date('Y-m-d\TH:i:s', $now);
     $upcoming_q->condition('field_datetime', $now_iso, '>=');
     if ($is_my_view || (!$can_manage && $user_id > 0)) {
@@ -121,7 +128,8 @@ class AllActivitiesController extends ControllerBase {
     $upcoming_count = (int) $upcoming_q->count()->execute();
 
     // Created this month
-    $new_month_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(FALSE)->condition('created', $month_start, '>=');
+    $new_month_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(TRUE)->condition('created', $month_start, '>=');
+    if ($has_deleted_at) { $new_month_q->notExists('field_deleted_at'); }
     if ($is_my_view || (!$can_manage && $user_id > 0)) {
       $new_month_q->condition('field_assigned_to', $user_id);
     }
@@ -141,6 +149,9 @@ class AllActivitiesController extends ControllerBase {
     // ── Format rows ───────────────────────────────────────────────────────────
     $rows = [];
     foreach ($activities as $act) {
+      if ($has_deleted_at && $act->hasField('field_deleted_at') && !$act->get('field_deleted_at')->isEmpty()) {
+        continue;
+      }
       $aid     = $act->id();
       $name    = $act->getTitle();
       $initial = strtoupper(mb_substr($name, 0, 1));
@@ -201,8 +212,8 @@ class AllActivitiesController extends ControllerBase {
         if ($assigned_user) { $assigned_name = $assigned_user->getDisplayName(); }
       }
 
-      $can_edit = $can_manage ||
-        ($act->hasField('field_assigned_to') && $act->get('field_assigned_to')->target_id == $user_id);
+      $can_edit = $act->access('update', $this->currentUser());
+      $can_delete = $act->access('delete', $this->currentUser());
 
       // Time updated
       $diff = $now - $act->getChangedTime();
@@ -233,6 +244,7 @@ class AllActivitiesController extends ControllerBase {
         'assigned_name' => Html::escape($assigned_name),
         'time_ago'      => $time_ago,
         'can_edit'      => $can_edit,
+        'can_delete'    => $can_delete,
         'title_js'      => addslashes($name),
       ];
     }
@@ -414,13 +426,17 @@ class AllActivitiesController extends ControllerBase {
   .acts-table tbody tr:hover .crm-row-action.btn-delete,.acts-table tbody tr:hover .crm-row-action.btn-delete svg{color:#dc2626;stroke:#dc2626 !important}
 
   /* Empty state */
-  .empty-state{text-align:center;padding:72px 30px}
-  .empty-state-icon{width:64px;height:64px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-  .empty-state-icon i{width:30px;height:30px;color:#cbd5e1}
-  .empty-state-title{font-size:18px;font-weight:700;color:#334155;margin-bottom:6px}
-  .empty-state-sub{font-size:14px;color:#94a3b8;margin-bottom:24px}
-  .empty-state-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s}
-  .empty-state-btn:hover{background:#eff6ff}
+  .empty-state{padding:54px 24px;text-align:center}
+  .empty-state-panel{max-width:620px;margin:0 auto;padding:28px 26px;border:1px solid #c7f9f1;border-radius:16px;background:linear-gradient(180deg,#ffffff 0%,#f0fdfa 100%);box-shadow:0 12px 30px rgba(13,148,136,.08);position:relative;overflow:hidden}
+  .empty-state-panel:before{content:"";position:absolute;inset:auto -70px -90px auto;width:220px;height:220px;background:radial-gradient(circle,#99f6e4 0%,rgba(153,246,228,0) 72%);pointer-events:none}
+  .empty-state-icon{width:74px;height:74px;background:linear-gradient(145deg,#f0fdfa 0%,#ccfbf1 100%);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid #5eead4;box-shadow:0 8px 18px rgba(20,184,166,.14)}
+  .empty-state-icon i{width:34px;height:34px;color:#0d9488}
+  .empty-state-title{font-size:24px;line-height:1.15;font-weight:800;color:#0f172a;margin-bottom:8px;letter-spacing:-.01em}
+  .empty-state-sub{font-size:14px;color:#64748b;margin:0 auto 16px;max-width:480px}
+  .empty-state-tips{display:flex;justify-content:center;margin:0;padding:0;list-style:none}
+  .empty-state-tips li{display:block}
+  .empty-state-tips a{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 16px;border:1px solid #99f6e4;border-radius:10px;background:#ecfeff;font-size:13px;font-weight:700;color:#115e59;text-decoration:none;transition:all .15s}
+  .empty-state-tips a:hover{background:#ccfbf1;border-color:#5eead4;color:#0f766e;transform:translateY(-1px)}
 
   /* Pagination */
   .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f1f5f9;background:#fafafa;flex-wrap:wrap;gap:10px}
@@ -559,10 +575,14 @@ HTML;
       $html .= <<<EMPTY
       <tr><td colspan="9">
         <div class="empty-state">
-          <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
-          <div class="empty-state-title">No activities found</div>
-          <div class="empty-state-sub">Try adjusting your filters or log a new activity.</div>
-          <a href="{$add_url}" class="empty-state-btn"><i data-lucide="plus-circle"></i> Add Activity</a>
+          <div class="empty-state-panel">
+            <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
+            <div class="empty-state-title">No activities found</div>
+            <div class="empty-state-sub">No activity fits the current filters. You can quickly log a new activity to keep your timeline up to date.</div>
+            <ul class="empty-state-tips">
+              <li><a href="{$add_url}"><i data-lucide="plus-circle"></i> Create new activity</a></li>
+            </ul>
+          </div>
         </div>
       </td></tr>
 EMPTY;
@@ -600,6 +620,8 @@ EMPTY;
         if ($r['can_edit']) {
           $action_btns .= '<button class="crm-row-action btn-edit" title="Edit" onclick="CRMInlineEdit.openModal(' . $r['id'] . ',\'activity\')">'
             . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg></button>';
+        }
+        if ($r['can_delete']) {
           $action_btns .= '<button class="crm-row-action btn-delete" title="Delete" onclick="CRMInlineEdit.confirmDelete(' . $r['id'] . ',\'activity\',\'' . $r['title_js'] . '\')">'
             . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
         }
@@ -662,6 +684,8 @@ EMPTY;
     $html .= '</div>'; // .table-card
     $html .= '</div>'; // #crm-results-wrap
     $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
+      . '<button class="btn-bulk" id="bulk-edit-btn" title="Edit selected">Edit selected</button>'
+      . '<button class="btn-bulk" id="bulk-delete-btn" title="Delete selected">Delete selected</button>'
       . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
       . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
       . ' Clear selection</button></div>';
@@ -696,51 +720,12 @@ EMPTY;
     if (window.CRM) {
       CRM.initRealtimeSearch('crm-search-input');
       CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
-      CRM.renderShortcutHints([{ key: 'N', label: 'New activity' }, { key: '/', label: 'Search' }, { key: 'Esc', label: 'Clear' }]);
+      CRM.initBulkActions({ entityType: 'activity' });
     }
   });
   document.addEventListener('crm:icons-refresh', function () {
     ensureLucideReady(function () { window.lucide.createIcons(); });
   });
-  // Bulk select — event delegation survives AJAX result swaps
-  (function() {
-    var bulkBar  = document.getElementById('bulk-bar');
-    if (!bulkBar) return;
-    var bkCount  = document.getElementById('bk-ct');
-    var clearBtn = document.getElementById('bulk-clear-btn');
-    function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
-    function refreshBulk() {
-      var sel = getRowChecks().filter(function(c) { return c.checked; });
-      if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
-      else { bulkBar.classList.remove('show'); }
-      var chkAll = document.getElementById('chk-all');
-      if (chkAll) {
-        var all = getRowChecks();
-        chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
-        chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
-      }
-    }
-    document.addEventListener('change', function(e) {
-      if (e.target && e.target.classList.contains('chk-all')) {
-        getRowChecks().forEach(function(c) { c.checked = e.target.checked; });
-        refreshBulk();
-      } else if (e.target && e.target.classList.contains('row-chk')) {
-        refreshBulk();
-      }
-    });
-    document.addEventListener('crm:results-swapped', function() {
-      bulkBar.classList.remove('show');
-      bkCount.textContent = '0 selected';
-    });
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function() {
-        getRowChecks().forEach(function(c) { c.checked = false; });
-        var chkAll = document.getElementById('chk-all');
-        if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
-        bulkBar.classList.remove('show');
-      });
-    }
-  })();
   // Density toggle
   (function() {
     var pgWrap  = document.getElementById('pg-wrap');

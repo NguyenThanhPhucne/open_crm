@@ -122,7 +122,20 @@ class BatchUpdateController extends ControllerBase {
           // Ensure UI/list/dashboard sees updates immediately.
           if (method_exists($entity, 'id')) {
             $entity_id = $entity->id();
-            Cache::invalidateTags(['node:' . $entity_id, 'node_list']);
+            $tags = ['node:' . $entity_id, 'node_list'];
+
+            if (method_exists($entity, 'bundle')) {
+              $tags[] = 'node_list:' . $entity->bundle();
+            }
+
+            $tags = array_merge($tags, [
+              'node_list:contact',
+              'node_list:organization',
+              'node_list:deal',
+              'node_list:activity',
+            ]);
+
+            Cache::invalidateTags(array_unique($tags));
             if ($entity_type === 'node') {
               \Drupal::entityTypeManager()->getStorage('node')->resetCache([$entity_id]);
             }
@@ -253,9 +266,10 @@ class BatchUpdateController extends ControllerBase {
         return (bool) $value;
       case 'entity_reference':
         if (is_numeric($value)) {
-          return $this->entityTypeManager()
-            ->getStorage('node')
-            ->load($value);
+          return ['target_id' => (int) $value];
+        }
+        if (is_array($value) && isset($value['target_id']) && is_numeric($value['target_id'])) {
+          return ['target_id' => (int) $value['target_id']];
         }
         return NULL;
       default:

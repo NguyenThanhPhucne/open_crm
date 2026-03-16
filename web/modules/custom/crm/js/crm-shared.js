@@ -438,6 +438,446 @@
   }
 
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     BULK ACTIONS (LIST PAGES)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /**
+   * Enable multi-select actions on list pages.
+   * @param {{entityType: string}} opts
+   */
+  function initBulkActions(opts) {
+    opts = opts || {};
+    var entityType = opts.entityType;
+    if (!entityType) return;
+
+    var bulkBar = document.getElementById("bulk-bar");
+    if (!bulkBar) return;
+
+    var bkCount = document.getElementById("bk-ct");
+    var clearBtn = document.getElementById("bulk-clear-btn");
+    var editBtn = document.getElementById("bulk-edit-btn");
+    var deleteBtn = document.getElementById("bulk-delete-btn");
+
+    function getRowChecks() {
+      return Array.prototype.slice.call(document.querySelectorAll(".row-chk"));
+    }
+
+    function canRowDelete(checkbox) {
+      if (!checkbox) return false;
+      var row = checkbox.closest("tr");
+      if (!row) return false;
+      return !!row.querySelector(".btn-delete");
+    }
+
+    function getSelectedChecks() {
+      return getRowChecks().filter(function (c) {
+        return c.checked;
+      });
+    }
+
+    function getDeleteSelectedChecks() {
+      return getSelectedChecks().filter(function (c) {
+        return canRowDelete(c);
+      });
+    }
+
+    function getNameLink(row) {
+      if (!row) return null;
+      return row.querySelector(
+        ".contact-name-link, .deal-name-link, .org-name-link, .act-name-link",
+      );
+    }
+
+    function setBusy(isBusy) {
+      [clearBtn, editBtn, deleteBtn].forEach(function (btn) {
+        if (!btn) return;
+        btn.disabled = !!isBusy;
+        btn.style.opacity = isBusy ? "0.6" : "";
+        btn.style.pointerEvents = isBusy ? "none" : "";
+      });
+    }
+
+    function refreshBulk() {
+      var selected = getSelectedChecks();
+      var count = selected.length;
+
+      if (bkCount) {
+        bkCount.textContent = count + " selected";
+      }
+
+      if (count > 0) {
+        bulkBar.classList.add("show");
+      } else {
+        bulkBar.classList.remove("show");
+      }
+
+      var chkAll = document.getElementById("chk-all");
+      if (chkAll) {
+        var all = getRowChecks();
+        chkAll.checked =
+          all.length > 0 &&
+          all.every(function (c) {
+            return c.checked;
+          });
+        chkAll.indeterminate =
+          all.some(function (c) {
+            return c.checked;
+          }) && !chkAll.checked;
+      }
+
+      getRowChecks().forEach(function (c) {
+        var row = c.closest("tr");
+        if (!row) return;
+        row.classList.toggle("row-selected", c.checked);
+      });
+    }
+
+    function clearSelection() {
+      getRowChecks().forEach(function (c) {
+        c.checked = false;
+      });
+      var chkAll = document.getElementById("chk-all");
+      if (chkAll) {
+        chkAll.checked = false;
+        chkAll.indeterminate = false;
+      }
+      refreshBulk();
+    }
+
+    async function getCsrfToken() {
+      if (
+        window.CRMInlineEdit &&
+        typeof window.CRMInlineEdit.getCsrfToken === "function"
+      ) {
+        return window.CRMInlineEdit.getCsrfToken();
+      }
+      var resp = await fetch("/session/token", { credentials: "same-origin" });
+      return (await resp.text()).trim();
+    }
+
+    async function runBulkEdit() {
+      var selected = getSelectedChecks();
+      if (!selected.length) {
+        toast("Please select at least one record.", "info");
+        return;
+      }
+
+      var nextTitle = window.prompt(
+        "Enter new title for " + selected.length + " selected record(s):",
+      );
+      if (nextTitle === null) return;
+
+      nextTitle = (nextTitle || "").trim();
+      if (!nextTitle) {
+        toast("Title cannot be empty.", "warn");
+        return;
+      }
+
+      setBusy(true);
+      try {
+        var csrfToken = await getCsrfToken();
+        var updates = selected.map(function (c) {
+          return {
+            entity_type: "node",
+            entity_id: Number(c.value),
+            field: "title",
+            value: nextTitle,
+          };
+        });
+
+        var resp = await fetch("/api/v1/batch-update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ updates: updates }),
+        });
+
+        var data = await resp.json();
+        if (!resp.ok || !data) {
+          throw new Error("Batch update failed");
+        }
+
+        var updated = Number(data.updated || 0);
+        var failed = Number(data.failed || 0);
+
+        if (updated > 0) {
+          selected.forEach(function (c) {
+            var row = c.closest("tr");
+            var nameLink = getNameLink(row);
+            if (nameLink) {
+              nameLink.textContent = nextTitle;
+            }
+          });
+        }
+
+        if (updated > 0 && failed === 0) {
+          toast("Updated " + updated + " record(s).", "success");
+        } else if (updated > 0 && failed > 0) {
+          toast("Updated " + updated + ", failed " + failed + ".", "warn");
+        } else {
+          toast("No records were updated.", "error");
+        }
+
+        clearSelection();
+        if (
+          window.CRMInlineEdit &&
+          typeof window.CRMInlineEdit.refreshListSections === "function"
+        ) {
+          window.CRMInlineEdit.refreshListSections();
+        }
+      } catch (error) {
+        console.error("Bulk edit error:", error);
+        toast("Bulk edit failed. Please try again.", "error");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function runBulkDelete() {
+      var selected = getSelectedChecks();
+      if (!selected.length) {
+        toast("Please select at least one record.", "info");
+        return;
+      }
+
+      var deletableSelected = getDeleteSelectedChecks();
+      if (!deletableSelected.length) {
+        toast(
+          "Selected records cannot be deleted with your current permissions.",
+          "warn",
+        );
+        return;
+      }
+
+      var skippedByPermission = selected.length - deletableSelected.length;
+
+      var ok = await confirmBulkDelete(deletableSelected.length);
+      if (!ok) return;
+
+      setBusy(true);
+      try {
+        var csrfToken = await getCsrfToken();
+        var tasks = deletableSelected.map(function (c) {
+          var row = c.closest("tr");
+          var link = getNameLink(row);
+          var title = link ? (link.textContent || "").trim() : "";
+          return fetch("/crm/edit/ajax/delete", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              nid: Number(c.value),
+              type: entityType,
+              confirmation: title,
+            }),
+          })
+            .then(function (resp) {
+              return resp.json().then(function (json) {
+                return { ok: resp.ok && json && json.success, json: json };
+              });
+            })
+            .catch(function () {
+              return { ok: false, json: null };
+            });
+        });
+
+        var results = await Promise.all(tasks);
+        var successCount = 0;
+        var failedCount = 0;
+
+        results.forEach(function (r, idx) {
+          if (r.ok) {
+            successCount += 1;
+            if (
+              window.CRMInlineEdit &&
+              typeof window.CRMInlineEdit.removeEntityRowOptimistically ===
+                "function"
+            ) {
+              window.CRMInlineEdit.removeEntityRowOptimistically(
+                Number(deletableSelected[idx].value),
+                entityType,
+              );
+            }
+          } else {
+            failedCount += 1;
+          }
+        });
+
+        var deniedCount = results.filter(function (r) {
+          return (
+            r && r.json && /access denied/i.test(String(r.json.message || ""))
+          );
+        }).length;
+
+        if (successCount > 0 && failedCount === 0) {
+          toast("Deleted " + successCount + " record(s).", "success");
+        } else if (successCount > 0 && failedCount > 0) {
+          toast(
+            "Deleted " + successCount + ", failed " + failedCount + ".",
+            "warn",
+          );
+        } else {
+          toast("Bulk delete failed.", "error");
+        }
+
+        if (deniedCount > 0 || skippedByPermission > 0) {
+          var skippedTotal = deniedCount + skippedByPermission;
+          toast(
+            skippedTotal +
+              " record(s) were skipped because your account does not have delete permission.",
+            "warn",
+            5200,
+          );
+        }
+
+        clearSelection();
+        if (
+          window.CRMInlineEdit &&
+          typeof window.CRMInlineEdit.refreshListSections === "function"
+        ) {
+          setTimeout(function () {
+            window.CRMInlineEdit.refreshListSections();
+          }, 250);
+        }
+      } catch (error) {
+        console.error("Bulk delete error:", error);
+        toast("Bulk delete failed. Please try again.", "error");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function ensureBulkConfirmStyle() {
+      if (document.getElementById("crm-bulk-confirm-style")) return;
+      var style = document.createElement("style");
+      style.id = "crm-bulk-confirm-style";
+      style.textContent =
+        ".crm-bulk-confirm{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.45);backdrop-filter:blur(2px)}" +
+        ".crm-bulk-confirm__card{width:min(520px,calc(100vw - 32px));background:#fff;border:1px solid #dbe7f6;border-radius:14px;box-shadow:0 24px 50px rgba(15,23,42,.25);padding:18px 18px 14px}" +
+        ".crm-bulk-confirm__ttl{margin:0 0 8px;font-size:18px;font-weight:800;color:#0f172a}" +
+        ".crm-bulk-confirm__txt{margin:0 0 12px;font-size:13px;line-height:1.55;color:#334155}" +
+        ".crm-bulk-confirm__warn{display:inline-flex;align-items:center;gap:6px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}" +
+        ".crm-bulk-confirm__row{margin-top:14px}" +
+        ".crm-bulk-confirm__lbl{display:block;margin:0 0 6px;font-size:12px;font-weight:700;color:#334155}" +
+        ".crm-bulk-confirm__input{width:100%;height:38px;border:1px solid #cbd5e1;border-radius:8px;padding:0 11px;font-size:13px;outline:none}" +
+        ".crm-bulk-confirm__input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}" +
+        ".crm-bulk-confirm__hint{margin-top:6px;font-size:12px;color:#64748b}" +
+        ".crm-bulk-confirm__actions{margin-top:14px;display:flex;justify-content:flex-end;gap:8px}" +
+        ".crm-bulk-confirm__btn{height:34px;padding:0 12px;border-radius:8px;border:1px solid #d1d9e6;background:#fff;color:#334155;font-size:12px;font-weight:700;cursor:pointer}" +
+        ".crm-bulk-confirm__btn:hover{background:#f8fafc}" +
+        ".crm-bulk-confirm__btn--danger{border-color:#ef4444;background:#ef4444;color:#fff}" +
+        ".crm-bulk-confirm__btn--danger:hover{background:#dc2626;border-color:#dc2626}" +
+        ".crm-bulk-confirm__btn[disabled]{opacity:.45;cursor:not-allowed}";
+      document.head.appendChild(style);
+    }
+
+    function confirmBulkDelete(count) {
+      ensureBulkConfirmStyle();
+
+      return new Promise(function (resolve) {
+        var overlay = document.createElement("div");
+        overlay.className = "crm-bulk-confirm";
+        overlay.innerHTML =
+          '<div class="crm-bulk-confirm__card" role="dialog" aria-modal="true" aria-label="Confirm bulk delete">' +
+          '<h3 class="crm-bulk-confirm__ttl">Delete ' +
+          count +
+          " selected record(s)?</h3>" +
+          '<p class="crm-bulk-confirm__txt">This action cannot be undone. Related references will be cleaned where supported.</p>' +
+          '<span class="crm-bulk-confirm__warn">Permanent deletion</span>' +
+          '<div class="crm-bulk-confirm__row">' +
+          '<label class="crm-bulk-confirm__lbl" for="crm-bulk-confirm-input">Type DELETE to confirm</label>' +
+          '<input id="crm-bulk-confirm-input" class="crm-bulk-confirm__input" type="text" autocomplete="off" spellcheck="false" placeholder="DELETE" />' +
+          '<div class="crm-bulk-confirm__hint">Only uppercase DELETE will enable the delete button.</div>' +
+          "</div>" +
+          '<div class="crm-bulk-confirm__actions">' +
+          '<button type="button" class="crm-bulk-confirm__btn" id="crm-bulk-confirm-cancel">Cancel</button>' +
+          '<button type="button" class="crm-bulk-confirm__btn crm-bulk-confirm__btn--danger" id="crm-bulk-confirm-ok" disabled>Delete selected</button>' +
+          "</div>" +
+          "</div>";
+
+        document.body.appendChild(overlay);
+
+        var input = overlay.querySelector("#crm-bulk-confirm-input");
+        var cancelBtn = overlay.querySelector("#crm-bulk-confirm-cancel");
+        var okBtn = overlay.querySelector("#crm-bulk-confirm-ok");
+
+        function cleanup(result) {
+          document.removeEventListener("keydown", keyHandler);
+          overlay.remove();
+          resolve(result);
+        }
+
+        function keyHandler(e) {
+          if (e.key === "Escape") {
+            cleanup(false);
+          }
+          if (e.key === "Enter" && !okBtn.disabled) {
+            cleanup(true);
+          }
+        }
+
+        document.addEventListener("keydown", keyHandler);
+
+        input.addEventListener("input", function () {
+          okBtn.disabled = input.value.trim() !== "DELETE";
+        });
+
+        cancelBtn.addEventListener("click", function () {
+          cleanup(false);
+        });
+
+        okBtn.addEventListener("click", function () {
+          if (!okBtn.disabled) {
+            cleanup(true);
+          }
+        });
+
+        overlay.addEventListener("click", function (e) {
+          if (e.target === overlay) {
+            cleanup(false);
+          }
+        });
+
+        setTimeout(function () {
+          input.focus();
+        }, 0);
+      });
+    }
+
+    document.addEventListener("change", function (e) {
+      if (e.target && e.target.classList.contains("chk-all")) {
+        getRowChecks().forEach(function (c) {
+          c.checked = e.target.checked;
+        });
+        refreshBulk();
+      } else if (e.target && e.target.classList.contains("row-chk")) {
+        refreshBulk();
+      }
+    });
+
+    document.addEventListener("crm:results-swapped", function () {
+      clearSelection();
+    });
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", clearSelection);
+    }
+    if (editBtn) {
+      editBtn.addEventListener("click", runBulkEdit);
+    }
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", runBulkDelete);
+    }
+
+    refreshBulk();
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      AUTO-INIT ON DOM READY
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   document.addEventListener("DOMContentLoaded", function () {
@@ -468,4 +908,5 @@
   window.CRM.initKeyboardShortcuts = initKeyboardShortcuts;
   window.CRM.initRealtimeSearch = initRealtimeSearch;
   window.CRM.renderShortcutHints = renderShortcutHints;
+  window.CRM.initBulkActions = initBulkActions;
 })(window, document);

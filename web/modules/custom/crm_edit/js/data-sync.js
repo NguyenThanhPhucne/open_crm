@@ -29,6 +29,7 @@
       pendingUpdates: [], // Queue of pending updates
       inFlightUpdates: {}, // Currently sending updates
       batchTimer: null,
+      retryTimer: null,
       csrfToken: null,
       entityRevisions: {}, // Track current revision per entity
     },
@@ -71,6 +72,7 @@
           ? this.state.entityRevisions[key].revisionId
           : null,
         timestamp: Date.now(),
+        retryCount: 0,
       };
 
       // Add to pending queue
@@ -118,6 +120,14 @@
           .then((token) => {
             this.state.csrfToken = token.trim();
             this.sendBatch(batch);
+          })
+          .catch(() => {
+            this.showToast(
+              "error",
+              "Could not get security token. Retrying updates...",
+              5000,
+            );
+            this.scheduleRetry(batch, "csrf");
           });
       } else {
         this.sendBatch(batch);
@@ -133,6 +143,7 @@
       jQuery.ajax({
         url: "/api/v1/batch-update",
         type: "POST",
+        timeout: 15000,
         contentType: "application/json",
         dataType: "json",
         xhrFields: {
@@ -166,6 +177,21 @@
         if (this.state.entityRevisions[key]) {
           this.state.entityRevisions[key].revisionId = result.revision_id;
         }
+      });
+
+      // Clear optimistic saving indicators for acknowledged fields.
+      batch.forEach((item) => {
+        const selector =
+          '[data-entity-id="' +
+          item.entity_id +
+          '"][data-field-name="' +
+          item.field +
+          '"]';
+        const $cell = jQuery(selector);
+        $cell.removeClass("is-saving has-conflict").addClass("is-synced");
+        setTimeout(() => {
+          $cell.removeClass("is-synced");
+        }, 900);
       });
 
       // Show success toast
@@ -238,19 +264,91 @@
      * Handle batch error (network, server).
      */
     handleBatchError: function (xhr, batch) {
-      if (xhr.status === 0) {
-        // Network error
-        this.showToast("error", "Network error. Retrying...", 5000);
-      } else {
-        this.showToast(
-          "error",
-          "Server error: " + (xhr.statusText || "Unknown"),
-          5000,
-        );
+      const isRetryable =
+        xhr.status === 0 || xhr.status === 429 || xhr.status >= 500;
+
+      if (isRetryable) {
+        this.showToast("error", "Network/server issue. Retrying...", 5000);
+        this.scheduleRetry(batch, "network");
+        return;
       }
 
-      // Re-queue failed items
-      this.state.pendingUpdates.unshift(...batch);
+      this.showToast(
+        "error",
+        "Update failed: " + (xhr.statusText || "Unknown error"),
+        5000,
+      );
+
+      batch.forEach((item) => {
+        const selector =
+          '[data-entity-id="' +
+          item.entity_id +
+          '"][data-field-name="' +
+          item.field +
+          '"]';
+        jQuery(selector).removeClass("is-saving").addClass("has-conflict");
+        setTimeout(() => {
+          jQuery(selector).removeClass("has-conflict");
+        }, 1800);
+      });
+    },
+
+    /**
+     * Re-queue a failed batch and retry with backoff.
+     */
+    scheduleRetry: function (batch, reason) {
+      const retryableItems = [];
+
+      batch.forEach((item) => {
+        const nextRetryCount = (item.retryCount || 0) + 1;
+        if (nextRetryCount <= this.config.maxRetries) {
+          retryableItems.push({
+            ...item,
+            retryCount: nextRetryCount,
+          });
+          return;
+        }
+
+        const selector =
+          '[data-entity-id="' +
+          item.entity_id +
+          '"][data-field-name="' +
+          item.field +
+          '"]';
+        jQuery(selector).removeClass("is-saving").addClass("has-conflict");
+        setTimeout(() => {
+          jQuery(selector).removeClass("has-conflict");
+        }, 1800);
+      });
+
+      if (retryableItems.length === 0) {
+        this.showToast(
+          "error",
+          "Some changes could not be synced. Please refresh.",
+          6000,
+        );
+        return;
+      }
+
+      this.state.pendingUpdates.unshift(...retryableItems);
+
+      if (this.state.retryTimer) {
+        return;
+      }
+
+      const maxAttempt = Math.max(
+        ...retryableItems.map((u) => u.retryCount || 1),
+      );
+      const delayIndex = Math.min(
+        maxAttempt - 1,
+        this.config.retryDelays.length - 1,
+      );
+      const delay = this.config.retryDelays[delayIndex] || 1000;
+
+      this.state.retryTimer = setTimeout(() => {
+        this.state.retryTimer = null;
+        this.flushBatch();
+      }, delay);
     },
 
     /**
@@ -267,7 +365,7 @@
 
       if ($field.length) {
         // Show visual feedback
-        $field.addClass("is-saving");
+        $field.removeClass("is-synced has-conflict").addClass("is-saving");
         $field.find(".field-value").fadeOut(100).fadeIn(100);
 
         // Change the displayed value

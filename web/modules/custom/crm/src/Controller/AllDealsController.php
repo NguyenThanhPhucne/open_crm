@@ -66,6 +66,10 @@ class AllDealsController extends ControllerBase {
     $is_admin     = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
     $is_manager   = in_array('sales_manager', $current_user->getRoles());
     $can_manage   = $is_admin || $is_manager;
+    $current_path = $request->getPathInfo();
+    $is_my_view   = str_contains($current_path, 'my-deals');
+    $deal_fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', 'deal');
+    $has_deleted_at = isset($deal_fields['field_deleted_at']);
 
     // ── Filter parameters ─────────────────────────────────────────────────────
     $search_name  = trim($request->query->get('search', ''));
@@ -77,17 +81,20 @@ class AllDealsController extends ControllerBase {
     if (!in_array($sort_field, ['title', 'changed'])) { $sort_field = 'changed'; }
 
     // ── Query builder ─────────────────────────────────────────────────────────
-    $build_query = function () use ($search_name, $filter_stage, $can_manage, $user_id) {
+    $build_query = function () use ($search_name, $filter_stage, $can_manage, $is_my_view, $user_id, $has_deleted_at) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
-        ->accessCheck(FALSE);
+        ->accessCheck(TRUE);
+      if ($has_deleted_at) {
+        $q->notExists('field_deleted_at');
+      }
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
       }
       if ($filter_stage > 0) {
         $q->condition('field_stage', $filter_stage);
       }
-      if (!$can_manage && $user_id > 0) {
+      if ($is_my_view || (!$can_manage && $user_id > 0)) {
         $q->condition('field_owner', $user_id);
       }
       return $q;
@@ -97,8 +104,9 @@ class AllDealsController extends ControllerBase {
     $now         = \Drupal::time()->getCurrentTime();
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
-    $all_q = \Drupal::entityQuery('node')->condition('type', 'deal')->accessCheck(FALSE);
-    if (!$can_manage && $user_id > 0) { $all_q->condition('field_owner', $user_id); }
+    $all_q = \Drupal::entityQuery('node')->condition('type', 'deal')->accessCheck(TRUE);
+    if ($has_deleted_at) { $all_q->notExists('field_deleted_at'); }
+    if ($is_my_view || (!$can_manage && $user_id > 0)) { $all_q->condition('field_owner', $user_id); }
     $total_all = (int) $all_q->count()->execute();
 
     // Pipeline value: sum of all open deal amounts
@@ -108,7 +116,7 @@ class AllDealsController extends ControllerBase {
     $pipeline_alias->join('node__field_stage', 'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
     $pipeline_alias->condition('n.type', 'deal');
     $pipeline_alias->condition('fs.field_stage_target_id', [5, 6], 'NOT IN'); // exclude Won/Lost
-    if (!$can_manage && $user_id > 0) {
+    if ($is_my_view || (!$can_manage && $user_id > 0)) {
       $pipeline_alias->join('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
       $pipeline_alias->condition('fo.field_owner_target_id', $user_id);
     }
@@ -121,7 +129,7 @@ class AllDealsController extends ControllerBase {
     $won_q->condition('n.type', 'deal');
     $won_q->condition('fs.field_stage_target_id', 5);
     $won_q->condition('n.changed', $month_start, '>=');
-    if (!$can_manage && $user_id > 0) {
+    if ($is_my_view || (!$can_manage && $user_id > 0)) {
       $won_q->join('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
       $won_q->condition('fo.field_owner_target_id', $user_id);
     }
@@ -153,6 +161,9 @@ class AllDealsController extends ControllerBase {
     // ── Format rows ───────────────────────────────────────────────────────────
     $rows = [];
     foreach ($deals as $deal) {
+      if ($has_deleted_at && $deal->hasField('field_deleted_at') && !$deal->get('field_deleted_at')->isEmpty()) {
+        continue;
+      }
       $did     = $deal->id();
       $name    = $deal->getTitle();
       $initial = strtoupper(mb_substr($name, 0, 1));
@@ -213,9 +224,9 @@ class AllDealsController extends ControllerBase {
         if ($owner_user) { $owner_name = $owner_user->getDisplayName(); }
       }
 
-      // Can edit?
-      $can_edit = $can_manage ||
-        ($deal->hasField('field_owner') && $deal->get('field_owner')->target_id == $user_id);
+      // Use Drupal entity access for exact action permissions.
+      $can_edit = $deal->access('update', $this->currentUser());
+      $can_delete = $deal->access('delete', $this->currentUser());
 
       // Time ago
       $diff = $now - $deal->getChangedTime();
@@ -245,6 +256,7 @@ class AllDealsController extends ControllerBase {
         'owner'        => Html::escape($owner_name),
         'time_ago'     => $time_ago,
         'can_edit'     => $can_edit,
+        'can_delete'   => $can_delete,
         'title_js'     => addslashes($name),
       ];
     }
@@ -439,13 +451,17 @@ class AllDealsController extends ControllerBase {
   .deals-table tbody tr:hover .crm-row-action.btn-delete,.deals-table tbody tr:hover .crm-row-action.btn-delete svg{color:#dc2626;stroke:#dc2626 !important}
 
   /* Empty state */
-  .empty-state{text-align:center;padding:72px 30px}
-  .empty-state-icon{width:64px;height:64px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-  .empty-state-icon i{width:30px;height:30px;color:#cbd5e1}
-  .empty-state-title{font-size:18px;font-weight:700;color:#334155;margin-bottom:6px}
-  .empty-state-sub{font-size:14px;color:#94a3b8;margin-bottom:24px}
-  .empty-state-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s}
-  .empty-state-btn:hover{background:#eff6ff}
+  .empty-state{padding:54px 24px;text-align:center}
+  .empty-state-panel{max-width:620px;margin:0 auto;padding:28px 26px;border:1px solid #fde7c7;border-radius:16px;background:linear-gradient(180deg,#fffdf8 0%,#fff7ed 100%);box-shadow:0 12px 30px rgba(124,45,18,.08);position:relative;overflow:hidden}
+  .empty-state-panel:before{content:"";position:absolute;inset:auto -70px -90px auto;width:220px;height:220px;background:radial-gradient(circle,#fed7aa 0%,rgba(254,215,170,0) 72%);pointer-events:none}
+  .empty-state-icon{width:74px;height:74px;background:linear-gradient(145deg,#fff7ed 0%,#ffedd5 100%);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid #fdba74;box-shadow:0 8px 18px rgba(234,88,12,.14)}
+  .empty-state-icon i{width:34px;height:34px;color:#ea580c}
+  .empty-state-title{font-size:24px;line-height:1.15;font-weight:800;color:#0f172a;margin-bottom:8px;letter-spacing:-.01em}
+  .empty-state-sub{font-size:14px;color:#64748b;margin:0 auto 16px;max-width:480px}
+  .empty-state-tips{display:flex;justify-content:center;margin:0;padding:0;list-style:none}
+  .empty-state-tips li{display:block}
+  .empty-state-tips a{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 16px;border:1px solid #fed7aa;border-radius:10px;background:#fff7ed;font-size:13px;font-weight:700;color:#9a3412;text-decoration:none;transition:all .15s}
+  .empty-state-tips a:hover{background:#ffedd5;border-color:#fdba74;color:#c2410c;transform:translateY(-1px)}
 
   /* Pagination */
   .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f1f5f9;background:#fafafa;flex-wrap:wrap;gap:10px}
@@ -594,10 +610,14 @@ HTML;
       $html .= <<<EMPTY
       <tr><td colspan="11">
         <div class="empty-state">
-          <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
-          <div class="empty-state-title">No deals found</div>
-          <div class="empty-state-sub">Try adjusting your filters or add a new deal.</div>
-          <a href="{$add_url}" class="empty-state-btn"><i data-lucide="plus-circle"></i> Add Deal</a>
+          <div class="empty-state-panel">
+            <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
+            <div class="empty-state-title">No deals found</div>
+            <div class="empty-state-sub">No deals match your current filters right now. You can quickly create a new deal and keep your pipeline moving.</div>
+            <ul class="empty-state-tips">
+              <li><a href="{$add_url}"><i data-lucide="plus-circle"></i> Create new deal</a></li>
+            </ul>
+          </div>
         </div>
       </td></tr>
 EMPTY;
@@ -638,6 +658,8 @@ EMPTY;
         if ($r['can_edit']) {
           $action_btns .= '<button class="crm-row-action btn-edit" title="Edit" onclick="CRMInlineEdit.openModal(' . $r['id'] . ',\'deal\')">'
             . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg></button>';
+        }
+        if ($r['can_delete']) {
           $action_btns .= '<button class="crm-row-action btn-delete" title="Delete" onclick="CRMInlineEdit.confirmDelete(' . $r['id'] . ',\'deal\',\'' . $r['title_js'] . '\')">'
             . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
         }
@@ -702,6 +724,8 @@ EMPTY;
     $html .= '</div>'; // .table-card
     $html .= '</div>'; // #crm-results-wrap
     $html .= '<div id="bulk-bar"><span id="bk-ct" class="bk-ct">0 selected</span><span class="bk-sep"></span>'
+      . '<button class="btn-bulk" id="bulk-edit-btn" title="Edit selected">Edit selected</button>'
+      . '<button class="btn-bulk" id="bulk-delete-btn" title="Delete selected">Delete selected</button>'
       . '<button class="btn-bulk" id="bulk-clear-btn" title="Clear selection">'
       . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
       . ' Clear selection</button></div>';
@@ -736,51 +760,12 @@ EMPTY;
     if (window.CRM) {
       CRM.initRealtimeSearch('crm-search-input');
       CRM.initKeyboardShortcuts({ addUrl: '{$add_url}', searchId: 'crm-search-input' });
-      CRM.renderShortcutHints([{ key: 'N', label: 'New deal' }, { key: '/', label: 'Search' }, { key: 'Esc', label: 'Clear' }]);
+      CRM.initBulkActions({ entityType: 'deal' });
     }
   });
   document.addEventListener('crm:icons-refresh', function () {
     ensureLucideReady(function () { window.lucide.createIcons(); });
   });
-  // Bulk select — event delegation survives AJAX result swaps
-  (function() {
-    var bulkBar  = document.getElementById('bulk-bar');
-    if (!bulkBar) return;
-    var bkCount  = document.getElementById('bk-ct');
-    var clearBtn = document.getElementById('bulk-clear-btn');
-    function getRowChecks() { return Array.prototype.slice.call(document.querySelectorAll('.row-chk')); }
-    function refreshBulk() {
-      var sel = getRowChecks().filter(function(c) { return c.checked; });
-      if (sel.length) { bkCount.textContent = sel.length + ' selected'; bulkBar.classList.add('show'); }
-      else { bulkBar.classList.remove('show'); }
-      var chkAll = document.getElementById('chk-all');
-      if (chkAll) {
-        var all = getRowChecks();
-        chkAll.checked = all.length > 0 && all.every(function(c) { return c.checked; });
-        chkAll.indeterminate = all.some(function(c) { return c.checked; }) && !chkAll.checked;
-      }
-    }
-    document.addEventListener('change', function(e) {
-      if (e.target && e.target.classList.contains('chk-all')) {
-        getRowChecks().forEach(function(c) { c.checked = e.target.checked; });
-        refreshBulk();
-      } else if (e.target && e.target.classList.contains('row-chk')) {
-        refreshBulk();
-      }
-    });
-    document.addEventListener('crm:results-swapped', function() {
-      bulkBar.classList.remove('show');
-      bkCount.textContent = '0 selected';
-    });
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function() {
-        getRowChecks().forEach(function(c) { c.checked = false; });
-        var chkAll = document.getElementById('chk-all');
-        if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
-        bulkBar.classList.remove('show');
-      });
-    }
-  })();
   // Density toggle
   (function() {
     var pgWrap  = document.getElementById('pg-wrap');

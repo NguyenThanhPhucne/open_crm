@@ -1,5 +1,5 @@
 inline_edit:
-  version: 3.1
+  version: 3.2
   css:
     theme:
       css/inline-edit.css: {}
@@ -12,7 +12,7 @@ inline_edit:
     - core/drupalSettings
 
 data_sync:
-  version: 1.0
+  version: 1.1
   js:
     js/data-sync.js: {}
   dependencies:
