@@ -2859,16 +2859,15 @@ HTML;
             beginAtZero: true,
             ticks: {
               stepSize: 1,
-            try {
-              $current_user = \Drupal::currentUser();
-              $user_id = $current_user->id();
-              $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
-      
-              $now = \Drupal::time()->getCurrentTime();
-              $dow = (int) date('N', $now);
-              $this_week_start = mktime(0, 0, 0, (int) date('n', $now), (int) date('j', $now) - ($dow - 1));
-              $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
-              $week_end = $now + 604800; // 7 days from now
+              font: {
+                size: 13,
+                weight: '600'
+              },
+              color: '#1e293b',
+              padding: 12
+            },
+            grid: {
+              display: false,
               drawBorder: false,
               lineWidth: 1
             },
