@@ -86,7 +86,6 @@ class AllActivitiesController extends ControllerBase {
     $build_query = function () use ($search_name, $filter_type, $can_manage, $is_my_view, $user_id) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'activity')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->accessCheck(FALSE);
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
@@ -106,14 +105,14 @@ class AllActivitiesController extends ControllerBase {
     $now         = \Drupal::time()->getCurrentTime();
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
-    $all_q = \Drupal::entityQuery('node')->condition('type', 'activity')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+    $all_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(FALSE);
     if ($is_my_view || (!$can_manage && $user_id > 0)) {
       $all_q->condition('field_assigned_to', $user_id);
     }
     $total_all = (int) $all_q->count()->execute();
 
     // Upcoming: future datetime
-    $upcoming_q = \Drupal::entityQuery('node')->condition('type', 'activity')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+    $upcoming_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(FALSE);
     $now_iso = date('Y-m-d\TH:i:s', $now);
     $upcoming_q->condition('field_datetime', $now_iso, '>=');
     if ($is_my_view || (!$can_manage && $user_id > 0)) {
@@ -122,8 +121,7 @@ class AllActivitiesController extends ControllerBase {
     $upcoming_count = (int) $upcoming_q->count()->execute();
 
     // Created this month
-    $new_month_q = \Drupal::entityQuery('node')->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE)->condition('created', $month_start, '>=');
+    $new_month_q = \Drupal::entityQuery('node')->condition('type', 'activity')->accessCheck(FALSE)->condition('created', $month_start, '>=');
     if ($is_my_view || (!$can_manage && $user_id > 0)) {
       $new_month_q->condition('field_assigned_to', $user_id);
     }

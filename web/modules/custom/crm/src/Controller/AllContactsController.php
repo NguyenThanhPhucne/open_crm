@@ -62,7 +62,6 @@ class AllContactsController extends ControllerBase {
     $build_query = function () use ($search_name, $search_email, $search_phone, $can_manage, $user_id) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'contact')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->accessCheck(FALSE);
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
@@ -86,19 +85,19 @@ class AllContactsController extends ControllerBase {
     $month_start  = mktime(0, 0, 0, (int) date('n', $now), 1);
 
     // Total contacts (unfiltered, for stats chip)
-    $all_q = \Drupal::entityQuery('node')->condition('type', 'contact')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+    $all_q = \Drupal::entityQuery('node')->condition('type', 'contact')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $all_q->condition('field_owner', $user_id); }
     $total_all = (int) $all_q->count()->execute();
 
     // New this week
     $week_q = \Drupal::entityQuery('node')->condition('type', 'contact')
-      ->condition('created', $week_start, '>=')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+      ->condition('created', $week_start, '>=')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $week_q->condition('field_owner', $user_id); }
     $new_this_week = (int) $week_q->count()->execute();
 
     // New this month
     $month_q = \Drupal::entityQuery('node')->condition('type', 'contact')
-      ->condition('created', $month_start, '>=')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+      ->condition('created', $month_start, '>=')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $month_q->condition('field_owner', $user_id); }
     $new_this_month = (int) $month_q->count()->execute();
 

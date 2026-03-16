@@ -184,7 +184,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -197,7 +196,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -210,7 +208,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_assigned_staff', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -223,7 +220,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_assigned_to', $uid)
       ->accessCheck(FALSE);
     return $query->count()->execute();
@@ -236,7 +232,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_assigned_to', $uid)
       ->sort('changed', 'DESC')
       ->range(0, $limit)
@@ -287,7 +282,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->accessCheck(FALSE);
     $nids = $query->execute();
@@ -315,7 +309,6 @@ class UserProfileController extends ControllerBase {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
       ->condition('status', 1)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_owner', $uid)
       ->sort('changed', 'DESC')
       ->range(0, $limit)

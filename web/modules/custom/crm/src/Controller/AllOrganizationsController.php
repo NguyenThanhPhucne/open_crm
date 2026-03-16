@@ -62,7 +62,6 @@ class AllOrganizationsController extends ControllerBase {
     $build_query = function () use ($search_name, $search_industry, $search_status, $can_manage, $user_id) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'organization')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->accessCheck(FALSE);
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
@@ -83,17 +82,17 @@ class AllOrganizationsController extends ControllerBase {
     $now         = \Drupal::time()->getCurrentTime();
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
-    $total_q = \Drupal::entityQuery('node')->condition('type', 'organization')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+    $total_q = \Drupal::entityQuery('node')->condition('type', 'organization')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $total_q->condition('field_assigned_staff', $user_id); }
     $total_all = (int) $total_q->count()->execute();
 
     $active_q = \Drupal::entityQuery('node')->condition('type', 'organization')
-      ->condition('field_status', 'active')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+      ->condition('field_status', 'active')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $active_q->condition('field_assigned_staff', $user_id); }
     $total_active = (int) $active_q->count()->execute();
 
     $month_q = \Drupal::entityQuery('node')->condition('type', 'organization')
-      ->condition('created', $month_start, '>=')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+      ->condition('created', $month_start, '>=')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $month_q->condition('field_assigned_staff', $user_id); }
     $new_this_month = (int) $month_q->count()->execute();
 

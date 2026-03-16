@@ -80,7 +80,6 @@ class AllDealsController extends ControllerBase {
     $build_query = function () use ($search_name, $filter_stage, $can_manage, $user_id) {
       $q = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->accessCheck(FALSE);
       if ($search_name) {
         $q->condition('title', $search_name . '%', 'LIKE');
@@ -98,7 +97,7 @@ class AllDealsController extends ControllerBase {
     $now         = \Drupal::time()->getCurrentTime();
     $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
 
-    $all_q = \Drupal::entityQuery('node')->condition('type', 'deal')->condition('field_deleted_at', NULL, 'IS NULL')->accessCheck(FALSE);
+    $all_q = \Drupal::entityQuery('node')->condition('type', 'deal')->accessCheck(FALSE);
     if (!$can_manage && $user_id > 0) { $all_q->condition('field_owner', $user_id); }
     $total_all = (int) $all_q->count()->execute();
 
@@ -107,9 +106,7 @@ class AllDealsController extends ControllerBase {
     $pipeline_alias = $db->select('node_field_data', 'n');
     $pipeline_alias->join('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $pipeline_alias->join('node__field_stage', 'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
-    $pipeline_alias->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $pipeline_alias->condition('n.type', 'deal');
-    $pipeline_alias->condition('fd.field_deleted_at_value', NULL, 'IS NULL');
     $pipeline_alias->condition('fs.field_stage_target_id', [5, 6], 'NOT IN'); // exclude Won/Lost
     if (!$can_manage && $user_id > 0) {
       $pipeline_alias->join('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
@@ -121,9 +118,7 @@ class AllDealsController extends ControllerBase {
     // Won this month
     $won_q = $db->select('node_field_data', 'n');
     $won_q->join('node__field_stage', 'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
-    $won_q->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $won_q->condition('n.type', 'deal');
-    $won_q->condition('fd.field_deleted_at_value', NULL, 'IS NULL');
     $won_q->condition('fs.field_stage_target_id', 5);
     $won_q->condition('n.changed', $month_start, '>=');
     if (!$can_manage && $user_id > 0) {
