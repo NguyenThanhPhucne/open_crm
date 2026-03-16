@@ -45,7 +45,6 @@ class DashboardController extends ControllerBase {
     // Get dashboard metrics (filtered by user ownership for non-admins)
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $contacts_query->condition('field_owner', $user_id);
@@ -55,7 +54,6 @@ class DashboardController extends ControllerBase {
     // Contacts this week
     $contacts_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -65,7 +63,6 @@ class DashboardController extends ControllerBase {
 
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $orgs_query->condition('field_assigned_staff', $user_id);
@@ -78,7 +75,6 @@ class DashboardController extends ControllerBase {
     // Organizations this month
     $orgs_this_month_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -88,7 +84,6 @@ class DashboardController extends ControllerBase {
 
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $deals_query->condition('field_owner', $user_id);
@@ -97,7 +92,6 @@ class DashboardController extends ControllerBase {
 
     $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $activities_query->condition('field_assigned_to', $user_id);
@@ -107,7 +101,6 @@ class DashboardController extends ControllerBase {
     // Activities this week
     $activities_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -141,7 +134,6 @@ class DashboardController extends ControllerBase {
       // Count deals in this stage (filtered by current user for non-admins).
       $stage_query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->condition('field_stage', $stage_id)
         ->accessCheck(FALSE);
       if (!$is_admin && $user_id > 0) {
@@ -167,9 +159,7 @@ class DashboardController extends ControllerBase {
     $agg = \Drupal::database()->select('node_field_data', 'n');
     $agg->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
-    $agg->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $agg->condition('n.type', 'deal');
-    $agg->condition('fd.field_deleted_at_value', NULL, 'IS NULL');
     $agg->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
@@ -207,7 +197,6 @@ class DashboardController extends ControllerBase {
     // CRITICAL for task management and follow-up
     $overdue_activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_datetime', $now, '<=') // due date is today or earlier
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -226,7 +215,6 @@ class DashboardController extends ControllerBase {
     if (!empty($won_term_id)) {
       $revenue_this_week_query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->condition('field_stage', $won_term_id)
         ->condition('changed', $this_week_start, '>=')
         ->accessCheck(FALSE);
@@ -254,7 +242,6 @@ class DashboardController extends ControllerBase {
     $closed_term_ids = array_filter([$won_term_id, $lost_term_id]);
     $due_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('field_closing_date', date('Y-m-d', $now), '>=')
       ->condition('field_closing_date', date('Y-m-d', $week_end), '<=')
       ->accessCheck(FALSE);
@@ -270,7 +257,6 @@ class DashboardController extends ControllerBase {
     // Indicates pipeline filling
     $new_contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -281,7 +267,6 @@ class DashboardController extends ControllerBase {
     // Get recent activities (last 30, filtered by current user for non-admins)
     $activity_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 30);
@@ -369,7 +354,6 @@ class DashboardController extends ControllerBase {
     // Get recent deals (last 8, newest-updated first, filtered by current user for non-admins)
     $deal_ids_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -454,7 +438,6 @@ class DashboardController extends ControllerBase {
     // ── Recent Contacts (last 8, sorted by changed DESC) ─────────────────────
     $rc_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -492,7 +475,6 @@ class DashboardController extends ControllerBase {
     // ── Recent Organizations (last 8, sorted by changed DESC) ─────────────────
     $ro_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -529,7 +511,6 @@ class DashboardController extends ControllerBase {
     // ── Recent Pipeline Deals (last 8, active only, sorted by changed DESC) ───
     $rp_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 8);
@@ -3137,7 +3118,6 @@ HTML;
     // 1. Contacts
     $contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $contacts_query->condition('field_owner', $user_id);
@@ -3147,7 +3127,6 @@ HTML;
     // 2. Organizations
     $orgs_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $orgs_query->condition('field_assigned_staff', $user_id);
@@ -3157,7 +3136,6 @@ HTML;
     // 3. Total Deals
     $deals_query = \Drupal::entityQuery('node')
       ->condition('type', 'deal')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $deals_query->condition('field_owner', $user_id);
@@ -3167,7 +3145,6 @@ HTML;
     // 4. Activities
     $activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $activities_query->condition('field_assigned_to', $user_id);
@@ -3176,7 +3153,6 @@ HTML;
 
     $contacts_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -3186,7 +3162,6 @@ HTML;
 
     $orgs_this_month_query = \Drupal::entityQuery('node')
       ->condition('type', 'organization')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $month_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -3196,7 +3171,6 @@ HTML;
 
     $activities_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->condition('created', $this_week_start, '>=')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
@@ -3208,7 +3182,6 @@ HTML;
     foreach ($stage_terms as $term) {
       $stage_query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->condition('field_stage', $term->id())
         ->accessCheck(FALSE);
       if (!$is_admin && $user_id > 0) {
@@ -3223,7 +3196,6 @@ HTML;
         $won_query = \Drupal::entityQuery('node')
           ->condition('type', 'deal')
           ->condition('field_stage', $won_term_id)
-          ->condition('field_deleted_at', NULL, 'IS NULL')
           ->accessCheck(FALSE);
         if (!$is_admin && $user_id > 0) {
           $won_query->condition('field_owner', $user_id);
@@ -3237,7 +3209,6 @@ HTML;
         $lost_query = \Drupal::entityQuery('node')
           ->condition('type', 'deal')
           ->condition('field_stage', $lost_term_id)
-          ->condition('field_deleted_at', NULL, 'IS NULL')
           ->accessCheck(FALSE);
         if (!$is_admin && $user_id > 0) {
           $lost_query->condition('field_owner', $user_id);
@@ -3249,7 +3220,6 @@ HTML;
     $overdue_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
       ->condition('field_datetime', $now, '<=')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $overdue_query->condition('field_assigned_to', $user_id);
@@ -3262,7 +3232,6 @@ HTML;
       ->condition('type', 'deal')
       ->condition('field_closing_date', date('Y-m-d', $now), '>=')
       ->condition('field_closing_date', date('Y-m-d', $week_end), '<=')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!empty($closed_tids)) {
       $due_this_week_query->condition('field_stage', $closed_tids, 'NOT IN');
@@ -3276,7 +3245,6 @@ HTML;
     $new_contacts_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
       ->condition('created', $month_start, '>=')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE);
     if (!$is_admin && $user_id > 0) {
       $new_contacts_query->condition('field_owner', $user_id);
@@ -3292,7 +3260,6 @@ HTML;
         ->condition('type', 'deal')
         ->condition('field_stage', $won_term_id)
         ->condition('changed', $this_week_start, '>=')
-        ->condition('field_deleted_at', NULL, 'IS NULL')
         ->accessCheck(FALSE);
       if (!$is_admin && $user_id > 0) {
         $revenue_this_week_query->condition('field_owner', $user_id);
@@ -3315,9 +3282,7 @@ HTML;
     $agg2 = \Drupal::database()->select('node_field_data', 'n');
     $agg2->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg2->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
-    $agg2->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
     $agg2->condition('n.type', 'deal');
-    $agg2->condition('fd.field_deleted_at_value', NULL, 'IS NULL');
     $agg2->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id2  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg2->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id2 THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
@@ -3344,7 +3309,6 @@ HTML;
     // 13. Get recent activities
     $recent_activities_query = \Drupal::entityQuery('node')
       ->condition('type', 'activity')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
       ->accessCheck(FALSE)
       ->sort('changed', 'DESC')
       ->range(0, 10);
