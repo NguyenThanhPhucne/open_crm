@@ -266,7 +266,7 @@ display:
                     </div>
             format: full_html
       display_extenders: {}
-      path: crm/my-deals
+      path: crm/legacy/my-deals-view
     cache_metadata:
       max-age: -1
       contexts:

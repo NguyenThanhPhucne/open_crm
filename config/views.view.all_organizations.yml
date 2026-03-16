@@ -251,7 +251,7 @@ display:
                     </div>
             format: full_html
       display_extenders: {}
-      path: crm/all-organizations
+      path: crm/legacy/all-organizations-view
     cache_metadata:
       max-age: -1
       contexts:

@@ -219,7 +219,7 @@ display:
                     </div>
             format: full_html
       display_extenders: {}
-      path: crm/all-activities
+      path: crm/legacy/all-activities-view
     cache_metadata:
       max-age: -1
       contexts:
