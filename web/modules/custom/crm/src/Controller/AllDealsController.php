@@ -812,7 +812,7 @@ JS;
       '#cache' => [
         'contexts' => ['user', 'url.query_args'],
         'tags'     => ['node_list:deal'],
-        'max-age'  => 300,
+        'max-age'  => 60,
       ],
     ];
   }

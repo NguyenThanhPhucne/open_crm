@@ -3052,7 +3052,7 @@ HTML;
           'node_list:deal',
           'node_list:activity',
         ],
-        'max-age' => 300,
+        'max-age' => 60,
       ],
     ];
   }

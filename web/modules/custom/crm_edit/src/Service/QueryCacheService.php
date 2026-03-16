@@ -245,8 +245,8 @@ class QueryCacheService {
       }
     }
 
-    // Apply soft-delete filter if field exists
-    if (\Drupal::service('crm_data_quality') !== NULL) {
+    // Apply soft-delete filter only when the field exists on this bundle.
+    if ($this->hasSoftDeleteField($type)) {
       $query->condition('field_deleted_at', NULL, 'IS NULL');
     }
 
@@ -283,6 +283,19 @@ class QueryCacheService {
     ];
 
     return in_array($field, $indexed_fields);
+  }
+
+  /**
+   * Check whether the soft-delete field exists for a given node bundle.
+   */
+  protected function hasSoftDeleteField($bundle) {
+    try {
+      $definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', $bundle);
+      return isset($definitions['field_deleted_at']);
+    }
+    catch (\Exception $e) {
+      return FALSE;
+    }
   }
 
   /**

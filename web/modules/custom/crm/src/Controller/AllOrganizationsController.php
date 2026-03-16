@@ -804,7 +804,7 @@ JS;
       '#cache' => [
         'contexts' => ['user', 'url.query_args'],
         'tags'     => ['node_list:organization'],
-        'max-age'  => 300,
+        'max-age'  => 60,
       ],
     ];
   }

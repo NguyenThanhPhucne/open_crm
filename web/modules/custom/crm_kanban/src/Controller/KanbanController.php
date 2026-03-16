@@ -197,7 +197,7 @@ class KanbanController extends ControllerBase {
       '#cache' => [
         'contexts' => ['user'],
         'tags'     => ['node_list:deal'],
-        'max-age'  => 300,
+        'max-age'  => 60,
       ],
     ];
   }

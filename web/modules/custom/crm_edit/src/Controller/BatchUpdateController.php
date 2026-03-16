@@ -3,9 +3,11 @@
 namespace Drupal\crm_edit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Cache\Cache;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\NodeInterface;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 
 /**
  * API Controller for batch field updates with conflict detection.
@@ -24,6 +26,12 @@ class BatchUpdateController extends ControllerBase {
    */
   public function batchUpdate(Request $request) {
     try {
+      // Validate CSRF token for state-changing batch updates.
+      $token = $request->headers->get('X-CSRF-Token');
+      if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
+        return new JsonResponse(['error' => 'CSRF token validation failed.'], 403);
+      }
+
       // Parse request
       $data = json_decode($request->getContent(), TRUE);
 
@@ -110,6 +118,15 @@ class BatchUpdateController extends ControllerBase {
           // Set and save
           $entity->set($field_name, $field_value);
           $entity->save();
+
+          // Ensure UI/list/dashboard sees updates immediately.
+          if (method_exists($entity, 'id')) {
+            $entity_id = $entity->id();
+            Cache::invalidateTags(['node:' . $entity_id, 'node_list']);
+            if ($entity_type === 'node') {
+              \Drupal::entityTypeManager()->getStorage('node')->resetCache([$entity_id]);
+            }
+          }
 
           // Get display value for UI
           $field = $entity->get($field_name);

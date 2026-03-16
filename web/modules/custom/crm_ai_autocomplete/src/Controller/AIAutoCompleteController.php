@@ -7,6 +7,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\CsrfRequestHeaderAccessCheck;
 use Drupal\crm_ai_autocomplete\Service\AIEntityAutoCompleteService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -33,6 +34,14 @@ class AIAutoCompleteController extends ControllerBase {
     // Keep explicit permission support, but allow authenticated CRM users
     // to avoid production lockout when role-permission config is out of sync.
     return $account->hasPermission('use crm ai autocomplete') || $account->hasPermission('access content');
+  }
+
+  /**
+   * Validate CSRF token from request headers.
+   */
+  protected function hasValidCsrfToken(Request $request): bool {
+    $token = $request->headers->get('X-CSRF-Token');
+    return !empty($token) && \Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY);
   }
 
   /**
@@ -93,6 +102,14 @@ class AIAutoCompleteController extends ControllerBase {
    */
   public function autoCompleteEndpoint(Request $request) {
     $account = $this->currentUser();
+
+    if (!$this->hasValidCsrfToken($request)) {
+      return new JsonResponse([
+        'success' => FALSE,
+        'message' => 'CSRF token validation failed.',
+        'code' => 403,
+      ], 403);
+    }
 
     // Validate permission.
     if (!$this->canUseAi($account)) {
@@ -181,6 +198,14 @@ class AIAutoCompleteController extends ControllerBase {
    */
   public function autoCreateEntity(Request $request) {
     $account = $this->currentUser();
+
+    if (!$this->hasValidCsrfToken($request)) {
+      return new JsonResponse([
+        'success' => FALSE,
+        'message' => 'CSRF token validation failed.',
+        'code' => 403,
+      ], 403);
+    }
 
     // Validate permission.
     if (!$this->canUseAi($account)) {

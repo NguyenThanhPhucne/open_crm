@@ -10,7 +10,9 @@ window.CRMInlineEdit = {
 
   getCsrfToken: async function () {
     if (!this._csrfToken) {
-      const resp = await fetch("/session/token");
+      const resp = await fetch("/session/token", {
+        credentials: "same-origin",
+      });
       this._csrfToken = (await resp.text()).trim();
     }
     return this._csrfToken;
@@ -34,7 +36,10 @@ window.CRMInlineEdit = {
       return Promise.resolve(false);
     }
 
-    return fetch(window.location.href, { credentials: "same-origin" })
+    return fetch(window.location.href, {
+      credentials: "same-origin",
+      cache: "no-store",
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("HTTP " + response.status);
@@ -70,7 +75,10 @@ window.CRMInlineEdit = {
       return Promise.resolve(false);
     }
 
-    return fetch(window.location.href, { credentials: "same-origin" })
+    return fetch(window.location.href, {
+      credentials: "same-origin",
+      cache: "no-store",
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("HTTP " + response.status);
@@ -143,6 +151,37 @@ window.CRMInlineEdit = {
         return false;
       });
     });
+  },
+
+  removeEntityRowOptimistically: function (nid, type) {
+    const rowId = this.getRowId(nid, type);
+    const row = document.getElementById(rowId);
+    if (!row) {
+      return false;
+    }
+
+    row.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+    row.style.opacity = "0";
+    row.style.transform = "translateX(8px)";
+
+    setTimeout(() => {
+      row.remove();
+
+      // Best-effort quick update for visible result counts.
+      const countEl = document.querySelector(".filter-count");
+      if (countEl) {
+        const text = countEl.textContent || "";
+        const m = text.match(/(\d+)/);
+        if (m) {
+          const oldNum = Number(m[1]);
+          if (Number.isFinite(oldNum) && oldNum > 0) {
+            countEl.textContent = text.replace(m[1], String(oldNum - 1));
+          }
+        }
+      }
+    }, 200);
+
+    return true;
   },
 
   openModal: function (nid, type) {
@@ -344,45 +383,8 @@ window.CRMInlineEdit = {
   },
 
   confirmDelete: function (nid, type, title) {
-    const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-
-    // Step 1: Initial confirmation
-    const step1Html = `
-      <div class="crm-modal-overlay crm-delete-overlay" id="crm-delete-step1">
-        <div class="crm-modal-container crm-delete-modal delete-step1">
-          <div class="crm-modal-header">
-            <h2>
-              <i data-lucide="trash-2"></i>
-              Delete ${typeLabel}
-            </h2>
-            <button class="crm-modal-close" type="button">
-              <i data-lucide="x"></i>
-            </button>
-          </div>
-          
-          <div class="crm-modal-body">
-            <div class="delete-entity-info">
-              <h3>${title} <span class="entity-type-badge">${typeLabel}</span></h3>
-            </div>
-          </div>
-          
-          <div class="crm-modal-footer delete-footer-single">
-            <button type="button" class="btn-proceed-delete">
-              <i data-lucide="alert-circle"></i>
-              <span>I want to delete this ${type}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.insertAdjacentHTML("beforeend", step1Html);
-
-    if (typeof lucide !== "undefined") {
-      lucide.createIcons();
-    }
-
-    this.setupDeleteStep1Handlers(nid, type, title);
+    // Streamlined UX: go straight to explicit typed confirmation.
+    this.showDeleteFinalConfirm(nid, type, title);
   },
 
   setupDeleteStep1Handlers: function (nid, type, title) {
@@ -695,11 +697,20 @@ window.CRMInlineEdit = {
               );
             }
 
-            this.refreshListSections().then((refreshed) => {
-              if (!refreshed) {
-                setTimeout(() => location.reload(), 100);
-              }
-            });
+            const removed = this.removeEntityRowOptimistically(nid, type);
+
+            if (removed) {
+              // Keep UX snappy: update immediately, then reconcile in background.
+              setTimeout(() => {
+                this.refreshListSections();
+              }, 250);
+            } else {
+              this.refreshListSections().then((refreshed) => {
+                if (!refreshed) {
+                  setTimeout(() => location.reload(), 100);
+                }
+              });
+            }
           } else {
             this.showMessage(data.message || "Error deleting", "error");
             if (modal) {

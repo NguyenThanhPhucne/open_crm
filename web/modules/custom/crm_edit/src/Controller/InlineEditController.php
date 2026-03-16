@@ -659,6 +659,12 @@ class InlineEditController extends ControllerBase {
    */
   public function updateField($entity_type, $entity_id, $field_name, Request $request) {
     try {
+      // Validate CSRF token for state-changing API updates.
+      $token = $request->headers->get('X-CSRF-Token');
+      if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
+        return new JsonResponse(['error' => 'CSRF token validation failed.'], 403);
+      }
+
       // Parse request body
       $data = json_decode($request->getContent(), TRUE);
       
@@ -754,6 +760,12 @@ class InlineEditController extends ControllerBase {
           ['error' => 'Failed to save: ' . $e->getMessage()],
           400
         );
+      }
+
+      // Keep UI and backend data in sync immediately.
+      Cache::invalidateTags(['node:' . $entity_id, 'node_list']);
+      if ($entity_type === 'node') {
+        \Drupal::entityTypeManager()->getStorage('node')->resetCache([$entity_id]);
       }
 
       // Get display value from the field

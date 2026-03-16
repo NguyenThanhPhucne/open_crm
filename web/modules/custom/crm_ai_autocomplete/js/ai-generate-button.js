@@ -272,6 +272,19 @@
     });
   }
 
+  function resolveCsrfToken() {
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken && metaToken.content) {
+      return Promise.resolve(metaToken.content);
+    }
+    if (window.drupalSettings && window.drupalSettings.csrf_token) {
+      return Promise.resolve(window.drupalSettings.csrf_token);
+    }
+    return fetch("/session/token", { credentials: "same-origin" })
+      .then((resp) => resp.text())
+      .then((token) => token.trim());
+  }
+
   function crmAIGenerateSimple(button) {
     // Detect entity type from data attribute (set by #prefix buttons) or from the current URL.
     function detectEntityType() {
@@ -310,26 +323,21 @@
     // Show loading modal (center screen)
     const loadingOverlay = showLoadingModal(entityType);
 
-    // Get CSRF token from meta tag or from Drupal settings
-    let csrfToken = "";
-    const metaToken = document.querySelector('meta[name="csrf-token"]');
-    if (metaToken) {
-      csrfToken = metaToken.content;
-    } else if (window.drupalSettings && window.drupalSettings.csrf_token) {
-      csrfToken = window.drupalSettings.csrf_token;
-    }
-
-    fetch("/api/crm/ai/auto-create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken,
-      },
-      body: JSON.stringify({
-        entityType: entityType,
-        bundle: entityType,
-      }),
-    })
+    resolveCsrfToken()
+      .then((csrfToken) =>
+        fetch("/api/crm/ai/auto-create", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          body: JSON.stringify({
+            entityType: entityType,
+            bundle: entityType,
+          }),
+        }),
+      )
       .then((response) => {
         console.log("API Response Status:", response.status);
         if (!response.ok) {

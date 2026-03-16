@@ -39,34 +39,66 @@
     // Collect form data
     var formData = collectFormData($form);
 
-    // Make API request
-    $.ajax({
-      url: "/api/crm/ai/autocomplete",
-      method: "POST",
-      contentType: "application/json",
-      data: JSON.stringify({
-        entityType: entityType,
-        fields: formData,
-        nodeId: getNodeId($form),
-      }),
-      success: function (response) {
-        if (response.success) {
-          applySuggestions($form, response.suggestions);
-          showSuccessMessage(Drupal.t("AI suggestions applied successfully!"));
-        } else {
-          showErrorMessage(
-            response.message || Drupal.t("AI suggestion failed"),
-          );
-        }
-      },
-      error: function (xhr, status, error) {
-        showErrorMessage(Drupal.t("Error: @message", { "@message": error }));
-      },
-      complete: function () {
-        // Restore button
+    getCsrfToken()
+      .then(function (csrfToken) {
+        // Make API request
+        $.ajax({
+          url: "/api/crm/ai/autocomplete",
+          method: "POST",
+          contentType: "application/json",
+          xhrFields: { withCredentials: true },
+          headers: {
+            "X-CSRF-Token": csrfToken,
+          },
+          data: JSON.stringify({
+            entityType: entityType,
+            fields: formData,
+            nodeId: getNodeId($form),
+          }),
+          success: function (response) {
+            if (response.success) {
+              applySuggestions($form, response.suggestions);
+              showSuccessMessage(
+                Drupal.t("AI suggestions applied successfully!"),
+              );
+            } else {
+              showErrorMessage(
+                response.message || Drupal.t("AI suggestion failed"),
+              );
+            }
+          },
+          error: function (xhr, status, error) {
+            showErrorMessage(
+              Drupal.t("Error: @message", { "@message": error }),
+            );
+          },
+          complete: function () {
+            // Restore button
+            $button.prop("disabled", false).val(originalText);
+          },
+        });
+      })
+      .catch(function () {
+        showErrorMessage(Drupal.t("Could not get CSRF token."));
         $button.prop("disabled", false).val(originalText);
-      },
-    });
+      });
+  }
+
+  function getCsrfToken() {
+    var metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken && metaToken.content) {
+      return Promise.resolve(metaToken.content);
+    }
+    if (window.drupalSettings && window.drupalSettings.csrf_token) {
+      return Promise.resolve(window.drupalSettings.csrf_token);
+    }
+    return fetch("/session/token", { credentials: "same-origin" })
+      .then(function (resp) {
+        return resp.text();
+      })
+      .then(function (token) {
+        return token.trim();
+      });
   }
 
   /**

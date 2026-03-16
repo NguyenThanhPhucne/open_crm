@@ -12,7 +12,7 @@
  */
 
 (function (Drupal, jQuery) {
-  'use strict';
+  "use strict";
 
   window.CRMDataSync = {
     // Configuration
@@ -37,13 +37,13 @@
      * Initialize real-time sync for an entity.
      */
     initEntity: function (entityType, entityId) {
-      const key = entityType + ':' + entityId;
+      const key = entityType + ":" + entityId;
 
       // Load current entity data
       jQuery.ajax({
-        url: '/api/v1/entity/' + entityType + '/' + entityId,
-        type: 'GET',
-        dataType: 'json',
+        url: "/api/v1/entity/" + entityType + "/" + entityId,
+        type: "GET",
+        dataType: "json",
         success: (data) => {
           this.state.entityRevisions[key] = {
             revisionId: data.revision_id,
@@ -52,7 +52,7 @@
           };
         },
         error: () => {
-          console.warn('Could not load entity data for sync');
+          console.warn("Could not load entity data for sync");
         },
       });
     },
@@ -61,14 +61,15 @@
      * Queue a field change for batch update.
      */
     queueChange: function (entityType, entityId, fieldName, newValue) {
-      const key = entityType + ':' + entityId;
+      const key = entityType + ":" + entityId;
       const update = {
         entity_type: entityType,
         entity_id: entityId,
         field: fieldName,
         value: newValue,
-        expected_revision_id: this.state.entityRevisions[key]?  
-          this.state.entityRevisions[key].revisionId : null,
+        expected_revision_id: this.state.entityRevisions[key]
+          ? this.state.entityRevisions[key].revisionId
+          : null,
         timestamp: Date.now(),
       };
 
@@ -98,15 +99,26 @@
       }
 
       // Split into batches if needed
-      const batch = this.state.pendingUpdates.splice(0, this.config.maxBatchSize);
+      const batch = this.state.pendingUpdates.splice(
+        0,
+        this.config.maxBatchSize,
+      );
 
       // Get CSRF token
       let csrfToken = this.state.csrfToken;
       if (!csrfToken) {
-        fetch('/session/token').then(resp => resp.text()).then(token => {
-          this.state.csrfToken = token.trim();
-          this.sendBatch(batch);
-        });
+        fetch("/session/token", { credentials: "same-origin" })
+          .then((resp) => {
+            if (!resp.ok) {
+              throw new Error("Failed to fetch CSRF token");
+            }
+            return resp;
+          })
+          .then((resp) => resp.text())
+          .then((token) => {
+            this.state.csrfToken = token.trim();
+            this.sendBatch(batch);
+          });
       } else {
         this.sendBatch(batch);
       }
@@ -119,12 +131,15 @@
       const payload = { updates: batch };
 
       jQuery.ajax({
-        url: '/api/v1/batch-update',
-        type: 'POST',
-        contentType: 'application/json',
-        dataType: 'json',
+        url: "/api/v1/batch-update",
+        type: "POST",
+        contentType: "application/json",
+        dataType: "json",
+        xhrFields: {
+          withCredentials: true,
+        },
         headers: {
-          'X-Csrf-Token': this.state.csrfToken,
+          "X-CSRF-Token": this.state.csrfToken,
         },
         data: JSON.stringify(payload),
         success: (response) => {
@@ -147,7 +162,7 @@
 
       // Update revision IDs
       response.results.forEach((result) => {
-        const key = 'node:' + result.entity_id;
+        const key = "node:" + result.entity_id;
         if (this.state.entityRevisions[key]) {
           this.state.entityRevisions[key].revisionId = result.revision_id;
         }
@@ -155,7 +170,11 @@
 
       // Show success toast
       if (response.updated > 0) {
-        this.showToast('success', response.updated + ' field(s) updated successfully', 3000);
+        this.showToast(
+          "success",
+          response.updated + " field(s) updated successfully",
+          3000,
+        );
       }
 
       // Continue processing if more items pending
@@ -171,12 +190,12 @@
      */
     handleBatchErrors: function (errors, originalBatch) {
       errors.forEach((error) => {
-        if (error.error.includes('Conflict')) {
+        if (error.error.includes("Conflict")) {
           // Conflict: Someone else edited this field
           this.handleConflict(error, originalBatch);
         } else {
-          console.error('Update error:', error);
-          this.showToast('error', 'Error updating field: ' + error.error, 5000);
+          console.error("Update error:", error);
+          this.showToast("error", "Error updating field: " + error.error, 5000);
         }
       });
     },
@@ -190,12 +209,12 @@
 
       // Fetch fresh data
       jQuery.ajax({
-        url: '/api/v1/entity/node/' + entityId,
-        type: 'GET',
-        dataType: 'json',
+        url: "/api/v1/entity/node/" + entityId,
+        type: "GET",
+        dataType: "json",
         success: (data) => {
           // Update local revision
-          const key = 'node:' + entityId;
+          const key = "node:" + entityId;
           this.state.entityRevisions[key] = {
             revisionId: data.revision_id,
             changed: data.changed,
@@ -203,7 +222,11 @@
           };
 
           // Show conflict warning
-          this.showToast('warning', 'Field was edited by another user. Please refresh to see latest changes.', 7000);
+          this.showToast(
+            "warning",
+            "Field was edited by another user. Please refresh to see latest changes.",
+            7000,
+          );
 
           // Highlight the conflicted field
           this.highlightField(entityId, fieldName);
@@ -217,9 +240,13 @@
     handleBatchError: function (xhr, batch) {
       if (xhr.status === 0) {
         // Network error
-        this.showToast('error', 'Network error. Retrying...', 5000);
+        this.showToast("error", "Network error. Retrying...", 5000);
       } else {
-        this.showToast('error', 'Server error: ' + (xhr.statusText || 'Unknown'), 5000);
+        this.showToast(
+          "error",
+          "Server error: " + (xhr.statusText || "Unknown"),
+          5000,
+        );
       }
 
       // Re-queue failed items
@@ -230,17 +257,22 @@
      * Show optimistic UI update immediately.
      */
     showOptimisticUpdate: function (entityType, entityId, fieldName, newValue) {
-      const selector = '[data-entity-id="' + entityId + '"][data-field-name="' + fieldName + '"]';
+      const selector =
+        '[data-entity-id="' +
+        entityId +
+        '"][data-field-name="' +
+        fieldName +
+        '"]';
       const $field = jQuery(selector);
 
       if ($field.length) {
         // Show visual feedback
-        $field.addClass('is-saving');
-        $field.find('.field-value').fadeOut(100).fadeIn(100);
+        $field.addClass("is-saving");
+        $field.find(".field-value").fadeOut(100).fadeIn(100);
 
         // Change the displayed value
-        if ($field.find('.field-display-value').length) {
-          $field.find('.field-display-value').text(newValue);
+        if ($field.find(".field-display-value").length) {
+          $field.find(".field-display-value").text(newValue);
         }
       }
     },
@@ -249,13 +281,18 @@
      * Highlight a field (for conflicts).
      */
     highlightField: function (entityId, fieldName) {
-      const selector = '[data-entity-id="' + entityId + '"][data-field-name="' + fieldName + '"]';
+      const selector =
+        '[data-entity-id="' +
+        entityId +
+        '"][data-field-name="' +
+        fieldName +
+        '"]';
       const $field = jQuery(selector);
 
       if ($field.length) {
-        $field.addClass('has-conflict');
+        $field.addClass("has-conflict");
         setTimeout(() => {
-          $field.removeClass('has-conflict');
+          $field.removeClass("has-conflict");
         }, 3000);
       }
     },
@@ -264,12 +301,16 @@
      * Show toast notification.
      */
     showToast: function (type, message, duration) {
-      let $container = jQuery('#crm-toast-container');
+      let $container = jQuery("#crm-toast-container");
       if ($container.length === 0) {
-        $container = jQuery('<div id="crm-toast-container"></div>').appendTo('body');
+        $container = jQuery('<div id="crm-toast-container"></div>').appendTo(
+          "body",
+        );
       }
 
-      const $toast = jQuery('<div class="crm-toast crm-toast-' + type + '"></div>')
+      const $toast = jQuery(
+        '<div class="crm-toast crm-toast-' + type + '"></div>',
+      )
         .html(message)
         .appendTo($container);
 
@@ -285,10 +326,12 @@
      */
     getCsrfToken: function () {
       if (!this.state.csrfToken) {
-        return fetch('/session/token').then(resp => resp.text()).then(token => {
-          this.state.csrfToken = token.trim();
-          return this.state.csrfToken;
-        });
+        return fetch("/session/token", { credentials: "same-origin" })
+          .then((resp) => resp.text())
+          .then((token) => {
+            this.state.csrfToken = token.trim();
+            return this.state.csrfToken;
+          });
       }
       return Promise.resolve(this.state.csrfToken);
     },
@@ -301,22 +344,21 @@
     attach: function (context) {
       // Initialize editable fields
       jQuery('[data-entity-id][data-field-name][data-editable="true"]', context)
-        .once('crm-data-sync')
+        .once("crm-data-sync")
         .each(function () {
           const $field = jQuery(this);
-          const entityId = $field.data('entity-id');
-          const fieldName = $field.data('field-name');
+          const entityId = $field.data("entity-id");
+          const fieldName = $field.data("field-name");
 
           // Initialize entity
-          CRMDataSync.initEntity('node', entityId);
+          CRMDataSync.initEntity("node", entityId);
 
           // On change, queue update
-          $field.on('change', 'input, textarea, select', function () {
+          $field.on("change", "input, textarea, select", function () {
             const newValue = jQuery(this).val();
-            CRMDataSync.queueChange('node', entityId, fieldName, newValue);
+            CRMDataSync.queueChange("node", entityId, fieldName, newValue);
           });
         });
     },
   };
-
 })(Drupal, jQuery);

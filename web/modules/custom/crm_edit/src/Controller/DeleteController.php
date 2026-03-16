@@ -76,23 +76,27 @@ class DeleteController extends ControllerBase {
       ], 400);
     }
     
-    // Perform soft-delete (mark as deleted instead of hard-delete)
+    // Perform hard delete so UI and metrics never keep ghost records.
     try {
       $nid_to_delete = $node->id();
-      
-      // Use soft-delete if service exists, otherwise fall back to hard delete
-      if (\Drupal::hasService('crm_data_quality.soft_delete')) {
-        $soft_delete_service = \Drupal::service('crm_data_quality.soft_delete');
-        $soft_delete_service->softDelete($node);
-        $deletion_message = "{$type_label} '{$title}' has been deleted.";
-      } else {
-        // Fallback: hard delete if soft-delete module not enabled
-        $node->delete();
-        $deletion_message = "{$type_label} '{$title}' has been permanently deleted.";
-      }
+      $bundle = $node->bundle();
+
+      // Keep referential integrity before deleting the source entity.
+      $this->cleanupReferences($node);
+
+      $node->delete();
+      $deletion_message = "{$type_label} '{$title}' has been permanently deleted.";
 
       // Invalidate caches so lists/dashboard update immediately
-      Cache::invalidateTags(['node:' . $nid_to_delete, 'node_list']);
+      Cache::invalidateTags([
+        'node:' . $nid_to_delete,
+        'node_list',
+        'node_list:' . $bundle,
+        'node_list:contact',
+        'node_list:organization',
+        'node_list:deal',
+        'node_list:activity',
+      ]);
       
       // Log the deletion
       \Drupal::logger('crm_edit')->notice('Deleted @type: @title (ID: @nid) by user @user', [
@@ -144,5 +148,66 @@ class DeleteController extends ControllerBase {
     ];
     
     return $fields[$bundle] ?? 'field_owner';
+  }
+
+  /**
+   * Clear references pointing to the deleted node to avoid orphan links.
+   */
+  protected function cleanupReferences(NodeInterface $node) {
+    $nid = (int) $node->id();
+    $bundle = $node->bundle();
+    $storage = \Drupal::entityTypeManager()->getStorage('node');
+
+    $rules = [
+      'contact' => [
+        ['type' => 'deal', 'field' => 'field_contact'],
+        ['type' => 'activity', 'field' => 'field_contact'],
+      ],
+      'deal' => [
+        ['type' => 'activity', 'field' => 'field_deal'],
+      ],
+      'organization' => [
+        ['type' => 'contact', 'field' => 'field_organization'],
+        ['type' => 'deal', 'field' => 'field_organization'],
+        ['type' => 'activity', 'field' => 'field_organization'],
+      ],
+    ];
+
+    if (empty($rules[$bundle])) {
+      return;
+    }
+
+    foreach ($rules[$bundle] as $rule) {
+      $target_type = $rule['type'];
+      $field_name = $rule['field'];
+
+      try {
+        $ids = $storage->getQuery()
+          ->condition('type', $target_type)
+          ->condition($field_name, $nid)
+          ->accessCheck(FALSE)
+          ->execute();
+
+        if (empty($ids)) {
+          continue;
+        }
+
+        $entities = $storage->loadMultiple($ids);
+        foreach ($entities as $entity) {
+          if ($entity->hasField($field_name)) {
+            $entity->set($field_name, []);
+            $entity->save();
+          }
+        }
+      }
+      catch (\Exception $e) {
+        \Drupal::logger('crm_edit')->warning('Reference cleanup failed for @type.@field -> @nid: @msg', [
+          '@type' => $target_type,
+          '@field' => $field_name,
+          '@nid' => $nid,
+          '@msg' => $e->getMessage(),
+        ]);
+      }
+    }
   }
 }

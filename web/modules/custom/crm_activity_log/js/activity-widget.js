@@ -6,7 +6,7 @@
   function getCsrfToken() {
     return _csrfToken
       ? Promise.resolve(_csrfToken)
-      : fetch("/session/token")
+      : fetch("/session/token", { credentials: "same-origin" })
           .then((r) => r.text())
           .then((t) => {
             _csrfToken = t.trim();
