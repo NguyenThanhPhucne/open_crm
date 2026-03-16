@@ -2878,15 +2878,16 @@ HTML;
             beginAtZero: true,
             ticks: {
               stepSize: 1,
-              font: { 
-                size: 12,
-                weight: '500'
-              },
-              color: colors.slate,
-              padding: 8
-            },
-            grid: {
-              color: 'rgba(241, 245, 249, 0.8)',
+            try {
+              $current_user = \Drupal::currentUser();
+              $user_id = $current_user->id();
+              $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
+      
+              $now = \Drupal::time()->getCurrentTime();
+              $dow = (int) date('N', $now);
+              $this_week_start = mktime(0, 0, 0, (int) date('n', $now), (int) date('j', $now) - ($dow - 1));
+              $month_start = mktime(0, 0, 0, (int) date('n', $now), 1);
+              $week_end = $now + 604800; // 7 days from now
               drawBorder: false,
               lineWidth: 1
             },
@@ -3110,6 +3111,7 @@ HTML;
    *   JSON response with updated dashboard metrics.
    */
   public function getRefreshData() {
+    try {
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
     $is_admin = $current_user->hasPermission('administer crm');
@@ -3215,27 +3217,33 @@ HTML;
       $stage_distribution[$term->getName()] = (int) $stage_query->count()->execute();
     }
     
-    // 5. Won Deals
-    $won_query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->condition('field_stage', $won_term_id)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
-      ->accessCheck(FALSE);
-    if (!$is_admin && $user_id > 0) {
-      $won_query->condition('field_owner', $user_id);
-    }
-    $won_count = $won_query->count()->execute();
-    
-    // 6. Lost Deals
-    $lost_query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->condition('field_stage', $lost_term_id)
-      ->condition('field_deleted_at', NULL, 'IS NULL')
-      ->accessCheck(FALSE);
-    if (!$is_admin && $user_id > 0) {
-      $lost_query->condition('field_owner', $user_id);
-    }
-    $lost_count = $lost_query->count()->execute();
+      // 5. Won Deals
+      $won_count = 0;
+      if (!empty($won_term_id)) {
+        $won_query = \Drupal::entityQuery('node')
+          ->condition('type', 'deal')
+          ->condition('field_stage', $won_term_id)
+          ->condition('field_deleted_at', NULL, 'IS NULL')
+          ->accessCheck(FALSE);
+        if (!$is_admin && $user_id > 0) {
+          $won_query->condition('field_owner', $user_id);
+        }
+        $won_count = $won_query->count()->execute();
+      }
+      
+      // 6. Lost Deals
+      $lost_count = 0;
+      if (!empty($lost_term_id)) {
+        $lost_query = \Drupal::entityQuery('node')
+          ->condition('type', 'deal')
+          ->condition('field_stage', $lost_term_id)
+          ->condition('field_deleted_at', NULL, 'IS NULL')
+          ->accessCheck(FALSE);
+        if (!$is_admin && $user_id > 0) {
+          $lost_query->condition('field_owner', $user_id);
+        }
+        $lost_count = $lost_query->count()->execute();
+      }
     
     // 7. Overdue Activities
     $overdue_query = \Drupal::entityQuery('node')
@@ -3345,48 +3353,60 @@ HTML;
     }
     $recent_activity_count = $recent_activities_query->count()->execute();
     
-    // Return all metrics in real-time
-    return new JsonResponse([
-      'success' => TRUE,
-      'timestamp' => $now,
-      'message' => 'Dashboard data refreshed in real-time',
-      'is_admin' => $is_admin,
-      'stage_distribution' => $stage_distribution,
-      'metrics' => [
-        // Original 10 metrics
-        'contacts' => $contacts_count,
-        'contacts_this_week' => $contacts_this_week,
-        'organizations' => $orgs_count,
-        'orgs_this_month' => $orgs_this_month,
-        'deals' => $deals_count,
-        'activities' => $activities_count,
-        'activities_this_week' => $activities_this_week,
-        'won' => $won_count,
-        'lost' => $lost_count,
-        'activities_recent' => $recent_activity_count,
-        'total_value' => round($total_value, 2),
-        'won_value' => round($won_value, 2),
-        'lost_value' => round($lost_value, 2),
-        'active_value' => round($active_value, 2),
-        'total_value_display' => '$' . number_format($total_value / 1000000, 1) . 'M',
-        'won_value_display' => '$' . number_format($won_value / 1000000, 1) . 'M',
-        'lost_value_display' => '$' . number_format($lost_value / 1000000, 1) . 'M',
-        'active_value_display' => '$' . number_format($active_value / 1000000, 1) . 'M',
-        'win_rate' => $win_rate,
-        'conversion_rate' => $conversion_rate,
-        'avg_deal' => $avg_deal_size,
-        'avg_deal_display' => '$' . number_format($avg_deal_size / 1000, 0) . 'K',
-        
-        // New 6 enhanced metrics
-        'overdue_activities' => $overdue_activities,
-        'revenue_this_week' => round($revenue_this_week, 2),
-        'revenue_this_week_display' => '$' . number_format($revenue_this_week / 1000000, 1) . 'M',
-        'revenue_this_week_count' => $revenue_this_week_count,
-        'due_this_week' => $due_this_week,
-        'avg_days_in_pipeline' => $avg_days_in_pipeline,
-        'new_contacts_this_month' => $new_contacts,
-      ],
-    ]);
+      // Return all metrics in real-time
+      return new JsonResponse([
+        'success' => TRUE,
+        'timestamp' => $now,
+        'message' => 'Dashboard data refreshed in real-time',
+        'is_admin' => $is_admin,
+        'stage_distribution' => $stage_distribution,
+        'metrics' => [
+          // Original 10 metrics
+          'contacts' => $contacts_count,
+          'contacts_this_week' => $contacts_this_week,
+          'organizations' => $orgs_count,
+          'orgs_this_month' => $orgs_this_month,
+          'deals' => $deals_count,
+          'activities' => $activities_count,
+          'activities_this_week' => $activities_this_week,
+          'won' => $won_count,
+          'lost' => $lost_count,
+          'activities_recent' => $recent_activity_count,
+          'total_value' => round($total_value, 2),
+          'won_value' => round($won_value, 2),
+          'lost_value' => round($lost_value, 2),
+          'active_value' => round($active_value, 2),
+          'total_value_display' => '$' . number_format($total_value / 1000000, 1) . 'M',
+          'won_value_display' => '$' . number_format($won_value / 1000000, 1) . 'M',
+          'lost_value_display' => '$' . number_format($lost_value / 1000000, 1) . 'M',
+          'active_value_display' => '$' . number_format($active_value / 1000000, 1) . 'M',
+          'win_rate' => $win_rate,
+          'conversion_rate' => $conversion_rate,
+          'avg_deal' => $avg_deal_size,
+          'avg_deal_display' => '$' . number_format($avg_deal_size / 1000, 0) . 'K',
+          
+          // New 6 enhanced metrics
+          'overdue_activities' => $overdue_activities,
+          'revenue_this_week' => round($revenue_this_week, 2),
+          'revenue_this_week_display' => '$' . number_format($revenue_this_week / 1000000, 1) . 'M',
+          'revenue_this_week_count' => $revenue_this_week_count,
+          'due_this_week' => $due_this_week,
+          'avg_days_in_pipeline' => $avg_days_in_pipeline,
+          'new_contacts_this_month' => $new_contacts,
+        ],
+      ]);
+    }
+    catch (\Throwable $e) {
+      \Drupal::logger('crm_dashboard')->error('Dashboard refresh failed: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+
+      return new JsonResponse([
+        'success' => FALSE,
+        'message' => 'Dashboard refresh is temporarily unavailable.',
+        'metrics' => new \stdClass(),
+      ], 200);
+    }
   }
 
 }
