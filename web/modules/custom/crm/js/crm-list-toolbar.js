@@ -101,6 +101,13 @@
     return null;
   }
 
+  // Icon SVGs for keyboard hints
+  var HINT_ICONS = {
+    '/':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    'Esc': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    'N':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  };
+
   function createHints(addUrl) {
     var hints = [
       { key: "/", text: "Focus search" },
@@ -110,13 +117,13 @@
 
     var hintHtml = hints
       .map(function (item) {
+        var icon = HINT_ICONS[item.key] || '';
         return (
-          '<span class="crm-kbd-hint"><kbd>' +
-          item.key +
-          "</kbd>" +
-          '<span class="crm-kbd-hint__text">' +
-          item.text +
-          "</span></span>"
+          '<span class="crm-kbd-hint">' +
+          (icon ? '<span class="crm-kbd-hint__icon">' + icon + '</span>' : '') +
+          '<kbd>' + item.key + '</kbd>' +
+          '<span class="crm-kbd-hint__text">' + item.text + '</span>' +
+          '</span>'
         );
       })
       .join("");
@@ -182,15 +189,7 @@
           '<div class="crm-list-toolbar" data-entity="' +
           config.entity +
           '">' +
-          '<div class="crm-list-toolbar__meta">' +
-          '<div class="crm-list-toolbar__title">' +
-          titleText +
-          "</div>" +
-          '<div class="crm-list-toolbar__subtitle">' +
-          subtitleText +
-          "</div>" +
-          "</div>" +
-          '<div class="crm-list-toolbar__right">' +
+          '<div class="crm-list-toolbar__right crm-list-toolbar__right--full">' +
           '<nav class="crm-segmented" aria-label="View controls">' +
           segments +
           "</nav>" +

@@ -615,16 +615,59 @@ class InlineEditController extends ControllerBase {
   }
   
   /**
-   * AJAX Validate handler.
+   * AJAX Validate handler — validates field values client-side before save.
+   *
+   * POST /crm/edit/ajax/validate
+   * Body: { nid, type, title, field_phone, field_email, field_amount, ... }
    */
   public function ajaxValidate(Request $request) {
-    $data = json_decode($request->getContent(), TRUE);
-    
-    // Validation logic here
-    
+    $data  = json_decode($request->getContent(), TRUE) ?? [];
+    $errors = [];
+    $type  = $data['type'] ?? '';
+    $title = trim($data['title'] ?? '');
+
+    // Title is required for all CRM types.
+    if ($title === '') {
+      $errors[] = 'Title / Name is required.';
+    }
+
+    switch ($type) {
+      case 'contact':
+        $phone = trim($data['field_phone'] ?? '');
+        if ($phone === '') {
+          $errors[] = 'Phone number is required for contacts.';
+        }
+        $email = trim($data['field_email'] ?? '');
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+          $errors[] = 'Email address is not valid.';
+        }
+        break;
+
+      case 'deal':
+        if (isset($data['field_amount']) && trim($data['field_amount']) !== '') {
+          if (!is_numeric($data['field_amount']) || floatval($data['field_amount']) < 0) {
+            $errors[] = 'Deal amount must be a non-negative number.';
+          }
+        }
+        $has_contact = !empty($data['field_contact']);
+        $has_org     = !empty($data['field_organization']);
+        if (!$has_contact && !$has_org) {
+          $errors[] = 'Deal must reference at least one Contact or Organization.';
+        }
+        break;
+
+      case 'activity':
+        $has_contact = !empty($data['field_contact']);
+        $has_deal    = !empty($data['field_deal']);
+        if (!$has_contact && !$has_deal) {
+          $errors[] = 'Activity must reference at least one Contact or Deal.';
+        }
+        break;
+    }
+
     return new JsonResponse([
-      'valid' => true,
-      'errors' => [],
+      'valid'  => empty($errors),
+      'errors' => $errors,
     ]);
   }
 
@@ -797,5 +840,25 @@ class InlineEditController extends ControllerBase {
         500
       );
     }
+  }
+
+  /**
+   * Return available pipeline stages.
+   */
+  public function getStages(Request $request) {
+    $stages = [];
+    try {
+      $stage_terms = \Drupal::entityTypeManager()
+        ->getStorage('taxonomy_term')
+        ->loadTree('pipeline_stage', 0, NULL, TRUE);
+
+      foreach ($stage_terms as $term) {
+        $stages[$term->id()] = $term->getName();
+      }
+    } catch (\Exception $e) {
+      \Drupal::logger('crm_edit')->error('Failed to load stages: @message', ['@message' => $e->getMessage()]);
+    }
+
+    return new JsonResponse($stages);
   }
 }

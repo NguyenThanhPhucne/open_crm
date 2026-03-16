@@ -253,8 +253,8 @@ class KanbanController extends ControllerBase {
   .kanban-container::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}
   .kanban-container::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
   .kanban-container::-webkit-scrollbar-thumb:hover{background:#94a3b8}
-  .kanban-board{display:flex;flex-wrap:nowrap;gap:10px;padding-bottom:4px;width:100%;align-items:stretch}
-  .kanban-column{background:#f1f5f9;border-radius:12px;display:flex;flex-direction:column;min-height:300px;height:calc(100vh - 310px);overflow:hidden;flex:1 1 0;min-width:180px}
+  .kanban-board{display:flex;flex-wrap:nowrap;gap:10px;padding-bottom:12px;width:100%;align-items:flex-start}
+  .kanban-column{background:#f1f5f9;border-radius:12px;display:flex;flex-direction:column;min-height:100px;max-height:calc(100vh - 310px);flex:1 1 0;min-width:260px;max-width:320px}
   /* ── Column header ── */
   .column-header{padding:10px 10px 8px;border-bottom:2px solid;background:#fff;border-radius:12px 12px 0 0}
   .column-title{display:flex;align-items:center;gap:6px;margin-bottom:4px}
@@ -263,7 +263,7 @@ class KanbanController extends ControllerBase {
   .column-count{background:#e2e8f0;color:#64748b;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
   .column-total{font-size:13px;font-weight:700;margin-top:0;padding-left:14px}
   /* ── Column cards ── */
-  .column-cards{padding:6px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:60px}
+  .column-cards{padding:8px 8px 30px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:60px}
   .column-cards::-webkit-scrollbar{width:3px}
   .column-cards::-webkit-scrollbar-track{background:transparent}
   .column-cards::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}

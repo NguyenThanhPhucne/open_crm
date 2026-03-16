@@ -117,6 +117,7 @@ crm_optimistic_ui:
     - core/drupal
     - core/jquery
     - core/once
+    - crm/crm_shared
 
 crm_inline_edit:
   version: 1.0

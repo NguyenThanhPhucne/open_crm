@@ -116,21 +116,28 @@
   {% endif %}
 </div>
 
-{# Delete Confirmation Modal #}
-<div id="delete-modal" class="modal" style="display: none;">
-  <div class="modal-overlay"></div>
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Delete Contact?</h2>
-      <button type="button" class="modal-close" aria-label="Close">&times;</button>
+{# Delete Confirmation Modal — ClickUp-style #}
+<div id="delete-modal" class="crm-delete-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+  <div class="crm-delete-modal__overlay"></div>
+  <div class="crm-delete-modal__card">
+    <div class="crm-delete-modal__header">
+      <div class="crm-delete-modal__icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </div>
+      <div>
+        <h3 id="delete-modal-title" class="crm-delete-modal__title">Delete Contact?</h3>
+        <p class="crm-delete-modal__sub">Type the contact name to confirm permanent deletion.</p>
+      </div>
+      <button type="button" class="crm-delete-modal__close" aria-label="Close">&times;</button>
     </div>
-    <div class="modal-body">
-      <p>Are you sure you want to delete <strong id="delete-name"></strong>?</p>
-      <p class="text-muted text-small">This action cannot be undone.</p>
+    <div class="crm-delete-modal__body">
+      <p class="crm-delete-modal__prompt">Type <strong id="delete-name-confirm"></strong> to confirm:</p>
+      <input type="text" id="delete-confirm-input" class="crm-delete-modal__input" autocomplete="off" spellcheck="false" placeholder="Type name here…"/>
+      <p class="crm-delete-modal__warn">⚠ This cannot be undone. All related references will be cleared.</p>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
-      <button type="button" class="btn btn-danger modal-confirm">Delete</button>
+    <div class="crm-delete-modal__footer">
+      <button type="button" class="crm-delete-modal__btn crm-delete-modal__btn--cancel" id="delete-cancel-btn">Cancel</button>
+      <button type="button" class="crm-delete-modal__btn crm-delete-modal__btn--danger" id="delete-confirm-btn" disabled>Delete permanently</button>
     </div>
   </div>
 </div>
@@ -220,170 +227,211 @@
   color: #6b7280;
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ── ClickUp-style delete modal ─────────────────────── */
+.crm-delete-modal {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
 }
-
-.modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  animation: fadeIn 200ms ease;
+.crm-delete-modal__overlay {
+  position: absolute; inset: 0;
+  background: rgba(15,23,42,.45);
+  backdrop-filter: blur(3px);
+  animation: crm-fade-in 180ms ease;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes crm-fade-in { from { opacity:0; } to { opacity:1; } }
+.crm-delete-modal__card {
+  position: relative; z-index: 1;
+  width: min(480px, calc(100vw - 32px));
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(15,23,42,.22);
+  animation: crm-slide-up 200ms cubic-bezier(.34,1.56,.64,1);
 }
-
-.modal-content {
-  position: relative;
-  z-index: 10;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 90%;
-  animation: slideUp 200ms ease;
+@keyframes crm-slide-up {
+  from { opacity:0; transform: translateY(20px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
 }
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.crm-delete-modal__header {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #f1f5f9;
 }
-
-.modal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.crm-delete-modal__icon {
+  flex-shrink: 0; width: 42px; height: 42px;
+  background: #fef2f2; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: #ef4444;
 }
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
+.crm-delete-modal__title {
+  margin: 0 0 3px; font-size: 16px; font-weight: 700; color: #0f172a;
 }
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 150ms ease;
+.crm-delete-modal__sub {
+  margin: 0; font-size: 13px; color: #64748b;
 }
-
-.modal-close:hover {
-  background: #f3f4f6;
-  color: #111827;
+.crm-delete-modal__close {
+  margin-left: auto; flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  width: 28px; height: 28px; font-size: 20px; line-height: 1;
+  color: #94a3b8; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
 }
-
-.modal-body {
-  padding: 20px 24px;
+.crm-delete-modal__close:hover { background: #f1f5f9; color: #334155; }
+.crm-delete-modal__body { padding: 18px 20px; }
+.crm-delete-modal__prompt { margin: 0 0 8px; font-size: 13px; color: #334155; }
+.crm-delete-modal__prompt strong { font-weight: 700; color: #0f172a; }
+.crm-delete-modal__input {
+  width: 100%; height: 38px;
+  border: 1.5px solid #cbd5e1; border-radius: 8px;
+  padding: 0 12px; font-size: 13px; outline: none;
+  transition: border-color .15s, box-shadow .15s;
 }
-
-.modal-body p {
-  margin: 8px 0;
-  color: #374151;
+.crm-delete-modal__input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239,68,68,.15);
 }
-
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
+.crm-delete-modal__warn {
+  margin: 10px 0 0; font-size: 12px;
+  color: #b45309; background: #fffbeb;
+  border: 1px solid #fde68a; border-radius: 6px;
+  padding: 6px 10px;
 }
+.crm-delete-modal__footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 14px 20px; border-top: 1px solid #f1f5f9;
+}
+.crm-delete-modal__btn {
+  height: 36px; padding: 0 16px; border-radius: 8px;
+  border: 1.5px solid #d1d9e6; background: #fff;
+  color: #334155; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .15s, border-color .15s;
+}
+.crm-delete-modal__btn:hover { background: #f8fafc; }
+.crm-delete-modal__btn--danger {
+  background: #ef4444; border-color: #ef4444; color: #fff;
+}
+.crm-delete-modal__btn--danger:hover {
+  background: #dc2626; border-color: #dc2626;
+}
+.crm-delete-modal__btn[disabled] { opacity: .45; cursor: not-allowed; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .contacts-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .header-actions .btn {
-    width: 100%;
-  }
-
-  .action-buttons {
-    width: 100%;
-    flex-direction: row;
-  }
-
-  .action-buttons .btn {
-    flex: 1;
-  }
+  .contacts-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; flex-direction: column; }
+  .header-actions .btn { width: 100%; }
+  .action-buttons { width: 100%; flex-direction: row; }
+  .action-buttons .btn { flex: 1; }
 }
 </style>
 
 <script>
 (function () {
-  // Initialize data sync for contact table
-  if (window.CRMDataSync) {
-    const contacts = document.querySelectorAll('[data-entity-id][data-entity-type="contact"]');
-    contacts.forEach(row => {
-      const entityId = row.dataset.entityId;
-      window.CRMDataSync.initEntity('node', entityId);
+  'use strict';
+
+  var pendingNid = null;
+  var pendingName = null;
+  var modal = document.getElementById('delete-modal');
+  var confirmInput = document.getElementById('delete-confirm-input');
+  var confirmBtn = document.getElementById('delete-confirm-btn');
+  var cancelBtn = document.getElementById('delete-cancel-btn');
+  var closeBtn = modal ? modal.querySelector('.crm-delete-modal__close') : null;
+  var overlay = modal ? modal.querySelector('.crm-delete-modal__overlay') : null;
+  var nameEl = document.getElementById('delete-name-confirm');
+
+  function openModal(nid, name) {
+    pendingNid = nid;
+    pendingName = name;
+    if (nameEl) nameEl.textContent = name;
+    if (confirmInput) { confirmInput.value = ''; confirmInput.focus(); }
+    if (confirmBtn) confirmBtn.disabled = true;
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    if (modal) modal.style.display = 'none';
+    pendingNid = null;
+    pendingName = null;
+    if (confirmInput) confirmInput.value = '';
+    if (confirmBtn) confirmBtn.disabled = true;
+  }
+
+  // Enable confirm button only when name matches exactly
+  if (confirmInput && confirmBtn) {
+    confirmInput.addEventListener('input', function () {
+      confirmBtn.disabled = (confirmInput.value.trim() !== (pendingName || '').trim());
     });
   }
 
-  // Delete functionality
-  document.querySelectorAll('.delete-btn').forEach(btn => {
+  // Trigger delete
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async function () {
+      if (!pendingNid || !pendingName) return;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Deleting…';
+
+      try {
+        // Fetch CSRF token from Drupal session
+        var csrfResp = await fetch('/session/token', { credentials: 'same-origin' });
+        var csrfToken = (await csrfResp.text()).trim();
+
+        var resp = await fetch('/crm/edit/ajax/delete', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({ nid: Number(pendingNid), type: 'contact', confirmation: pendingName })
+        });
+
+        var data = await resp.json();
+
+        if (resp.ok && data.success) {
+          // Remove row immediately from DOM (optimistic update already confirmed)
+          var row = document.getElementById('contact-row-' + pendingNid);
+          if (row) {
+            row.style.transition = 'opacity .25s, transform .25s';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(12px)';
+            setTimeout(function () { row.remove(); }, 260);
+          }
+          closeModal();
+          // Show success notification via CRM toast
+          if (window.CRM && window.CRM.toast) {
+            window.CRM.toast('Contact "' + pendingName + '" deleted.', 'success', 4000);
+          }
+        } else {
+          throw new Error(data.message || 'Delete failed');
+        }
+      } catch (err) {
+        confirmBtn.textContent = 'Delete permanently';
+        confirmBtn.disabled = false;
+        if (window.CRM && window.CRM.toast) {
+          window.CRM.toast('Error: ' + err.message, 'error', 5000);
+        } else {
+          alert('Error: ' + err.message);
+        }
+      }
+    });
+  }
+
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (overlay) overlay.addEventListener('click', closeModal);
+
+  // Keyboard: Escape closes, Enter submits
+  document.addEventListener('keydown', function (e) {
+    if (!modal || modal.style.display === 'none') return;
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Enter' && confirmBtn && !confirmBtn.disabled) confirmBtn.click();
+  });
+
+  // Wire up delete buttons in table
+  document.querySelectorAll('.delete-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      const nid = this.dataset.nid;
-      const name = this.dataset.name;
-      const modal = document.getElementById('delete-modal');
-      document.getElementById('delete-name').textContent = name;
-      modal.style.display = 'flex';
-
-      const confirmBtn = modal.querySelector('.modal-confirm');
-      const cancelBtn = modal.querySelector('.modal-cancel');
-      const closeBtn = modal.querySelector('.modal-close');
-
-      const closeModal = () => { modal.style.display = 'none'; };
-
-      confirmBtn.onclick = () => {
-        window.location.href = '/node/' + nid + '/delete';
-      };
-
-      cancelBtn.onclick = closeModal;
-      closeBtn.onclick = closeModal;
-
-      modal.querySelector('.modal-overlay').onclick = closeModal;
+      openModal(this.dataset.nid, this.dataset.name);
     });
   });
 })();

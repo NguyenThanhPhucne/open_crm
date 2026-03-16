@@ -156,10 +156,24 @@
     if (fieldType === "select" || fieldType === "list") {
       $input = jQuery("<select/>").val(value);
 
-      // Load available options (would come from field config)
-      var options = getFieldOptions(fieldName);
-      jQuery.each(options, function (key, label) {
-        $input.append(jQuery("<option/>").val(key).text(label));
+      // Load available options asynchronously
+      getFieldOptions(fieldName).then(function(options) {
+        var currentValue = value; // Keep track of value to set after options load
+        jQuery.each(options, function (key, label) {
+          $input.append(jQuery("<option/>").val(key).text(label));
+        });
+        // Select the correct option now that they are rendered
+        if(currentValue) {
+            // Find option text that matches the current value text, and get its value
+            var match = $input.find("option").filter(function() {
+                return jQuery(this).text() === currentValue;
+            });
+            if(match.length) {
+                $input.val(match.val());
+            } else {
+                $input.val(currentValue); // fallback
+            }
+        }
       });
     } else if (fieldType === "textarea" || fieldType === "text_long") {
       $input = jQuery("<textarea/>").prop("rows", 3).val(value).css({
@@ -181,24 +195,48 @@
   }
 
   /**
-   * Get available options for a field.
+   * Get available options for a field. Returns a Promise.
    */
+  var cachedOptions = {};
   function getFieldOptions(fieldName) {
-    // This would typically come from field configuration
-    // For now, return common options
+    if (cachedOptions[fieldName]) {
+        return Promise.resolve(cachedOptions[fieldName]);
+    }
+
+    if (fieldName === 'field_deal_stage') {
+        return fetch('/api/v1/crm/stages', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error("Failed to fetch stages");
+            return response.json();
+        })
+        .then(function(data) {
+            cachedOptions[fieldName] = data;
+            return data;
+        })
+        .catch(function(err) {
+            console.error("Error fetching stages:", err);
+            // Fallback options
+            return {
+                prospecting: "Prospecting",
+                qualification: "Qualification",
+                proposal: "Proposal",
+                negotiation: "Negotiation",
+                closed_won: "Closed Won",
+                closed_lost: "Closed Lost",
+            };
+        });
+    }
+
+    // Static fallback options for other fields
     var fieldOptions = {
       field_status: {
         active: "Active",
         inactive: "Inactive",
         archived: "Archived",
-      },
-      field_deal_stage: {
-        prospecting: "Prospecting",
-        qualification: "Qualification",
-        proposal: "Proposal",
-        negotiation: "Negotiation",
-        closed_won: "Closed Won",
-        closed_lost: "Closed Lost",
       },
       field_team: {
         sales: "Sales Team",
@@ -207,7 +245,7 @@
       },
     };
 
-    return fieldOptions[fieldName] || {};
+    return Promise.resolve(fieldOptions[fieldName] || {});
   }
 
   /**

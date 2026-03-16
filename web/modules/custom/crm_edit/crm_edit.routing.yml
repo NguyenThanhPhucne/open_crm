@@ -138,7 +138,16 @@ crm_edit.add_activity:
     _title: "Add Activity"
   requirements:
     _permission: "create activity content"
-
+# GET /api/v1/crm/stages
+# Get available deal stages from taxonomy
+crm_edit.api_get_stages:
+  path: "/api/v1/crm/stages"
+  defaults:
+    _controller: '\Drupal\crm_edit\Controller\InlineEditController::getStages'
+  requirements:
+    _permission: "access content"
+    _user_is_logged_in: "TRUE"
+  methods: [GET]
 # PHASE 2: REST API endpoint for inline field editing
 # PATCH /api/v1/{entity_type}/{entity_id}/{field_name}
 # Update a single field on an entity

@@ -433,102 +433,18 @@
   }
 
   /**
-   * Initialize toast notification system if not already done.
+   * Toast delegation — window.CRM.toast is defined in crm-shared.js.
+   * crm_shared library must be declared as a dependency of crm_optimistic_ui
+   * to guarantee load order. Only define a minimal no-op fallback here in case
+   * the dependency chain was broken (so the rest of this module does not throw).
    */
   if (!window.CRM || !window.CRM.toast) {
     window.CRM = window.CRM || {};
-
-    window.CRM.toast = function (message, type, duration) {
-      type = type || "success";
-      duration = duration || 4000;
-
-      var container = document.getElementById("crm-toast-container");
-      if (!container) {
-        container = document.createElement("div");
-        container.id = "crm-toast-container";
-        container.style.cssText =
-          "position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;";
-        document.body.appendChild(container);
-      }
-
-      var toastEl = document.createElement("div");
-      toastEl.className = "crm-toast crm-toast--" + type;
-      toastEl.style.cssText =
-        "margin-bottom: 10px; padding: 12px 16px; border-radius: 4px; display: flex; align-items: center; " +
-        "box-shadow: 0 2px 8px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out; font-size: 14px;";
-
-      var bgColors = {
-        success: "#d4edda",
-        error: "#f8d7da",
-        info: "#d1ecf1",
-        warn: "#fff3cd",
-      };
-
-      var textColors = {
-        success: "#155724",
-        error: "#721c24",
-        info: "#0c5460",
-        warn: "#856404",
-      };
-
-      var borderColors = {
-        success: "#c3e6cb",
-        error: "#f5c6cb",
-        info: "#bee5eb",
-        warn: "#ffeeba",
-      };
-
-      toastEl.style.backgroundColor = bgColors[type] || bgColors.info;
-      toastEl.style.color = textColors[type] || textColors.info;
-      toastEl.style.borderLeft = "4px solid " + borderColors[type];
-
-      var icons = {
-        success: "✓",
-        error: "✗",
-        info: "ℹ",
-        warn: "⚠",
-      };
-
-      toastEl.innerHTML =
-        '<span style="margin-right: 10px; font-weight: bold; font-size: 16px;">' +
-        (icons[type] || icons.info) +
-        '</span><span class="crm-toast__msg" style="flex: 1;">' +
-        message +
-        '</span><button class="crm-toast__close" aria-label="Dismiss" style="background: none; border: none; cursor: pointer; font-size: 18px; opacity: 0.6;">&times;</button>';
-
-      container.appendChild(toastEl);
-
-      // Add animation style if not exists
-      if (!document.getElementById("crm-toast-styles")) {
-        var style = document.createElement("style");
-        style.id = "crm-toast-styles";
-        style.textContent =
-          "@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } } " +
-          ".crm-toast.is-fading { animation: slideOut 0.3s ease-out forwards; } " +
-          "@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }";
-        document.head.appendChild(style);
-      }
-
-      // Auto-remove after duration
-      var timer = setTimeout(function () {
-        toastEl.classList.add("is-fading");
-        setTimeout(function () {
-          toastEl.remove();
-        }, 300);
-      }, duration);
-
-      // Manual close button
-      toastEl
-        .querySelector(".crm-toast__close")
-        .addEventListener("click", function () {
-          clearTimeout(timer);
-          toastEl.classList.add("is-fading");
-          setTimeout(function () {
-            toastEl.remove();
-          }, 300);
-        });
-
-      return toastEl;
+    window.CRM.toast = function (message, type) {
+      // Fallback: crm-shared.js should supply the real implementation.
+      console.warn('[CRM] Toast not yet ready. Ensure crm/crm_shared is a dependency of crm/crm_optimistic_ui. Message:', message);
     };
   }
 })(Drupal, jQuery);
+
+

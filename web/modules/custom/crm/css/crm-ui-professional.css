@@ -568,57 +568,40 @@ input:disabled,
 
 /* === CLICKUP-LIKE LIST TOOLBARS === */
 .crm-list-toolbar {
-  position: sticky;
-  top: 8px;
-  z-index: 25;
   margin-bottom: 10px;
-  padding: 12px 14px;
+  padding: 8px 14px;
   border: 1px solid #d6e3f2;
-  border-radius: 14px;
+  border-radius: 12px;
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.94) 0%,
     rgba(247, 251, 255, 0.94) 100%
   );
-  backdrop-filter: blur(10px) saturate(1.15);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 8px 22px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
+/* Legacy meta block — hidden since title/subtitle live in page-header now */
 .crm-list-toolbar__meta {
-  min-width: 0;
-}
-
-.crm-list-toolbar__title {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  color: #0f2740;
-  line-height: 1.25;
-}
-
-.crm-list-toolbar__subtitle {
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #526178;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
 }
 
 .crm-list-toolbar__right {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.crm-list-toolbar__right--full {
+  width: 100%;
+  justify-content: space-between;
 }
 
 .crm-segmented {
@@ -704,6 +687,24 @@ input:disabled,
   font-size: 11px;
   font-weight: 600;
   color: #64748b;
+}
+
+.crm-kbd-hint__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.crm-kbd-hint__icon svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
 }
 
 .contacts-page .stats-bar,

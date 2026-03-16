@@ -283,7 +283,7 @@ class AllOrganizationsController extends ControllerBase {
 
   /* ── Stats bar ── */
   .stats-bar{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-  .stat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid}
+  .stat-chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid;min-width:160px}
   .stat-chip.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
   .stat-chip.green{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
   .stat-chip.purple{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe}
@@ -395,7 +395,7 @@ class AllOrganizationsController extends ControllerBase {
   .crm-row-action.btn-delete{border-color:#fecaca;background:#fef2f2;color:#b91c1c}
   .crm-row-action:hover.btn-edit{border-color:#2563eb;background:#eff6ff;color:#2563eb}
   .crm-row-action:hover.btn-delete{border-color:#dc2626;background:#fef2f2;color:#dc2626}
-  .crm-row-action i,.crm-row-action svg{width:15px;height:15px;color:inherit;stroke:currentColor;stroke-width:2.3;opacity:1;display:block}
+  .crm-row-action i,.crm-row-action svg{width:15px;height:15px;min-width:15px;color:inherit;stroke:currentColor;stroke-width:2.3;opacity:1;display:inline-block;vertical-align:middle;flex-shrink:0}
   .crm-row-action.btn-edit,.crm-row-action.btn-edit svg{color:#64748b !important;stroke:currentColor !important;fill:none !important}
   .crm-row-action.btn-delete,.crm-row-action.btn-delete svg{color:#64748b !important;stroke:currentColor !important;fill:none !important}
   .crm-row-action.btn-edit,.crm-row-action.btn-edit svg{color:#1d4ed8 !important;stroke:#1d4ed8 !important}

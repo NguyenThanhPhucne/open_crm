@@ -2231,7 +2231,7 @@ class DashboardController extends ControllerBase {
         </div>
         <div class="stat-body">
           <div class="stat-label">Avg Cycle</div>
-          <div class="stat-value">{$avg_days_in_pipeline}<span style="font-size:14px;font-weight:600;color:#94a3b8">d</span></div>
+          <div class="stat-value">{$avg_days_in_pipeline}<span style="font-size:14px;font-weight:600;color:#94a3b8"> days</span></div>
           <div class="stat-desc">Days in pipeline</div>
         </div>
       </a>
@@ -2644,7 +2644,7 @@ HTML;
         this.setCardTrend('This Week', Number(metrics.revenue_this_week_count || 0) + ' deals closed');
 
         this.setCardValue('Due This Week', Number(metrics.due_this_week || 0));
-        this.setCardValue('Avg Cycle', Number(metrics.avg_days_in_pipeline || 0) + '<span style="font-size:14px;font-weight:600;color:#94a3b8">d</span>', true);
+        this.setCardValue('Avg Cycle', Number(metrics.avg_days_in_pipeline || 0) + '<span style="font-size:14px;font-weight:600;color:#94a3b8"> days</span>', true);
 
         this.setCardValue('New Contacts', Number(metrics.new_contacts_this_month || 0));
       }
