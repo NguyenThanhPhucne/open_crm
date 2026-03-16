@@ -5,6 +5,8 @@ namespace Drupal\crm\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -35,6 +37,29 @@ class AllActivitiesController extends ControllerBase {
       'U' => ['#fee2e2','#dc2626'],'V' => ['#fee2e2','#dc2626'],'W' => ['#fee2e2','#dc2626'],
       'X' => ['#e0e7ff','#4338ca'],'Y' => ['#e0e7ff','#4338ca'],'Z' => ['#e0e7ff','#4338ca'],
     ];
+  }
+
+  /**
+   * Access check for activities pages.
+   * 
+   * Rules:
+   * - /crm/my-activities: All logged-in users can view
+   * - /crm/all-activities: Only admin/manager can view
+   */
+  public function accessView(Request $request, AccountInterface $account) {
+    $current_path = $request->getPathInfo();
+    $is_my_view = str_contains($current_path, 'my-activities');
+    
+    // My-activities: all logged-in users can view their own activities
+    if ($is_my_view) {
+      return $account->isAuthenticated() ? AccessResult::allowed() : AccessResult::forbidden();
+    }
+    
+    // All-activities: only admin/manager can view all activities
+    $is_admin = in_array('administrator', $account->getRoles()) || $account->id() == 1;
+    $is_manager = in_array('sales_manager', $account->getRoles());
+    
+    return ($is_admin || $is_manager) ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
   public function view(Request $request) {
@@ -709,7 +734,10 @@ JS;
       '#markup' => Markup::create($html),
       '#attached' => [
         'library' => [
-          'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
+          'core/drupal',
+          'crm/crm_shared',
+          'crm/crm-ui-professional',
+          'crm_edit/inline_edit',
           'crm_ai_autocomplete/ai-generate-button',
         ],
       ],

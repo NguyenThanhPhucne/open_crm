@@ -43,8 +43,7 @@ crm.all_contacts:
     _controller: '\Drupal\crm\Controller\AllContactsController::view'
     _title: "All Contacts"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm\Controller\AllContactsController::accessView'
 
 crm.my_contacts:
   path: "/crm/my-contacts"
@@ -52,8 +51,7 @@ crm.my_contacts:
     _controller: '\Drupal\crm\Controller\AllContactsController::view'
     _title: "My Contacts"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm\Controller\AllContactsController::accessView'
 
 crm.all_deals:
   path: "/crm/all-deals"
@@ -61,8 +59,7 @@ crm.all_deals:
     _controller: '\Drupal\crm\Controller\AllDealsController::view'
     _title: "All Deals"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm\Controller\AllDealsController::accessView'
 
 crm.my_deals:
   path: "/crm/my-deals"
@@ -70,8 +67,7 @@ crm.my_deals:
     _controller: '\Drupal\crm\Controller\AllDealsController::view'
     _title: "My Deals"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm\Controller\AllDealsController::accessView'
 
 crm.all_activities:
   path: "/crm/all-activities"
@@ -79,7 +75,7 @@ crm.all_activities:
     _controller: '\Drupal\crm\Controller\AllActivitiesController::view'
     _title: "All Activities"
   requirements:
-    _permission: "access content"
+    _custom_access: '\Drupal\crm\Controller\AllActivitiesController::accessView'
     _user_is_logged_in: "TRUE"
 
 crm.my_activities:
@@ -88,7 +84,7 @@ crm.my_activities:
     _controller: '\Drupal\crm\Controller\AllActivitiesController::view'
     _title: "My Activities"
   requirements:
-    _permission: "access content"
+    _custom_access: '\Drupal\crm\Controller\AllActivitiesController::accessView'
     _user_is_logged_in: "TRUE"
 
 crm.all_organizations:
@@ -97,8 +93,7 @@ crm.all_organizations:
     _controller: '\Drupal\crm\Controller\AllOrganizationsController::view'
     _title: "All Organizations"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm\Controller\AllOrganizationsController::accessView'
 
 crm.my_organizations:
   path: "/crm/my-organizations"
@@ -106,8 +101,7 @@ crm.my_organizations:
     _controller: '\Drupal\crm\Controller\AllOrganizationsController::view'
     _title: "My Organizations"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm\Controller\AllOrganizationsController::accessView'
 
 crm.contact_delete_ajax:
   path: "/api/contacts/{nid}/delete"

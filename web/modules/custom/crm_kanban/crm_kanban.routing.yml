@@ -4,8 +4,7 @@ crm_kanban.pipeline:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::view'
     _title: "Sales Pipeline"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_kanban\Controller\KanbanController::accessView'
 
 crm_kanban.all_pipeline:
   path: "/crm/all-pipeline"
@@ -13,15 +12,13 @@ crm_kanban.all_pipeline:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::view'
     _title: "All Pipeline"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_kanban\Controller\KanbanController::accessView'
 
 crm_kanban.update_stage:
   path: "/crm/my-pipeline/update-stage"
   defaults:
     _controller: '\Drupal\crm_kanban\Controller\KanbanController::updateStage'
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_kanban\Controller\KanbanController::accessView'
   options:
     no_cache: TRUE

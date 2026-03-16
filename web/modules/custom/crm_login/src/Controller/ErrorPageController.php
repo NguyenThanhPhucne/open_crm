@@ -87,45 +87,366 @@ HTML;
    * 404 – Page Not Found.
    */
   public function notFound(Request $request) {
+    $dashboard_url = '/crm/dashboard';
+    $home_url = '/';
     $is_anonymous = \Drupal::currentUser()->isAnonymous();
-    $back_url = $is_anonymous ? '/' : '/crm/dashboard';
+    $back_url = $is_anonymous ? $home_url : $dashboard_url;
     $back_label = $is_anonymous ? 'Back to Home' : 'Go to Dashboard';
-    $back_icon = $is_anonymous
-      ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
-      : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>';
-
-    $svg_icon = $this->getIcon('search-x', '#7c3aed');
-
+    
     $html = <<<HTML
-<div class="crm-error-page">
-  <div class="crm-err-card">
-    <div class="crm-err-icon-wrap" style="background:#f5f3ff; border-color:#7c3aed22;">
-      {$svg_icon}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found — CRM</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%237c3aed' rx='12'/><text x='50' y='72' font-size='60' font-weight='900' fill='white' text-anchor='middle' font-family='system-ui'>?</text></svg>">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 900px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .content-wrapper {
+      width: 100%;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 48px 56px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.08);
+      display: flex;
+      gap: 56px;
+      align-items: stretch;
+    }
+    
+    .left-content {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 260px;
+    }
+    
+    .right-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 300px;
+    }
+    
+    .icon-wrapper {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: #f5f3ff;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .icon-wrapper svg {
+      width: 48px;
+      height: 48px;
+      color: #7c3aed;
+      stroke-width: 1.5;
+    }
+    
+    .error-code {
+      font-size: 56px;
+      font-weight: 900;
+      color: #7c3aed;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    
+    .error-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+    
+    .error-message {
+      font-size: 15px;
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .error-subtext {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 28px;
+      font-weight: 400;
+    }
+    
+    .reasons {
+      text-align: left;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 18px 16px;
+      margin-bottom: 28px;
+      border-left: 3px solid #7c3aed;
+    }
+    
+    .reasons-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    
+    .reasons-list {
+      list-style: none;
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.7;
+    }
+    
+    .reasons-list li {
+      margin-bottom: 6px;
+    }
+    
+    .reasons-list li::before {
+      content: "•";
+      color: #7c3aed;
+      font-weight: 800;
+      margin-right: 8px;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    
+    .btn-primary {
+      background: #7c3aed;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #6d28d9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    }
+    
+    .btn-secondary {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #1e293b;
+    }
+    
+    .divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 24px 0;
+    }
+    
+    .contact-admin {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.6;
+    }
+    
+    .contact-admin a {
+      color: #7c3aed;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    
+    .contact-admin a:hover {
+      color: #6d28d9;
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 32px 20px;
+      }
+      
+      .content-wrapper {
+        flex-direction: column;
+        gap: 32px;
+        padding: 36px 28px;
+      }
+      
+      .left-content {
+        min-width: auto;
+      }
+      
+      .right-content {
+        min-width: auto;
+      }
+      
+      .error-code {
+        font-size: 48px;
+      }
+      
+      .error-title {
+        font-size: 24px;
+      }
+      
+      .icon-wrapper {
+        width: 72px;
+        height: 72px;
+      }
+      
+      .icon-wrapper svg {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .error-message {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content-wrapper">
+      <div class="left-content">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4"/>
+            <path d="M12 16h.01"/>
+          </svg>
+        </div>
+        
+        <div class="error-code">404</div>
+        <div class="error-title">Page Not Found</div>
+        
+        <div class="error-message">
+          The page you're looking for doesn't exist or may have been moved.
+        </div>
+        <div class="error-subtext">
+          Double-check the URL and try again.
+        </div>
+      </div>
+      
+      <div class="right-content">
+        <div class="reasons">
+          <div class="reasons-title">Possible reasons:</div>
+          <ul class="reasons-list">
+            <li>The URL may contain a typo or incorrect path</li>
+            <li>The page may have been moved or deleted</li>
+            <li>The resource you're looking for is no longer available</li>
+          </ul>
+        </div>
+        
+        <div class="actions">
+          <a href="{$back_url}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            {$back_label}
+          </a>
+          <a href="javascript:history.back()" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Go Back
+          </a>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="contact-admin">
+          Try searching for the page using the site's search feature or <a href="{$dashboard_url}">browse the main navigation</a>.
+        </div>
+      </div>
     </div>
-    <div class="crm-err-code">404</div>
-    <h1 class="crm-err-heading">Page Not Found</h1>
-    <p class="crm-err-message">The page you're looking for doesn't exist or may have been moved. Double-check the URL and try again.</p>
-    <div class="crm-err-actions">
-      <a href="{$back_url}" class="crm-err-btn crm-err-btn-primary">
-        {$back_icon}
-        {$back_label}
-      </a>
-      <button onclick="history.back()" class="crm-err-btn crm-err-btn-secondary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Go Back
-      </button>
-    </div>
-    <p class="crm-err-hint">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-      Error code 404 &mdash; Not Found
-    </p>
   </div>
-</div>
+  
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
 HTML;
 
     return [
       '#markup'   => Markup::create($html),
-      '#attached' => ['library' => ['crm_login/error_pages']],
       '#cache'    => ['contexts' => ['user', 'url.path']],
     ];
   }

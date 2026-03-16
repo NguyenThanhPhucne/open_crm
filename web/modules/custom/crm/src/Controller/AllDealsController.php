@@ -5,6 +5,8 @@ namespace Drupal\crm\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -12,6 +14,29 @@ use Symfony\Component\HttpFoundation\Request;
  * Professional All Deals list controller — UI consistent with AllContactsController.
  */
 class AllDealsController extends ControllerBase {
+
+  /**
+   * Access check for deals pages.
+   * 
+   * Rules:
+   * - /crm/my-deals: All logged-in users can view
+   * - /crm/all-deals: Only admin/manager can view
+   */
+  public function accessView(Request $request, AccountInterface $account) {
+    $current_path = $request->getPathInfo();
+    $is_my_view = str_contains($current_path, 'my-deals');
+    
+    // My-deals: all logged-in users can view their own deals
+    if ($is_my_view) {
+      return $account->isAuthenticated() ? AccessResult::allowed() : AccessResult::forbidden();
+    }
+    
+    // All-deals: only admin/manager can view all deals
+    $is_admin = in_array('administrator', $account->getRoles()) || $account->id() == 1;
+    $is_manager = in_array('sales_manager', $account->getRoles());
+    
+    return ($is_admin || $is_manager) ? AccessResult::allowed() : AccessResult::forbidden();
+  }
 
   /**
    * Stage metadata (tid → label, colors).

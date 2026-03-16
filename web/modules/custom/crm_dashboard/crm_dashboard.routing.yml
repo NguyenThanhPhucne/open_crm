@@ -4,8 +4,7 @@ crm_dashboard.admin:
     _controller: '\Drupal\crm_dashboard\Controller\DashboardController::view'
     _title: "CRM Dashboard"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_dashboard\Controller\DashboardController::accessView'
 
 crm_dashboard.dashboard:
   path: "/crm/dashboard"
@@ -13,8 +12,7 @@ crm_dashboard.dashboard:
     _controller: '\Drupal\crm_dashboard\Controller\DashboardController::view'
     _title: "CRM Dashboard"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_dashboard\Controller\DashboardController::accessView'
 
 crm_dashboard.test:
   path: "/crm/dashboard-new"
@@ -22,14 +20,12 @@ crm_dashboard.test:
     _controller: '\Drupal\crm_dashboard\Controller\DashboardController::view'
     _title: "NEW Dashboard Test"
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_dashboard\Controller\DashboardController::accessView'
 
 crm_dashboard.refresh:
   path: "/crm/dashboard/refresh"
   defaults:
     _controller: '\Drupal\crm_dashboard\Controller\DashboardController::getRefreshData'
   requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
+    _custom_access: '\Drupal\crm_dashboard\Controller\DashboardController::accessView'
     _method: "GET|POST"

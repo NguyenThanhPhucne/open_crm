@@ -5,13 +5,25 @@ namespace Drupal\crm_dashboard\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Controller for CRM Dashboard.
  */
 class DashboardController extends ControllerBase {
+
+  /**
+   * Access check for dashboard pages.
+   * 
+   * Dashboard is accessible to all authenticated users.
+   */
+  public function accessView(Request $request, AccountInterface $account) {
+    return $account->isAuthenticated() ? AccessResult::allowed() : AccessResult::forbidden();
+  }
 
   /**
    * Display the dashboard.
