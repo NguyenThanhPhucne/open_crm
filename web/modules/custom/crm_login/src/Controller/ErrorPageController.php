@@ -4,6 +4,7 @@ namespace Drupal\crm_login\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\Core\Render\Markup;
 
 /**
@@ -445,10 +446,7 @@ HTML;
 </html>
 HTML;
 
-    return [
-      '#markup'   => Markup::create($html),
-      '#cache'    => ['contexts' => ['user', 'url.path']],
-    ];
+    return new Response($html, 404, ['Content-Type' => 'text/html; charset=utf-8']);
   }
 
   /**
