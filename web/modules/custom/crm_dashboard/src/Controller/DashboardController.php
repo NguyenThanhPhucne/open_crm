@@ -175,6 +175,7 @@ class DashboardController extends ControllerBase {
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN 1 ELSE 0 END), 0)", 'won_count');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN 1 ELSE 0 END), 0)", 'lost_count');
+    $agg->addExpression("AVG(CASE WHEN fs.field_stage_target_id = $won_id THEN (UNIX_TIMESTAMP() - n.created) / 86400.0 END)", 'avg_days_won');
     if (!$is_admin && $user_id > 0) {
       $agg->leftJoin('node__field_owner', 'fo', 'fo.entity_id = n.nid AND fo.deleted = 0');
       $agg->condition('fo.field_owner_target_id', $user_id);
@@ -185,6 +186,7 @@ class DashboardController extends ControllerBase {
     $lost_value  = (float) ($totals->lost_value  ?? 0);
     $won_count   = (int)   ($totals->won_count   ?? 0);
     $lost_count  = (int)   ($totals->lost_count  ?? 0);
+    $avg_days_in_pipeline = (int) round((float) ($totals->avg_days_won ?? 0));
 
     // Format values for display
     $total_value_display = '$' . number_format($total_value / 1000000, 1) . 'M';
@@ -219,18 +221,20 @@ class DashboardController extends ControllerBase {
     
     // 3. Revenue This Week - Won deals moved to Won stage this week (by changed timestamp)
     // Measures sales velocity and momentum
-    $revenue_this_week_query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
-      ->condition('field_stage', $won_term_id)
-      ->condition('changed', $this_week_start, '>=')
-      ->accessCheck(FALSE);
-    if (!$is_admin && $user_id > 0) {
-      $revenue_this_week_query->condition('field_owner', $user_id);
-    }
-    $revenue_this_week_ids = $revenue_this_week_query->execute();
-    
+    $revenue_this_week_ids = [];
     $revenue_this_week = 0;
+    if (!empty($won_term_id)) {
+      $revenue_this_week_query = \Drupal::entityQuery('node')
+        ->condition('type', 'deal')
+        ->condition('field_deleted_at', NULL, 'IS NULL')
+        ->condition('field_stage', $won_term_id)
+        ->condition('changed', $this_week_start, '>=')
+        ->accessCheck(FALSE);
+      if (!$is_admin && $user_id > 0) {
+        $revenue_this_week_query->condition('field_owner', $user_id);
+      }
+      $revenue_this_week_ids = $revenue_this_week_query->execute();
+    }
     if (!empty($revenue_this_week_ids)) {
       $revenue_deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($revenue_this_week_ids);
       foreach ($revenue_deals as $deal) {
@@ -242,26 +246,7 @@ class DashboardController extends ControllerBase {
     $revenue_this_week_display = '$' . number_format($revenue_this_week / 1000000, 1) . 'M';
     $revenue_this_week_count = count($revenue_this_week_ids);
     
-    // 4. Average Days in Pipeline - How long won deals take to close
-    // Indicates sales cycle efficiency
-    $avg_days_in_pipeline = 0;
-    if (!empty($deals)) {
-      $total_days = 0;
-      $closed_deal_count = 0;
-      
-      foreach ($deals as $deal) {
-        if ($deal->hasField('field_stage') && !$deal->get('field_stage')->isEmpty()) {
-          $stage_tid = (int) $deal->get('field_stage')->target_id;
-          if ($won_term_id && $stage_tid === (int) $won_term_id) {
-            $days_open = floor(($now - $deal->getCreatedTime()) / 86400);
-            $total_days += $days_open;
-            $closed_deal_count++;
-          }
-        }
-      }
-      
-      $avg_days_in_pipeline = $closed_deal_count > 0 ? round($total_days / $closed_deal_count, 0) : 0;
-    }
+    // 4. Average Days in Pipeline comes from DB aggregate query above.
     
     // 5. Deals Due This Week - Deals with closing date in next 7 days
     // Helps prioritize urgent deals
@@ -3291,19 +3276,21 @@ HTML;
     $new_contacts = $new_contacts_query->count()->execute();
     
     // 10. Revenue This Week (deals with amounts)
-    $revenue_this_week_query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->condition('field_stage', $won_term_id)
-      ->condition('changed', $this_week_start, '>=')
-      ->condition('field_deleted_at', NULL, 'IS NULL')
-      ->accessCheck(FALSE);
-    if (!$is_admin && $user_id > 0) {
-      $revenue_this_week_query->condition('field_owner', $user_id);
-    }
-    $revenue_this_week_ids = $revenue_this_week_query->execute();
-    
+    $revenue_this_week_ids = [];
     $revenue_this_week = 0;
     $revenue_this_week_count = 0;
+    if (!empty($won_term_id)) {
+      $revenue_this_week_query = \Drupal::entityQuery('node')
+        ->condition('type', 'deal')
+        ->condition('field_stage', $won_term_id)
+        ->condition('changed', $this_week_start, '>=')
+        ->condition('field_deleted_at', NULL, 'IS NULL')
+        ->accessCheck(FALSE);
+      if (!$is_admin && $user_id > 0) {
+        $revenue_this_week_query->condition('field_owner', $user_id);
+      }
+      $revenue_this_week_ids = $revenue_this_week_query->execute();
+    }
     if (!empty($revenue_this_week_ids)) {
       $revenue_deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($revenue_this_week_ids);
       foreach ($revenue_deals as $deal) {
