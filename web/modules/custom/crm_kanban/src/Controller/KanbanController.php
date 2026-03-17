@@ -288,8 +288,9 @@ class KanbanController extends ControllerBase {
   .card-actions{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
   .deal-card:hover .card-actions{opacity:1}
   .ca-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius: 16px;color:#94a3b8;text-decoration:none;transition:background .12s,color .12s;background:rgba(255,255,255,.9)}
-  .ca-btn:hover{background:#eff6ff;color:#2563eb}
+  .ca-btn:hover{background:#eff6ff;color:#2563eb !important;}
   .ca-btn i{width:12px;height:12px;flex-shrink:0}
+  .ca-btn i, .ca-btn svg { color: inherit !important; stroke: currentColor !important; fill: currentColor !important; }
   /* ── Empty state ── */
   .empty-state{text-align:center;padding:28px 12px;color:#cbd5e1;font-size:12px}
   .empty-state i{display:block;margin:0 auto 6px;opacity:.5}
