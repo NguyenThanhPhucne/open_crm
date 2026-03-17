@@ -330,8 +330,8 @@ class AllActivitiesController extends ControllerBase {
 
   /* Buttons */
   .btn-primary,.btn-secondary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap}
-  .btn-primary {background:#2563eb; border:1px solid #2563eb; color:#ffffff; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);}
-  .btn-primary:hover {background:#1d4ed8; border-color:#1d4ed8; color:#ffffff !important; transform: translateY(-1px); box-shadow: 0 6px 12px -2px rgba(37,99,235,0.3);}
+  .btn-primary {color:#2563eb !important;border:1.5px solid #2563eb !important;background:#ffffff !important;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
+  .btn-primary:hover {background:#eff6ff !important;border-color:#1d4ed8 !important;color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
   .btn-primary i, .btn-primary svg { color: #ffffff !important; }
   .btn-secondary{color:#475569;border:1.5px solid #e2e8f0;background:#fff}
   .btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
@@ -353,9 +353,9 @@ class AllActivitiesController extends ControllerBase {
   .flt-sel-arr{display:flex;align-items:center;padding:0 9px 0 2px;flex-shrink:0;color:#9ca3af;pointer-events:none}.flt-sel-arr svg{width:13px;height:13px;display:block}
   .filter-select{flex:1;height:100%;min-width:0;border:none !important;border-radius:0 !important;padding:0 2px !important;font-size:14px !important;color:#1e293b;background:transparent;outline:none !important;cursor:pointer;appearance:none;-webkit-appearance:none;box-shadow:none !important}
   .filter-select:focus{border:none !important;box-shadow:none !important}
-  .btn-filter-apply {display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#2563eb;color:#ffffff;border:1px solid #2563eb;border-radius:16px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);white-space:nowrap;flex-shrink:0;box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2);}
-  .btn-filter-apply:hover {background:#1d4ed8;color:#ffffff !important;border-color:#1d4ed8;transform: translateY(-1px);box-shadow: 0 6px 12px -2px rgba(37,99,235,0.3);}
-  .btn-filter-apply i, .btn-filter-apply svg { color: #ffffff !important; }
+  .btn-filter-apply {display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#ffffff !important;color:#2563eb !important;border:1.5px solid #2563eb !important;border-radius:16px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s ease;white-space:nowrap;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+  .btn-filter-apply:hover {background:#eff6ff !important;color:#1d4ed8 !important;border-color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
+  .btn-filter-apply i, .btn-filter-apply svg { color:#1d4ed8 !important; stroke:#1d4ed8 !important; }
   .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
   .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius: 16px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0}
   .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
