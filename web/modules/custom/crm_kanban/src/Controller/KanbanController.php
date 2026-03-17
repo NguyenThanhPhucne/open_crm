@@ -245,7 +245,8 @@ class KanbanController extends ControllerBase {
   .btn-primary,.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;border:1.5px solid}
   .btn-primary {color:#2563eb !important;border:1.5px solid #2563eb !important;background:#ffffff !important;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
   .btn-primary:hover {background:#eff6ff !important;border-color:#1d4ed8 !important;color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
-  .btn-primary i, .btn-primary svg { color: #ffffff !important; }
+  .btn-primary i, .btn-primary svg { color: #2563eb !important; stroke: #2563eb !important; }
+  .btn-primary:hover i, .btn-primary:hover svg { color: #1d4ed8 !important; stroke: #1d4ed8 !important; }
   .btn-secondary{color:#475569;border-color:#e2e8f0;background:#fff}
   .btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
   .btn-primary i,.btn-secondary i{width:15px;height:15px;color:inherit}

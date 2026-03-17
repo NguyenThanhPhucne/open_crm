@@ -326,7 +326,8 @@ class AllContactsController extends ControllerBase {
   .btn-primary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
   .btn-primary {color:#2563eb !important;border:1.5px solid #2563eb !important;background:#ffffff !important;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
   .btn-primary:hover {background:#eff6ff !important;border-color:#1d4ed8 !important;color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
-  .btn-primary i, .btn-primary svg { color: #ffffff !important; }
+  .btn-primary i, .btn-primary svg { color: #2563eb !important; stroke: #2563eb !important; }
+  .btn-primary:hover i, .btn-primary:hover svg { color: #1d4ed8 !important; stroke: #1d4ed8 !important; }
   .btn-primary:active{background:#dbeafe}
   .btn-primary:focus-visible{outline:2px solid #3b82f6;outline-offset:2px}
   .btn-primary i{width:15px;height:15px;color:inherit}
