@@ -365,6 +365,8 @@ class KanbanController extends ControllerBase {
   .filter-input-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:20px;height:20px;display:none;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;background:none;border:none;padding:0;border-radius:50%;font-size:15px;line-height:1;transition:color .15s}
   .filter-input-clear.visible{display:flex}
   .filter-input-clear:hover{color:#ef4444;background:rgba(239,68,68,.08)}
+  .crm-board-card {background:#ffffff;border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.03);margin-bottom:12px;transition:all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);cursor:grab}
+  .crm-board-card:hover {transform:translateY(-4px);box-shadow:0 12px 24px -6px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.05);z-index:10;position:relative;}
 </style>
   
   <!-- Deal Closing Modal -->

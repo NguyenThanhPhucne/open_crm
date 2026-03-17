@@ -384,14 +384,14 @@ class AllDealsController extends ControllerBase {
 
   /* Table */
   .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-  .deals-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+  
   .deals-table thead tr { background:rgba(248,250,252,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
-  .deals-table th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;white-space:nowrap;overflow:hidden}
+  
   .deals-table th.th-action{text-align:right}
-  .deals-table tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
+  
   .deals-table tbody tr:last-child{border-bottom:none}
-  .deals-table tbody tr:hover{background:#f8fafc}
-  .deals-table td{padding:10px 12px;vertical-align:middle;overflow:hidden}
+  
+  
 
   /* Column widths */
   .deals-table .col-deal{width:220px}
@@ -480,7 +480,7 @@ class AllDealsController extends ControllerBase {
   @media(max-width:1100px){.deals-table .col-owner,.deals-table th.th-owner,.deals-table td.td-owner-cell{display:none}}
   @media(max-width:900px){.deals-table .col-close,.deals-table th.th-close,.deals-table td.td-close-cell{display:none}}
   @media(max-width:700px){.deals-table .col-prob,.deals-table th.th-prob,.deals-table td.td-prob-cell{display:none}}
-  .deals-table th,.deals-table td{box-sizing:border-box}
+  .deals-table th,
   /* ── ClickUp-inspired UX additions ── */
   .deals-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0 }
   .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
@@ -501,9 +501,14 @@ class AllDealsController extends ControllerBase {
   .filter-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 4px 3px 10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;font-size:12px;font-weight:500;line-height:1}
   .chip-x{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;text-decoration:none;color:#1d4ed8;font-size:15px;line-height:1;transition:background .12s}.chip-x:hover{background:#bfdbfe}
   .dn-wrap{display:flex;gap:2px;margin-right:4px}.dn-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius: 16px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;padding:0;color:#94a3b8}.dn-btn:hover,.dn-btn.on{border-color:#2563eb;color:#2563eb;background:#eff6ff}.dn-btn svg{pointer-events:none;width:12px;height:12px}
-  .is-compact .deals-table td,.is-compact .deals-table th{padding-top:5px !important;padding-bottom:5px !important}
-  .is-roomy .deals-table td,.is-roomy .deals-table th{padding-top:14px !important;padding-bottom:14px !important}
+  .is-compact .deals-table td,.is-compact 
+  .is-roomy .deals-table td,.is-roomy 
   .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius: 16px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
+  .deals-table {width:100%;border-collapse:separate;border-spacing:0;margin-top:16px}
+  .deals-table th {font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px;border-bottom:1px solid #e2e8f0;background:transparent;text-align:left}
+  .deals-table td {padding:14px 16px;font-size:14px;color:#334155;border-bottom:1px solid #f8fafc;transition:all 0.2s ease;vertical-align:middle}
+  .deals-table tbody tr {transition:all 0.2s ease;}
+  .deals-table tbody tr:hover {background:#fcfcfc;box-shadow:0 2px 8px -2px rgba(0,0,0,0.04);transform:translateY(-1px);position:relative;z-index:2;}
 </style>
 HTML;
 
