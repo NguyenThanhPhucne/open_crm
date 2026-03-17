@@ -17,9 +17,10 @@ class RealtimeChatController extends ControllerBase {
     $config = $this->config('crm_realtime_chat.settings');
     $frontend_url = (string) $config->get('frontend_url');
     $sso_secret = (string) $config->get('sso_secret');
+    $origin = \Drupal::request()->getSchemeAndHttpHost();
 
     if ($frontend_url === '') {
-      $frontend_url = 'http://localhost:5173';
+      $frontend_url = $origin;
     }
 
     if ($sso_secret === '') {

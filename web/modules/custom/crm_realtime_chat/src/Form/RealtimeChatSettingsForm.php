@@ -29,27 +29,28 @@ class RealtimeChatSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config('crm_realtime_chat.settings');
+    $origin = \Drupal::request()->getSchemeAndHttpHost();
 
     $form['frontend_url'] = [
       '#type' => 'url',
       '#title' => $this->t('Chat frontend URL'),
-      '#default_value' => $config->get('frontend_url') ?: 'http://localhost:5173',
+      '#default_value' => $config->get('frontend_url') ?: $origin,
       '#required' => TRUE,
-      '#description' => $this->t('Example: http://localhost:5173'),
+      '#description' => $this->t('Example: @url', ['@url' => $origin]),
     ];
 
     $form['backend_url'] = [
       '#type' => 'url',
       '#title' => $this->t('Chat backend URL'),
-      '#default_value' => $config->get('backend_url') ?: 'http://localhost:5001',
+      '#default_value' => $config->get('backend_url') ?: ($origin . '/api/node'),
       '#required' => TRUE,
-      '#description' => $this->t('Used for operations and diagnostics. Example: http://localhost:5001'),
+      '#description' => $this->t('Used for operations and diagnostics. Example: @url', ['@url' => ($origin . '/api/node')]),
     ];
 
     $form['socket_url'] = [
       '#type' => 'url',
       '#title' => $this->t('Socket URL'),
-      '#default_value' => $config->get('socket_url') ?: 'http://localhost:5001',
+      '#default_value' => $config->get('socket_url') ?: $origin,
       '#required' => TRUE,
       '#description' => $this->t('Socket.IO endpoint that frontend must connect to.'),
     ];
