@@ -1,0 +1,413 @@
+{# 
+  File: templates/chat-admin-user-detail.html.twig
+  Mô tả: Trang chi tiết người dùng - Phiên bản chuyên nghiệp
+  Kiến trúc:
+    - SVG icon từ lucide-react
+    - CSS tách biệt, không inline styles
+    - Dữ liệu thật từ backend
+    - Responsive grid layout
+    - Professional styling
+#}
+
+{# Import SVG icon macros #}
+{% import '@chat_api/_icons.html.twig' as icons %}
+
+{# Nạp CSS/JS thư viện #}
+{{ attach_library('chat_api/listing') }}
+{{ attach_library('chat_api/user-detail') }}
+
+{% set css_import %}
+  <link rel="stylesheet" href="/modules/custom/chat_api/css/listing.css">
+  <link rel="stylesheet" href="/modules/custom/chat_api/css/notifications.css">
+  <link rel="stylesheet" href="/modules/custom/chat_api/css/user-detail.css">
+{% endset %}
+{{ css_import|raw }}
+
+<div class="chat-admin-user-detail">
+  
+  {# ========== 1. HEADER ========== #}
+  <div class="page-header">
+    <div>
+      <a href="/admin/chat/users" class="btn btn-secondary">
+        {{ icons.icon_arrow_left('') }}
+        {{ 'Quay lại'|t }}
+      </a>
+      <h1>
+        {{ icons.icon_user_circle('') }}
+        {{ user_info.name }}
+      </h1>
+    </div>
+    <div class="header-actions">
+      <a href="/admin/chat/users/{{ user_info.uid }}" class="btn btn-primary">
+        {{ icons.icon_edit('') }}
+        {{ 'Sửa User'|t }}
+      </a>
+      
+      {% if user_info.status %}
+        <button 
+          class="btn btn-danger" 
+          data-block-user="{{ user_info.uid }}"
+          type="button">
+          {{ icons.icon_ban('') }}
+          {{ 'Khóa tài khoản'|t }}
+        </button>
+      {% else %}
+        <button 
+          class="btn btn-success" 
+          data-unblock-user="{{ user_info.uid }}"
+          type="button">
+          {{ icons.icon_unlock('') }}
+          {{ 'Mở khóa'|t }}
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ========== 2. PROFILE CARD ========== #}
+  <div class="profile-section">
+    <div class="profile-card">
+      
+      {# Avatar #}
+      <div class="profile-avatar">
+        {% if user_info.avatarUrl %}
+          <img src="{{ user_info.avatarUrl }}" alt="{{ user_info.name }}" />
+        {% else %}
+          <div class="avatar-circle">{{ user_info.name|first|upper }}</div>
+        {% endif %}
+      </div>
+
+      <div class="profile-info">
+        <h2>{{ user_info.name }}</h2>
+        <p class="email">
+          {{ icons.icon_mail('') }}
+          {{ user_info.email }}
+        </p>
+        
+        <div class="profile-badges">
+          {% if user_info.status %}
+            <span class="badge badge-success">
+              {{ icons.icon_check_circle('') }}
+              {{ 'Hoạt động'|t }}
+            </span>
+          {% else %}
+            <span class="badge badge-danger">
+              {{ icons.icon_ban('') }}
+              {{ 'Đã khóa'|t }}
+            </span>
+          {% endif %}
+          
+          {% for role in user_info.roles %}
+            {% if role != 'authenticated' %}
+              <span class="badge badge-info">
+                {{ icons.icon_shield('') }}
+                {{ role|capitalize }}
+              </span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ========== 3. THỐNG KÊ ========== #}
+  <div class="stats-section" data-user-stats data-pending-received="{{ stats.pending_received }}" data-friends-count="{{ stats.friends_count }}">
+    <h3>
+      {{ icons.icon_bar_chart('') }}
+      {{ 'Thống kê tổng quan'|t }}
+    </h3>
+    <div class="stats-grid">
+      
+      {# Bạn bè #}
+      <div class="stat-box" data-friends-count="{{ stats.friends_count }}">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          {{ icons.icon_user_friends('') }}
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.friends_count }}</div>
+          <div class="stat-label">{{ 'Bạn bè'|t }}</div>
+        </div>
+      </div>
+      
+      {# Lời mời đã gửi #}
+      <div class="stat-box">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+          {{ icons.icon_send('') }}
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.pending_sent }}</div>
+          <div class="stat-label">{{ 'Đã gửi'|t }}</div>
+        </div>
+      </div>
+      
+      {# Lời mời đã nhận #}
+      <div class="stat-box">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+          {{ icons.icon_inbox('') }}
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.pending_received }}</div>
+          <div class="stat-label">{{ 'Đã nhận'|t }}</div>
+        </div>
+      </div>
+      
+      {# Số ngày tham gia #}
+      <div class="stat-box">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+          {{ icons.icon_calendar('') }}
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.days_registered }}</div>
+          <div class="stat-label">{{ 'Số ngày'|t }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ========== 4. 2-COLUMN CONTENT GRID ========== #}
+  <div class="content-grid">
+    
+    {# LEFT COLUMN #}
+    <div class="content-left">
+      
+      {# Bạn bè #}
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            {{ icons.icon_user_friends('') }}
+            {{ 'Bạn bè'|t }} ({{ friends|length }})
+          </h3>
+          <span class="section-badge">{{ stats.friends_count }} {{ 'Tổng'|t }}</span>
+        </div>
+        <div class="section-content">
+          {% if friends|length > 0 %}
+            <div class="friends-list">
+              {% for friend in friends %}
+                <div class="friend-item">
+                  <div class="friend-avatar">{{ friend.name|first|upper }}</div>
+                  <div class="friend-info">
+                    <div class="friend-name">
+                      <a href="/admin/chat/users/{{ friend.uid }}">{{ friend.name }}</a>
+                      <span class="friend-status {% if friend.status %}online{% else %}offline{% endif %}" title="{% if friend.status %}Online{% else %}Offline{% endif %}">
+                        {% if friend.status %}
+                          {{ icons.icon_check_circle('') }}
+                        {% else %}
+                          {{ icons.icon_ban('') }}
+                        {% endif %}
+                      </span>
+                    </div>
+                    <div class="friend-meta">
+                      {{ icons.icon_calendar('') }}
+                      {{ 'Từ:'|t }} {{ friend.friend_since|date('d/m/Y') }}
+                    </div>
+                  </div>
+                  <div class="friend-actions">
+                    <a href="/admin/chat/users/{{ friend.uid }}" class="btn-icon" title="{{ 'Xem hồ sơ'|t }}">
+                      {{ icons.icon_eye('') }}
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              {{ icons.icon_user_friends('') }}
+              <p>{{ 'Chưa có bạn bè'|t }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Hoạt động gần đây #}
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            {{ icons.icon_history('') }}
+            {{ 'Hoạt động gần đây'|t }}
+          </h3>
+        </div>
+        <div class="section-content">
+          {% if recent_activity|length > 0 %}
+            <div class="activity-timeline">
+              {% for activity in recent_activity %}
+                <div class="activity-item">
+                  <div class="activity-icon {{ activity.type }}">
+                    {% if activity.type == 'friend-added' %}
+                      {{ icons.icon_user_friends('') }}
+                    {% elseif activity.type == 'message-sent' %}
+                      {{ icons.icon_message_square('') }}
+                    {% elseif activity.type == 'login' %}
+                      {{ icons.icon_login('') }}
+                    {% else %}
+                      {{ icons.icon_info('') }}
+                    {% endif %}
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-description">{{ activity.description }}</div>
+                    <div class="activity-time">
+                      {{ icons.icon_clock('') }}
+                      {{ activity.timestamp|date('d/m/Y H:i') }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              {{ icons.icon_history('') }}
+              <p>{{ 'Không có hoạt động nào'|t }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# RIGHT COLUMN #}
+    <div class="content-right">
+      
+      {# Lời mời đã gửi #}
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            {{ icons.icon_send('') }}
+            {{ 'Lời mời đã gửi'|t }}
+          </h3>
+          <span class="section-badge">{{ stats.pending_sent }}</span>
+        </div>
+        <div class="section-content">
+          {% if pending_sent|length > 0 %}
+            <div class="requests-list">
+              {% for request in pending_sent %}
+                <div class="request-item">
+                  <div class="request-avatar">{{ request.name|first|upper }}</div>
+                  <div class="request-info">
+                    <div class="request-name">
+                      <a href="/admin/chat/users/{{ request.uid }}">{{ request.name }}</a>
+                    </div>
+                    <div class="request-meta">
+                      {{ icons.icon_clock('') }}
+                      {{ request.created|date('d/m/Y') }}
+                    </div>
+                  </div>
+                  <div class="request-badge">
+                    <span class="badge badge-warning">{{ 'Đang chờ'|t }}</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              {{ icons.icon_send('') }}
+              <p>{{ 'Không có lời mời nào'|t }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Lời mời đã nhận #}
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            {{ icons.icon_inbox('') }}
+            {{ 'Lời mời đã nhận'|t }}
+          </h3>
+          <span class="section-badge">{{ stats.pending_received }}</span>
+        </div>
+        <div class="section-content">
+          {% if pending_received|length > 0 %}
+            <div class="requests-list">
+              {% for request in pending_received %}
+                <div class="request-item">
+                  <div class="request-avatar">{{ request.name|first|upper }}</div>
+                  <div class="request-info">
+                    <div class="request-name">
+                      <a href="/admin/chat/users/{{ request.uid }}">{{ request.name }}</a>
+                    </div>
+                    <div class="request-meta">
+                      {{ icons.icon_clock('') }}
+                      {{ request.created|date('d/m/Y') }}
+                    </div>
+                  </div>
+                  <div class="request-badge">
+                    <span class="badge badge-info">{{ 'Đang chờ'|t }}</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              {{ icons.icon_inbox('') }}
+              <p>{{ 'Không có lời mời nào'|t }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Thao tác nhanh #}
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            {{ icons.icon_zap('') }}
+            {{ 'Thao tác nhanh'|t }}
+          </h3>
+        </div>
+        <div class="section-content">
+          <div class="quick-actions">
+            <a href="/admin/chat/users/{{ user_info.uid }}" class="action-btn">
+              {{ icons.icon_edit('') }}
+              <span>{{ 'Sửa Hồ sơ'|t }}</span>
+            </a>
+            {% if user_info.status %}
+              <button 
+                class="action-btn danger" 
+                data-block-user="{{ user_info.uid }}"
+                type="button">
+                {{ icons.icon_ban('') }}
+                <span>{{ 'Khóa User'|t }}</span>
+              </button>
+            {% else %}
+              <button 
+                class="action-btn success" 
+                data-unblock-user="{{ user_info.uid }}"
+                type="button">
+                {{ icons.icon_unlock('') }}
+                <span>{{ 'Mở khóa User'|t }}</span>
+              </button>
+            {% endif %}
+            <a href="/admin/chat/users" class="action-btn">
+              {{ icons.icon_list('') }}
+              <span>{{ 'Danh sách User'|t }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Profile metadata section (hidden for now, can be expanded) #}
+<div class="profile-meta-extended" style="display: none;">
+  <div class="meta-item">
+    {{ icons.icon_calendar('') }}
+    <span>{{ 'Đăng ký:'|t }} {{ user_info.created|date('d/m/Y H:i') }}</span>
+  </div>
+  <div class="meta-item">
+    {{ icons.icon_login('') }}
+    <span>{{ 'Lần cuối truy cập:'|t }} 
+      {% if user_info.access > 0 %}
+        {{ user_info.access|date('d/m/Y H:i') }}
+      {% else %}
+        {{ 'Chưa bao giờ'|t }}
+      {% endif %}
+    </span>
+  </div>
+  <div class="meta-item">
+    {{ icons.icon_login('') }}
+    <span>{{ 'Lần cuối đăng nhập:'|t }} 
+      {% if user_info.login > 0 %}
+        {{ user_info.login|date('d/m/Y H:i') }}
+      {% else %}
+        {{ 'Chưa bao giờ'|t }}
+      {% endif %}
+    </span>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+name: CRM Realtime Chat
+type: module
+description: "Embed and manage the Moji realtime chat stack inside CRM."
+core_version_requirement: ^10 || ^11
+package: Custom
+dependencies:
+  - drupal:user
+  - drupal:crm

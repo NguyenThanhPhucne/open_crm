@@ -11,6 +11,7 @@ Open CRM is a Drupal 11 based CRM with dashboard analytics, pipeline management,
 - Kanban pipeline with drag-and-drop stage update
 - Quick Add modal workflows for fast entity creation
 - CSV import/export capabilities
+- Realtime chat integration page inside CRM at `/crm/realtime-chat`
 
 ### Data Integrity and Sync Hardening
 
@@ -105,6 +106,7 @@ open_crm/
 | crm_register        | Custom user registration                            |
 | crm_teams           | Team-based access controls                          |
 | crm_workflow        | CRM workflow automation rules                       |
+| crm_realtime_chat   | Realtime chat bridge page and integration settings  |
 
 ## Key Routes
 
@@ -122,6 +124,7 @@ open_crm/
 | /crm/all-activities                            | All activities list             |
 | /crm/my-pipeline                               | My deal pipeline                |
 | /crm/all-pipeline                              | Team/global pipeline            |
+| /crm/realtime-chat                             | Embedded realtime chat          |
 | /crm/import                                    | CSV import UI                   |
 | /crm/edit/ajax/delete                          | Delete API                      |
 | /api/v1/{entity_type}/{entity_id}/{field_name} | Inline update API               |
@@ -144,6 +147,16 @@ bash scripts/restore_database.sh backups/<backup-file.sql>
 ### Production helper scripts
 
 `scripts/production/` contains SQL and utility scripts for index tuning, view caching, and operational checks.
+
+### Start integrated chat stack (from `new/Moji-Drupal`)
+
+```bash
+bash scripts/chat/start_chat_stack.sh
+```
+
+Then configure chat endpoint URLs at:
+
+- `/admin/config/crm/realtime-chat`
 
 ### Clear cache
 

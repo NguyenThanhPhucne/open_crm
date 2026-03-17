@@ -1,0 +1,70 @@
+.crm-realtime-chat-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.crm-realtime-chat-frame-wrap {
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background: transparent;
+}
+
+.crm-chat-status {
+  padding: 10px 12px;
+  border: 1px dashed #c9d9f2;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #365b88;
+  font-size: 13px;
+}
+
+.crm-chat-status.is-ok {
+  border-color: #9fd3b3;
+  background: #f2fbf5;
+  color: #11613b;
+}
+
+.crm-chat-status.is-error {
+  border-color: #efb3b3;
+  background: #fff5f5;
+  color: #9f1d1d;
+}
+
+.crm-chat-fallback {
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid #efb3b3;
+  border-radius: 8px;
+  background: #fff5f5;
+}
+
+.crm-chat-fallback p {
+  margin: 0 0 10px;
+  color: #721c24;
+}
+
+.crm-realtime-chat-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 170px);
+  min-height: 760px;
+  border: 0;
+}
+
+@media (max-width: 920px) {
+  .crm-realtime-chat-frame {
+    width: 100%;
+    min-height: 82vh;
+    height: 82vh;
+  }
+}

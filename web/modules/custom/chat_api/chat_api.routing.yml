@@ -1,0 +1,303 @@
+# =============================================================================
+# AUTH ROUTES - Xác thực (Đăng ký, Đăng nhập, Đăng xuất)
+# =============================================================================
+chat_api.signup:
+  path: "/api/auth/signup"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AuthController::signUp'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
+
+chat_api.signin:
+  path: "/api/auth/signin"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AuthController::signIn'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
+
+chat_api.signout:
+  path: "/api/auth/signout"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AuthController::signOut'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
+
+chat_api.refresh:
+  path: "/api/auth/refresh"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AuthController::refreshToken'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
+
+# =============================================================================
+# USER ROUTES - Thông tin người dùng
+# =============================================================================
+chat_api.users.me:
+  path: "/api/users/me"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\UserController::authMe'
+  methods: [GET]
+  requirements:
+    _access: "TRUE"
+
+chat_api.users.search:
+  path: "/api/users/search"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\UserController::searchUserByUsername'
+  methods: [GET]
+  requirements:
+    _access: "TRUE"
+
+# [CẬP NHẬT] Route này dùng để lưu link ảnh từ Cloudinary
+chat_api.users.update_avatar:
+  path: "/api/users/avatar"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\UserController::updateAvatar'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
+
+# =============================================================================
+# FRIEND ROUTES - Quản lý bạn bè
+# =============================================================================
+chat_api.friends.send:
+  path: "/api/friends/requests"
+  defaults:
+    { _controller: '\Drupal\chat_api\Controller\FriendController::sendRequest' }
+  methods: [POST]
+  requirements: { _access: "TRUE" }
+
+chat_api.friends.get_all:
+  path: "/api/friends"
+  defaults:
+    {
+      _controller: '\Drupal\chat_api\Controller\FriendController::getAllFriends',
+    }
+  methods: [GET]
+  requirements: { _access: "TRUE" }
+
+chat_api.friends.get_requests:
+  path: "/api/friends/requests"
+  defaults:
+    { _controller: '\Drupal\chat_api\Controller\FriendController::getRequests' }
+  methods: [GET]
+  requirements: { _access: "TRUE" }
+
+chat_api.friends.accept:
+  path: "/api/friends/requests/{requestId}/accept"
+  defaults:
+    {
+      _controller: '\Drupal\chat_api\Controller\FriendController::acceptRequest',
+    }
+  methods: [POST]
+  requirements: { _access: "TRUE" }
+
+chat_api.friends.decline:
+  path: "/api/friends/requests/{requestId}/decline"
+  defaults:
+    {
+      _controller: '\Drupal\chat_api\Controller\FriendController::declineRequest',
+    }
+  methods: [POST]
+  requirements: { _access: "TRUE" }
+
+chat_api.friends.check:
+  path: "/api/friends/check"
+  defaults:
+    {
+      _controller: '\Drupal\chat_api\Controller\FriendController::checkFriendship',
+    }
+  methods: [GET]
+  requirements: { _access: "TRUE" }
+
+# =============================================================================
+# ADMIN ROUTES - Giao diện quản trị Chat (Chat Administration UI)
+# =============================================================================
+
+# Main admin dashboard
+chat_api.admin_dashboard:
+  path: "/admin/chat"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::dashboard'
+    _title: "Chat Administration"
+  requirements:
+    _permission: "administer chat"
+
+# User management
+chat_api.admin_users:
+  path: "/admin/chat/users"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::usersList'
+    _title: "Manage Users"
+  requirements:
+    _permission: "administer chat"
+
+chat_api.admin_user_detail:
+  path: "/admin/chat/users/{uid}"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::userDetail'
+    _title: "User Details"
+  requirements:
+    _permission: "administer users"
+
+# API endpoint để fetch user detail data dưới dạng JSON (cho auto-refresh)
+chat_api.admin_api_user_detail:
+  path: "/admin/api/user/{uid}"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::getUserDetailJson'
+  methods: [GET]
+  requirements:
+    _permission: "administer users"
+    uid: \d+
+
+chat_api.admin_user_ban:
+  path: "/admin/chat/users/{uid}/ban"
+  defaults:
+    _form: '\Drupal\chat_api\Form\UserBanForm'
+    _title: "Block User"
+    action: "ban"
+  requirements:
+    _permission: "administer chat"
+    uid: \d+
+
+chat_api.admin_user_unban:
+  path: "/admin/chat/users/{uid}/unban"
+  defaults:
+    _form: '\Drupal\chat_api\Form\UserBanForm'
+    _title: "Unblock User"
+    action: "unban"
+  requirements:
+    _permission: "administer chat"
+    uid: \d+
+
+# Conversation management
+chat_api.admin_conversations:
+  path: "/admin/chat/conversations"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::conversationsList'
+    _title: "Manage Conversations"
+  requirements:
+    _permission: "moderate chat"
+
+chat_api.admin_conversation_view:
+  path: "/admin/chat/conversations/{conversation-id}"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::conversationView'
+    _title: "View Conversation"
+  requirements:
+    _permission: "moderate chat"
+
+chat_api.admin_conversation_delete:
+  path: "/admin/chat/conversations/{conversation-id}/delete"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::conversationDelete'
+  requirements:
+    _permission: "administer chat"
+
+# Friends management
+chat_api.admin_friends:
+  path: "/admin/chat/friends"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::friendsList'
+    _title: "Manage Friends"
+  requirements:
+    _permission: "moderate chat"
+
+# Test routes
+chat_api.test_api:
+  path: "/admin/test-api"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\TestController::testConversationsAPI'
+    _title: "Test API"
+  requirements:
+    _access: "TRUE"
+
+# Friend requests management
+chat_api.admin_friend_requests:
+  path: "/admin/chat/friend-requests"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::friendRequestsList'
+    _title: "Friend Requests"
+  requirements:
+    _permission: "moderate chat"
+
+# Reports & Analytics
+chat_api.admin_reports:
+  path: "/admin/chat/reports"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::reports'
+    _title: "Reports & Analytics"
+  requirements:
+    _permission: "view chat reports"
+
+chat_api.admin_reports_users:
+  path: "/admin/chat/reports/users"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::reportsUsers'
+    _title: "User Statistics"
+  requirements:
+    _permission: "view chat reports"
+
+chat_api.admin_reports_messages:
+  path: "/admin/chat/reports/messages"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminController::reportsMessages'
+    _title: "Message Statistics"
+  requirements:
+    _permission: "view chat reports"
+
+# Settings
+chat_api.admin_settings:
+  path: "/admin/chat/settings"
+  defaults:
+    _form: '\Drupal\chat_api\Form\ChatSettingsForm'
+    _title: "Chat Settings"
+  requirements:
+    _permission: "administer chat"
+
+# API endpoint for admin AJAX requests
+chat_api.admin_api_stats:
+  path: "/admin/chat/api/stats"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::getStats'
+  requirements:
+    _permission: "view chat reports"
+  methods: [GET]
+
+chat_api.admin_api_block_user:
+  path: "/admin/chat/api/user/block"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::blockUser'
+  requirements:
+    _permission: "administer users"
+  methods: [POST]
+
+chat_api.admin_api_unblock_user:
+  path: "/admin/chat/api/user/unblock"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::unblockUser'
+  requirements:
+    _permission: "administer users"
+  methods: [POST]
+
+# Proxy endpoint to get conversations from Node.js
+chat_api.admin_api_conversations:
+  path: "/admin/chat/api/conversations"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::getConversationsProxy'
+  requirements:
+    _permission: "moderate chat"
+  methods: [GET]
+
+# Proxy endpoint to delete conversation via Node.js
+chat_api.admin_api_conversation_delete:
+  path: "/admin/chat/api/conversations/{conversation_id}/delete"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::deleteConversationProxy'
+  requirements:
+    _permission: "administer chat"
+  methods: [DELETE]

@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * CRM Realtime Chat module hooks.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function crm_realtime_chat_theme($existing, $type, $theme, $path): array {
+  return [
+    'crm_realtime_chat_page' => [
+      'variables' => [
+        'chat_frontend_url' => NULL,
+        'chat_user' => [],
+        'chat_settings_url' => NULL,
+      ],
+      'template' => 'crm-realtime-chat',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function crm_realtime_chat_page_attachments(array &$attachments): void {
+  $account = \Drupal::currentUser();
+  if (!$account->isAuthenticated()) {
+    return;
+  }
+
+  $current_path = \Drupal::service('path.current')->getPath();
+  if (strpos($current_path, '/crm') !== 0) {
+    return;
+  }
+
+  $attachments['#attached']['library'][] = 'crm_realtime_chat/chat_launcher';
+  $attachments['#attached']['drupalSettings']['crmRealtimeChatLauncher'] = [
+    'chatUrl' => '/crm/realtime-chat',
+    'currentPath' => $current_path,
+    'currentUser' => [
+      'uid' => (int) $account->id(),
+      'displayName' => (string) $account->getDisplayName(),
+    ],
+  ];
+}

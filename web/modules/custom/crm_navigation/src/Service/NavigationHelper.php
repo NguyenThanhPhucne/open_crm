@@ -74,6 +74,11 @@ class NavigationHelper {
         'route' => 'crm.all_organizations',
         'icon' => 'building-2',
       ],
+      'chat' => [
+        'title' => $this->t('Realtime Chat'),
+        'route' => 'crm_realtime_chat.page',
+        'icon' => 'messages-square',
+      ],
     ];
 
     $items = [];

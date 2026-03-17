@@ -1,0 +1,17 @@
+<div class="crm-realtime-chat-shell" data-crm-realtime-chat>
+  <div class="crm-realtime-chat-frame-wrap">
+    <iframe
+      title="CRM Realtime Chat"
+      src="{{ chat_frontend_url }}"
+      class="crm-realtime-chat-frame"
+      data-crm-chat-frame
+      allow="clipboard-read; clipboard-write"
+      loading="lazy"
+    ></iframe>
+  </div>
+
+  <div class="crm-chat-fallback" data-crm-chat-fallback hidden>
+    <p>Cannot load embedded chat right now. You can continue in a new tab.</p>
+    <a class="button button--primary" href="{{ chat_frontend_url }}" target="_blank" rel="noopener">Open Full Chat</a>
+  </div>
+</div>

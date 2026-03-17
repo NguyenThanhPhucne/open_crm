@@ -2029,6 +2029,10 @@ class DashboardController extends ControllerBase {
         </div>
       </div>
       <div class="hero-actions">
+        <a href="/crm/realtime-chat" class="hero-action-btn hero-btn-outline">
+          <i data-lucide="messages-square" width="15" height="15"></i>
+          <span>Open Chat</span>
+        </a>
         <a href="/crm/add/contact" class="hero-action-btn hero-btn-primary">
           <i data-lucide="user-plus" width="15" height="15"></i>
           <span>New Contact</span>

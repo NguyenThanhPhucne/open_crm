@@ -1,0 +1,15 @@
+crm_realtime_chat.page:
+  path: "/crm/realtime-chat"
+  defaults:
+    _controller: '\Drupal\crm_realtime_chat\Controller\RealtimeChatController::page'
+    _title: "Realtime Chat"
+  requirements:
+    _user_is_logged_in: "TRUE"
+
+crm_realtime_chat.settings:
+  path: "/admin/config/crm/realtime-chat"
+  defaults:
+    _form: '\Drupal\crm_realtime_chat\Form\RealtimeChatSettingsForm'
+    _title: "CRM Realtime Chat Settings"
+  requirements:
+    _permission: "administer site configuration"
