@@ -197,7 +197,7 @@ class KanbanController extends ControllerBase {
       '#cache' => [
         'contexts' => ['user'],
         'tags'     => ['node_list:deal'],
-        'max-age'  => 60,
+        'max-age'  => 0,
       ],
     ];
   }
@@ -369,7 +369,7 @@ class KanbanController extends ControllerBase {
   .crm-board-card:hover {transform:translateY(-4px);box-shadow:0 12px 24px -6px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.05);z-index:10;position:relative;}
 </style>
   
-  <!-- Deal Closing Modal -->
+  <!-- Deal Closing Modal (Closed Won) -->
   <div class="deal-modal-overlay" id="dealClosingModal">
     <div class="deal-modal">
       <div class="modal-header">
@@ -426,6 +426,61 @@ class KanbanController extends ControllerBase {
         <button type="button" class="modal-btn modal-btn-confirm" onclick="submitDealClosing()">
           <i data-lucide="check"></i>
           Confirm Close Deal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deal Lost Modal (Closed Lost) -->
+  <div class="deal-modal-overlay" id="dealLostModal">
+    <div class="deal-modal">
+      <div class="modal-header">
+        <div class="modal-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+          <i data-lucide="x-circle" width="24" height="24"></i>
+        </div>
+        <h2>Mark Deal as Lost</h2>
+      </div>
+      <div class="modal-body">
+        <div class="info-box" style="background:#fef2f2;border-left-color:#ef4444;color:#991b1b">
+          <i data-lucide="alert-circle" width="18" height="18"></i>
+          <div>Please select a reason and optionally add notes before marking this deal as lost.</div>
+        </div>
+        <form id="dealLostForm">
+          <input type="hidden" name="deal_id" id="lostModalDealId">
+          <div class="form-group">
+            <label class="form-label">
+              <i data-lucide="help-circle" width="16" height="16" style="vertical-align:middle"></i>
+              Lost Reason <span class="required">*</span>
+            </label>
+            <select name="lost_reason" id="lostReasonSelect" class="form-input" required>
+              <option value="">Select a reason…</option>
+              <option value="price">Price too high</option>
+              <option value="competitor">Chose a competitor</option>
+              <option value="budget">No budget</option>
+              <option value="timing">Bad timing</option>
+              <option value="no_response">No response from prospect</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i data-lucide="file-text" width="16" height="16" style="vertical-align:middle"></i>
+              Notes <span style="color:#94a3b8;font-size:13px">(optional)</span>
+            </label>
+            <textarea name="lost_notes" class="form-input" rows="3" placeholder="Any additional context…" style="resize:vertical"></textarea>
+          </div>
+          <div class="error-message" id="lostErrorMessage">
+            <i data-lucide="alert-circle" width="16" height="16"></i>
+            <span id="lostErrorText"></span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" onclick="closeLostModal()">
+          <i data-lucide="x"></i> Cancel
+        </button>
+        <button type="button" class="modal-btn" onclick="submitDealLost()" style="background:#fff;color:#ef4444;border-color:#ef4444">
+          <i data-lucide="x-circle"></i> Confirm Lost
         </button>
       </div>
     </div>
@@ -774,10 +829,14 @@ HTML;
     // Variables for reverting card movement
     let pendingMove = null;
 
-    // CSRF token helper for authenticated AJAX calls.
+    // CSRF token — fetched once per page load and cached to avoid a
+    // network round-trip on every drag-and-drop operation.
+    let _boardCsrfToken = null;
     async function getCsrfToken() {
-      const r = await fetch('/session/token');
-      return await r.text();
+      if (_boardCsrfToken) return _boardCsrfToken;
+      const r = await fetch('/session/token', { credentials: 'same-origin' });
+      _boardCsrfToken = (await r.text()).trim();
+      return _boardCsrfToken;
     }
     
     // Deal Closing Modal Functions
@@ -872,11 +931,90 @@ HTML;
           submitBtn.disabled = false;
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error submitting deal closing:', error);
         errorText.textContent = 'An error occurred. Please try again.';
         errorMsg.classList.add('show');
         lucide.createIcons();
         submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    }
+
+    // ── Closed Lost modal helpers ──────────────────────────────────────────
+    function showLostModal(dealId) {
+      document.getElementById('lostModalDealId').value = dealId;
+      document.getElementById('lostReasonSelect').value = '';
+      document.querySelector('#dealLostForm textarea').value = '';
+      document.getElementById('lostErrorMessage').classList.remove('show');
+      document.getElementById('dealLostModal').classList.add('active');
+      lucide.createIcons();
+    }
+
+    function closeLostModal() {
+      document.getElementById('dealLostModal').classList.remove('active');
+      if (pendingMove) {
+        pendingMove.from.appendChild(pendingMove.item);
+        syncBoardState([pendingMove.from, pendingMove.to]);
+        applyKanbanFilter();
+        pendingMove = null;
+      }
+    }
+
+    async function submitDealLost() {
+      const dealId = document.getElementById('lostModalDealId').value;
+      const reason = document.getElementById('lostReasonSelect').value;
+      const notes = document.querySelector('#dealLostForm textarea').value.trim();
+      const errorMsg = document.getElementById('lostErrorMessage');
+      const errorText = document.getElementById('lostErrorText');
+      const submitBtn = event.target;
+
+      if (!reason) {
+        errorText.textContent = 'Please select a lost reason.';
+        errorMsg.classList.add('show');
+        lucide.createIcons();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      errorMsg.classList.remove('show');
+
+      try {
+        const csrfToken = await getCsrfToken();
+        const response = await fetch('/crm/my-pipeline/update-stage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+          },
+          body: JSON.stringify({
+            deal_id: dealId,
+            stage_id: pendingMove ? pendingMove.to.dataset.stage : '',
+            lost_reason: reason,
+            lost_notes: notes,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const movedColumns = pendingMove ? [pendingMove.from, pendingMove.to] : [];
+          pendingMove = null;
+          document.getElementById('dealLostModal').classList.remove('active');
+          submitBtn.disabled = false;
+          syncBoardState(movedColumns);
+          applyKanbanFilter();
+          showToast('Deal marked as lost.');
+        } else {
+          errorText.textContent = result.message || 'An error occurred. Please try again.';
+          errorMsg.classList.add('show');
+          lucide.createIcons();
+          submitBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Error submitting deal lost:', error);
+        errorText.textContent = 'An error occurred. Please try again.';
+        errorMsg.classList.add('show');
+        lucide.createIcons();
         submitBtn.disabled = false;
       }
     }
@@ -902,23 +1040,30 @@ HTML;
       }
     });
     
-    // Close modal on ESC key
+    // Close modals on ESC key
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
-        const modal = document.getElementById('dealClosingModal');
-        if (modal.classList.contains('active')) {
+        if (document.getElementById('dealClosingModal').classList.contains('active')) {
           closeDealModal();
+        }
+        if (document.getElementById('dealLostModal').classList.contains('active')) {
+          closeLostModal();
         }
       }
     });
-    
+    // Close Lost modal on overlay click
+    document.getElementById('dealLostModal').addEventListener('click', function(e) {
+      if (e.target === this) closeLostModal();
+    });
+
     // Debug: Check for stuck modals on page load
     window.addEventListener('load', function() {
-      const modal = document.getElementById('dealClosingModal');
-      if (modal && modal.classList.contains('active')) {
-        console.warn('Modal was stuck open, closing...');
-        modal.classList.remove('active');
-      }
+      ['dealClosingModal', 'dealLostModal'].forEach(function(id) {
+        const modal = document.getElementById(id);
+        if (modal && modal.classList.contains('active')) {
+          modal.classList.remove('active');
+        }
+      });
     });
     
     // Initialize Sortable for each column
@@ -943,9 +1088,20 @@ HTML;
             syncBoardState([evt.from, evt.to]);
             applyKanbanFilter();
             
-            // If moving to Won (stage 5), show modal
-            if (newStage === '5') {
+            // Detect special stages by name (not hardcoded ID).
+            const toStageName = (evt.to.dataset.stageName || '').toLowerCase();
+            const isWonStage  = toStageName.includes('won');
+            const isLostStage = toStageName.includes('lost');
+
+            // Closed Won: show the closing modal.
+            if (isWonStage) {
               showDealModal(dealId);
+              return;
+            }
+
+            // Closed Lost: show the lost-reason modal.
+            if (isLostStage) {
+              showLostModal(dealId);
               return;
             }
             

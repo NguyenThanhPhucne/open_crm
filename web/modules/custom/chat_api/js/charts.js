@@ -293,20 +293,76 @@
   };
 
   /**
-   * Refresh all charts from server
+   * Animate a number changing
    */
-  Drupal.chatAdmin.refreshCharts = function () {
+  function animateValue(obj, start, end, duration) {
+    if (start === end) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const val = Math.floor(progress * (end - start) + start);
+      
+      // Keep comma formatting for thousands
+      obj.innerHTML = val.toLocaleString('en-US');
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        obj.innerHTML = end.toLocaleString('en-US');
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
+
+  /**
+   * Refresh all charts and stats from server
+   */
+  Drupal.chatAdmin.refreshDashboard = function () {
     $.ajax({
       url: "/admin/chat/api/stats",
       method: "GET",
       success: function (response) {
-        if (response.success && response.chart_data) {
-          Drupal.chatAdmin.updateCharts(response.chart_data);
+        if (response.success) {
+          // Update charts if data exists
+          if (response.chart_data) {
+            Drupal.chatAdmin.updateCharts(response.chart_data);
+          }
+          
+          // Update stat boxes with animation if they changed
+          if (response.data) {
+            const updates = [
+              { id: 'stat-total-users', val: response.data.users?.total },
+              { id: 'stat-active-today', val: response.data.users?.active_today },
+              { id: 'stat-total-friends', val: response.data.friends?.total },
+              { id: 'stat-pending-requests', val: response.data.friends?.pending_requests }
+            ];
+
+            updates.forEach(u => {
+              const el = document.getElementById(u.id);
+              if (el && u.val !== undefined) {
+                const currentVal = parseInt(el.textContent.replace(/,/g, '')) || 0;
+                if (currentVal !== u.val) {
+                  animateValue(el, currentVal, u.val, 1000);
+                  // Flash the box subtly
+                  el.parentElement.style.transition = 'transform 0.2s';
+                  el.parentElement.style.transform = 'scale(1.02)';
+                  setTimeout(() => { el.parentElement.style.transform = 'scale(1)'; }, 200);
+                }
+              }
+            });
+          }
         }
       },
       error: function (error) {
-        console.error("Error refreshing charts:", error);
+        console.error("Error refreshing dashboard:", error);
       },
     });
   };
+
+  // Set up periodic dashboard refresh (every 30 seconds)
+  $(document).ready(function() {
+    setInterval(Drupal.chatAdmin.refreshDashboard, 30000);
+  });
+
 })(jQuery, Drupal, drupalSettings);

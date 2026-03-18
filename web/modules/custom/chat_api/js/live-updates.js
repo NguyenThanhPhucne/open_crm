@@ -12,6 +12,15 @@
   // DEBUG MODE - set to true to enable console logs and notifications
   const DEBUG_MODE = false;
 
+  // Cached CSRF token — fetched once and reused for all mutating requests.
+  let _cachedCsrf = null;
+  async function getAdminCsrfToken() {
+    if (_cachedCsrf) return _cachedCsrf;
+    const r = await fetch('/session/token', { credentials: 'same-origin' });
+    _cachedCsrf = (await r.text()).trim();
+    return _cachedCsrf;
+  }
+
   Drupal.behaviors.chatAdminLiveUpdates = {
     attach: function (context, settings) {
       if (!settings.chatAdminLive) {
@@ -42,6 +51,7 @@
       }
 
       let updateTimeout;
+      let eventSource = null;
       let isUpdating = false;
 
       /**
@@ -97,16 +107,61 @@
           })
           .finally(() => {
             isUpdating = false;
-            scheduleNextUpdate();
+            scheduleFallbackUpdate();
           });
       }
 
       /**
-       * Schedule next update
+       * Schedule fallback update (slower polling in case SSE breaks)
        */
-      function scheduleNextUpdate() {
+      function scheduleFallbackUpdate() {
         clearTimeout(updateTimeout);
-        updateTimeout = setTimeout(fetchConversations, config.refreshInterval);
+        // Fallback polling is slower (30s) to save resources,
+        // relying primarily on SSE pushes for instant updates.
+        updateTimeout = setTimeout(fetchConversations, 30000);
+      }
+
+      /**
+       * Initialize Server-Sent Events (SSE) Stream
+       */
+      function initSSE() {
+        if (!window.EventSource) return;
+        
+        // Add live indicator to page title
+        const titleArea = document.querySelector('h1.page-title') || document.querySelector('.block-page-title-block');
+        if (titleArea && !document.querySelector('.live-indicator')) {
+           titleArea.insertAdjacentHTML('beforeend', ' <span class="live-indicator" style="font-size:14px;font-weight:bold;color:#ef4444;vertical-align:middle;margin-left:12px;animation:pulseLive 2s infinite">● Connecting</span>');
+           
+           const style = document.createElement("style");
+           style.textContent = `@keyframes pulseLive { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`;
+           document.head.appendChild(style);
+        }
+
+        eventSource = new EventSource('/admin/chat/api/stream');
+        
+        eventSource.onopen = function() {
+          if (DEBUG_MODE) console.log("[SSE] Connected to stream");
+          const ind = document.querySelector('.live-indicator');
+          if (ind) { 
+            ind.style.color = '#10b981'; // Green
+            ind.textContent = '● Live'; 
+          }
+        };
+
+        eventSource.addEventListener('message', function(e) {
+          if (DEBUG_MODE) console.log("[SSE] Push event received:", e.data);
+          // Fetch immediately when push event arrives
+          fetchConversations();
+        });
+
+        eventSource.onerror = function() {
+          if (DEBUG_MODE) console.error("[SSE] Connection error");
+          const ind = document.querySelector('.live-indicator');
+          if (ind) { 
+            ind.style.color = '#ef4444'; // Red
+            ind.textContent = '● Reconnecting'; 
+          }
+        };
       }
 
       /**
@@ -201,12 +256,14 @@
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         button.disabled = true;
 
-        fetch(drupalDeleteUrl, {
+        getAdminCsrfToken().then(function(csrfToken) { return fetch(drupalDeleteUrl, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
           },
-        })
+          credentials: "same-origin",
+        }); })
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
@@ -266,7 +323,7 @@
           .map((p) => p.displayName)
           .join(", ");
 
-        console.log(
+        if (DEBUG_MODE) console.log(
           `[createConversationRow] Conversation ${conversation._id}:`,
           {
             participantCount: conversation.participantCount,
@@ -579,10 +636,14 @@
 
       // Start live updates
       fetchConversations();
+      initSSE();
 
       // Cleanup on detach
       return function () {
         clearTimeout(updateTimeout);
+        if (eventSource) {
+          eventSource.close();
+        }
       };
     },
   };

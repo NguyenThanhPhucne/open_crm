@@ -301,3 +301,28 @@ chat_api.admin_api_conversation_delete:
   requirements:
     _permission: "administer chat"
   methods: [DELETE]
+
+# =============================================================================
+# SSE STREAM - Server-Sent Events for real-time admin dashboard updates
+# =============================================================================
+
+chat_api.admin_api_stream:
+  path: "/admin/chat/api/stream"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::streamConversations'
+    _title: "Chat Live Stream"
+  requirements:
+    _permission: "moderate chat"
+  methods: [GET]
+
+# =============================================================================
+# WEBHOOK - Receiver for push events from Node.js backend
+# =============================================================================
+
+chat_api.webhook_node_event:
+  path: "/api/chat/webhook/event"
+  defaults:
+    _controller: '\Drupal\chat_api\Controller\AdminApiController::receiveWebhook'
+  requirements:
+    _access: "TRUE"
+  methods: [POST]

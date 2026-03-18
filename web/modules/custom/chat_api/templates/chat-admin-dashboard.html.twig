@@ -11,7 +11,9 @@
   {# Page Header #}
   <div class="page-header">
     <div>
-      <h1><i class="fas fa-tachometer-alt"></i> {{ 'Chat Administration'|t }}</h1>
+      <h1><i class="fas fa-tachometer-alt"></i> {{ 'Chat Administration'|t }}
+      <span class="live-indicator" id="dashboard-live-indicator" style="font-size:14px;color:#ef4444;vertical-align:middle;margin-left:12px;animation:pulseLive 2s infinite">● Connecting</span>
+      </h1>
       <p class="subtitle">{{ 'System Overview and Analytics Dashboard'|t }}</p>
     </div>
   </div>
@@ -27,7 +29,7 @@
             <i class="fas fa-users stat-icon"></i>
             <span class="stat-label">{{ 'Total Users'|t }}</span>
           </div>
-          <div class="stat-value">{{ stats.total_users|number_format }}</div>
+          <div class="stat-value" id="stat-total-users">{{ stats.total_users|number_format }}</div>
           <div class="stat-meta">
             <span class="badge badge-success">
               <i class="fas fa-arrow-up"></i> {{ stats.new_users_today }}
@@ -48,7 +50,7 @@
             <i class="fas fa-user-check stat-icon"></i>
             <span class="stat-label">{{ 'Active Today'|t }}</span>
           </div>
-          <div class="stat-value">{{ stats.active_users_today|number_format }}</div>
+          <div class="stat-value" id="stat-active-today">{{ stats.active_users_today|number_format }}</div>
           <div class="stat-meta">
             {% set active_percentage = stats.total_users > 0 ? (stats.active_users_today / stats.total_users * 100)|round : 0 %}
             <span class="badge badge-primary">
@@ -70,7 +72,7 @@
             <i class="fas fa-user-friends stat-icon"></i>
             <span class="stat-label">{{ 'Friendships'|t }}</span>
           </div>
-          <div class="stat-value">{{ stats.total_friends|number_format }}</div>
+          <div class="stat-value" id="stat-total-friends">{{ stats.total_friends|number_format }}</div>
           <div class="stat-meta">
             {% set avg_friends = stats.total_users > 0 ? (stats.total_friends / stats.total_users)|round(1) : 0 %}
             <span class="badge badge-info">
@@ -88,7 +90,7 @@
             <i class="fas fa-clock stat-icon"></i>
             <span class="stat-label">{{ 'Pending Requests'|t }}</span>
           </div>
-          <div class="stat-value">{{ stats.pending_requests|number_format }}</div>
+          <div class="stat-value" id="stat-pending-requests">{{ stats.pending_requests|number_format }}</div>
           <div class="stat-meta">
             <span class="badge badge-warning">
               <i class="fas fa-hourglass-half"></i> {{ 'Awaiting approval'|t }}

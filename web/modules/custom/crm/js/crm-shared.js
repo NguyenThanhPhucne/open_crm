@@ -659,6 +659,18 @@
       setBusy(true);
       try {
         var csrfToken = await getCsrfToken();
+
+        // Snapshot each row's HTML and its next sibling BEFORE any mutation
+        // so we can roll back rows that fail to delete on the server.
+        var rowSnapshots = deletableSelected.map(function (c) {
+          var row = c.closest("tr");
+          return {
+            html: row ? row.outerHTML : null,
+            parent: row ? row.parentNode : null,
+            nextSibling: row ? row.nextSibling : null,
+          };
+        });
+
         var tasks = deletableSelected.map(function (c) {
           var row = c.closest("tr");
           var link = getNameLink(row);
@@ -705,6 +717,26 @@
             }
           } else {
             failedCount += 1;
+            // ROLLBACK: restore the row to its original position in the table.
+            var snap = rowSnapshots[idx];
+            if (snap && snap.html && snap.parent) {
+              var tmp = document.createElement("tbody");
+              tmp.innerHTML = snap.html;
+              var restoredRow = tmp.firstChild;
+              if (restoredRow) {
+                if (snap.nextSibling) {
+                  snap.parent.insertBefore(restoredRow, snap.nextSibling);
+                } else {
+                  snap.parent.appendChild(restoredRow);
+                }
+                // Flash row red briefly to signal the failure
+                restoredRow.style.transition = "background 0.3s";
+                restoredRow.style.background = "#fee2e2";
+                setTimeout(function () {
+                  restoredRow.style.background = "";
+                }, 1200);
+              }
+            }
           }
         });
 

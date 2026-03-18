@@ -89,7 +89,7 @@
         "field_phone",
         "field_organization",
         "field_status",
-        "field_deal_stage",
+        "field_stage",
         "field_amount",
         "field_team",
       ],
@@ -154,24 +154,28 @@
     var $input;
 
     if (fieldType === "select" || fieldType === "list") {
-      $input = jQuery("<select/>").val(value);
+      $input = jQuery("<select/>");
+      // Show loading indicator while options are fetching
+      $input.append(jQuery("<option/>").val("").text("Loading…").prop("disabled", true).prop("selected", true));
+      $input.prop("disabled", true).css("opacity", "0.6");
 
       // Load available options asynchronously
       getFieldOptions(fieldName).then(function(options) {
-        var currentValue = value; // Keep track of value to set after options load
+        var currentValue = value;
+        $input.empty(); // remove loading option
         jQuery.each(options, function (key, label) {
           $input.append(jQuery("<option/>").val(key).text(label));
         });
+        $input.prop("disabled", false).css("opacity", "1");
         // Select the correct option now that they are rendered
         if(currentValue) {
-            // Find option text that matches the current value text, and get its value
             var match = $input.find("option").filter(function() {
                 return jQuery(this).text() === currentValue;
             });
             if(match.length) {
                 $input.val(match.val());
             } else {
-                $input.val(currentValue); // fallback
+                $input.val(currentValue);
             }
         }
       });

@@ -1,17 +1,73 @@
 <div class="crm-realtime-chat-shell" data-crm-realtime-chat>
-  <div class="crm-realtime-chat-frame-wrap">
-    <iframe
-      title="CRM Realtime Chat"
-      src="{{ chat_frontend_url }}"
-      class="crm-realtime-chat-frame"
-      data-crm-chat-frame
-      allow="clipboard-read; clipboard-write"
-      loading="lazy"
-    ></iframe>
-  </div>
+  <style>
+    .crm-chat-wrapper{display:flex;flex-direction:column;height:calc(100vh - 120px);min-height:420px;background:#f8fafc;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .crm-chat-topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0}
+    .crm-chat-topbar-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .crm-chat-topbar-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .crm-chat-topbar-title{font-size:14px;font-weight:700;color:#0f172a;flex:1}
+    .crm-chat-topbar-status{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b;font-weight:500}
+    .crm-chat-status-dot{width:7px;height:7px;border-radius:50%;background:#d1d5db;flex-shrink:0;transition:background .3s}
+    .crm-chat-topbar-status.is-ok .crm-chat-status-dot{background:#10b981}
+    .crm-chat-topbar-status.is-error .crm-chat-status-dot{background:#ef4444}
+    .crm-chat-newtab{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600;color:#6366f1;border:1.5px solid #c7d2fe;background:#fff;text-decoration:none;transition:all .15s;flex-shrink:0}
+    .crm-chat-newtab:hover{background:#ede9fe;border-color:#a5b4fc}
+    .crm-chat-newtab svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+    .crm-chat-skeleton{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+    .crm-chat-skeleton-row{display:flex;align-items:center;gap:10px}
+    .crm-chat-skeleton-av{width:36px;height:36px;border-radius:50%;background:#e2e8f0;flex-shrink:0;animation:crmPulse 1.5s ease-in-out infinite}
+    .crm-chat-skeleton-bubble{height:36px;border-radius:12px;background:#e2e8f0;flex:1;animation:crmPulse 1.5s ease-in-out infinite}
+    .crm-chat-skeleton-bubble.short{max-width:220px}
+    .crm-chat-skeleton-row.right{flex-direction:row-reverse}
+    .crm-chat-skeleton-row.right .crm-chat-skeleton-bubble{background:#c7d2fe}
+    @keyframes crmPulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .crm-realtime-chat-frame-wrap{flex:1;position:relative;overflow:hidden}
+    .crm-realtime-chat-frame{position:absolute;inset:0;width:100%;height:100%;border:none;opacity:0;transition:opacity .4s ease}
+    .crm-realtime-chat-frame.is-loaded{opacity:1}
+    .crm-chat-fallback{padding:40px 24px;text-align:center;color:#64748b}
+    .crm-chat-fallback p{margin-bottom:12px;font-size:14px}
+    .crm-chat-retry-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;color:#6366f1;border:1.5px solid #c7d2fe;background:#fff;cursor:pointer;transition:all .15s;text-decoration:none}
+    .crm-chat-retry-btn:hover{background:#ede9fe}
+  </style>
 
-  <div class="crm-chat-fallback" data-crm-chat-fallback hidden>
-    <p>Cannot load embedded chat right now. You can continue in a new tab.</p>
-    <a class="button button--primary" href="{{ chat_frontend_url }}" target="_blank" rel="noopener">Open Full Chat</a>
+  <div class="crm-chat-wrapper">
+    <div class="crm-chat-topbar">
+      <div class="crm-chat-topbar-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <span class="crm-chat-topbar-title">Realtime Chat</span>
+      <span class="crm-chat-topbar-status" data-crm-chat-status>
+        <span class="crm-chat-status-dot"></span>
+        <span class="crm-chat-status-text">Connecting…</span>
+      </span>
+      <a href="{{ chat_frontend_url }}" target="_blank" rel="noopener" class="crm-chat-newtab">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in tab
+      </a>
+    </div>
+
+    {# Loading skeleton — hidden once iframe loads #}
+    <div class="crm-chat-skeleton" id="crm-chat-skeleton" aria-hidden="true">
+      <div class="crm-chat-skeleton-row"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble short"></div></div>
+      <div class="crm-chat-skeleton-row right"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble"></div></div>
+      <div class="crm-chat-skeleton-row"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble"></div></div>
+      <div class="crm-chat-skeleton-row right"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble short"></div></div>
+      <div class="crm-chat-skeleton-row"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble short"></div></div>
+    </div>
+
+    <div class="crm-realtime-chat-frame-wrap" style="display:none" id="crm-chat-frame-wrap">
+      <iframe
+        title="CRM Realtime Chat"
+        data-src="{{ chat_frontend_url }}"
+        class="crm-realtime-chat-frame"
+        data-crm-chat-frame
+        allow="clipboard-read; clipboard-write; microphone"
+      ></iframe>
+    </div>
+
+    <div class="crm-chat-fallback" data-crm-chat-fallback hidden>
+      <p>Chat is taking longer than expected. You can open it in a new tab or retry.</p>
+      <a href="{{ chat_frontend_url }}" target="_blank" rel="noopener" class="crm-chat-retry-btn">Open Full Chat</a>
+    </div>
   </div>
 </div>
+

@@ -133,6 +133,23 @@
       }
     });
 
+    // Warn user about unsaved changes when navigating away.
+    window.addEventListener("beforeunload", function (e) {
+      if (formState.isDirty && !formState.isSaving) {
+        var msg = "You have unsaved changes. Leave anyway?";
+        e.preventDefault();
+        e.returnValue = msg;
+        return msg;
+      }
+    });
+
+    // Clear the dirty flag after a successful form submit so the
+    // beforeunload guard doesn't trigger on the redirect.
+    $form[0].addEventListener("submit", function () {
+      // Allow the optimistic-UI handler to decide; it calls
+      // handleOptimisticSubmit which sets isSaving=true before leaving.
+    }, { capture: true });
+
     console.log("[CRM Optimistic UI] Initialized form: " + formId);
   }
 
