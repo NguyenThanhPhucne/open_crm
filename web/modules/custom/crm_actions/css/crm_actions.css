@@ -2,8 +2,11 @@
   background: white;
   border-bottom: 1px solid #e2e8f0;
   position: sticky;
-  top: 0;
-  z-index: 1000;
+  /* Drupal toolbar bar is ~39px tall; sticky below it so toolbar dropdowns can render above */
+  top: var(--drupal-displace-top, 0px);
+  /* z-index must be BELOW Drupal toolbar dropdowns (which use 401-601).
+     Setting to 400 means toolbar trays/dropdowns always render on top. */
+  z-index: 400;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
