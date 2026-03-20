@@ -196,10 +196,17 @@
           window.CRM &&
             CRM.toast("Contact deleted — removed from your CRM.", "success");
 
-          refreshContactsWrapper().then(function (refreshed) {
-            if (!refreshed) {
-              window.location.reload();
-            }
+          // Optimistically remove the row immediately for real-time feel
+          contactRow.fadeOut(300, function() {
+            jQuery(this).remove();
+            
+            // Background refresh to keep pagination and counts accurate
+            refreshContactsWrapper().then(function (refreshed) {
+              if (!refreshed && jQuery('.crm-contact__delete-btn').length === 0) {
+                // Only reload if wrapper refresh failed AND list is now empty
+                window.location.reload();
+              }
+            });
           });
         } else {
           window.CRM &&

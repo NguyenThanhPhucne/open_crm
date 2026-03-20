@@ -22,7 +22,7 @@ class UserController extends ControllerBase {
 
     // 2. Kiểm tra nếu chưa đăng nhập thì trả về lỗi 401
     if ($currentUser->isAnonymous()) {
-      return new JsonResponse(['message' => 'Bạn chưa đăng nhập'], 401);
+      return new JsonResponse(['message' => 'You are not logged in'], 401);
     }
 
     // 3. Load toàn bộ entity User từ Database (để lấy các field tùy chỉnh)
@@ -63,7 +63,7 @@ class UserController extends ControllerBase {
     // 1. Kiểm tra quyền đăng nhập
     $currentUser = \Drupal::currentUser();
     if ($currentUser->isAnonymous()) {
-      return new JsonResponse(['message' => 'Bạn chưa đăng nhập'], 401);
+      return new JsonResponse(['message' => 'You are not logged in'], 401);
     }
 
     // 2. Lấy dữ liệu JSON gửi lên từ React
@@ -73,7 +73,7 @@ class UserController extends ControllerBase {
 
     // 3. Validate dữ liệu
     if (empty($url)) {
-      return new JsonResponse(['message' => 'Không tìm thấy link ảnh (avatarUrl)'], 400);
+      return new JsonResponse(['message' => 'Avatar URL not found (avatarUrl)'], 400);
     }
 
     try {
@@ -92,11 +92,11 @@ class UserController extends ControllerBase {
         ]);
       } else {
         // Trường hợp chưa chạy update database nên thiếu cột
-        return new JsonResponse(['message' => 'Lỗi DB: Chưa có cột field_avatar_url. Hãy chạy update module.'], 500);
+        return new JsonResponse(['message' => 'Database error: missing field_avatar_url column. Please run the module update.'], 500);
       }
 
     } catch (\Exception $e) {
-      return new JsonResponse(['message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
+      return new JsonResponse(['message' => 'System error: ' . $e->getMessage()], 500);
     }
   }
 
@@ -114,7 +114,7 @@ class UserController extends ControllerBase {
     // 2. Lấy từ khóa tìm kiếm từ URL
     $username = $request->query->get('username');
     if (empty($username)) {
-      return new JsonResponse(['message' => 'Vui lòng nhập tên cần tìm'], 400);
+      return new JsonResponse(['message' => 'Please enter a username to search'], 400);
     }
 
     // 3. Query tìm User trong Database

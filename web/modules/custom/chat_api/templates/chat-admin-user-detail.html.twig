@@ -30,7 +30,7 @@
     <div>
       <a href="/admin/chat/users" class="btn btn-secondary">
         {{ icons.icon_arrow_left('') }}
-        {{ 'Quay lại'|t }}
+        {{ 'Back'|t }}
       </a>
       <h1>
         {{ icons.icon_user_circle('') }}
@@ -40,7 +40,7 @@
     <div class="header-actions">
       <a href="/admin/chat/users/{{ user_info.uid }}" class="btn btn-primary">
         {{ icons.icon_edit('') }}
-        {{ 'Sửa User'|t }}
+        {{ 'Edit User'|t }}
       </a>
       
       {% if user_info.status %}
@@ -49,7 +49,7 @@
           data-block-user="{{ user_info.uid }}"
           type="button">
           {{ icons.icon_ban('') }}
-          {{ 'Khóa tài khoản'|t }}
+          {{ 'Block Account'|t }}
         </button>
       {% else %}
         <button 
@@ -57,7 +57,7 @@
           data-unblock-user="{{ user_info.uid }}"
           type="button">
           {{ icons.icon_unlock('') }}
-          {{ 'Mở khóa'|t }}
+          {{ 'Unblock'|t }}
         </button>
       {% endif %}
     </div>
@@ -87,12 +87,12 @@
           {% if user_info.status %}
             <span class="badge badge-success">
               {{ icons.icon_check_circle('') }}
-              {{ 'Hoạt động'|t }}
+              {{ 'Active'|t }}
             </span>
           {% else %}
             <span class="badge badge-danger">
               {{ icons.icon_ban('') }}
-              {{ 'Đã khóa'|t }}
+              {{ 'Blocked'|t }}
             </span>
           {% endif %}
           
@@ -113,7 +113,7 @@
   <div class="stats-section" data-user-stats data-pending-received="{{ stats.pending_received }}" data-friends-count="{{ stats.friends_count }}">
     <h3>
       {{ icons.icon_bar_chart('') }}
-      {{ 'Thống kê tổng quan'|t }}
+      {{ 'Overview Statistics'|t }}
     </h3>
     <div class="stats-grid">
       
@@ -124,7 +124,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-number">{{ stats.friends_count }}</div>
-          <div class="stat-label">{{ 'Bạn bè'|t }}</div>
+          <div class="stat-label">{{ 'Friends'|t }}</div>
         </div>
       </div>
       
@@ -135,7 +135,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-number">{{ stats.pending_sent }}</div>
-          <div class="stat-label">{{ 'Đã gửi'|t }}</div>
+          <div class="stat-label">{{ 'Sent'|t }}</div>
         </div>
       </div>
       
@@ -146,7 +146,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-number">{{ stats.pending_received }}</div>
-          <div class="stat-label">{{ 'Đã nhận'|t }}</div>
+          <div class="stat-label">{{ 'Received'|t }}</div>
         </div>
       </div>
       
@@ -157,7 +157,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-number">{{ stats.days_registered }}</div>
-          <div class="stat-label">{{ 'Số ngày'|t }}</div>
+          <div class="stat-label">{{ 'Days'|t }}</div>
         </div>
       </div>
     </div>
@@ -174,9 +174,9 @@
         <div class="section-header">
           <h3>
             {{ icons.icon_user_friends('') }}
-            {{ 'Bạn bè'|t }} ({{ friends|length }})
+            {{ 'Friends'|t }} ({{ friends|length }})
           </h3>
-          <span class="section-badge">{{ stats.friends_count }} {{ 'Tổng'|t }}</span>
+          <span class="section-badge">{{ stats.friends_count }} {{ 'Total'|t }}</span>
         </div>
         <div class="section-content">
           {% if friends|length > 0 %}
@@ -197,11 +197,11 @@
                     </div>
                     <div class="friend-meta">
                       {{ icons.icon_calendar('') }}
-                      {{ 'Từ:'|t }} {{ friend.friend_since|date('d/m/Y') }}
+                      {{ 'From:'|t }} {{ friend.friend_since|date('d/m/Y') }}
                     </div>
                   </div>
                   <div class="friend-actions">
-                    <a href="/admin/chat/users/{{ friend.uid }}" class="btn-icon" title="{{ 'Xem hồ sơ'|t }}">
+                    <a href="/admin/chat/users/{{ friend.uid }}" class="btn-icon" title="{{ 'View Profile'|t }}">
                       {{ icons.icon_eye('') }}
                     </a>
                   </div>
@@ -211,7 +211,7 @@
           {% else %}
             <div class="empty-state">
               {{ icons.icon_user_friends('') }}
-              <p>{{ 'Chưa có bạn bè'|t }}</p>
+              <p>{{ 'No friends yet'|t }}</p>
             </div>
           {% endif %}
         </div>
@@ -222,7 +222,7 @@
         <div class="section-header">
           <h3>
             {{ icons.icon_history('') }}
-            {{ 'Hoạt động gần đây'|t }}
+            {{ 'Recent Activity'|t }}
           </h3>
         </div>
         <div class="section-content">
@@ -254,7 +254,7 @@
           {% else %}
             <div class="empty-state">
               {{ icons.icon_history('') }}
-              <p>{{ 'Không có hoạt động nào'|t }}</p>
+              <p>{{ 'No activity found'|t }}</p>
             </div>
           {% endif %}
         </div>
@@ -269,7 +269,7 @@
         <div class="section-header">
           <h3>
             {{ icons.icon_send('') }}
-            {{ 'Lời mời đã gửi'|t }}
+            {{ 'Sent Friend Requests'|t }}
           </h3>
           <span class="section-badge">{{ stats.pending_sent }}</span>
         </div>
@@ -289,7 +289,7 @@
                     </div>
                   </div>
                   <div class="request-badge">
-                    <span class="badge badge-warning">{{ 'Đang chờ'|t }}</span>
+                    <span class="badge badge-warning">{{ 'Pending'|t }}</span>
                   </div>
                 </div>
               {% endfor %}
@@ -297,7 +297,7 @@
           {% else %}
             <div class="empty-state">
               {{ icons.icon_send('') }}
-              <p>{{ 'Không có lời mời nào'|t }}</p>
+              <p>{{ 'No friend requests found'|t }}</p>
             </div>
           {% endif %}
         </div>
@@ -308,7 +308,7 @@
         <div class="section-header">
           <h3>
             {{ icons.icon_inbox('') }}
-            {{ 'Lời mời đã nhận'|t }}
+            {{ 'Received Friend Requests'|t }}
           </h3>
           <span class="section-badge">{{ stats.pending_received }}</span>
         </div>
@@ -328,7 +328,7 @@
                     </div>
                   </div>
                   <div class="request-badge">
-                    <span class="badge badge-info">{{ 'Đang chờ'|t }}</span>
+                    <span class="badge badge-info">{{ 'Pending'|t }}</span>
                   </div>
                 </div>
               {% endfor %}
@@ -336,7 +336,7 @@
           {% else %}
             <div class="empty-state">
               {{ icons.icon_inbox('') }}
-              <p>{{ 'Không có lời mời nào'|t }}</p>
+              <p>{{ 'No friend requests found'|t }}</p>
             </div>
           {% endif %}
         </div>
@@ -347,14 +347,14 @@
         <div class="section-header">
           <h3>
             {{ icons.icon_zap('') }}
-            {{ 'Thao tác nhanh'|t }}
+            {{ 'Quick Actions'|t }}
           </h3>
         </div>
         <div class="section-content">
           <div class="quick-actions">
             <a href="/admin/chat/users/{{ user_info.uid }}" class="action-btn">
               {{ icons.icon_edit('') }}
-              <span>{{ 'Sửa Hồ sơ'|t }}</span>
+              <span>{{ 'Edit Profile'|t }}</span>
             </a>
             {% if user_info.status %}
               <button 
@@ -362,7 +362,7 @@
                 data-block-user="{{ user_info.uid }}"
                 type="button">
                 {{ icons.icon_ban('') }}
-                <span>{{ 'Khóa User'|t }}</span>
+                <span>{{ 'Block User'|t }}</span>
               </button>
             {% else %}
               <button 
@@ -370,12 +370,12 @@
                 data-unblock-user="{{ user_info.uid }}"
                 type="button">
                 {{ icons.icon_unlock('') }}
-                <span>{{ 'Mở khóa User'|t }}</span>
+                <span>{{ 'Unblock User'|t }}</span>
               </button>
             {% endif %}
             <a href="/admin/chat/users" class="action-btn">
               {{ icons.icon_list('') }}
-              <span>{{ 'Danh sách User'|t }}</span>
+              <span>{{ 'User List'|t }}</span>
             </a>
           </div>
         </div>
@@ -388,25 +388,25 @@
 <div class="profile-meta-extended" style="display: none;">
   <div class="meta-item">
     {{ icons.icon_calendar('') }}
-    <span>{{ 'Đăng ký:'|t }} {{ user_info.created|date('d/m/Y H:i') }}</span>
+    <span>{{ 'Registered:'|t }} {{ user_info.created|date('d/m/Y H:i') }}</span>
   </div>
   <div class="meta-item">
     {{ icons.icon_login('') }}
-    <span>{{ 'Lần cuối truy cập:'|t }} 
+    <span>{{ 'Last Access:'|t }} 
       {% if user_info.access > 0 %}
         {{ user_info.access|date('d/m/Y H:i') }}
       {% else %}
-        {{ 'Chưa bao giờ'|t }}
+        {{ 'Never'|t }}
       {% endif %}
     </span>
   </div>
   <div class="meta-item">
     {{ icons.icon_login('') }}
-    <span>{{ 'Lần cuối đăng nhập:'|t }} 
+    <span>{{ 'Last Login:'|t }} 
       {% if user_info.login > 0 %}
         {{ user_info.login|date('d/m/Y H:i') }}
       {% else %}
-        {{ 'Chưa bao giờ'|t }}
+        {{ 'Never'|t }}
       {% endif %}
     </span>
   </div>

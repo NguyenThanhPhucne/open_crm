@@ -27,7 +27,7 @@ class JwtAuthMiddleware {
       
       if (!$authHeader) {
         return new JsonResponse([
-          'message' => 'Không tìm thấy access token'
+          'message' => 'Access token not found'
         ], 401);
       }
 
@@ -57,7 +57,7 @@ class JwtAuthMiddleware {
         $decoded = JWT::decode($token, new Key($secret, 'HS256'));
       } catch (\Exception $e) {
         return new JsonResponse([
-          'message' => 'Access token hết hạn hoặc không đúng'
+          'message' => 'Access token expired or invalid'
         ], 403);
       }
 
@@ -66,7 +66,7 @@ class JwtAuthMiddleware {
 
       if (!$user) {
         return new JsonResponse([
-          'message' => 'Người dùng không tồn tại'
+          'message' => 'User not found'
         ], 404);
       }
 
@@ -77,7 +77,7 @@ class JwtAuthMiddleware {
         '@error' => $error->getMessage()
       ]);
       return new JsonResponse([
-        'message' => 'Lỗi hệ thống'
+        'message' => 'System error'
       ], 500);
     }
   }

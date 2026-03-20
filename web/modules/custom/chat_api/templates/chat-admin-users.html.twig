@@ -28,14 +28,14 @@
     <div>
       <h1>
         {{ icons.icon_users('') }}
-        {{ 'Quản lý Người dùng'|t }}
+        {{ 'User Management'|t }}
       </h1>
-      <p class="subtitle">{{ 'Quản lý và theo dõi tất cả người dùng Chat'|t }}</p>
+      <p class="subtitle">{{ 'Manage and monitor all chat users'|t }}</p>
     </div>
     <div class="header-actions">
       <a href="/admin/chat" class="btn btn-secondary">
         {{ icons.icon_arrow_left('') }}
-        {{ 'Quay lại Dashboard'|t }}
+        {{ 'Back to Dashboard'|t }}
       </a>
     </div>
   </div>
@@ -50,7 +50,7 @@
       </div>
       <div class="stat-content">
         <div class="stat-value">{{ stats.total_users }}</div>
-        <div class="stat-label">{{ 'Tổng User'|t }}</div>
+        <div class="stat-label">{{ 'Total Users'|t }}</div>
       </div>
     </div>
 
@@ -61,7 +61,7 @@
       </div>
       <div class="stat-content">
         <div class="stat-value">{{ stats.active_today }}</div>
-        <div class="stat-label">{{ 'Online Hôm nay'|t }}</div>
+        <div class="stat-label">{{ 'Online Today'|t }}</div>
       </div>
     </div>
 
@@ -72,7 +72,7 @@
       </div>
       <div class="stat-content">
         <div class="stat-value">{{ stats.active_week }}</div>
-        <div class="stat-label">{{ 'Online Tuần này'|t }}</div>
+        <div class="stat-label">{{ 'Online This Week'|t }}</div>
       </div>
     </div>
 
@@ -83,7 +83,7 @@
       </div>
       <div class="stat-content">
         <div class="stat-value">{{ stats.blocked_users }}</div>
-        <div class="stat-label">{{ 'Bị khóa'|t }}</div>
+        <div class="stat-label">{{ 'Blocked'|t }}</div>
       </div>
     </div>
   </div>
@@ -95,13 +95,13 @@
         <table class="chat-table">
           <thead>
             <tr>
-              <th>{{ 'Người dùng'|t }}</th>
-              <th>{{ 'Trạng thái'|t }}</th>
-              <th>{{ 'Bạn bè'|t }}</th>
-              <th>{{ 'Lời mời'|t }}</th>
-              <th>{{ 'Đăng ký'|t }}</th>
-              <th>{{ 'Truy cập cuối'|t }}</th>
-              <th class="text-right">{{ 'Hành động'|t }}</th>
+              <th>{{ 'Users'|t }}</th>
+              <th>{{ 'Status'|t }}</th>
+              <th>{{ 'Friends'|t }}</th>
+              <th>{{ 'Friend Requests'|t }}</th>
+              <th>{{ 'Registration'|t }}</th>
+              <th>{{ 'Last Access'|t }}</th>
+              <th class="text-right">{{ 'Actions'|t }}</th>
             </tr>
           </thead>
           <tbody>
@@ -130,9 +130,9 @@
                 {# Cột Trạng thái #}
                 <td data-status-badge>
                   {% if user.status == 1 %}
-                    <span class="badge badge-success">{{ 'Hoạt động'|t }}</span>
+                    <span class="badge badge-success">{{ 'Active'|t }}</span>
                   {% else %}
-                    <span class="badge badge-danger">{{ 'Đã khóa'|t }}</span>
+                    <span class="badge badge-danger">{{ 'Blocked'|t }}</span>
                   {% endif %}
                 </td>
                 
@@ -157,7 +157,7 @@
                 <td>
                   <div class="data-cell">
                     {{ icons.icon_calendar('') }}
-                    {{ user.days_registered }} {{ 'ngày trước'|t }}
+                    {{ user.days_registered }} {{ 'days ago'|t }}
                   </div>
                 </td>
                 
@@ -165,12 +165,12 @@
                 <td>
                   {% if user.days_since_access is not null %}
                     {% if user.days_since_access == 0 %}
-                      <span class="text-success">{{ 'Hôm nay'|t }}</span>
+                      <span class="text-success">{{ 'Today'|t }}</span>
                     {% else %}
-                      {{ user.days_since_access }} {{ 'ngày trước'|t }}
+                      {{ user.days_since_access }} {{ 'days ago'|t }}
                     {% endif %}
                   {% else %}
-                    <span class="text-muted">{{ 'Chưa bao giờ'|t }}</span>
+                    <span class="text-muted">{{ 'Never'|t }}</span>
                   {% endif %}
                 </td>
                 
@@ -178,12 +178,12 @@
                 <td class="text-right">
                   <div class="action-buttons">
                     {# Nút Xem chi tiết #}
-                    <a href="/admin/chat/users/{{ user.uid }}" class="btn-icon" title="{{ 'Xem chi tiết'|t }}">
+                    <a href="/admin/chat/users/{{ user.uid }}" class="btn-icon" title="{{ 'View Details'|t }}">
                       {{ icons.icon_eye('') }}
                     </a>
                     
                     {# Nút Sửa thông tin #}
-                    <a href="/admin/chat/users/{{ user.uid }}" class="btn-icon" title="{{ 'Xem chi tiết'|t }}">
+                    <a href="/admin/chat/users/{{ user.uid }}" class="btn-icon" title="{{ 'View Details'|t }}">
                       {{ icons.icon_edit('') }}
                     </a>
                     
@@ -192,7 +192,7 @@
                       <button 
                         class="btn-icon btn-danger-icon" 
                         data-block-user="{{ user.uid }}"
-                        title="{{ 'Khóa tài khoản'|t }}"
+                        title="{{ 'Block Account'|t }}"
                         type="button">
                         {{ icons.icon_ban('') }}
                       </button>
@@ -200,7 +200,7 @@
                       <button 
                         class="btn-icon btn-success-icon" 
                         data-unblock-user="{{ user.uid }}"
-                        title="{{ 'Mở khóa'|t }}"
+                        title="{{ 'Unblock'|t }}"
                         type="button">
                         {{ icons.icon_unlock('') }}
                       </button>
@@ -217,7 +217,7 @@
       <div class="table-footer">
         <div class="table-info">
           {{ icons.icon_info('') }}
-          {{ 'Đang hiển thị'|t }} <strong>{{ users|length }}</strong> {{ 'người dùng'|t }}
+          {{ 'Showing'|t }} <strong>{{ users|length }}</strong> {{ 'users'|t }}
         </div>
         {{ pager }}
       </div>
@@ -226,8 +226,8 @@
       {# EMPTY STATE #}
       <div class="empty-state">
         {{ icons.icon_users('') }}
-        <h3>{{ 'Không tìm thấy người dùng nào'|t }}</h3>
-        <p>{{ 'Hiện tại hệ thống chưa có dữ liệu user phù hợp.'|t }}</p>
+        <h3>{{ 'No users found'|t }}</h3>
+        <p>{{ 'There is currently no user data matching your request.'|t }}</p>
       </div>
     {% endif %}
   </div>

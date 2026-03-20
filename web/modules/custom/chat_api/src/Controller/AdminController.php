@@ -427,7 +427,7 @@ class AdminController extends ControllerBase {
       if ($friend) {
         $activities[] = [
           'type' => 'friendship',
-          'description' => $this->t('Đã kết bạn với @name', ['@name' => $friend->getAccountName()]),
+          'description' => $this->t('You are now friends with @name', ['@name' => $friend->getAccountName()]),
           'timestamp' => $row->created,
           'icon' => 'fa-user-friends',
         ];
@@ -456,8 +456,8 @@ class AdminController extends ControllerBase {
         $activities[] = [
           'type' => 'friend_request',
           'description' => $is_sender ? 
-            $this->t('Đã gửi lời mời đến @name', ['@name' => $other_user->getAccountName()]) :
-            $this->t('Nhận lời mời từ @name', ['@name' => $other_user->getAccountName()]),
+            $this->t('Sent a friend request to @name', ['@name' => $other_user->getAccountName()]) :
+            $this->t('Received a friend request from @name', ['@name' => $other_user->getAccountName()]),
           'timestamp' => $row->created,
           'icon' => 'fa-user-plus',
         ];
@@ -516,7 +516,7 @@ class AdminController extends ControllerBase {
       ]);
       
       if (!$data['success']) {
-        throw new \Exception('Không thể lấy cuộc trò chuyện từ MongoDB');
+        throw new \Exception('Cannot retrieve conversations from MongoDB');
       }
       
       $conversations = $data['data'] ?? [];
@@ -541,7 +541,7 @@ class AdminController extends ControllerBase {
       ]);
 
       // Show error to user
-      $this->messenger()->addError($this->t('Lỗi khi kết nối tới API: @error', [
+      $this->messenger()->addError($this->t('Error connecting to API: @error', [
         '@error' => $e->getMessage(),
       ]));
       
@@ -620,7 +620,7 @@ class AdminController extends ControllerBase {
       $data = json_decode($body, TRUE);
 
       if ($statusCode !== 200 || !$data['success']) {
-        $this->messenger()->addError($this->t('Không tìm thấy cuộc trò chuyện.'));
+        $this->messenger()->addError($this->t('Conversation not found.'));
         return $this->redirect('chat_api.admin_conversations');
       }
 
@@ -628,7 +628,7 @@ class AdminController extends ControllerBase {
       $messages = $data['data']['messages'] ?? [];
 
       if (!$conversation) {
-        $this->messenger()->addError($this->t('Không tìm thấy cuộc trò chuyện.'));
+        $this->messenger()->addError($this->t('Conversation not found.'));
         return $this->redirect('chat_api.admin_conversations');
       }
 
@@ -654,7 +654,7 @@ class AdminController extends ControllerBase {
 
       return $build;
     } catch (\Exception $e) {
-      $this->messenger()->addError($this->t('Lỗi khi lấy dữ liệu cuộc trò chuyện: @error', [
+      $this->messenger()->addError($this->t('Error loading conversation data: @error', [
         '@error' => $e->getMessage(),
       ]));
       return $this->redirect('chat_api.admin_conversations');
@@ -705,18 +705,18 @@ class AdminController extends ControllerBase {
         if ($is_ajax) {
           return new JsonResponse(['success' => true, 'message' => 'Conversation deleted successfully']);
         }
-        $this->messenger()->addStatus($this->t('Cuộc trò chuyện đã bị xóa thành công.'));
+        $this->messenger()->addStatus($this->t('Conversation deleted successfully.'));
       } else {
         if ($is_ajax) {
           return new JsonResponse(['success' => false, 'error' => 'Failed to delete conversation'], 400);
         }
-        $this->messenger()->addError($this->t('Không tìm thấy cuộc trò chuyện để xóa.'));
+        $this->messenger()->addError($this->t('Conversation not found to delete.'));
       }
     } catch (\Exception $e) {
       if ($is_ajax) {
         return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
       }
-      $this->messenger()->addError($this->t('Lỗi khi xóa cuộc trò chuyện: @error', [
+      $this->messenger()->addError($this->t('Error deleting conversation: @error', [
         '@error' => $e->getMessage(),
       ]));
     }
@@ -756,11 +756,11 @@ class AdminController extends ControllerBase {
       // Tính thời gian trôi qua
       $diff = time() - $friendship->created;
       if ($diff < 3600) {
-        $friendship->time_ago = floor($diff / 60) . ' phút trước';
+        $friendship->time_ago = floor($diff / 60) . ' minutes ago';
       } elseif ($diff < 86400) {
-        $friendship->time_ago = floor($diff / 3600) . ' giờ trước';
+        $friendship->time_ago = floor($diff / 3600) . ' hours ago';
       } else {
-        $friendship->time_ago = floor($diff / 86400) . ' ngày trước';
+        $friendship->time_ago = floor($diff / 86400) . ' days ago';
       }
     }
     

@@ -302,7 +302,7 @@
               } else {
                 showMessage(
                   $message,
-                  data.message || "Có lỗi xảy ra.",
+                  data.message || "An error occurred.",
                   "error",
                 );
                 $button.removeClass("loading").prop("disabled", false);
@@ -312,7 +312,7 @@
               console.error("Error:", error);
               showMessage(
                 $message,
-                "Có lỗi xảy ra. Vui lòng thử lại.",
+                "An error occurred. Please try again.",
                 "error",
               );
               $button.removeClass("loading").prop("disabled", false);

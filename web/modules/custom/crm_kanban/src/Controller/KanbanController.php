@@ -267,10 +267,10 @@ class KanbanController extends ControllerBase {
   .column-cards::-webkit-scrollbar-track{background:transparent}
   .column-cards::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
   /* ── Deal card ── */
-  .deal-card{position:relative;background:#fff;border-radius: 16px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
-  .deal-card:hover{box-shadow:0 5px 15px rgba(0,0,0,.11);transform:translateY(-2px)}
-  .deal-card.sortable-ghost{opacity:.4;background:#e2e8f0}
-  .deal-card.sortable-drag{opacity:.85;transform:rotate(1.5deg);cursor:grabbing}
+  .deal-card{position:relative;background:#fff;border-radius: 16px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;border-top:1px solid rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.03);border-bottom:1px solid rgba(0,0,0,.03);box-shadow:0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.03);transition:all .25s cubic-bezier(.2,.8,.2,1);width:100%;overflow:hidden}
+  .deal-card:hover{box-shadow:0 12px 24px -6px rgba(0,0,0,.1), 0 4px 10px -2px rgba(0,0,0,.05);transform:translateY(-4px);border-color:rgba(0,0,0,.05);z-index:10;position:relative}
+  .deal-card.sortable-ghost{opacity:.4;background:#f8fafc;border:2px dashed #cbd5e1;box-shadow:none}
+  .deal-card.sortable-drag{opacity:1;transform:rotate(2deg) scale(1.02);cursor:grabbing;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04)}
   .deal-title{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-right:36px}
   .card-value-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
   .deal-value{font-size:15px;font-weight:800}

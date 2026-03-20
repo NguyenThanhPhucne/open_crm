@@ -22,17 +22,18 @@ class FriendController extends ControllerBase {
   public function sendRequest(Request $request) {
     try {
       $currentUser = $this->getUserFromToken($request);
-      if (!$currentUser) return new JsonResponse(['message' => 'Phiên đăng nhập hết hạn'], 401);
+      if (!$currentUser) return new JsonResponse(['message' => 'Session expired'], 401);
 
       $data = json_decode($request->getContent(), TRUE);
       $toId = $data['to_user_id'] ?? null; // ID người nhận
 
-      if (!$toId) return new JsonResponse(['message' => 'Thiếu ID người nhận'], 400);
+      if (!$toId) return new JsonResponse(['message' => 'Missing recipient ID'], 400);
 
       $fromId = (int) $currentUser->id();
       $toId = (int) $toId;
 
-      if ($fromId === $toId) return new JsonResponse(['message' => 'Không thể tự kết bạn'], 400);
+      if ($fromId === $toId)
+        return new JsonResponse(['message' => 'You cannot befriend yourself'], 400);
 
       $connection = Database::getConnection();
 
@@ -45,7 +46,7 @@ class FriendController extends ControllerBase {
         )
         ->execute()->fetchField();
 
-      if ($isFriend) return new JsonResponse(['message' => 'Hai người đã là bạn bè'], 400);
+      if ($isFriend) return new JsonResponse(['message' => 'They are already friends'], 400);
 
       // 2. Kiểm tra đã gửi lời mời chưa (tránh spam)
       $existingReq = $connection->select('chat_friend_request', 'cfr')
@@ -55,7 +56,7 @@ class FriendController extends ControllerBase {
         ->condition('status', 'pending')
         ->execute()->fetchField();
 
-      if ($existingReq) return new JsonResponse(['message' => 'Đã gửi lời mời trước đó'], 400);
+      if ($existingReq) return new JsonResponse(['message' => 'You have already sent a friend request'], 400);
 
       // 3. Lưu vào DB
       $connection->insert('chat_friend_request')
@@ -70,10 +71,10 @@ class FriendController extends ControllerBase {
       \Drupal::service('cache.default')->invalidate("user_detail_{$toId}");
       \Drupal::service('cache.default')->invalidate("user_stats_{$toId}");
 
-      return new JsonResponse(['message' => 'Gửi lời mời thành công'], 201);
+      return new JsonResponse(['message' => 'Friend request sent successfully'], 201);
 
     } catch (\Exception $e) {
-      return new JsonResponse(['message' => 'Lỗi: ' . $e->getMessage()], 500);
+      return new JsonResponse(['message' => 'Error: ' . $e->getMessage()], 500);
     }
   }
 
@@ -191,10 +192,10 @@ class FriendController extends ControllerBase {
         ->condition('id', $requestId)
         ->execute()->fetchObject();
 
-      if (!$reqData) return new JsonResponse(['message' => 'Lời mời không tồn tại'], 404);
+      if (!$reqData) return new JsonResponse(['message' => 'Friend request not found'], 404);
 
       if ($reqData->to_user != $currentUser->id()) {
-        return new JsonResponse(['message' => 'Không có quyền'], 403);
+        return new JsonResponse(['message' => 'Forbidden'], 403);
       }
 
       $transaction = $connection->startTransaction();
@@ -213,7 +214,7 @@ class FriendController extends ControllerBase {
           ->condition('id', $requestId)
           ->execute();
 
-        return new JsonResponse(['message' => 'Đã chấp nhận kết bạn'], 200);
+        return new JsonResponse(['message' => 'Friend request accepted'], 200);
 
       } catch (\Exception $e) {
         $transaction->rollBack();
@@ -221,7 +222,7 @@ class FriendController extends ControllerBase {
       }
 
     } catch (\Exception $e) {
-      return new JsonResponse(['message' => 'Lỗi: ' . $e->getMessage()], 500);
+      return new JsonResponse(['message' => 'Error: ' . $e->getMessage()], 500);
     }
   }
 
@@ -245,7 +246,7 @@ class FriendController extends ControllerBase {
 
         $connection->delete('chat_friend_request')->condition('id', $requestId)->execute();
         
-        return new JsonResponse(['message' => 'Đã từ chối'], 200);
+        return new JsonResponse(['message' => 'Friend request declined'], 200);
     } catch (\Exception $e) {
         return new JsonResponse(['message' => $e->getMessage()], 500);
     }

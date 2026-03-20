@@ -22,12 +22,12 @@ class AuthController extends ControllerBase {
       $data = json_decode($request->getContent(), TRUE);
       
       if (empty($data['username']) || empty($data['password']) || empty($data['email'])) {
-        return new JsonResponse(['message' => 'Thiếu thông tin'], 400);
+        return new JsonResponse(['message' => 'Missing information'], 400);
       }
       
       // Check Drupal User tồn tại
       if (!empty(\Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['name' => $data['username']]))) {
-        return new JsonResponse(['message' => 'Username đã tồn tại'], 409);
+        return new JsonResponse(['message' => 'Username already exists'], 409);
       }
 
       // A. TẠO USER TRONG DRUPAL (MySQL)
@@ -71,14 +71,14 @@ class AuthController extends ControllerBase {
         // Nếu lỗi Mongo thì xóa user Drupal để rollback
         $user->delete();
         \Drupal::logger('chat_api')->error('Mongo Sync Error: ' . $mongoError->getMessage());
-        return new JsonResponse(['message' => 'Lỗi đồng bộ dữ liệu MongoDB'], 500);
+        return new JsonResponse(['message' => 'MongoDB sync error'], 500);
       }
 
       return new JsonResponse(NULL, 204);
 
     } catch (\Exception $e) {
       \Drupal::logger('chat_api')->error($e->getMessage());
-      return new JsonResponse(['message' => 'Lỗi hệ thống'], 500);
+      return new JsonResponse(['message' => 'System error'], 500);
     }
   }
 
@@ -87,7 +87,7 @@ class AuthController extends ControllerBase {
     try {
       $data = json_decode($request->getContent(), TRUE);
       $uid = \Drupal::service('user.auth')->authenticate($data['username'], $data['password']);
-      if (!$uid) return new JsonResponse(['message' => 'Sai thông tin'], 401);
+      if (!$uid) return new JsonResponse(['message' => 'Invalid credentials'], 401);
 
       $user = User::load($uid);
       
@@ -108,7 +108,7 @@ class AuthController extends ControllerBase {
       $mongoId = $user->get('field_mongo_id')->value;
       
       $response = new JsonResponse([
-        'message' => 'Đăng nhập thành công',
+        'message' => 'Login successful',
         'accessToken' => $accessToken,
         'user' => [
           '_id' => $mongoId ?: $user->id(), // Ưu tiên MongoID
@@ -121,7 +121,7 @@ class AuthController extends ControllerBase {
       return $response;
     } catch (\Exception $e) {
       \Drupal::logger('chat_api')->error($e->getMessage());
-      return new JsonResponse(['message' => 'Lỗi hệ thống'], 500);
+      return new JsonResponse(['message' => 'System error'], 500);
     }
   }
 
@@ -132,22 +132,22 @@ class AuthController extends ControllerBase {
       $sessions = \Drupal::entityTypeManager()->getStorage('chat_session')->loadByProperties(['refresh_token' => $token]);
       foreach ($sessions as $s) $s->delete();
     }
-    $res = new JsonResponse(['message' => 'Đã đăng xuất']);
+    $res = new JsonResponse(['message' => 'Logged out']);
     $res->headers->clearCookie('refreshToken');
     return $res;
   }
 
   public function refreshToken(Request $request) {
     $token = $request->cookies->get('refreshToken');
-    if (!$token) return new JsonResponse(['message' => 'Chưa đăng nhập'], 401);
+    if (!$token) return new JsonResponse(['message' => 'Not logged in'], 401);
 
     $sessions = \Drupal::entityTypeManager()->getStorage('chat_session')->loadByProperties(['refresh_token' => $token]);
-    if (empty($sessions)) return new JsonResponse(['message' => 'Token lỗi'], 403);
+    if (empty($sessions)) return new JsonResponse(['message' => 'Invalid token'], 403);
 
     $session = reset($sessions);
     if ($session->get('expires_at')->value < time()) {
       $session->delete();
-      return new JsonResponse(['message' => 'Hết hạn phiên'], 403);
+      return new JsonResponse(['message' => 'Session expired'], 403);
     }
 
     return new JsonResponse(['accessToken' => $this->generateJWT($session->get('user_id')->entity)]);

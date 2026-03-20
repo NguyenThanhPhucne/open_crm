@@ -61,15 +61,15 @@ function _crm_quickadd_build_fab() {
   <div class="crm-fab-menu" id="crm-fab-menu">
     <a href="/crm/quickadd/contact" class="crm-fab-menu-item" data-type="contact">
       <i data-lucide="user-plus" width="20" height="20"></i>
-      <span>Thêm Khách hàng</span>
+      <span>Add Contact</span>
     </a>
     <a href="/crm/quickadd/deal" class="crm-fab-menu-item" data-type="deal">
       <i data-lucide="briefcase" width="20" height="20"></i>
-      <span>Thêm Deal</span>
+      <span>Add Deal</span>
     </a>
     <a href="/crm/quickadd/organization" class="crm-fab-menu-item" data-type="org">
       <i data-lucide="building-2" width="20" height="20"></i>
-      <span>Thêm Tổ chức</span>
+      <span>Add Org</span>
     </a>
   </div>
   

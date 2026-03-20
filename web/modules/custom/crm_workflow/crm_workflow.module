@@ -45,7 +45,7 @@ function crm_workflow_node_presave(NodeInterface $node) {
       if ($node->hasField('field_contract_file')) {
         if ($node->get('field_contract_file')->isEmpty()) {
           // Add warning message
-          \Drupal::messenger()->addWarning(t('Lưu ý: Bạn nên upload file hợp đồng khi chốt Deal Won!'));
+          \Drupal::messenger()->addWarning(t('Note: You should upload a contract file when marking a Deal as Won!'));
           // Note: We use warning instead of blocking to maintain flexibility
           // If you want to block, uncomment the line below:
           // throw new \Drupal\Core\Entity\EntityStorageException('Missing contract file');
@@ -259,7 +259,7 @@ function crm_workflow_mail($key, &$message, $params) {
         <p><a href="%s" style="display: inline-block; padding: 10px 20px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px;">Xem chi tiết →</a></p>
         <hr>
         <p style="color: #666; font-size: 12px;">
-          Email này được gửi tự động từ hệ thống CRM.<br>
+          This email was sent automatically from the Open CRM system.<br>
           Thời gian: %s
         </p>',
         $params['deal_title'],
@@ -302,7 +302,7 @@ function _crm_workflow_validate_deal_won(array &$form, FormStateInterface $form_
     $contract_file = $form_state->getValue(['field_contract_file', 0, 'target_id']);
     
     if (empty($contract_file)) {
-      $form_state->setErrorByName('field_contract_file', t('Bạn phải upload file hợp đồng trước khi chốt Deal Won!'));
+      $form_state->setErrorByName('field_contract_file', t('You must upload a contract file before marking this Deal as Won!'));
     }
   }
 }

@@ -25,15 +25,15 @@ class AuthController extends ControllerBase {
     $lastName = $data['lastName'] ?? '';
 
     if (empty($username) || empty($password) || empty($email)) {
-      return new JsonResponse(['message' => 'Thiếu thông tin bắt buộc'], 400);
+      return new JsonResponse(['message' => 'Missing required information'], 400);
     }
 
     if (user_load_by_name($username)) {
-      return new JsonResponse(['message' => 'Username đã tồn tại'], 409);
+      return new JsonResponse(['message' => 'Username already exists'], 409);
     }
 
     if (user_load_by_mail($email)) {
-      return new JsonResponse(['message' => 'Email đã tồn tại'], 409);
+      return new JsonResponse(['message' => 'Email already exists'], 409);
     }
 
     try {
@@ -49,7 +49,7 @@ class AuthController extends ControllerBase {
 
     } catch (\Exception $e) {
       \Drupal::logger('chat_api')->error($e->getMessage());
-      return new JsonResponse(['message' => 'Lỗi hệ thống'], 500);
+      return new JsonResponse(['message' => 'System error'], 500);
     }
   }
 
@@ -66,7 +66,7 @@ class AuthController extends ControllerBase {
     $uid = \Drupal::service('user.auth')->authenticate($username, $password);
 
     if (!$uid) {
-      return new JsonResponse(['message' => 'Sai tài khoản hoặc mật khẩu'], 401);
+      return new JsonResponse(['message' => 'Invalid username or password'], 401);
     }
 
     $user = User::load($uid);
@@ -90,7 +90,7 @@ class AuthController extends ControllerBase {
     $jwt = $this->generateJwt($user, $key);
 
     return new JsonResponse([
-      'message' => "Đăng nhập thành công",
+      'message' => "Login successful",
       'accessToken' => $jwt, 
       'user' => [
         '_id' => $user->id(),
@@ -117,7 +117,7 @@ class AuthController extends ControllerBase {
   public function refreshToken(Request $request) {
     $user = \Drupal::currentUser();
     if ($user->isAnonymous()) {
-      return new JsonResponse(['message' => 'Hết phiên đăng nhập'], 401);
+      return new JsonResponse(['message' => 'Session expired'], 401);
     }
     
     $account = User::load($user->id());

@@ -166,7 +166,7 @@
      * Block user via AJAX
      */
     blockUser: function (uid, button) {
-      if (!confirm("Bạn có chắc chắn muốn khóa người dùng này?")) {
+      if (!confirm("Are you sure you want to block this user?")) {
         return;
       }
 
@@ -186,17 +186,17 @@
         .then((data) => {
           if (data.success) {
             this.updateUserRow(uid, "blocked");
-            this.showNotification("Khóa người dùng thành công", "success");
+            this.showNotification("User blocked successfully", "success");
           } else {
             this.showNotification(
-              data.message || "Lỗi khi khóa người dùng",
+              data.message || "Error blocking user",
               "error",
             );
           }
         })
         .catch((error) => {
           console.error("Error:", error);
-          this.showNotification("Lỗi khi gửi yêu cầu", "error");
+          this.showNotification("Error sending request", "error");
         })
         .finally(() => {
           button.disabled = false;
@@ -208,7 +208,7 @@
      * Unblock user via AJAX
      */
     unblockUser: function (uid, button) {
-      if (!confirm("Bạn có chắc chắn muốn mở khóa người dùng này?")) {
+      if (!confirm("Are you sure you want to unblock this user?")) {
         return;
       }
 
@@ -228,17 +228,17 @@
         .then((data) => {
           if (data.success) {
             this.updateUserRow(uid, "active");
-            this.showNotification("Mở khóa người dùng thành công", "success");
+            this.showNotification("User unblocked successfully", "success");
           } else {
             this.showNotification(
-              data.message || "Lỗi khi mở khóa người dùng",
+              data.message || "Error unblocking user",
               "error",
             );
           }
         })
         .catch((error) => {
           console.error("Error:", error);
-          this.showNotification("Lỗi khi gửi yêu cầu", "error");
+          this.showNotification("Error sending request", "error");
         })
         .finally(() => {
           button.disabled = false;
@@ -262,10 +262,10 @@
       if (statusCell) {
         if (newStatus === "active") {
           statusCell.innerHTML =
-            '<span class="badge badge-success">Hoạt động</span>';
+            '<span class="badge badge-success">Active</span>';
         } else {
           statusCell.innerHTML =
-            '<span class="badge badge-danger">Đã khóa</span>';
+            '<span class="badge badge-danger">Blocked</span>';
         }
       }
 
