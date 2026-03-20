@@ -60,7 +60,10 @@ function _crm_actions_build_navbar() {
   
   // Check user role level.
   $is_anonymous = $current_user->isAnonymous();
-  $is_admin = in_array('administrator', $current_user->getRoles()) || $current_user->id() == 1;
+  $is_admin     = $current_user->hasRole('administrator');
+  $is_manager   = in_array('sales_manager', $current_user->getRoles());
+  // Admins and managers both see the all-* versions of the nav links.
+  $is_admin = $is_admin || $is_manager;
 
   // Navigation items — anonymous sees all-* pages (same data as my-* since they see all published records).
   $items = [

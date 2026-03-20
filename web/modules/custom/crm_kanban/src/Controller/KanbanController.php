@@ -33,7 +33,7 @@ class KanbanController extends ControllerBase {
     }
     
     // All-pipeline: only admin/manager can view all pipeline
-    $is_admin = in_array('administrator', $account->getRoles()) || $account->id() == 1;
+    $is_admin = $account->hasRole('administrator');
     $is_manager = in_array('sales_manager', $account->getRoles());
     
     return ($is_admin || $is_manager) ? AccessResult::allowed() : AccessResult::forbidden();
@@ -46,9 +46,7 @@ class KanbanController extends ControllerBase {
     // Get current user
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
-    
-    // Check if user is administrator
-    $is_admin = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
+
     
     // Load pipeline stages dynamically from taxonomy, sorted by weight.
     $stage_terms = \Drupal::entityTypeManager()
@@ -81,15 +79,10 @@ class KanbanController extends ControllerBase {
       $query = \Drupal::entityQuery('node')
         ->condition('type', 'deal')
         ->condition('field_stage', $stage_id)
-        ->accessCheck(FALSE)
+        ->accessCheck(TRUE)
         ->sort('created', 'DESC')
         ->range(0, 200);
-      
-      // Only filter by owner for non-admin, authenticated users.
-      if (!$is_admin && !$current_user->isAnonymous()) {
-        $query->condition('field_owner', $user_id);
-      }
-      
+
       $nids = $query->execute();
       $deals = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
       
@@ -170,6 +163,9 @@ class KanbanController extends ControllerBase {
     // Determine page context
     $current_path = \Drupal::service('path.current')->getPath();
     $is_all_pipeline = str_contains($current_path, 'all-pipeline');
+    // Used only for UI/stats; actual deal filtering is handled by accessCheck()
+    // + CRMAccessService, so this must not be treated as a security flag.
+    $can_see_all = $is_all_pipeline && ($current_user->hasRole('administrator') || in_array('sales_manager', $current_user->getRoles()));
     $page_title = $is_all_pipeline ? 'All Pipeline' : 'My Pipeline';
     $list_url   = $is_all_pipeline ? '/crm/all-deals' : '/crm/my-deals';
 
@@ -179,7 +175,7 @@ class KanbanController extends ControllerBase {
       'won_count'    => $won_count,
       'page_title'   => $page_title,
       'list_url'     => $list_url,
-      'is_admin'     => $is_admin,
+      'is_admin'     => $can_see_all,
     ];
 
     // Build Kanban HTML

@@ -23,7 +23,7 @@ chat_api.signout:
     _controller: '\Drupal\chat_api\Controller\AuthController::signOut'
   methods: [POST]
   requirements:
-    _access: "TRUE"
+    _user_is_logged_in: "TRUE"
 
 chat_api.refresh:
   path: "/api/auth/refresh"
@@ -31,7 +31,7 @@ chat_api.refresh:
     _controller: '\Drupal\chat_api\Controller\AuthController::refreshToken'
   methods: [POST]
   requirements:
-    _access: "TRUE"
+    _user_is_logged_in: "TRUE"
 
 # =============================================================================
 # USER ROUTES - Thông tin người dùng
@@ -42,7 +42,7 @@ chat_api.users.me:
     _controller: '\Drupal\chat_api\Controller\UserController::authMe'
   methods: [GET]
   requirements:
-    _access: "TRUE"
+    _user_is_logged_in: "TRUE"
 
 chat_api.users.search:
   path: "/api/users/search"
@@ -50,7 +50,7 @@ chat_api.users.search:
     _controller: '\Drupal\chat_api\Controller\UserController::searchUserByUsername'
   methods: [GET]
   requirements:
-    _access: "TRUE"
+    _user_is_logged_in: "TRUE"
 
 # [CẬP NHẬT] Route này dùng để lưu link ảnh từ Cloudinary
 chat_api.users.update_avatar:
@@ -59,7 +59,7 @@ chat_api.users.update_avatar:
     _controller: '\Drupal\chat_api\Controller\UserController::updateAvatar'
   methods: [POST]
   requirements:
-    _access: "TRUE"
+    _user_is_logged_in: "TRUE"
 
 # =============================================================================
 # FRIEND ROUTES - Quản lý bạn bè
@@ -69,7 +69,7 @@ chat_api.friends.send:
   defaults:
     { _controller: '\Drupal\chat_api\Controller\FriendController::sendRequest' }
   methods: [POST]
-  requirements: { _access: "TRUE" }
+  requirements: { _user_is_logged_in: "TRUE" }
 
 chat_api.friends.get_all:
   path: "/api/friends"
@@ -78,14 +78,14 @@ chat_api.friends.get_all:
       _controller: '\Drupal\chat_api\Controller\FriendController::getAllFriends',
     }
   methods: [GET]
-  requirements: { _access: "TRUE" }
+  requirements: { _user_is_logged_in: "TRUE" }
 
 chat_api.friends.get_requests:
-  path: "/api/friends/requests"
+  path: "/api/friends/requests/pending"
   defaults:
     { _controller: '\Drupal\chat_api\Controller\FriendController::getRequests' }
   methods: [GET]
-  requirements: { _access: "TRUE" }
+  requirements: { _user_is_logged_in: "TRUE" }
 
 chat_api.friends.accept:
   path: "/api/friends/requests/{requestId}/accept"
@@ -94,7 +94,7 @@ chat_api.friends.accept:
       _controller: '\Drupal\chat_api\Controller\FriendController::acceptRequest',
     }
   methods: [POST]
-  requirements: { _access: "TRUE" }
+  requirements: { _user_is_logged_in: "TRUE" }
 
 chat_api.friends.decline:
   path: "/api/friends/requests/{requestId}/decline"
@@ -103,7 +103,7 @@ chat_api.friends.decline:
       _controller: '\Drupal\chat_api\Controller\FriendController::declineRequest',
     }
   methods: [POST]
-  requirements: { _access: "TRUE" }
+  requirements: { _user_is_logged_in: "TRUE" }
 
 chat_api.friends.check:
   path: "/api/friends/check"
@@ -112,7 +112,7 @@ chat_api.friends.check:
       _controller: '\Drupal\chat_api\Controller\FriendController::checkFriendship',
     }
   methods: [GET]
-  requirements: { _access: "TRUE" }
+  requirements: { _user_is_logged_in: "TRUE" }
 
 # =============================================================================
 # ADMIN ROUTES - Giao diện quản trị Chat (Chat Administration UI)
@@ -214,7 +214,7 @@ chat_api.test_api:
     _controller: '\Drupal\chat_api\Controller\TestController::testConversationsAPI'
     _title: "Test API"
   requirements:
-    _access: "TRUE"
+    _permission: "administer chat"
 
 # Friend requests management
 chat_api.admin_friend_requests:

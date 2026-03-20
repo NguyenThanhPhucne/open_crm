@@ -4,10 +4,12 @@ namespace Drupal\chat_api\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Site\Settings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\user\Entity\User;
+use Firebase\JWT\JWT;
 
 /**
  * Admin API Controller for AJAX requests.
@@ -354,10 +356,29 @@ class AdminApiController extends ControllerBase {
     }
 
     $node_api_url = 'http://localhost:5001/api/conversations/admin/conversations';
+
+    // Generate a signed JWT so the Node.js backend can enforce RBAC.
+    $currentUser = $this->currentUser();
+    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+    $jwt = JWT::encode(
+      [
+        'userId' => $currentUser->id(),
+        'username' => $currentUser->getAccountName(),
+        'email' => $currentUser->getEmail(),
+        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 24 * 14),
+      ],
+      $key,
+      'HS256'
+    );
     
     try {
       $response = \Drupal::httpClient()->get($node_api_url, [
         'timeout' => 10,
+        'headers' => [
+          'Authorization' => 'Bearer ' . $jwt,
+        ],
       ]);
       
       $statusCode = $response->getStatusCode();
@@ -405,10 +426,29 @@ class AdminApiController extends ControllerBase {
     }
 
     $node_api_url = 'http://localhost:5001/api/conversations/admin/' . $conversation_id;
+
+    // Generate a signed JWT so Node.js can enforce RBAC.
+    $currentUser = $this->currentUser();
+    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+    $jwt = JWT::encode(
+      [
+        'userId' => $currentUser->id(),
+        'username' => $currentUser->getAccountName(),
+        'email' => $currentUser->getEmail(),
+        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 24 * 14),
+      ],
+      $key,
+      'HS256'
+    );
     
     try {
       $response = \Drupal::httpClient()->delete($node_api_url, [
         'timeout' => 10,
+        'headers' => [
+          'Authorization' => 'Bearer ' . $jwt,
+        ],
       ]);
       
       $statusCode = $response->getStatusCode();
