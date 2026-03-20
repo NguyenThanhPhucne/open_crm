@@ -34,7 +34,8 @@
         "drupal/token": "^1.17",
         "drupal/views_bulk_operations": "^4.4",
         "drupal/views_kanban": "^1.0",
-        "drush/drush": "^13.7"
+        "drush/drush": "^13.7",
+        "firebase/php-jwt": "^7.0"
     },
     "conflict": {
         "drupal/drupal": "*"

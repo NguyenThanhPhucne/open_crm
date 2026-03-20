@@ -359,6 +359,14 @@ class CRMAccessService {
    *   The alias for the node_field_data table.
    */
   protected function applyAccessFilteringForSalesRep(&$query, AccountInterface $account, $node_alias, bool $allowSameTeam = FALSE) {
+    // Check if the query object supports leftJoin operations (Entity queries might not)
+    if (!method_exists($query, 'leftJoin')) {
+      // If we cannot join, apply a strict fallback to ensure security:
+      // only return nodes authored by the current user.
+      $query->condition("{$node_alias}.uid", $account->id(), '=');
+      return;
+    }
+
     // Join with owner fields.
     $query->leftJoin('node__field_owner', 'crm_owner', "{$node_alias}.nid = crm_owner.entity_id");
     $query->leftJoin('node__field_assigned_to', 'crm_assigned', "{$node_alias}.nid = crm_assigned.entity_id");
