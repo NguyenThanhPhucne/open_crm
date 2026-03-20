@@ -22,7 +22,7 @@
 .orgs-page {
   /* Use all available width — no fixed max-width that forces a scroll */
   width: 100%;
-  padding: 0 !important;
+  padding: 24px 0;
   box-sizing: border-box;
   animation: crm-page-in 0.25s ease;
 }
@@ -478,8 +478,8 @@ a.button--danger:active {
 .layout-container {
   max-width: 1600px;
   width: 100%;
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0 auto;
+  padding: 0 24px;
   box-sizing: border-box;
 }
 
