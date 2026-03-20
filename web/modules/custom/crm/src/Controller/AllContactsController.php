@@ -354,7 +354,7 @@ class AllContactsController extends ControllerBase {
   .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
 
   /* ── Table card ── */
-  .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,.05)}
   
   .contacts-table thead tr { background:rgba(248,250,252,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
   
