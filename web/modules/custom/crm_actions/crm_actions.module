@@ -32,7 +32,8 @@ function crm_actions_page_top(array &$page_top) {
 
   $current_path = \Drupal::request()->getRequestUri();
 
-  if (str_contains($current_path, '/crm/') ||
+  if ($current_path === '/' ||
+      str_contains($current_path, '/crm/') ||
       str_contains($current_path, '/user/') ||
       str_contains($current_path, '/node/') ||
       str_contains($current_path, '/app/')) {

@@ -614,15 +614,14 @@ class DashboardController extends ControllerBase {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #f0f2f5;
       min-height: 100vh;
-      padding: 20px;
       color: #1e293b;
     }
     
     .dashboard-container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
       animation: fadeIn 0.3s ease-in;
-      padding-top: 0;
+      padding: 24px 0; 
     }
     
     @keyframes fadeIn {
