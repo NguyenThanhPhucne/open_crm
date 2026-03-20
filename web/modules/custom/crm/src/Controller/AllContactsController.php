@@ -23,6 +23,9 @@ class AllContactsController extends ControllerBase {
    * - /crm/all-contacts: Only admin/manager can view
    */
   public function accessView(AccountInterface $account, ?Request $request = NULL) {
+    if ($request === NULL) {
+      $request = \Drupal::request();
+    }
     $current_path = $request->getPathInfo();
     $is_my_view = str_contains($current_path, 'my-contacts');
     
