@@ -207,7 +207,7 @@
         return Promise.resolve(cachedOptions[fieldName]);
     }
 
-    if (fieldName === 'field_deal_stage') {
+    if (fieldName === 'field_stage') {
         return fetch('/api/v1/crm/stages', {
             headers: {
                 'Accept': 'application/json'
@@ -257,27 +257,27 @@
    */
   function saveEdit(cell, entityId, entityType, fieldName, newValue) {
     var $cell = jQuery(cell);
-    var $row = $cell.closest("tr");
-    var originalValue = $cell.attr("data-original-value") || $cell.text();
+    var $row = $cell.closest('tr');
+    var originalValue = $cell.attr('data-original-value') || $cell.text();
 
-    // Show saving state
+    // Show saving state immediately (optimistic)
     $cell.html('<span class="crm-inline-edit__saving">Saving...</span>');
 
-    // Call update API
-    fetch("/api/v1/" + entityType + "/" + entityId + "/" + fieldName, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Csrf-Token": getCsrfToken(),
-      },
-      credentials: "same-origin",
-      body: JSON.stringify({
-        value: newValue,
-      }),
+    // Fetch the CSRF token (async, cached)
+    getCsrfToken().then(function (csrfToken) {
+      return fetch('/api/v1/' + entityType + '/' + entityId + '/' + fieldName, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Csrf-Token': csrfToken,
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ value: newValue }),
+      });
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("HTTP " + response.status);
+          throw new Error('HTTP ' + response.status);
         }
         return response.json();
       })
@@ -289,37 +289,35 @@
         $cell.html(
           '<span class="crm-inline-edit__success">✓</span> <span>' +
             displayValue +
-            "</span>",
+            '</span>',
         );
 
         // Fade to normal after 1s
         setTimeout(function () {
-          $cell.text(displayValue).removeClass("is-editing");
+          $cell.text(displayValue).removeClass('is-editing');
           activeEdit = null;
         }, 1000);
 
-        console.log("[CRM Inline Edit] Saved " + fieldName + " = " + newValue);
+        console.log('[CRM Inline Edit] Saved ' + fieldName + ' = ' + newValue);
 
         // Trigger row updated event
-        $row.trigger("crm.row.updated", [entityId, fieldName, newValue]);
+        $row.trigger('crm.row.updated', [entityId, fieldName, newValue]);
       })
       .catch(function (error) {
         // Error
-        console.error("[CRM Inline Edit] Save failed", error);
+        console.error('[CRM Inline Edit] Save failed', error);
 
         // Show error state
-        $cell.html(
-          '<span class="crm-inline-edit__error">✗ Error saving</span>',
-        );
+        $cell.html('<span class="crm-inline-edit__error">✗ Error saving</span>');
 
         setTimeout(function () {
-          $cell.text(originalValue).removeClass("is-editing");
+          $cell.text(originalValue).removeClass('is-editing');
           activeEdit = null;
         }, 2000);
 
         // Show error toast
         if (window.CRM && window.CRM.toast) {
-          window.CRM.toast("Error saving changes", "error", 4000);
+          window.CRM.toast('Error saving changes', 'error', 4000);
         }
       });
   }
@@ -341,31 +339,31 @@
   }
 
   /**
-   * Get CSRF token from meta tag or cookie.
+   * Get CSRF token (async, cached — matches crm-shared.js pattern).
+   * Tries meta tag first, then falls back to /session/token endpoint.
    */
+  var _cachedCsrfToken = null;
   function getCsrfToken() {
-    // Try meta tag first
-    var token = jQuery('meta[name="csrf-token"]').attr("content");
-
-    if (!token) {
-      // Try cookie
-      token = getValueFromCookie("csrf_token");
+    if (_cachedCsrfToken) {
+      return Promise.resolve(_cachedCsrfToken);
     }
 
-    return token || "";
-  }
-
-  /**
-   * Get value from cookie.
-   */
-  function getValueFromCookie(name) {
-    var cookies = document.cookie.split(";");
-    for (var i = 0; i < cookies.length; i++) {
-      var cookie = cookies[i].trim();
-      if (cookie.startsWith(name + "=")) {
-        return decodeURIComponent(cookie.substring(name.length + 1));
-      }
+    // Try meta tag first (fastest path)
+    var metaToken = jQuery('meta[name="csrf-token"]').attr('content');
+    if (metaToken) {
+      _cachedCsrfToken = metaToken;
+      return Promise.resolve(metaToken);
     }
-    return "";
+
+    // Fetch from Drupal session/token endpoint (reliable fallback)
+    return fetch('/session/token', { credentials: 'same-origin' })
+      .then(function (r) { return r.text(); })
+      .then(function (token) {
+        _cachedCsrfToken = token.trim();
+        return _cachedCsrfToken;
+      })
+      .catch(function () {
+        return '';
+      });
   }
 })(Drupal, jQuery);

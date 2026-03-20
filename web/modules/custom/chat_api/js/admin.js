@@ -55,7 +55,38 @@
               )
             ) {
               console.log("Delete conversation:", conversationId);
-              alert("TODO: Implement conversation deletion");
+              btn.disabled = true;
+              btn.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+              const drupalDeleteUrl = `/admin/chat/api/conversations/${conversationId}/delete`;
+              fetch(drupalDeleteUrl, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data && data.success) {
+                    window.location.href = "/admin/chat/conversations";
+                  } else {
+                    alert(
+                      data?.message ||
+                        "Failed to delete conversation. Please try again.",
+                    );
+                    btn.disabled = false;
+                    btn.innerHTML =
+                      '<i class="fas fa-trash"></i> Delete Conversation';
+                  }
+                })
+                .catch((error) => {
+                  console.error("Delete conversation error:", error);
+                  alert("Error deleting conversation. Please try again.");
+                  btn.disabled = false;
+                  btn.innerHTML =
+                    '<i class="fas fa-trash"></i> Delete Conversation';
+                });
             }
           });
         }

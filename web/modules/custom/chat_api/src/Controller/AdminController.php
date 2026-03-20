@@ -8,6 +8,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
+use Drupal\Core\Site\Settings;
+use Firebase\JWT\JWT;
 
 /**
  * Admin Controller - Bộ não quản lý trang Admin Chat.
@@ -476,6 +478,21 @@ class AdminController extends ControllerBase {
   public function conversationsList() {
     // Lấy dữ liệu thời gian thực từ MongoDB qua API Node.js
     $node_api_url = 'http://localhost:5001/api/conversations/admin/conversations';
+
+    $currentUser = $this->currentUser();
+    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+    $jwt = JWT::encode(
+      [
+        'userId' => $currentUser->id(),
+        'username' => $currentUser->getAccountName(),
+        'email' => $currentUser->getEmail(),
+        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 24 * 14),
+      ],
+      $key,
+      'HS256'
+    );
     
     \Drupal::logger('chat_api')->info('📊 [AdminController] Đang lấy dữ liệu từ: @url', [
       '@url' => $node_api_url,
@@ -484,6 +501,9 @@ class AdminController extends ControllerBase {
     try {
       $response = \Drupal::httpClient()->get($node_api_url, [
         'timeout' => 5,
+        'headers' => [
+          'Authorization' => 'Bearer ' . $jwt,
+        ],
       ]);
       
       $statusCode = $response->getStatusCode();
@@ -572,9 +592,27 @@ class AdminController extends ControllerBase {
     // Lấy cuộc trò chuyện từ MongoDB qua API Node.js
     $node_api_url = 'http://localhost:5001/api/conversations/admin/' . $conversation_id;
 
+    $currentUser = $this->currentUser();
+    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+    $jwt = JWT::encode(
+      [
+        'userId' => $currentUser->id(),
+        'username' => $currentUser->getAccountName(),
+        'email' => $currentUser->getEmail(),
+        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 24 * 14),
+      ],
+      $key,
+      'HS256'
+    );
+
     try {
       $response = \Drupal::httpClient()->get($node_api_url, [
         'timeout' => 5,
+        'headers' => [
+          'Authorization' => 'Bearer ' . $jwt,
+        ],
       ]);
 
       $statusCode = $response->getStatusCode();
@@ -636,9 +674,27 @@ class AdminController extends ControllerBase {
     
     $node_api_url = 'http://localhost:5001/api/conversations/admin/' . $conversation_id;
 
+    $currentUser = $this->currentUser();
+    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+    $jwt = JWT::encode(
+      [
+        'userId' => $currentUser->id(),
+        'username' => $currentUser->getAccountName(),
+        'email' => $currentUser->getEmail(),
+        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 24 * 14),
+      ],
+      $key,
+      'HS256'
+    );
+
     try {
       $response = \Drupal::httpClient()->delete($node_api_url, [
         'timeout' => 5,
+        'headers' => [
+          'Authorization' => 'Bearer ' . $jwt,
+        ],
       ]);
 
       $statusCode = $response->getStatusCode();

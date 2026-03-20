@@ -1,32 +1,45 @@
+{%
+  set status_cls = 'crm-chat-topbar-status'
+%}
 <div class="crm-realtime-chat-shell" data-crm-realtime-chat>
   <style>
-    .crm-chat-wrapper{display:flex;flex-direction:column;height:calc(100vh - 120px);min-height:420px;background:#f8fafc;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-    .crm-chat-topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0}
-    .crm-chat-topbar-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .crm-chat-topbar-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .crm-chat-topbar-title{font-size:14px;font-weight:700;color:#0f172a;flex:1}
-    .crm-chat-topbar-status{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b;font-weight:500}
-    .crm-chat-status-dot{width:7px;height:7px;border-radius:50%;background:#d1d5db;flex-shrink:0;transition:background .3s}
-    .crm-chat-topbar-status.is-ok .crm-chat-status-dot{background:#10b981}
+    .crm-chat-wrapper{display:flex;flex-direction:column;height:calc(100vh - 120px);min-height:480px;background:#f8fafc;border-radius:18px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05)}
+    .crm-chat-topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0}
+    .crm-chat-topbar-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(99,102,241,.35)}
+    .crm-chat-topbar-icon svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .crm-chat-topbar-title{font-size:14px;font-weight:700;color:#0f172a;flex:1;letter-spacing:-.01em}
+    .crm-chat-topbar-status{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b;font-weight:500;padding:4px 10px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;transition:all .3s}
+    .crm-chat-status-dot{width:7px;height:7px;border-radius:50%;background:#d1d5db;flex-shrink:0;transition:background .3s,box-shadow .3s}
+    .crm-chat-topbar-status.is-ok .crm-chat-status-dot{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.5)}
+    .crm-chat-topbar-status.is-ok{color:#064e3b;background:#ecfdf5;border-color:#a7f3d0}
     .crm-chat-topbar-status.is-error .crm-chat-status-dot{background:#ef4444}
+    .crm-chat-topbar-status.is-error{color:#7f1d1d;background:#fef2f2;border-color:#fecaca}
+    .crm-chat-topbar-status.is-connecting .crm-chat-status-dot{background:#f59e0b;animation:statusPulse 1.5s ease-in-out infinite}
+    @keyframes statusPulse{0%,100%{opacity:1}50%{opacity:.4}}
     .crm-chat-newtab{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600;color:#6366f1;border:1.5px solid #c7d2fe;background:#fff;text-decoration:none;transition:all .15s;flex-shrink:0}
-    .crm-chat-newtab:hover{background:#ede9fe;border-color:#a5b4fc}
+    .crm-chat-newtab:hover{background:#ede9fe;border-color:#a5b4fc;transform:translateY(-1px)}
     .crm-chat-newtab svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-    .crm-chat-skeleton{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
-    .crm-chat-skeleton-row{display:flex;align-items:center;gap:10px}
-    .crm-chat-skeleton-av{width:36px;height:36px;border-radius:50%;background:#e2e8f0;flex-shrink:0;animation:crmPulse 1.5s ease-in-out infinite}
-    .crm-chat-skeleton-bubble{height:36px;border-radius:12px;background:#e2e8f0;flex:1;animation:crmPulse 1.5s ease-in-out infinite}
-    .crm-chat-skeleton-bubble.short{max-width:220px}
+    .crm-chat-kbd-hint{font-size:10px;color:#94a3b8;padding:3px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-right:4px;font-family:inherit;display:none}
+    @media(min-width:1024px){.crm-chat-kbd-hint{display:inline-flex;align-items:center;gap:4px}}
+    .crm-chat-skeleton{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+    .crm-chat-skeleton-row{display:flex;align-items:flex-end;gap:10px}
+    .crm-chat-skeleton-av{width:36px;height:36px;border-radius:50%;background:#e2e8f0;flex-shrink:0;animation:crmPulse 1.6s ease-in-out infinite}
+    .crm-chat-skeleton-wrap{display:flex;flex-direction:column;gap:5px;flex:1}
+    .crm-chat-skeleton-bubble{height:18px;border-radius:12px;background:#e2e8f0;animation:crmPulse 1.6s ease-in-out .1s infinite}
+    .crm-chat-skeleton-bubble.short{max-width:160px}
+    .crm-chat-skeleton-bubble.sub{height:12px;max-width:200px;background:#eef2f8;margin-top:2px}
     .crm-chat-skeleton-row.right{flex-direction:row-reverse}
-    .crm-chat-skeleton-row.right .crm-chat-skeleton-bubble{background:#c7d2fe}
-    @keyframes crmPulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .crm-chat-skeleton-row.right .crm-chat-skeleton-bubble{background:#ddd6fe}
+    @keyframes crmPulse{0%,100%{opacity:1}50%{opacity:.35}}
     .crm-realtime-chat-frame-wrap{flex:1;position:relative;overflow:hidden}
     .crm-realtime-chat-frame{position:absolute;inset:0;width:100%;height:100%;border:none;opacity:0;transition:opacity .4s ease}
     .crm-realtime-chat-frame.is-loaded{opacity:1}
-    .crm-chat-fallback{padding:40px 24px;text-align:center;color:#64748b}
-    .crm-chat-fallback p{margin-bottom:12px;font-size:14px}
-    .crm-chat-retry-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;color:#6366f1;border:1.5px solid #c7d2fe;background:#fff;cursor:pointer;transition:all .15s;text-decoration:none}
-    .crm-chat-retry-btn:hover{background:#ede9fe}
+    .crm-chat-fallback{padding:48px 28px;text-align:center;color:#64748b}
+    .crm-chat-fallback-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 14px rgba(99,102,241,.3)}
+    .crm-chat-fallback-icon svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .crm-chat-fallback p{margin-bottom:16px;font-size:14px;line-height:1.6}
+    .crm-chat-retry-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;color:#6366f1;border:1.5px solid #c7d2fe;background:#fff;cursor:pointer;transition:all .15s;text-decoration:none}
+    .crm-chat-retry-btn:hover{background:#ede9fe;transform:translateY(-1px)}
   </style>
 
   <div class="crm-chat-wrapper">
@@ -39,6 +52,10 @@
         <span class="crm-chat-status-dot"></span>
         <span class="crm-chat-status-text">Connecting…</span>
       </span>
+      <kbd class="crm-chat-kbd-hint" title="Keyboard shortcut to open chat">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Ctrl+Shift+C
+      </kbd>
       <a href="{{ chat_frontend_url }}" target="_blank" rel="noopener" class="crm-chat-newtab">
         <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         Open in tab
@@ -47,11 +64,38 @@
 
     {# Loading skeleton — hidden once iframe loads #}
     <div class="crm-chat-skeleton" id="crm-chat-skeleton" aria-hidden="true">
-      <div class="crm-chat-skeleton-row"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble short"></div></div>
-      <div class="crm-chat-skeleton-row right"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble"></div></div>
-      <div class="crm-chat-skeleton-row"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble"></div></div>
-      <div class="crm-chat-skeleton-row right"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble short"></div></div>
-      <div class="crm-chat-skeleton-row"><div class="crm-chat-skeleton-av"></div><div class="crm-chat-skeleton-bubble short"></div></div>
+      <div class="crm-chat-skeleton-row">
+        <div class="crm-chat-skeleton-av"></div>
+        <div class="crm-chat-skeleton-wrap">
+          <div class="crm-chat-skeleton-bubble short"></div>
+          <div class="crm-chat-skeleton-bubble sub"></div>
+        </div>
+      </div>
+      <div class="crm-chat-skeleton-row right">
+        <div class="crm-chat-skeleton-av"></div>
+        <div class="crm-chat-skeleton-wrap">
+          <div class="crm-chat-skeleton-bubble"></div>
+        </div>
+      </div>
+      <div class="crm-chat-skeleton-row">
+        <div class="crm-chat-skeleton-av"></div>
+        <div class="crm-chat-skeleton-wrap">
+          <div class="crm-chat-skeleton-bubble"></div>
+          <div class="crm-chat-skeleton-bubble sub short"></div>
+        </div>
+      </div>
+      <div class="crm-chat-skeleton-row right">
+        <div class="crm-chat-skeleton-av"></div>
+        <div class="crm-chat-skeleton-wrap">
+          <div class="crm-chat-skeleton-bubble short"></div>
+        </div>
+      </div>
+      <div class="crm-chat-skeleton-row">
+        <div class="crm-chat-skeleton-av"></div>
+        <div class="crm-chat-skeleton-wrap">
+          <div class="crm-chat-skeleton-bubble short"></div>
+        </div>
+      </div>
     </div>
 
     <div class="crm-realtime-chat-frame-wrap" style="display:none" id="crm-chat-frame-wrap">
@@ -65,9 +109,11 @@
     </div>
 
     <div class="crm-chat-fallback" data-crm-chat-fallback hidden>
-      <p>Chat is taking longer than expected. You can open it in a new tab or retry.</p>
+      <div class="crm-chat-fallback-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <p>Chat is taking longer than expected.<br>Open in a new tab or retry loading.</p>
       <a href="{{ chat_frontend_url }}" target="_blank" rel="noopener" class="crm-chat-retry-btn">Open Full Chat</a>
     </div>
   </div>
 </div>
-

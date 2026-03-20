@@ -120,7 +120,6 @@ class UserController extends ControllerBase {
     // 3. Query tìm User trong Database
     // Tìm chính xác theo tên đăng nhập (name)
     $ids = \Drupal::entityQuery('user')
-      ->accessCheck(FALSE) // Bỏ qua check quyền để tìm được mọi user
       ->condition('name', $username)
       ->execute();
 
@@ -130,7 +129,33 @@ class UserController extends ControllerBase {
     }
 
     // 4. Load thông tin người tìm được (người đầu tiên)
-    $user = User::load(reset($ids));
+    $targetUid = reset($ids);
+    $user = User::load($targetUid);
+
+    if (!$user) {
+      return new JsonResponse(['user' => null]);
+    }
+
+    // Restrict search results by CRM role hierarchy:
+    // - administrator: can search any user
+    // - sales_manager: can search users in the same team
+    // - sales_rep: can only search themselves
+    $accessService = \Drupal::service('crm.access_service');
+    $currentUid = $currentUser->id();
+
+    if ($currentUser->hasRole('administrator')) {
+      // allowed
+    } elseif ($currentUser->hasRole('sales_manager')) {
+      if (!$accessService->isSameTeam($currentUid, (int) $targetUid)) {
+        return new JsonResponse(['user' => null]);
+      }
+    } elseif ($currentUser->hasRole('sales_rep')) {
+      if ((int) $targetUid !== (int) $currentUid) {
+        return new JsonResponse(['user' => null]);
+      }
+    } else {
+      return new JsonResponse(['user' => null]);
+    }
     
     // Lấy thông tin chi tiết để hiển thị
     $avatar = $user->hasField('field_avatar_url') ? $user->get('field_avatar_url')->value : null;

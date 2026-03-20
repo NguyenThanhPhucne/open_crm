@@ -17,8 +17,8 @@ use Drupal\user\UserInterface;
  *
  * Access Model:
  * - Administrator: Full access
- * - Sales Manager: Access to all team data
- * - Sales Rep: Access to own data + same team data
+ * - Sales Manager: Access to their team data (manage sales reps)
+ * - Sales Rep: Access to own data only
  * - Anonymous: No access to CRM data
  */
 class CRMAccessService {
@@ -141,10 +141,23 @@ class CRMAccessService {
       return TRUE;
     }
 
-    // Sales Manager gets full access.
+    // Sales Manager: can manage sales reps within the same team.
+    // (Do NOT grant unrestricted access to all CRM content.)
     if ($account->hasRole('sales_manager')) {
-      $this->log('allowed', $account, $entity, $op, 'Sales Manager');
-      return TRUE;
+      $owner_id = $this->getOwnerOfEntity($entity);
+
+      if ($owner_id == $account->id()) {
+        $this->log('allowed', $account, $entity, $op, 'Sales Manager — Entity owner');
+        return TRUE;
+      }
+
+      if ($owner_id && $this->isSameTeam($account->id(), (int) $owner_id)) {
+        $this->log('allowed', $account, $entity, $op, 'Sales Manager — Same team');
+        return TRUE;
+      }
+
+      $this->log('denied', $account, $entity, $op, 'Sales Manager — Not owner and not same team');
+      return FALSE;
     }
 
     // Bypass permission.
@@ -159,19 +172,13 @@ class CRMAccessService {
       return FALSE;
     }
 
-    // Sales Rep: check ownership and team.
+    // Sales Rep: only their own resources (no same-team expansion).
     if ($account->hasRole('sales_rep')) {
       $owner_id = $this->getOwnerOfEntity($entity);
 
       // Check 1: Is current user the owner?
       if ($owner_id == $account->id()) {
         $this->log('allowed', $account, $entity, $op, 'Entity owner');
-        return TRUE;
-      }
-
-      // Check 2: Same team?
-      if ($this->isSameTeam($account->id(), $owner_id)) {
-        $this->log('allowed', $account, $entity, $op, 'Same team member');
         return TRUE;
       }
 
@@ -306,9 +313,8 @@ class CRMAccessService {
    *   The alias for the node_field_data table.
    */
   public function applyAccessFiltering(&$query, AccountInterface $account, $node_alias = 'n') {
-    // Admin/Manager: no filtering needed.
-    if ($account->hasRole('administrator') || 
-        $account->hasRole('sales_manager') ||
+    // Admin: no filtering needed.
+    if ($account->hasRole('administrator') ||
         $account->hasPermission('bypass crm team access')) {
       return;
     }
@@ -319,9 +325,25 @@ class CRMAccessService {
       return;
     }
 
-    // Sales Rep: filter by ownership and team.
+    // Sales Rep: only own resources (no same-team expansion).
     if ($account->hasRole('sales_rep')) {
-      $this->applyAccessFilteringForSalesRep($query, $account, $node_alias);
+      $this->applyAccessFilteringForSalesRep(
+        $query,
+        $account,
+        $node_alias,
+        FALSE
+      );
+      return;
+    }
+
+    // Sales Manager: filter by ownership plus same-team expansion.
+    if ($account->hasRole('sales_manager')) {
+      $this->applyAccessFilteringForSalesRep(
+        $query,
+        $account,
+        $node_alias,
+        TRUE
+      );
       return;
     }
   }
@@ -336,7 +358,7 @@ class CRMAccessService {
    * @param string $node_alias
    *   The alias for the node_field_data table.
    */
-  protected function applyAccessFilteringForSalesRep(&$query, AccountInterface $account, $node_alias) {
+  protected function applyAccessFilteringForSalesRep(&$query, AccountInterface $account, $node_alias, bool $allowSameTeam = FALSE) {
     // Join with owner fields.
     $query->leftJoin('node__field_owner', 'crm_owner', "{$node_alias}.nid = crm_owner.entity_id");
     $query->leftJoin('node__field_assigned_to', 'crm_assigned', "{$node_alias}.nid = crm_assigned.entity_id");
@@ -348,14 +370,18 @@ class CRMAccessService {
       ->condition('crm_assigned.field_assigned_to_target_id', $account->id(), '=')
       ->condition('crm_staff.field_assigned_staff_target_id', $account->id(), '=');
 
-    // Optional: Add team-based filtering.
-    $user_team = $this->getUserTeam($account->id());
-    if ($user_team) {
-      // Join to get owner's team.
-      $query->leftJoin('users_field_data', 'crm_node_owner', "{$node_alias}.uid = crm_node_owner.uid");
-      $query->leftJoin('user__field_team', 'crm_owner_team', "crm_node_owner.uid = crm_owner_team.entity_id");
+    // Optional: Add team-based filtering (used only for sales_manager).
+    if ($allowSameTeam) {
+      $user_team = $this->getUserTeam($account->id());
+    }
 
-      // Allow if owner is in same team.
+    if (!empty($allowSameTeam) && $user_team) {
+      // Join on field_owner_target_id (the CRM ownership field), NOT the Drupal
+      // node author uid. Using uid would allow access based on who created the
+      // Drupal node, which is different from who "owns" the CRM record.
+      $query->leftJoin('user__field_team', 'crm_owner_team', "crm_owner.field_owner_target_id = crm_owner_team.entity_id");
+
+      // Allow if the CRM record's owner is in the same team as the current user.
       $or->condition('crm_owner_team.field_team_target_id', $user_team, '=');
     }
 

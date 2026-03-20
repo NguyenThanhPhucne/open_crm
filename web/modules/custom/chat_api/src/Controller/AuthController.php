@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\user\Entity\User;
 use Drupal\Core\Site\Settings;
+use Firebase\JWT\JWT;
 
 class AuthController extends ControllerBase {
 
@@ -73,7 +74,18 @@ class AuthController extends ControllerBase {
     // 1. CẤP COOKIE SESSION (Cho Drupal API)
     user_login_finalize($user);
 
-    // 2. CẤP JWT TOKEN (Cho Node.js Chat)
+    // 2. Lấy displayName và avatarUrl từ Drupal fields (đồng bộ với /api/users/me)
+    $displayName = $user->getAccountName();
+    if ($user->hasField('field_display_name') && !$user->get('field_display_name')->isEmpty()) {
+      $displayName = (string) $user->get('field_display_name')->value;
+    }
+
+    $avatarUrl = null;
+    if ($user->hasField('field_avatar_url') && !$user->get('field_avatar_url')->isEmpty()) {
+      $avatarUrl = (string) $user->get('field_avatar_url')->value;
+    }
+
+    // 3. CẤP JWT TOKEN (Cho Node.js Chat) - dùng Firebase JWT library nhất quán
     $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
     $jwt = $this->generateJwt($user, $key);
 
@@ -84,8 +96,8 @@ class AuthController extends ControllerBase {
         '_id' => $user->id(),
         'uid' => $user->id(),
         'username' => $user->getAccountName(),
-        'displayName' => $user->getAccountName(),
-        'avatarUrl' => null, 
+        'displayName' => $displayName,
+        'avatarUrl' => $avatarUrl, 
         'csrf_token' => \Drupal::service('csrf_token')->get('rest'),
       ]
     ], 200);
@@ -116,26 +128,19 @@ class AuthController extends ControllerBase {
   }
 
   /**
-   * Helper: Tạo JWT thủ công (ĐÃ SỬA: Thêm username và email)
+   * Helper: Tạo JWT dùng Firebase JWT library (nhất quán với FriendController decode).
    */
-  private function generateJwt($user, $key) {
-    $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
-    
-    // --- QUAN TRỌNG: Thêm username để Node.js sync ---
-    $payload = json_encode([
-      'userId' => $user->id(),
-      'username' => $user->getAccountName(), // <--- DÒNG NÀY CỨU BẠN KHỎI LỖI 404
-      'email' => $user->getEmail(),
-      'iat' => time(),
-      'exp' => time() + (60 * 60 * 24 * 14) 
-    ]);
+  private function generateJwt($user, $key): string {
+    $payload = [
+      'userId'   => $user->id(),
+      'username' => $user->getAccountName(),
+      'email'    => $user->getEmail(),
+      // Include Drupal roles so the Node.js backend can enforce RBAC.
+      'roles'    => method_exists($user, 'getRoles') ? $user->getRoles() : [],
+      'iat'      => time(),
+      'exp'      => time() + (60 * 60 * 24 * 14), // 14 ngày
+    ];
 
-    $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
-    $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
-
-    $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $key, true);
-    $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
-
-    return $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
+    return JWT::encode($payload, $key, 'HS256');
   }
 }

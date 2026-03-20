@@ -420,10 +420,17 @@ function crm_node_presave(NodeInterface $node) {
 
   // CONTACTS - Validation
   if ($bundle === 'contact') {
+    // Log a warning when phone is missing but do NOT block the save.
+    // Blocking with an exception prevents editing existing contacts that
+    // were imported without a phone number (e.g. data migrations, admin imports).
+    // Phone guidance is enforced at the UI form level instead.
     if ($node->get('field_phone')->isEmpty()) {
-      throw new \InvalidArgumentException('Phone number is required for contacts');
+      \Drupal::logger('crm')->warning('Contact "@title" (nid: @nid) saved without a phone number.', [
+        '@title' => $node->getTitle(),
+        '@nid'   => $node->id() ?: 'new',
+      ]);
     }
-    
+
     // Set owner if empty
     if ($node->get('field_owner')->isEmpty() && $current_user->id() > 0) {
       $node->set('field_owner', $current_user->id());

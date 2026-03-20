@@ -32,7 +32,7 @@ class AllContactsController extends ControllerBase {
     }
     
     // All-contacts: only admin/manager can view all contacts
-    $is_admin = in_array('administrator', $account->getRoles()) || $account->id() == 1;
+    $is_admin = $account->hasRole('administrator');
     $is_manager = in_array('sales_manager', $account->getRoles());
     
     return ($is_admin || $is_manager) ? AccessResult::allowed() : AccessResult::forbidden();
@@ -44,7 +44,7 @@ class AllContactsController extends ControllerBase {
   public function view(Request $request) {
     $current_user = \Drupal::currentUser();
     $user_id      = $current_user->id();
-    $is_admin     = in_array('administrator', $current_user->getRoles()) || $user_id == 1;
+    $is_admin     = $current_user->hasRole('administrator');
     $is_manager   = in_array('sales_manager', $current_user->getRoles());
     $can_manage   = $is_admin || $is_manager;
     $current_path = $request->getPathInfo();
