@@ -9,7 +9,6 @@
 
   function log(msg, data = null) {
     if (DEBUG_MODE) {
-      console.log(`[AdminConversations] ${msg}`, data || "");
     }
   }
 
@@ -193,7 +192,6 @@
       window.drupalCreateNotification(message, type);
     } else {
       // Fallback to simple alert
-      console.log(`[${type.toUpperCase()}] ${message}`);
     }
   }
 })();

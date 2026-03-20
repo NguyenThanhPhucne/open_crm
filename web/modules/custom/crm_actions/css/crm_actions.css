@@ -19,12 +19,32 @@
 .contacts-page,
 .acts-page,
 .deals-page,
-.orgs-page {
+.orgs-page,
+.pipeline-page {
   /* Use all available width — no fixed max-width that forces a scroll */
   width: 100%;
   padding: 24px 0;
   box-sizing: border-box;
   animation: crm-page-in 0.25s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+body.path-crm-my-contacts,
+body.path-crm-all-contacts,
+body.path-crm-my-deals,
+body.path-crm-all-deals,
+body.path-crm-all-pipeline,
+body.path-crm-my-pipeline,
+body.path-crm-my-activities,
+body.path-crm-all-activities,
+body.path-crm-my-organizations,
+body.path-crm-all-organizations {
+  /* Always show vertical scrollbar to prevent layout jumping between long tables and short Kanban boards */
+  overflow-y: scroll !important;
 }
 
 @keyframes crm-page-in {
@@ -1458,10 +1478,6 @@ a.button--danger:active {
   box-shadow:
     0 1px 4px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(226, 232, 240, 0.8);
-}
-
-.view-my-deals .gin-table-scroll-wrapper + .gin-table-scroll-wrapper {
-  /* extra spacing already handled by margin-bottom above */
 }
 
 /* Stage header (caption) */

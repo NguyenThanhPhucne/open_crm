@@ -150,7 +150,6 @@
       // handleOptimisticSubmit which sets isSaving=true before leaving.
     }, { capture: true });
 
-    console.log("[CRM Optimistic UI] Initialized form: " + formId);
   }
 
   /**
@@ -180,7 +179,6 @@
   function handleOptimisticSubmit($form, formState) {
     // Prevent concurrent submissions
     if (formState.isSaving) {
-      console.log("[CRM Optimistic UI] Save already in progress");
       return;
     }
 
@@ -279,7 +277,6 @@
       .then(function (data) {
         // Success!
         window.CRM.toast("✓ Changes saved successfully!", "success", 3000);
-        console.log("[CRM Optimistic UI] Save successful", data);
 
         // Update server values
         if (data.values) {
@@ -319,14 +316,6 @@
           !error.message.includes("CONFLICT")
         ) {
           var delay = CRMOptimisticUI.retryDelays[attemptCount] || 5000;
-          console.log(
-            "[CRM Optimistic UI] Retry " +
-              (attemptCount + 1) +
-              " after " +
-              delay +
-              "ms",
-            error,
-          );
 
           formState.saveAttempt = attemptCount + 1;
           setTimeout(function () {
@@ -366,7 +355,6 @@
       $field.removeClass("is-changed");
     }, 1000);
 
-    console.log("[CRM Optimistic UI] Field changed: " + $field.attr("name"));
   }
 
   /**

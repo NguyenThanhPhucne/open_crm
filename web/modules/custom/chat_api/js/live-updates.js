@@ -32,22 +32,10 @@
 
       const config = settings.chatAdminLive;
       if (DEBUG_MODE) {
-        console.log(
-          "[ChatAdminLiveUpdates] ✅ Initialized with config:",
-          config,
-        );
       }
 
       // Log debug info from AdminController
       if (DEBUG_MODE && config.debug) {
-        console.log(
-          "[ChatAdminLiveUpdates] 📊 Initial data from AdminController:",
-          {
-            conversationsCount: config.debug.initialConversationsCount,
-            participantsInFirst: config.debug.initialParticipantsInFirstConv,
-            sampleParticipants: config.debug.sampleParticipants,
-          },
-        );
       }
 
       let updateTimeout;
@@ -65,17 +53,9 @@
         const proxyUrl = "/admin/chat/api/conversations";
 
         if (DEBUG_MODE)
-          console.log(
-            "[ChatAdminLiveUpdates] 📡 Fetching via Drupal proxy:",
-            proxyUrl,
-          );
         fetch(proxyUrl)
           .then((response) => {
             if (DEBUG_MODE)
-              console.log(
-                "[ChatAdminLiveUpdates] 📡 Response status:",
-                response.status,
-              );
             if (!response.ok) {
               throw new Error(`API Error: ${response.status}`);
             }
@@ -83,14 +63,8 @@
           })
           .then((data) => {
             if (DEBUG_MODE)
-              console.log("[ChatAdminLiveUpdates] 📊 Data received:", data);
             if (data.success) {
               if (DEBUG_MODE)
-                console.log(
-                  "[ChatAdminLiveUpdates] ✅ Updating table with",
-                  data.data.length,
-                  "conversations",
-                );
               updateConversationTable(data.data, data.stats);
               updateStats(data.stats);
               if (DEBUG_MODE)
@@ -246,10 +220,6 @@
         const drupalDeleteUrl = `/admin/chat/api/conversations/${conversationId}/delete`;
 
         if (DEBUG_MODE)
-          console.log(
-            "[ChatAdminLiveUpdates] Deleting via proxy:",
-            drupalDeleteUrl,
-          );
 
         const button = rowElement.querySelector(".delete-conversation");
         const originalHTML = button.innerHTML;
@@ -268,7 +238,6 @@
           .then((data) => {
             if (data.success) {
               if (DEBUG_MODE)
-                console.log("[ChatAdminLiveUpdates] ✅ Deleted successfully");
               showUpdateNotification(
                 "✅ Conversation deleted successfully",
                 "success",
@@ -281,7 +250,6 @@
               setTimeout(() => {
                 rowElement.remove();
                 if (DEBUG_MODE)
-                  console.log("[ChatAdminLiveUpdates] Row removed");
               }, 300);
             } else {
               if (DEBUG_MODE)

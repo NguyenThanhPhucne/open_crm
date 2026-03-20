@@ -478,13 +478,6 @@
           errors[0].scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        console.log(
-          "[CRM Node Form] Initialized form: " +
-            formId +
-            " (type: " +
-            type +
-            ")",
-        );
       });
     },
   };

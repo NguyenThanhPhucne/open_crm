@@ -110,15 +110,6 @@
         });
       }
 
-      console.log(
-        "[CRM Lazy Load] Initialized list: " +
-          listId +
-          " (" +
-          listState.totalItems +
-          " items, " +
-          listState.itemsPerPage +
-          " per page)",
-      );
     }
   }
 
@@ -224,7 +215,6 @@
 
     // Prevent concurrent loads
     if (listState.isLoading) {
-      console.log("[CRM Lazy Load] Already loading page for " + listId);
       return;
     }
 
@@ -259,13 +249,6 @@
         : "Loading more items...";
     jQuery("#" + listId + "-indicator-text").text(indicatorText);
 
-    console.log(
-      "[CRM Lazy Load] Loading page " +
-        nextPage +
-        " for " +
-        listId +
-        (attemptCount > 0 ? " (attempt " + (attemptCount + 1) + ")" : ""),
-    );
 
     // Build request URL
     var url = listUrl + "?page=" + nextPage;
@@ -328,7 +311,6 @@
           // Clean up scroll listener if using fallback
           jQuery(window).off("scroll.crm-lazy-load-" + listId);
 
-          console.log("[CRM Lazy Load] Reached end of list: " + listId);
         } else {
           // Check for data integrity
           validateAndAddRows($list, $newRows, listId);
@@ -345,12 +327,6 @@
           // Hide indicator
           $indicator.hide();
 
-          console.log(
-            "[CRM Lazy Load] Loaded " +
-              $newRows.length +
-              " items for " +
-              listId,
-          );
 
           // Trigger custom event for other scripts
           $list.trigger("crm.items.loaded", [$newRows]);
@@ -373,14 +349,6 @@
           !errorMsg.includes("ACCESS_DENIED")
         ) {
           var delay = CRMLazyLoad.retryDelays[attemptCount] || 5000;
-          console.log(
-            "[CRM Lazy Load] Retry " +
-              (attemptCount + 1) +
-              " after " +
-              delay +
-              "ms for " +
-              listId,
-          );
 
           listState.retryAttempt = attemptCount + 1;
           setTimeout(function () {

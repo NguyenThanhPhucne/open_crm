@@ -244,7 +244,7 @@ function crm_form_user_form_alter(&$form, FormStateInterface $form_state) {
 
   /** @var \Drupal\user\UserInterface|null $account */
   $account = $form_object->getEntity();
-  if (!$account) {
+  if (!$account || $account->isNew()) {
     return;
   }
 

@@ -54,7 +54,6 @@
                 "Are you sure you want to delete this conversation? This action cannot be undone.",
               )
             ) {
-              console.log("Delete conversation:", conversationId);
               btn.disabled = true;
               btn.innerHTML =
                 '<i class="fas fa-spinner fa-spin"></i> Deleting...';

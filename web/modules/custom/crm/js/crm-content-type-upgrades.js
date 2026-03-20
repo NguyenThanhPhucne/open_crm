@@ -50,7 +50,6 @@
             });
           }
 
-          console.log("[CRM Type Improve] Contact form enhanced");
         },
       );
     },
@@ -82,7 +81,6 @@
           // Organization size auto-calculation
           setupOrganizationSizeAutoCalculation(form);
 
-          console.log("[CRM Type Improve] Organization form enhanced");
         },
       );
     },
@@ -122,7 +120,6 @@
           // Calculate expected revenue (amount * probability)
           setupDealExpectedRevenueCalculation(form);
 
-          console.log("[CRM Type Improve] Deal form enhanced");
         },
       );
     },
@@ -149,7 +146,6 @@
             });
           }
 
-          console.log("[CRM Type Improve] Activity form enhanced");
         },
       );
     },

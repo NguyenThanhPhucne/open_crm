@@ -275,8 +275,6 @@ class AllOrganizationsController extends ControllerBase {
 <script src="https://unpkg.com/lucide@latest"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;background:#f8fafc;color:#1e293b}
 
   /* ── Page shell ── */
   .orgs-page{width:100%;padding:24px 28px;box-sizing:border-box;animation:fadeIn .3s ease}

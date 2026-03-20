@@ -15,15 +15,11 @@
             header.setAttribute("data-chat-table-sort-processed", "true");
             header.style.cursor = "pointer";
             header.addEventListener("click", function () {
-              console.log("TODO: Implement table sorting");
             });
           }
         },
       );
 
-      // TODO: Add row selection
-      // TODO: Add bulk actions
-      // TODO: Add pagination enhancements
     },
   };
 })(Drupal);

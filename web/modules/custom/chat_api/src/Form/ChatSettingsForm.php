@@ -174,7 +174,6 @@ class ChatSettingsForm extends ConfigFormBase {
       $form_state->setErrorByName('nodejs_backend_url', $this->t('Please enter a valid URL.'));
     }
 
-    // TODO: Add more validation if needed
   }
 
   /**
@@ -203,7 +202,6 @@ class ChatSettingsForm extends ConfigFormBase {
 
     parent::submitForm($form, $form_state);
 
-    // TODO: Sync settings to Node.js backend
   }
 
 }

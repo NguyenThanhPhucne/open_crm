@@ -17,7 +17,6 @@ charts:
   dependencies:
     - core/drupal
     - chat_api/admin
-  # TODO: Add Chart.js CDN or local library
   # For now, we'll use CDN in template
 
 admin-tables:

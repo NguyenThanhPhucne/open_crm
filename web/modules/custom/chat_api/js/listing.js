@@ -355,7 +355,6 @@
     refreshUserData: function () {
       // This would call an AJAX endpoint to get updated user stats
       // Example: /admin/chat/api/stats
-      console.log("Refreshing user data...");
     },
   };
 })(Drupal, drupalSettings);

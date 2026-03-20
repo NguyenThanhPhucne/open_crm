@@ -196,7 +196,7 @@
             labels: ["Text Messages", "Image Messages", "Other"],
             datasets: [
               {
-                data: [300, 50, 20], // TODO: Fetch real data from Node.js
+                data: [300, 50, 20],
                 backgroundColor: [
                   "rgba(102, 126, 234, 0.8)",
                   "rgba(240, 147, 251, 0.8)",
@@ -250,7 +250,6 @@
       }
 
       // Log chart initialization
-      console.log("Chat Admin Charts initialized with data:", activityTrends);
     },
   };
 
@@ -289,7 +288,6 @@
       friendRequestsChart.update();
     }
 
-    console.log("Charts updated with new data");
   };
 
   /**

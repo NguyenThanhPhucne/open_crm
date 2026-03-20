@@ -1,6 +1,6 @@
 body.path-user .gin--edit-form,
 body.path-user {
-  background: #f0f2f5 !important;
+  background: #f8fafc !important;
 }
 
 @keyframes profFadeIn {
@@ -21,17 +21,25 @@ body.path-user {
   animation: profFadeIn 0.35s ease both;
 }
 
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .crm-user-edit-hero {
   margin-bottom: 24px;
   background: #fff;
   border-radius: 0 0 16px 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 
 .crm-user-edit-cover {
-  height: 148px;
-  background: linear-gradient(130deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%);
+  height: 160px;
+  background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #ec4899, #6366f1);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
   position: relative;
   overflow: hidden;
 }
@@ -41,9 +49,9 @@ body.path-user {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 .crm-user-edit-cover::after {
@@ -51,9 +59,9 @@ body.path-user {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 55% 90% at 80% 50%,
-    rgba(139, 92, 246, 0.28) 0%,
-    transparent 65%
+    ellipse at bottom right,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 60%
   );
 }
 
@@ -75,13 +83,14 @@ body.path-user {
 
 .crm-user-edit-avatar,
 .crm-user-edit-avatar--placeholder {
-  width: 100px;
-  height: 100px;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
   border: 4px solid #fff;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12);
   display: block;
   object-fit: cover;
+  background: #fff;
 }
 
 .crm-user-edit-avatar--placeholder {
@@ -154,16 +163,19 @@ body.path-user {
   font-size: 12px;
   font-weight: 600;
   color: #2563eb;
-  border: 1.5px solid #2563eb;
+  border: 1px solid #2563eb;
   background: #fff;
   text-decoration: none;
-  transition: background 0.15s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .crm-user-edit-inline-link:hover {
   background: #eff6ff;
   text-decoration: none;
   color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
 
 .crm-user-edit-hero__subtitle {
@@ -209,10 +221,11 @@ body.path-user {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   cursor: pointer;
   border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .crm-user-edit-btn--primary {
@@ -224,12 +237,14 @@ body.path-user {
   background: #1d4ed8;
   color: #fff !important;
   text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .crm-user-edit-btn--secondary {
   background: #fff;
   color: #475569 !important;
-  border: 1.5px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
 }
 
 .crm-user-edit-btn--secondary:hover {
@@ -237,6 +252,8 @@ body.path-user {
   border-color: #cbd5e1;
   color: #1e293b !important;
   text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .crm-user-edit-shell {
@@ -253,9 +270,14 @@ body.path-user {
 
 .crm-user-edit-card {
   background: #fff;
-  border-radius: 12px;
-  padding: 20px 22px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.25s ease;
+}
+
+.crm-user-edit-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .crm-user-edit-card__header {

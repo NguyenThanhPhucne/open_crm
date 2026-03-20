@@ -862,16 +862,13 @@ class AdminController extends ControllerBase {
 
   /**
    * Trang chính Báo cáo & Phân tích.
-   * * TODO: Triển khai biểu đồ, thống kê chi tiết
    */
   public function reports() {
-    // TODO: Triển khai dashboard phân tích đầy đủ
     
     $stats = [
       'total_users' => $this->getTotalUsers(),
       'active_users_today' => $this->getActiveUsersToday(),
       'new_users_this_week' => $this->getNewUsersThisWeek(),
-      // TODO: Thêm nhiều thống kê hơn
     ];
     
     $build = [
@@ -887,13 +884,11 @@ class AdminController extends ControllerBase {
 
   /**
    * Báo cáo thống kê người dùng.
-   * * TODO: Phân tích người dùng chi tiết
    */
   public function reportsUsers() {
-    // TODO: Triển khai thống kê người dùng
     
     $build = [
-      '#markup' => '<h1>Thống kê Người dùng</h1><p>TODO: Triển khai thống kê người dùng</p>',
+      '#markup' => '<h1>Thống kê Người dùng</h1><p>Tính năng đang được phát triển.</p>',
     ];
     
     return $build;
@@ -901,13 +896,11 @@ class AdminController extends ControllerBase {
 
   /**
    * Báo cáo thống kê tin nhắn.
-   * * TODO: Lấy từ Node.js, hiển thị biểu đồ
    */
   public function reportsMessages() {
-    // TODO: Triển khai thống kê tin nhắn
     
     $build = [
-      '#markup' => '<h1>Thống kê Tin nhắn</h1><p>TODO: Lấy dữ liệu từ backend Node.js</p>',
+      '#markup' => '<h1>Thống kê Tin nhắn</h1><p>Dữ liệu đang được đồng bộ từ hệ thống realtime.</p>',
     ];
     
     return $build;

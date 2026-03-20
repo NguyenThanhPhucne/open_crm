@@ -74,7 +74,6 @@
       }
     });
 
-    console.log("[CRM Inline Edit] Initialized row: " + entityId);
   }
 
   /**
@@ -144,7 +143,6 @@
       }, 200);
     });
 
-    console.log("[CRM Inline Edit] Started editing: " + fieldName);
   }
 
   /**
@@ -298,7 +296,6 @@
           activeEdit = null;
         }, 1000);
 
-        console.log('[CRM Inline Edit] Saved ' + fieldName + ' = ' + newValue);
 
         // Trigger row updated event
         $row.trigger('crm.row.updated', [entityId, fieldName, newValue]);
@@ -335,7 +332,6 @@
     $cell.text(originalValue).removeClass("is-editing");
     activeEdit = null;
 
-    console.log("[CRM Inline Edit] Cancelled edit");
   }
 
   /**

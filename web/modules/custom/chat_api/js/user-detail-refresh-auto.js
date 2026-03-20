@@ -13,7 +13,6 @@
 
   // Function to refresh page with cache-busting
   function refreshPage(reason = "") {
-    console.log("🔄 Refreshing page... (" + reason + ")");
     const url = window.location.href.split("?")[0];
     window.location.href = url + "?_t=" + Date.now();
   }
@@ -29,7 +28,6 @@
   // Reload khi focus lại
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden && Date.now() - lastRefresh > interval) {
-      console.log("📱 Page focused, reloading...");
       lastRefresh = Date.now();
       setTimeout(() => refreshPage("focus regained"), 1000);
     }
@@ -47,27 +45,18 @@
 
       // Listen for friend request acceptance events
       socket.on("admin:friend-request-accepted", function (data) {
-        console.log(
-          "🔔 [Socket] Friend request accepted event received:",
-          data,
-        );
-        console.log("   Current UID: " + uid);
-        console.log("   Event toDrupalId: " + data.toDrupalId);
 
         // If this event affects the current user being viewed, refresh
         if (data.toDrupalId && data.toDrupalId == uid) {
-          console.log("📢 [Socket] This affects current user! Refreshing...");
           lastRefresh = Date.now();
           setTimeout(() => refreshPage("socket event"), 500);
         }
       });
 
       socket.on("connect", function () {
-        console.log("✅ [Socket] Connected to backend");
       });
 
       socket.on("disconnect", function () {
-        console.log("❌ [Socket] Disconnected from backend");
       });
     } catch (error) {
       console.warn("⚠️ Socket.IO not available or failed to connect:", error);

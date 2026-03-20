@@ -65,7 +65,6 @@
         newData.stats &&
         newData.stats.pending_received !== oldPendingReceived
       ) {
-        console.log("Detected change in pending_received, reloading page...");
         window.location.reload();
         return;
       }
@@ -79,7 +78,6 @@
       );
 
       if (newData.stats && newData.stats.friends_count !== oldCount) {
-        console.log("Detected change in friends_count, reloading page...");
         window.location.reload();
         return;
       }
@@ -92,10 +90,8 @@
   // Cũng kiểm tra khi page có focus trở lại
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) {
-      console.log("Page regained focus, checking for updates...");
       checkForUpdates();
     }
   });
 
-  console.log("User detail auto-refresh initialized");
 })();
