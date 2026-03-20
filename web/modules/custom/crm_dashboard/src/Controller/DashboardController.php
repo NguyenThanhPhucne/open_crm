@@ -621,7 +621,7 @@ class DashboardController extends ControllerBase {
       max-width: 1600px;
       margin: 0 auto;
       animation: fadeIn 0.3s ease-in;
-      padding: 24px 0; 
+      padding: 0; 
     }
     
     @keyframes fadeIn {
