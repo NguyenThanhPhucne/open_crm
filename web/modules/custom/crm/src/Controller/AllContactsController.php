@@ -304,7 +304,7 @@ class AllContactsController extends ControllerBase {
   body{font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;background:#f8fafc;color:#1e293b}
 
   /* ── Page shell ── */
-  .contacts-page{max-width:1400px;margin:0 auto;animation:fadeIn .3s ease}
+  .contacts-page{width:100%;padding:24px 28px;box-sizing:border-box;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* ── Stats bar ── */
@@ -363,16 +363,9 @@ class AllContactsController extends ControllerBase {
   .contacts-table tbody tr:last-child{border-bottom:none}
   
   
-  /* Column widths */
-  .contacts-table .col-contact{width:200px}
-  .contacts-table .col-org{width:130px}
-  .contacts-table .col-phone{width:120px}
-  .contacts-table .col-email{width:155px}
-  .contacts-table .col-type{width:85px}
-  .contacts-table .col-source{width:80px}
-  .contacts-table .col-owner{width:90px}
-  .contacts-table .col-updated{width:68px}
-  .contacts-table .col-actions{width:76px}
+  /* Column widths: let browser auto-distribute — no fixed px values that overflow */
+  .contacts-table .col-chk{width:36px;flex-shrink:0}
+  .contacts-table .col-actions{width:80px;flex-shrink:0}
   /* Name cell */
   .td-name{display:flex;align-items:center;gap:9px}
   .contact-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;border:1.5px solid transparent;box-shadow:0 2px 8px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.85)}

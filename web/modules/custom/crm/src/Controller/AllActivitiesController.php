@@ -309,7 +309,7 @@ class AllActivitiesController extends ControllerBase {
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;background:#f8fafc;color:#1e293b}
 
-  .acts-page{max-width:1400px;margin:0 auto;animation:fadeIn .3s ease}
+  .acts-page{width:100%;padding:24px 28px;box-sizing:border-box;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* Stats */

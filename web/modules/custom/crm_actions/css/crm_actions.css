@@ -10,6 +10,78 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* ============================================================
+   SHARED CRM PAGE SHELL
+   All CRM list pages (.contacts-page, .acts-page, etc.) should
+   sit inside this shared wrapper for consistent visual rhythm.
+   ============================================================ */
+.crm-page-shell,
+.contacts-page,
+.acts-page,
+.deals-page,
+.orgs-page {
+  /* Use all available width — no fixed max-width that forces a scroll */
+  width: 100%;
+  padding: 24px 28px;
+  box-sizing: border-box;
+  animation: crm-page-in 0.25s ease;
+}
+
+@keyframes crm-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Shared table card — consistent scrollable table wrapper */
+.crm-table-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow-x: auto;   /* horizontal scroll ONLY when content truly overflows */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Every CRM data table: fluid width, auto column distribution */
+.crm-data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto; /* columns share space proportionally — no overflow */
+}
+
+.crm-data-table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.crm-data-table td {
+  padding: 13px 14px;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+
+.crm-data-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.crm-data-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.crm-data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
 .crm-nav-container {
   max-width: 1400px;
   width: 100%;

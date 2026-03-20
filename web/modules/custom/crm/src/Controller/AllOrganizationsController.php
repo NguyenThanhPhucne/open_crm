@@ -279,7 +279,7 @@ class AllOrganizationsController extends ControllerBase {
   body{font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;background:#f8fafc;color:#1e293b}
 
   /* ── Page shell ── */
-  .orgs-page{max-width:1400px;margin:0 auto;animation:fadeIn .3s ease}
+  .orgs-page{width:100%;padding:24px 28px;box-sizing:border-box;animation:fadeIn .3s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* ── Stats bar ── */
