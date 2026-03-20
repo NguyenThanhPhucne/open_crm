@@ -22,7 +22,7 @@ class AllContactsController extends ControllerBase {
    * - /crm/my-contacts: All logged-in users can view
    * - /crm/all-contacts: Only admin/manager can view
    */
-  public function accessView(AccountInterface $account, Request $request = NULL) {
+  public function accessView(AccountInterface $account, ?Request $request = NULL) {
     $current_path = $request->getPathInfo();
     $is_my_view = str_contains($current_path, 'my-contacts');
     
