@@ -22,7 +22,7 @@
 .orgs-page {
   /* Use all available width — no fixed max-width that forces a scroll */
   width: 100%;
-  padding: 24px 0;
+  padding: 0 !important;
   box-sizing: border-box;
   animation: crm-page-in 0.25s ease;
 }
