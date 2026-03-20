@@ -41,7 +41,7 @@
   border-spacing: 0;
   background: white;
   border-radius: 8px;
-  overflow: hidden;
+  /* Do NOT set overflow:hidden here — it clips the action column buttons */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -148,10 +148,12 @@
 .crm-contact__actions {
   display: flex;
   gap: 8px;
-  opacity: 0;
+  /* Always visible — hidden opacity harms discoverability on touch devices */
+  opacity: 1;
   transition: opacity 0.2s ease;
 }
 
+/* On desktop: fade in more prominently on row hover */
 .crm-contacts-table tbody tr:hover .crm-contact__actions {
   opacity: 1;
 }
