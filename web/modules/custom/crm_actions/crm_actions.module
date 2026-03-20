@@ -109,10 +109,10 @@ function _crm_actions_build_navbar() {
 
   $nav_html = '<div class="crm-global-nav">';
   $nav_html .= '<div class="crm-nav-container">';
-  $nav_html .= '<div class="crm-nav-brand">';
+  $nav_html .= '<a href="/crm/dashboard" class="crm-nav-brand" title="Go to Dashboard" aria-label="OpenCRM Home">';
   $nav_html .= '<i data-lucide="zap" width="24" height="24" style="color: #3b82f6;"></i>';
   $nav_html .= '<span>OpenCRM</span>';
-  $nav_html .= '</div>';
+  $nav_html .= '</a>';
   $nav_html .= '<div class="crm-nav-items">';
 
   foreach ($items as $item) {
