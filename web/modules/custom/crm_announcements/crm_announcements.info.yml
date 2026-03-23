@@ -1,8 +1,0 @@
-name: 'CRM Announcements (Internal)'
-type: module
-description: 'Provides an internal announcement system similar to Core Announcements, allowing admins to broadcast messages to CRM users.'
-package: CRM
-core_version_requirement: ^10 || ^11
-dependencies:
-  - drupal:node
-  - drupal:toolbar

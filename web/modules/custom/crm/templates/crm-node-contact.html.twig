@@ -21,14 +21,9 @@
 
       {# Avatar #}
       <div class="contact-avatar-section">
-        {% if has_avatar and avatar_url %}
-          <div class="contact-avatar-placeholder" style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-          </div>
-        {% else %}
-          <div class="contact-avatar-placeholder">
-            <span class="contact-avatar-initial">{{ initial }}</span>
-          </div>
-        {% endif %}
+        <div class="contact-avatar-placeholder">
+          <span class="contact-avatar-initial">{{ initial }}</span>
+        </div>
       </div>
 
       {# Identity #}

@@ -21,7 +21,7 @@ class DashboardController extends ControllerBase {
    * 
    * Dashboard is accessible to all authenticated users.
    */
-  public function accessView(AccountInterface $account) {
+  public function accessView(Request $request, AccountInterface $account) {
     return $account->isAuthenticated() ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
@@ -492,9 +492,7 @@ class DashboardController extends ControllerBase {
     foreach (\Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ro_query->execute()) as $o) {
       $o_industry = '';
       if ($o->hasField('field_industry') && !$o->get('field_industry')->isEmpty()) {
-        $industry_item = $o->get('field_industry')->first();
-        $industry_entity = $industry_item->entity ?? NULL;
-        $o_industry = $industry_entity ? $industry_entity->getName() : ($industry_item->value ?? '');
+        $o_industry = $o->get('field_industry')->value ?? '';
       }
       $o_phone = '';
       if ($o->hasField('field_phone') && !$o->get('field_phone')->isEmpty()) {
@@ -2048,7 +2046,7 @@ class DashboardController extends ControllerBase {
         </a>
         <a href="/crm/add/activity" class="hero-action-btn hero-btn-primary">
           <i data-lucide="calendar-plus" width="15" height="15"></i>
-          <span>New Activity</span>
+          <span>Log Activity</span>
         </a>
       </div>
     </div>
