@@ -139,8 +139,12 @@ class AllOrganizationsController extends ControllerBase {
       $av_style = "background:linear-gradient(135deg,{$av_pair[0]} 0%,#fff 80%);color:{$av_pair[1]};border-color:{$av_pair[1]}4d";
       $org_url  = Url::fromRoute('entity.node.canonical', ['node' => $oid])->toString();
 
-      $industry = $org->hasField('field_industry') && !$org->get('field_industry')->isEmpty()
-        ? Html::escape($org->get('field_industry')->value ?? '') : '';
+      $industry = '';
+      if ($org->hasField('field_industry') && !$org->get('field_industry')->isEmpty()) {
+        $industry_item = $org->get('field_industry')->first();
+        $industry_entity = $industry_item->entity ?? NULL;
+        $industry = $industry_entity ? Html::escape($industry_entity->getName()) : Html::escape($industry_item->value ?? '');
+      }
 
       $phone = $org->hasField('field_phone') && !$org->get('field_phone')->isEmpty()
         ? Html::escape($org->get('field_phone')->value ?? '') : '';

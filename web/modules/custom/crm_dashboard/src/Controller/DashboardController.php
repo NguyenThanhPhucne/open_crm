@@ -492,7 +492,9 @@ class DashboardController extends ControllerBase {
     foreach (\Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ro_query->execute()) as $o) {
       $o_industry = '';
       if ($o->hasField('field_industry') && !$o->get('field_industry')->isEmpty()) {
-        $o_industry = $o->get('field_industry')->value ?? '';
+        $industry_item = $o->get('field_industry')->first();
+        $industry_entity = $industry_item->entity ?? NULL;
+        $o_industry = $industry_entity ? $industry_entity->getName() : ($industry_item->value ?? '');
       }
       $o_phone = '';
       if ($o->hasField('field_phone') && !$o->get('field_phone')->isEmpty()) {

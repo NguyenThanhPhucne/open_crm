@@ -1230,8 +1230,8 @@ HTML;
             $file_entity->setPermanent();
             $file_entity->save();
 
-            if ($deal->hasField('field_contract')) {
-              $deal->set('field_contract', [
+            if ($deal->hasField('field_contract_file')) {
+              $deal->set('field_contract_file', [
                 'target_id' => $file_entity->id(),
                 'description' => 'Contract signed on ' . $closing_date,
               ]);
