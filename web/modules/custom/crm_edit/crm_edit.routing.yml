@@ -59,15 +59,6 @@ crm_edit.ajax_save:
     _user_is_logged_in: "TRUE"
   methods: [POST]
 
-crm_edit.ajax_save_files:
-  path: "/crm/edit/ajax/save-with-files"
-  defaults:
-    _controller: '\Drupal\crm_edit\Controller\InlineEditController::ajaxSaveWithFiles'
-  requirements:
-    _permission: "access content"
-    _user_is_logged_in: "TRUE"
-  methods: [POST]
-
 crm_edit.ajax_validate:
   path: "/crm/edit/ajax/validate"
   defaults:

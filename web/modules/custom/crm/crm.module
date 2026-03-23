@@ -143,7 +143,7 @@ function crm_form_alter(&$form, FormStateInterface $form_state, $form_id) {
         'icon_path'  => 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
       ],
       'activity' => [
-        'new_label'  => 'New Activity',
+        'new_label'  => 'Log Activity',
         'edit_label' => 'Edit Activity',
         'new_desc'   => 'Record a call, meeting, email or task',
         'edit_desc'  => 'Update activity details',
@@ -486,7 +486,6 @@ function crm_theme($existing, $type, $theme, $path) {
         'org_name' => NULL, 'org_url' => NULL, 'owner_name' => NULL, 'owner_url' => NULL,
         'deals' => [], 'activities' => [], 'customer_type' => NULL,
         'tags' => [], 'last_contacted' => NULL, 'can_edit' => FALSE,
-        'avatar_url' => NULL, 'has_avatar' => FALSE,
       ],
       'template' => 'crm-node-contact',
     ],
@@ -528,17 +527,6 @@ function crm_theme($existing, $type, $theme, $path) {
         'created' => NULL, 'changed' => NULL, 'can_edit' => FALSE,
       ],
       'template' => 'crm-node-activity',
-    ],
-    'crm_node_announcement' => [
-      'variables' => [
-        'node' => NULL, 'nid' => NULL, 'title' => NULL,
-        'level' => NULL, 'level_label' => NULL,
-        'target' => NULL, 'target_label' => NULL,
-        'body' => NULL, 'created' => NULL, 'changed' => NULL,
-        'owner_name' => NULL, 'owner_url' => NULL,
-        'can_edit' => FALSE,
-      ],
-      'template' => 'crm-node-announcement',
     ],
   ];
 }
@@ -780,7 +768,7 @@ function crm_preprocess_views_view(array &$variables) {
   $add_map = [
     'contacts'      => ['url' => '/crm/add/contact',      'icon' => 'user-plus',    'label' => 'Add Contact'],
     'deals'         => ['url' => '/crm/add/deal',         'icon' => 'trending-up',  'label' => 'Add Deal'],
-    'activities'    => ['url' => '/crm/add/activity',     'icon' => 'calendar-plus','label' => 'New Activity'],
+    'activities'    => ['url' => '/crm/add/activity',     'icon' => 'calendar-plus','label' => 'Log Activity'],
     'organizations' => ['url' => '/crm/add/organization', 'icon' => 'building-2',   'label' => 'Add Organization'],
   ];
 
