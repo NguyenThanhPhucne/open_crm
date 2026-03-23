@@ -1,0 +1,192 @@
+{#
+  crm-node-announcement.html.twig
+  Professional announcement detail page matching Deal design.
+#}
+<style>body { background: #f0f2f5 !important; }</style>
+
+<div class="crm-announcement-detail">
+
+  {# ── Breadcrumb ───────────────────────────────────────────── #}
+  <nav class="detail-breadcrumb">
+    <a href="/crm/dashboard"><i data-lucide="home"></i> CRM</a>
+    <i data-lucide="chevron-right"></i>
+    <span>{{ title }}</span>
+  </nav>
+
+  {# ── Hero: cover gradient + icon avatar + identity ─────────── #}
+  <div class="contact-hero">
+    <div class="deal-cover" style="background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);"></div>
+
+    <div class="contact-hero-body">
+
+      {# Avatar — megaphone icon in purple rounded square #}
+      <div class="contact-avatar-section">
+        <div class="entity-avatar-icon deal-avatar-icon" style="background: #7c3aed; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);">
+          <i data-lucide="megaphone" width="44" height="44"></i>
+        </div>
+      </div>
+
+      {# Identity #}
+      <div class="contact-identity">
+        <div class="contact-name-row">
+          <h1 class="contact-name">{{ title }}</h1>
+          {% if can_edit %}
+            <a href="/node/{{ nid }}/edit" class="contact-edit-btn use-ajax" data-dialog-type="modal" data-dialog-options='{"width":700, "dialogClass": "crm-announcement-modal"}'>
+              <i data-lucide="pencil" width="12" height="12"></i>Edit
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="contact-roles">
+          <span class="contact-role-badge contact-role-badge-purple">{{ level_label }}</span>
+          <span class="contact-role-badge contact-role-badge-blue">Target: {{ target_label }}</span>
+        </div>
+
+        <div class="contact-meta-row">
+          <span class="contact-meta-chip">
+            <i data-lucide="calendar" width="12" height="12"></i>Posted: {{ created|date('M j, Y') }}
+          </span>
+          {% if owner_name %}
+            <a href="{{ owner_url }}" class="contact-meta-chip contact-meta-link">
+              <i data-lucide="user-check" width="12" height="12"></i>By: {{ owner_name }}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Quick-action buttons #}
+      <div class="contact-quick-actions">
+        {% if can_edit %}
+          <a href="/node/{{ nid }}/edit" class="cqa-btn cqa-primary use-ajax" data-dialog-type="modal" data-dialog-options='{"width":700, "dialogClass": "crm-announcement-modal"}'>
+            <i data-lucide="edit-2" width="14" height="14"></i>Edit Announcement
+          </a>
+        {% endif %}
+        <a href="javascript:history.back()" class="cqa-btn cqa-secondary">
+          <i data-lucide="arrow-left" width="14" height="14"></i>Back
+        </a>
+      </div>
+
+    </div>
+  </div>{# /.contact-hero #}
+
+  {# ── Stats row ─────────────────────────────────────────────── #}
+  <div class="cstats-grid">
+
+    {# Info Card #}
+    <div class="cstat-card cstat-purple">
+      <div class="cstat-icon-wrap"><i data-lucide="info" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ level_label }}</div>
+        <div class="cstat-label">Priority Level</div>
+      </div>
+    </div>
+
+    {# Target Card #}
+    <div class="cstat-card cstat-blue">
+      <div class="cstat-icon-wrap"><i data-lucide="users" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ target_label }}</div>
+        <div class="cstat-label">Target Audience</div>
+      </div>
+    </div>
+
+    {# Date Card #}
+    <div class="cstat-card cstat-amber">
+      <div class="cstat-icon-wrap"><i data-lucide="calendar" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ created|date('M j') }}</div>
+        <div class="cstat-label">Published At</div>
+      </div>
+    </div>
+
+    {# Owner Card #}
+    <div class="cstat-card cstat-green">
+      <div class="cstat-icon-wrap"><i data-lucide="user" width="20" height="20"></i></div>
+      <div class="cstat-info">
+        <div class="cstat-value cstat-value-sm">{{ owner_name|split(' ')[0] }}</div>
+        <div class="cstat-label">Author</div>
+      </div>
+    </div>
+
+  </div>{# /.cstats-grid #}
+
+  {# Attach AJAX dialog library #}
+  {{ attach_library('core/drupal.dialog.ajax') }}
+
+  {# ── Main content grid ────────────────────────────────────── #}
+  <div class="contact-content-grid">
+
+    {# Left column: Announcement Body #}
+    <div class="contact-col" style="flex: 2;">
+      <div class="ccontent-card">
+        <div class="ccard-header">
+          <div class="ccard-title">
+            <i data-lucide="file-text" width="16" height="16"></i>
+            <span>Announcement Content</span>
+          </div>
+        </div>
+        <div class="announcement-content-body" style="padding: 30px; line-height: 1.7; color: #334155; font-size: 16px;">
+          {{ body|raw }}
+        </div>
+      </div>
+    </div>
+
+    {# Right column: Detailed Metadata #}
+    <div class="contact-col">
+      <div class="ccontent-card">
+        <div class="ccard-header">
+          <div class="ccard-title">
+            <i data-lucide="list" width="16" height="16"></i>
+            <span>Metadata</span>
+          </div>
+        </div>
+        <div class="fields-grid detail-fields-grid" style="padding: 20px;">
+          <div class="field-item">
+            <div class="field-label">Announcement ID</div>
+            <div class="field-value">#{{ nid }}</div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Level</div>
+            <div class="field-value">
+              <span class="badge status-badge badge-{{ level }}">{{ level_label }}</span>
+            </div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Recipient Group</div>
+            <div class="field-value">{{ target_label }}</div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Created</div>
+            <div class="field-value">{{ created|date('F j, Y H:i') }}</div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Last Modified</div>
+            <div class="field-value">{{ changed|date('F j, Y H:i') }}</div>
+          </div>
+          <div class="field-item">
+            <div class="field-label">Author</div>
+            <div class="field-value"><a href="{{ owner_url }}">{{ owner_name }}</a></div>
+          </div>
+        </div>
+      </div>
+      
+      {# Internal help notice #}
+      <div style="background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 20px; margin-top: 20px;">
+          <div style="display: flex; gap: 12px;">
+              <i data-lucide="info" style="color: #3b82f6;"></i>
+              <div style="font-size: 13px; color: #1e40af;">
+                  <strong>Internal Memo:</strong> This announcement is visible to the selected target group. Ensure confidential info is only shared with relevant targets.
+              </div>
+          </div>
+      </div>
+    </div>
+
+  </div>{# /.contact-content-grid #}
+
+</div>{# /.crm-announcement-detail #}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) { lucide.createIcons(); }
+  });
+</script>

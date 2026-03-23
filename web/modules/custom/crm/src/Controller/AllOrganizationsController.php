@@ -22,7 +22,8 @@ class AllOrganizationsController extends ControllerBase {
    * - /crm/my-organizations: All logged-in users can view
    * - /crm/all-organizations: Only admin/manager can view
    */
-  public function accessView(Request $request, AccountInterface $account) {
+  public function accessView(AccountInterface $account) {
+    $request = \Drupal::request();
     $current_path = $request->getPathInfo();
     $is_my_view = str_contains($current_path, 'my-organizations');
     
@@ -134,13 +135,32 @@ class AllOrganizationsController extends ControllerBase {
       }
       $oid     = $org->id();
       $name    = $org->getTitle();
+      
+      $logo_url = '';
+      if ($org->hasField('field_logo') && !$org->get('field_logo')->isEmpty()) {
+        $file = $org->get('field_logo')->entity;
+        if ($file) {
+          $logo_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        }
+      }
+
       $initial = strtoupper(mb_substr($name, 0, 1));
-      $av_pair  = $avatar_pairs[$initial] ?? ['#f1f5f9', '#64748b'];
-      $av_style = "background:linear-gradient(135deg,{$av_pair[0]} 0%,#fff 80%);color:{$av_pair[1]};border-color:{$av_pair[1]}4d";
+      if ($logo_url) {
+        $av_style = "background:url('{$logo_url}') center/contain no-repeat #fff; border-color:#e2e8f0; color:transparent;";
+        $initial_html = '';
+      } else {
+        $av_pair  = $avatar_pairs[$initial] ?? ['#f1f5f9', '#64748b'];
+        $av_style = "background:linear-gradient(135deg,{$av_pair[0]} 0%,#fff 80%);color:{$av_pair[1]};border-color:{$av_pair[1]}4d";
+        $initial_html = $initial;
+      }
       $org_url  = Url::fromRoute('entity.node.canonical', ['node' => $oid])->toString();
 
-      $industry = $org->hasField('field_industry') && !$org->get('field_industry')->isEmpty()
-        ? Html::escape($org->get('field_industry')->value ?? '') : '';
+      $industry = '';
+      if ($org->hasField('field_industry') && !$org->get('field_industry')->isEmpty()) {
+        $industry_item = $org->get('field_industry')->first();
+        $industry_entity = $industry_item->entity ?? NULL;
+        $industry = $industry_entity ? Html::escape($industry_entity->getName()) : Html::escape($industry_item->value ?? '');
+      }
 
       $phone = $org->hasField('field_phone') && !$org->get('field_phone')->isEmpty()
         ? Html::escape($org->get('field_phone')->value ?? '') : '';
@@ -193,7 +213,7 @@ class AllOrganizationsController extends ControllerBase {
       $rows[] = [
         'id'            => $oid,
         'name'          => Html::escape($name),
-        'initial'       => $initial,
+        'initial_html'  => $initial_html,
         'av_style'      => $av_style,
         'url'           => $org_url,
         'website'       => $website,
@@ -663,7 +683,7 @@ EMPTY;
         $html .= '<tr id="org-row-' . $r['id'] . '">'
           . '<td class="td-chk"><input type="checkbox" class="row-chk" value="' . $r['id'] . '"></td>'
           . '<td><div class="td-name">'
-          . '<div class="org-avatar" style="' . $r['av_style'] . '">' . $r['initial'] . '</div>'
+          . '<div class="org-avatar" style="' . $r['av_style'] . '">' . $r['initial_html'] . '</div>'
           . '<div class="org-name-block">'
           . '<a href="' . $r['url'] . '" class="org-name-link" title="' . $r['name'] . '">' . $r['name'] . '</a>'
           . $website_sub
