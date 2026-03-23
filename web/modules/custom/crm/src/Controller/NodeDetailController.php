@@ -19,7 +19,7 @@ class NodeDetailController extends ControllerBase {
   /**
    * CRM content types handled by this controller.
    */
-  const CRM_TYPES = ['contact', 'deal', 'organization', 'activity'];
+  const CRM_TYPES = ['contact', 'deal', 'organization', 'activity', 'crm_announcement'];
 
   /**
    * {@inheritdoc}
@@ -66,6 +66,9 @@ class NodeDetailController extends ControllerBase {
 
       case 'activity':
         return $this->buildActivity($node);
+
+      case 'crm_announcement':
+        return $this->buildAnnouncement($node);
     }
   }
 
@@ -80,6 +83,18 @@ class NodeDetailController extends ControllerBase {
     $nid = $node->id();
     $title = $node->getTitle();
     $initial = strtoupper(mb_substr($title, 0, 1));
+    
+    // Avatar.
+    $avatar_url = '';
+    $has_avatar = FALSE;
+    if ($node->hasField('field_avatar') && !$node->get('field_avatar')->isEmpty()) {
+      $file = $node->get('field_avatar')->entity;
+      if ($file) {
+        $avatar_url = \Drupal::service('file_url_generator')
+          ->generateAbsoluteString($file->getFileUri());
+        $has_avatar = TRUE;
+      }
+    }
 
     $email    = $this->fieldValue($node, 'field_email');
     $phone    = $this->fieldValue($node, 'field_phone');
@@ -155,6 +170,8 @@ class NodeDetailController extends ControllerBase {
       '#tags' => $tags,
       '#last_contacted' => $last_contacted,
       '#can_edit' => $can_edit,
+      '#avatar_url' => $avatar_url,
+      '#has_avatar' => $has_avatar,
       '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
@@ -461,6 +478,49 @@ class NodeDetailController extends ControllerBase {
       '#changed'       => $changed,
       '#can_edit'      => $can_edit,
       '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
+      '#attached' => ['library' => ['crm/node_detail_styles']],
+    ];
+  }
+
+  /**
+   * Build render array for an announcement node.
+   */
+  protected function buildAnnouncement(NodeInterface $node) {
+    $nid   = $node->id();
+    $title = $node->getTitle();
+    $body  = check_markup($node->get('body')->value ?? '', $node->get('body')->format ?? 'basic_html');
+    
+    $level  = $node->get('field_announcement_level')->value ?? 'info';
+    $target = $node->get('field_announcement_target')->value ?? 'all';
+    
+    $level_label = $node->get('field_announcement_level')->getFieldDefinition()->getSetting('allowed_values')[$level] ?? $level;
+    $target_label = $node->get('field_announcement_target')->getFieldDefinition()->getSetting('allowed_values')[$target] ?? $target;
+
+    $created = $node->getCreatedTime();
+    $changed = $node->getChangedTime();
+
+    // Owner.
+    $owner_name = $node->getOwner()->getDisplayName();
+    $owner_url  = '/user/' . $node->getOwnerId();
+
+    $can_edit = $node->access('update', $this->currentUser());
+
+    return [
+      '#theme'        => 'crm_node_announcement',
+      '#node'         => $node,
+      '#nid'          => $nid,
+      '#title'        => $title,
+      '#level'        => $level,
+      '#level_label'  => $level_label,
+      '#target'       => $target,
+      '#target_label' => $target_label,
+      '#body'         => $body,
+      '#owner_name'   => $owner_name,
+      '#owner_url'    => $owner_url,
+      '#created'      => $created,
+      '#changed'      => $changed,
+      '#can_edit'     => $can_edit,
+      '#cache' => ['max-age' => 0, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
   }

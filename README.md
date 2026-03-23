@@ -54,7 +54,7 @@ composer install
 
 ```bash
 ddev start
-ddev drush site:install --existing-config -y
+ddev drush site:install --existing-config -y or ddev import-db --file=backups/db_backup_20260316_150447.sql.gz (if the previous one did not work)
 ddev drush cr
 ```
 
