@@ -2048,7 +2048,7 @@ class DashboardController extends ControllerBase {
         </a>
         <a href="/crm/add/activity" class="hero-action-btn hero-btn-primary">
           <i data-lucide="calendar-plus" width="15" height="15"></i>
-          <span>Log Activity</span>
+          <span>New Activity</span>
         </a>
       </div>
     </div>
