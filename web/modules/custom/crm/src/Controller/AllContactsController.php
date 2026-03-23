@@ -141,9 +141,25 @@ class AllContactsController extends ControllerBase {
       }
       $cid   = $contact->id();
       $name  = $contact->getTitle();
+      
+      $avatar_url = '';
+      if ($contact->hasField('field_avatar') && !$contact->get('field_avatar')->isEmpty()) {
+        $file = $contact->get('field_avatar')->entity;
+        if ($file) {
+          $avatar_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        }
+      }
+
       $initial = strtoupper(mb_substr($name, 0, 1));
-      $av_pair  = $avatar_pairs[$initial] ?? ['#f1f5f9', '#64748b'];
-      $av_style = "background:linear-gradient(135deg,{$av_pair[0]} 0%,#fff 80%);color:{$av_pair[1]};border-color:{$av_pair[1]}4d";
+      if ($avatar_url) {
+        $av_style = "background:url('{$avatar_url}') center/cover no-repeat; border-color:transparent; color:transparent;";
+        $initial_html = '';
+      } else {
+        $av_pair  = $avatar_pairs[$initial] ?? ['#f1f5f9', '#64748b'];
+        $av_style = "background:linear-gradient(135deg,{$av_pair[0]} 0%,#fff 80%);color:{$av_pair[1]};border-color:{$av_pair[1]}4d";
+        $initial_html = $initial;
+      }
+      
       $contact_url = Url::fromRoute('entity.node.canonical', ['node' => $cid])->toString();
 
       $org_name = ''; $org_url = '';
@@ -195,7 +211,7 @@ class AllContactsController extends ControllerBase {
       $rows[] = [
         'id'           => $cid,
         'name'         => Html::escape($name),
-        'initial'      => $initial,
+        'initial_html' => $initial_html,
         'av_style'     => $av_style,
         'url'          => $contact_url,
         'org_name'     => Html::escape($org_name),
@@ -630,7 +646,7 @@ EMPTY;
         $html .= '<tr id="contact-row-' . $r['id'] . '">'
           . '<td class="td-chk"><input type="checkbox" class="row-chk" value="' . $r['id'] . '"></td>'
           . '<td><div class="td-name">'
-          . '<div class="contact-avatar" style="' . $r['av_style'] . '">' . $r['initial'] . '</div>'
+          . '<div class="contact-avatar" style="' . $r['av_style'] . '">' . $r['initial_html'] . '</div>'
           . '<div class="contact-name-block">'
           . '<a href="' . $r['url'] . '" class="contact-name-link" title="' . $r['name'] . '">' . $r['name'] . '</a>'
           . ($r['position'] ? '<span class="contact-position">' . $r['position'] . '</span>' : '')

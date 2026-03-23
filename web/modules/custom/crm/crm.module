@@ -486,6 +486,7 @@ function crm_theme($existing, $type, $theme, $path) {
         'org_name' => NULL, 'org_url' => NULL, 'owner_name' => NULL, 'owner_url' => NULL,
         'deals' => [], 'activities' => [], 'customer_type' => NULL,
         'tags' => [], 'last_contacted' => NULL, 'can_edit' => FALSE,
+        'avatar_url' => NULL, 'has_avatar' => FALSE,
       ],
       'template' => 'crm-node-contact',
     ],

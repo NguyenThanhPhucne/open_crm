@@ -357,6 +357,10 @@ class ModalEditController extends ControllerBase {
    * Render file upload field.
    */
   protected function renderFileField($field_name, $current_files, $settings, $required) {
+    $is_image = strpos(strtolower($field_name), 'image') !== false || strpos(strtolower($field_name), 'avatar') !== false;
+    $accept = $is_image ? '.jpg,.jpeg,.png,.gif,.webp' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip';
+    $help_text = $is_image ? 'JPG, PNG, GIF, WEBP — Max 10MB' : 'PDF, DOC, XLS, PPT, TXT, ZIP — Max 10MB';
+
     // Show current files
     if (!empty($current_files) && is_array($current_files)) {
       echo "<div class='file-current-files' id='current-files-{$field_name}'>";
@@ -364,12 +368,25 @@ class ModalEditController extends ControllerBase {
         $fid = $file['fid'];
         $fname = htmlspecialchars($file['name']);
         $fsize = $this->formatFileSize($file['size'] ?? 0);
+        $url = htmlspecialchars($file['url']);
+        
         echo "<div class='file-item' data-fid='{$fid}' id='file-item-{$fid}'>";
-        echo "<span class='file-icon'><svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14 2 14 8 20 8'/></svg></span>";
-        echo "<span class='file-name'>{$fname}</span>";
-        echo "<span class='file-size'>{$fsize}</span>";
-        echo "<a href='{$file['url']}' target='_blank' class='file-download' title='Download'><svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2'><path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg></a>";
-        echo "<button type='button' class='file-remove' onclick='CRMInlineEdit.removeFileItem({$fid}, \"{$field_name}\")' title='Remove'><svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2'><line x1='18' y1='6' x2='6' y2='18'/><line x1='6' y1='6' x2='18' y2='18'/></svg></button>";
+        if ($is_image) {
+          echo "<div class='file-image-preview' style='background-image: url(\"{$url}\"); width: 40px; height: 40px; background-size: cover; background-position: center; border-radius: 4px; border: 1px solid #e2e8f0; flex-shrink: 0;'></div>";
+        } else {
+          echo "<span class='file-icon'><svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14 2 14 8 20 8'/></svg></span>";
+        }
+        
+        echo "<div class='file-info-col' style='display:flex; flex-direction:column; flex:1; min-width:0; margin-left:12px;'>";
+        echo "<span class='file-name' style='white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{$fname}</span>";
+        echo "<span class='file-size' style='font-size:12px; color:#64748b;'>{$fsize}</span>";
+        echo "</div>";
+        
+        echo "<div class='file-actions' style='display:flex; gap:8px; margin-left:12px;'>";
+        echo "<a href='{$url}' target='_blank' class='file-download btn-icon' title='Download' style='color:#3b82f6;'><svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg></a>";
+        echo "<button type='button' class='file-remove btn-icon' onclick='CRMInlineEdit.removeFileItem({$fid}, \"{$field_name}\")' title='Remove' style='color:#ef4444; background:none; border:none; cursor:pointer;'><svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><line x1='18' y1='6' x2='6' y2='18'/><line x1='6' y1='6' x2='18' y2='18'/></svg></button>";
+        echo "</div>";
+        
         echo "</div>";
       }
       echo "</div>";
@@ -377,9 +394,9 @@ class ModalEditController extends ControllerBase {
     // Hidden field to track removed file IDs
     echo "<input type='hidden' name='{$field_name}__removed_fids' value='' class='removed-fids-input'>";
     // File upload input
-    echo "<div class='file-upload-zone'>";
-    echo "<input type='file' name='{$field_name}' class='form-control file-input' {$required} multiple accept='.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip'>";
-    echo "<small class='file-help'>PDF, DOC, XLS, PPT, TXT, ZIP — Max 10MB</small>";
+    echo "<div class='file-upload-zone' style='margin-top:10px;'>";
+    echo "<input type='file' name='{$field_name}' class='form-control file-input' {$required} accept='{$accept}'>";
+    echo "<small class='file-help' style='display:block; margin-top:6px; color:#64748b; font-size:13px;'>{$help_text}</small>";
     echo "</div>";
   }
 

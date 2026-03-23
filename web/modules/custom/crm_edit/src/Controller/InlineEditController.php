@@ -536,9 +536,13 @@ class InlineEditController extends ControllerBase {
             echo "</div>";
           }
         }
+        $is_image = strpos(strtolower($name), 'image') !== false || strpos(strtolower($name), 'avatar') !== false;
+        $accept = $is_image ? '.jpg,.jpeg,.png,.gif,.webp' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip';
+        $help_text = $is_image ? 'JPG, PNG, GIF, WEBP — Max 10MB' : 'PDF, DOC, XLS, PPT, TXT, ZIP — Max 10MB';
+        
         echo "<input type='hidden' name='{$name}__removed_fids' value='' class='removed-fids-input'>";
-        echo "<input type='file' name='{$name}' " . ($required ? 'required' : '') . " multiple accept='.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip'>";
-        echo "<small>PDF, DOC, XLS, PPT, TXT, ZIP — Max 10MB</small>";
+        echo "<input type='file' name='{$name}' " . ($required ? 'required' : '') . " accept='{$accept}'>";
+        echo "<small>{$help_text}</small>";
         break;
         
       default:

@@ -80,6 +80,18 @@ class NodeDetailController extends ControllerBase {
     $nid = $node->id();
     $title = $node->getTitle();
     $initial = strtoupper(mb_substr($title, 0, 1));
+    
+    // Avatar.
+    $avatar_url = '';
+    $has_avatar = FALSE;
+    if ($node->hasField('field_avatar') && !$node->get('field_avatar')->isEmpty()) {
+      $file = $node->get('field_avatar')->entity;
+      if ($file) {
+        $avatar_url = \Drupal::service('file_url_generator')
+          ->generateAbsoluteString($file->getFileUri());
+        $has_avatar = TRUE;
+      }
+    }
 
     $email    = $this->fieldValue($node, 'field_email');
     $phone    = $this->fieldValue($node, 'field_phone');
@@ -155,6 +167,8 @@ class NodeDetailController extends ControllerBase {
       '#tags' => $tags,
       '#last_contacted' => $last_contacted,
       '#can_edit' => $can_edit,
+      '#avatar_url' => $avatar_url,
+      '#has_avatar' => $has_avatar,
       '#cache' => ['max-age' => 300, 'contexts' => ['user'], 'tags' => ['node:' . $nid]],
       '#attached' => ['library' => ['crm/node_detail_styles']],
     ];
