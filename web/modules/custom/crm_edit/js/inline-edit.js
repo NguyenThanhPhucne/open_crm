@@ -301,21 +301,20 @@ window.CRMInlineEdit = {
     }
     if (!form) return;
 
-    // Collect form data
-    const formData = new FormData(form);
     const nid = form.dataset.nid;
     const type = form.dataset.type;
 
-    // Convert FormData to JSON object
-    const jsonData = {
-      nid: nid,
-      type: type,
-    };
-
-    // Add all form fields to JSON
-    for (let [key, value] of formData.entries()) {
-      jsonData[key] = value;
-    }
+    // Detect if form has file inputs with files selected or removed files
+    const fileInputs = form.querySelectorAll('input[type="file"]');
+    const removedFidsInputs = form.querySelectorAll('.removed-fids-input');
+    let hasFiles = false;
+    let hasRemovedFiles = false;
+    fileInputs.forEach(function (input) {
+      if (input.files && input.files.length > 0) hasFiles = true;
+    });
+    removedFidsInputs.forEach(function (input) {
+      if (input.value && input.value.trim() !== '') hasRemovedFiles = true;
+    });
 
     // Show saving state
     const modal = document.querySelector(".crm-modal-container");
@@ -323,27 +322,47 @@ window.CRMInlineEdit = {
       modal.classList.add("is-saving");
     }
 
-    // Submit via AJAX with JSON (CSRF-protected)
     this.getCsrfToken().then((csrfToken) => {
-      fetch("/crm/edit/ajax/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(jsonData),
-      })
+      let fetchOptions;
+
+      if (hasFiles || hasRemovedFiles) {
+        // Use FormData for multipart upload
+        const formData = new FormData(form);
+        formData.set('nid', nid);
+        formData.set('type', type);
+        fetchOptions = {
+          method: "POST",
+          headers: { "X-CSRF-Token": csrfToken },
+          body: formData,
+        };
+        var saveUrl = "/crm/edit/ajax/save-with-files";
+      } else {
+        // Use JSON for regular fields (no files)
+        const formData = new FormData(form);
+        const jsonData = { nid: nid, type: type };
+        for (let [key, value] of formData.entries()) {
+          jsonData[key] = value;
+        }
+        fetchOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          body: JSON.stringify(jsonData),
+        };
+        var saveUrl = "/crm/edit/ajax/save";
+      }
+
+      fetch(saveUrl, fetchOptions)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            // Remove overlay immediately (skip close animation for speed)
             const overlay = document.getElementById("crm-modal-overlay");
             if (overlay) overlay.remove();
 
-            // Keep the current view in sync whether we're on a list or detail page.
             this.refreshCurrentView(nid, type, data);
 
-            // Show toast immediately
             if (window.CRM && window.CRM.toast) {
               window.CRM.toast("Changes saved successfully!", "success");
             } else {
@@ -356,7 +375,6 @@ window.CRMInlineEdit = {
               );
             }
           } else {
-            // Show error message (don't reload if there's an error)
             this.showMessage(data.message || "Error saving changes", "error");
             if (modal) {
               modal.classList.remove("is-saving");
@@ -374,6 +392,26 @@ window.CRMInlineEdit = {
           }
         });
     }); // end getCsrfToken
+  },
+
+  removeFileItem: function (fid, fieldName) {
+    // Remove the file item from DOM
+    var item = document.getElementById('file-item-' + fid);
+    if (item) {
+      item.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(8px)';
+      setTimeout(function () { item.remove(); }, 200);
+    }
+    // Add fid to removed_fids hidden input
+    var form = document.querySelector('#crm-modal-overlay form') || document.getElementById('crm-edit-form');
+    if (!form) return;
+    var hiddenInput = form.querySelector('input[name="' + fieldName + '__removed_fids"]');
+    if (hiddenInput) {
+      var current = hiddenInput.value ? hiddenInput.value.split(',').filter(Boolean) : [];
+      current.push(String(fid));
+      hiddenInput.value = current.join(',');
+    }
   },
 
   showMessage: function (message, type) {
