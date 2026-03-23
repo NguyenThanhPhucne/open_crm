@@ -536,7 +536,8 @@ class InlineEditController extends ControllerBase {
             echo "</div>";
           }
         }
-        $is_image = strpos(strtolower($name), 'image') !== false || strpos(strtolower($name), 'avatar') !== false;
+        $field_name_lower = strtolower($name);
+        $is_image = strpos($field_name_lower, 'image') !== false || strpos($field_name_lower, 'avatar') !== false || strpos($field_name_lower, 'logo') !== false;
         $accept = $is_image ? '.jpg,.jpeg,.png,.gif,.webp' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip';
         $help_text = $is_image ? 'JPG, PNG, GIF, WEBP — Max 10MB' : 'PDF, DOC, XLS, PPT, TXT, ZIP — Max 10MB';
         

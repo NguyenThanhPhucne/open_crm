@@ -357,7 +357,8 @@ class ModalEditController extends ControllerBase {
    * Render file upload field.
    */
   protected function renderFileField($field_name, $current_files, $settings, $required) {
-    $is_image = strpos(strtolower($field_name), 'image') !== false || strpos(strtolower($field_name), 'avatar') !== false;
+    $field_name_lower = strtolower($field_name);
+    $is_image = strpos($field_name_lower, 'image') !== false || strpos($field_name_lower, 'avatar') !== false || strpos($field_name_lower, 'logo') !== false;
     $accept = $is_image ? '.jpg,.jpeg,.png,.gif,.webp' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip';
     $help_text = $is_image ? 'JPG, PNG, GIF, WEBP — Max 10MB' : 'PDF, DOC, XLS, PPT, TXT, ZIP — Max 10MB';
 
