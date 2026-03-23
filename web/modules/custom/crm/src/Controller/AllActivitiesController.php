@@ -46,8 +46,7 @@ class AllActivitiesController extends ControllerBase {
    * - /crm/my-activities: All logged-in users can view
    * - /crm/all-activities: Only admin/manager can view
    */
-  public function accessView(AccountInterface $account) {
-    $request = \Drupal::request();
+  public function accessView(Request $request, AccountInterface $account) {
     $current_path = $request->getPathInfo();
     $is_my_view = str_contains($current_path, 'my-activities');
     

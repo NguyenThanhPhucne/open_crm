@@ -165,11 +165,3 @@
   color: #fff;
   letter-spacing: 0;
 }
-
-/* ── Hide redundant Drupal page title ─────────────────── */
-/* Custom CRM pages use their own header blocks, so we hide the default block */
-h1.page-title,
-.block-page-title-block {
-  display: none !important;
-}
-
