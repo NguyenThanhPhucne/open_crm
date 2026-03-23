@@ -211,3 +211,13 @@ body.page-node-type-page .page-content,
 body.page-node-type-page .region-content {
   background: #ffffff;
 }
+
+/* Hide duplicate system page title on CRM node pages */
+body.page-node-type-contact .page-title,
+body.page-node-type-deal .page-title,
+body.page-node-type-organization .page-title,
+body.page-node-type-activity .page-title,
+body.page-node-type-crm-announcement .page-title,
+body.page-crm .page-title {
+  display: none !important;
+}

@@ -22,7 +22,8 @@ class AllDealsController extends ControllerBase {
    * - /crm/my-deals: All logged-in users can view
    * - /crm/all-deals: Only admin/manager can view
    */
-  public function accessView(Request $request, AccountInterface $account) {
+  public function accessView(AccountInterface $account) {
+    $request = \Drupal::request();
     $current_path = $request->getPathInfo();
     $is_my_view = str_contains($current_path, 'my-deals');
     

@@ -529,6 +529,17 @@ function crm_theme($existing, $type, $theme, $path) {
       ],
       'template' => 'crm-node-activity',
     ],
+    'crm_node_announcement' => [
+      'variables' => [
+        'node' => NULL, 'nid' => NULL, 'title' => NULL,
+        'level' => NULL, 'level_label' => NULL,
+        'target' => NULL, 'target_label' => NULL,
+        'body' => NULL, 'created' => NULL, 'changed' => NULL,
+        'owner_name' => NULL, 'owner_url' => NULL,
+        'can_edit' => FALSE,
+      ],
+      'template' => 'crm-node-announcement',
+    ],
   ];
 }
 

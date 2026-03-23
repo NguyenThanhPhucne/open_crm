@@ -21,7 +21,7 @@ class DashboardController extends ControllerBase {
    * 
    * Dashboard is accessible to all authenticated users.
    */
-  public function accessView(Request $request, AccountInterface $account) {
+  public function accessView(AccountInterface $account) {
     return $account->isAuthenticated() ? AccessResult::allowed() : AccessResult::forbidden();
   }
 

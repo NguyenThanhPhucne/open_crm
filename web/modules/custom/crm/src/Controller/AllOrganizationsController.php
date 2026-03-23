@@ -22,7 +22,8 @@ class AllOrganizationsController extends ControllerBase {
    * - /crm/my-organizations: All logged-in users can view
    * - /crm/all-organizations: Only admin/manager can view
    */
-  public function accessView(Request $request, AccountInterface $account) {
+  public function accessView(AccountInterface $account) {
+    $request = \Drupal::request();
     $current_path = $request->getPathInfo();
     $is_my_view = str_contains($current_path, 'my-organizations');
     
