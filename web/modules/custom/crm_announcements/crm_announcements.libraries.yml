@@ -1,0 +1,31 @@
+crm_announcements.toolbar:
+  version: VERSION
+  css:
+    theme:
+      css/crm-announcements.css: {}
+  js:
+    js/crm-announcements.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+    - core/drupal.dialog.ajax
+
+crm_announcements.node_form:
+  version: VERSION
+  css:
+    theme:
+      css/crm-announcement-form.css: {}
+  js:
+    js/crm-announcements.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.dialog.ajax
+    - core/jquery
+    - core/once
+    - crm_announcements/lucide
+
+lucide:
+  version: latest
+  js:
+    https://unpkg.com/lucide@latest: { type: external, minified: true }

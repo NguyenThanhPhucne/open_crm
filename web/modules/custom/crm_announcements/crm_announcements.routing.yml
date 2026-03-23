@@ -1,0 +1,9 @@
+crm_announcements.feed:
+  path: '/admin/announcements_internal'
+  defaults:
+    _controller: '\Drupal\crm_announcements\Controller\AnnouncementController::build'
+    _title: 'Internal Announcements'
+  requirements:
+    _permission: 'access content'
+  options:
+    _admin_route: FALSE
