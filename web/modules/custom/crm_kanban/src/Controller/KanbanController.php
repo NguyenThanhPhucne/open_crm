@@ -190,6 +190,7 @@ class KanbanController extends ControllerBase {
         'library' => [
           'core/drupal',
           'crm/crm_shared',
+          'crm/crm_layout',
           'crm_edit/inline_edit',
           'crm_ai_autocomplete/ai-generate-button',
         ],

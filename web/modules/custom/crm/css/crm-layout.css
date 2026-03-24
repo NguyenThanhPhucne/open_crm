@@ -212,12 +212,33 @@ body.page-node-type-page .region-content {
   background: #ffffff;
 }
 
-/* Hide duplicate system page title on CRM node pages */
-body.page-node-type-contact .page-title,
-body.page-node-type-deal .page-title,
-body.page-node-type-organization .page-title,
-body.page-node-type-activity .page-title,
-body.page-node-type-crm-announcement .page-title,
-body.page-crm .page-title {
+/* Hide duplicate system page title on CRM node pages.
+ * NOTE: do NOT add body.path-crm .page-title here — the CRM list
+ * controllers reuse the ".page-title" class for their own headers.
+ * The Drupal system title is already invisible because .region-sticky
+ * is hidden via display:none below.  */
+body.page-node-type-contact .block-page-title-block .page-title,
+body.page-node-type-deal .block-page-title-block .page-title,
+body.page-node-type-organization .block-page-title-block .page-title,
+body.page-node-type-activity .block-page-title-block .page-title,
+body.page-node-type-crm-announcement .block-page-title-block .page-title,
+body.page-crm .block-page-title-block .page-title {
   display: none !important;
+}
+
+/* ── Collapse Gin theme structural gap on CRM pages ──────────────
+ * Gin renders .region-sticky (page-title bar), .sticky-shadow,
+ * .region-sticky-watcher, and .content-header between the admin
+ * toolbar and the page content. On CRM list pages these are empty
+ * but still occupy ~60-80 px, creating a visible blank gap.
+ * ---------------------------------------------------------------- */
+body.path-crm .region-sticky,
+body.path-crm .sticky-shadow,
+body.path-crm .region-sticky-watcher,
+body.path-crm .content-header {
+  display: none !important;
+}
+
+body.path-crm .page-content {
+  margin-block-start: 0 !important;
 }
