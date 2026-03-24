@@ -1,4 +1,0 @@
-services:
-  crm_workflow.probability_service:
-    class: Drupal\crm_workflow\Service\ProbabilityService
-    arguments: ["@entity_type.manager"]
