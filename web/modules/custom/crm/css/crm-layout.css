@@ -233,12 +233,22 @@ body.page-crm .block-page-title-block .page-title {
  * but still occupy ~60-80 px, creating a visible blank gap.
  * ---------------------------------------------------------------- */
 body.path-crm .region-sticky,
+body.path-crm-all-pipeline .region-sticky,
+body.path-crm-my-pipeline .region-sticky,
 body.path-crm .sticky-shadow,
+body.path-crm-all-pipeline .sticky-shadow,
+body.path-crm-my-pipeline .sticky-shadow,
 body.path-crm .region-sticky-watcher,
-body.path-crm .content-header {
+body.path-crm-all-pipeline .region-sticky-watcher,
+body.path-crm-my-pipeline .region-sticky-watcher,
+body.path-crm .content-header,
+body.path-crm-all-pipeline .content-header,
+body.path-crm-my-pipeline .content-header {
   display: none !important;
 }
 
-body.path-crm .page-content {
+body.path-crm .page-content,
+body.path-crm-all-pipeline .page-content,
+body.path-crm-my-pipeline .page-content {
   margin-block-start: 0 !important;
 }
