@@ -162,14 +162,22 @@ class DashboardController extends ControllerBase {
     $agg = \Drupal::database()->select('node_field_data', 'n');
     $agg->leftJoin('node__field_amount', 'fa', 'fa.entity_id = n.nid AND fa.deleted = 0');
     $agg->leftJoin('node__field_stage',  'fs', 'fs.entity_id = n.nid AND fs.deleted = 0');
+    $agg->leftJoin('node__field_probability', 'fp', 'fp.entity_id = n.nid AND fp.deleted = 0');
     $agg->condition('n.type', 'deal');
     if ($has_deleted_at_table) {
       $agg->leftJoin('node__field_deleted_at', 'fd', 'fd.entity_id = n.nid AND fd.deleted = 0');
       $agg->isNull('fd.field_deleted_at_value');
     }
+    // Raw values
     $agg->addExpression('COALESCE(SUM(fa.field_amount_value), 0)', 'total_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN fa.field_amount_value ELSE 0 END), 0)", 'won_value');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value ELSE 0 END), 0)", 'lost_value');
+    
+    // Probability-weighted values (amount * probability/100)
+    $agg->addExpression('COALESCE(SUM(fa.field_amount_value * COALESCE(fp.field_probability_value, 50) / 100), 0)', 'weighted_pipeline_value');
+    $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN fa.field_amount_value * COALESCE(fp.field_probability_value, 50) / 100 ELSE 0 END), 0)", 'weighted_won_value');
+    $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN fa.field_amount_value * COALESCE(fp.field_probability_value, 50) / 100 ELSE 0 END), 0)", 'weighted_lost_value');
+    
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $won_id  THEN 1 ELSE 0 END), 0)", 'won_count');
     $agg->addExpression("COALESCE(SUM(CASE WHEN fs.field_stage_target_id = $lost_id THEN 1 ELSE 0 END), 0)", 'lost_count');
     $agg->addExpression("AVG(CASE WHEN fs.field_stage_target_id = $won_id THEN (UNIX_TIMESTAMP() - n.created) / 86400.0 END)", 'avg_days_won');
@@ -181,15 +189,21 @@ class DashboardController extends ControllerBase {
     $total_value = (float) ($totals->total_value ?? 0);
     $won_value   = (float) ($totals->won_value   ?? 0);
     $lost_value  = (float) ($totals->lost_value  ?? 0);
+    
+    // Probability-weighted values
+    $weighted_pipeline_value = (float) ($totals->weighted_pipeline_value ?? 0);
+    $weighted_won_value = (float) ($totals->weighted_won_value ?? 0);
+    $weighted_lost_value = (float) ($totals->weighted_lost_value ?? 0);
+    
     $won_count   = (int)   ($totals->won_count   ?? 0);
     $lost_count  = (int)   ($totals->lost_count  ?? 0);
     $avg_days_in_pipeline = (int) round((float) ($totals->avg_days_won ?? 0));
 
-    // Format values for display
-    $total_value_display = '$' . number_format($total_value / 1000000, 1) . 'M';
+    // Format values for display - use weighted values for more accurate pipeline
+    $total_value_display = '$' . number_format($weighted_pipeline_value / 1000000, 1) . 'M';
     $won_value_display = '$' . number_format($won_value / 1000000, 1) . 'M';
     $lost_value_display = '$' . number_format($lost_value / 1000000, 1) . 'M';
-    $active_value = $total_value - $won_value - $lost_value;
+    $active_value = $weighted_pipeline_value - $won_value - $lost_value;
     
     // Calculate additional KPIs
     $total_closed = $won_count + $lost_count;

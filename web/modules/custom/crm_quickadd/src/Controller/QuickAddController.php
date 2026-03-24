@@ -219,23 +219,22 @@ class QuickAddController extends ControllerBase {
         }
       }
 
-      // Auto-set probability based on stage
-      $probability_map = [
-        'New' => 10,
-        'Qualified' => 25,
-        'Proposal' => 50,
-        'Negotiation' => 75,
-        'Won' => 100,
-        'Lost' => 0,
-      ];
-      $stage_name = 'New'; // Default
+      // Auto-set probability based on stage using ProbabilityService
+      $probability = 50; // Default
       if (!empty($data['stage'])) {
-        $stage_term = Term::load($data['stage']);
-        if ($stage_term) {
-          $stage_name = $stage_term->getName();
+        try {
+          $probability_service = \Drupal::service('crm_workflow.probability_service');
+          $stage_term = Term::load($data['stage']);
+          if ($stage_term) {
+            $probability = $probability_service->getProbabilityByStage($stage_term->getName());
+          }
+        } catch (\Exception $e) {
+          \Drupal::logger('crm_quickadd')->warning(
+            'Error getting probability for stage: @error',
+            ['@error' => $e->getMessage()]
+          );
         }
       }
-      $probability = $probability_map[$stage_name] ?? 50;
 
       // Create deal
       $deal = Node::create([

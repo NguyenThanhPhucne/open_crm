@@ -19,42 +19,91 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Implements hook_node_presave().
  * 
- * Validates deal before saving.
- * - If stage = "Won" → require file upload
+ * Comprehensive deal workflow validation and automation:
+ * - Auto-update probability when stage changes
+ * - If stage = "Won" → ensure closing date is set
+ * - Validate deal integrity and consistency
+ * - Log stage transitions for audit trail
  */
 function crm_workflow_node_presave(NodeInterface $node) {
   // Only apply to deals
   if ($node->bundle() !== 'deal') {
     return;
   }
-  
-  // Check if stage changed to "Won"
+
+  // CRITICAL FIX: Ensure probability is updated when stage changes
+  // This is the fix for the pipeline calculation bug
   if ($node->hasField('field_stage') && !$node->get('field_stage')->isEmpty()) {
-    $stage_id = $node->get('field_stage')->target_id;
+    $stage_id = (int) $node->get('field_stage')->target_id;
     $stage_term = \Drupal\taxonomy\Entity\Term::load($stage_id);
     
-    if (!$stage_term) {
+    if (!$stage_term || $stage_term->bundle() !== 'pipeline_stage') {
       return;
     }
     
     $stage_name = $stage_term->getName();
     
-    // If stage = "Won", check if field_contract_file is not empty
-    if ($stage_name === 'Won') {
-      // Check if contract file field exists and has a file
+    // Check if this is a stage change (compare with original if it exists)
+    $original_stage = NULL;
+    if (!empty($node->original) && $node->original->hasField('field_stage')) {
+      $original_stage = (int) ($node->original->get('field_stage')->target_id ?? NULL);
+    }
+    
+    if ($node->hasField('field_probability')) {
+      // Get the probability service to maintain single source of truth
+      try {
+        /** @var \Drupal\crm_workflow\Service\ProbabilityService $prob_service */
+        $prob_service = \Drupal::service('crm_workflow.probability_service');
+        $new_probability = $prob_service->getProbabilityByStage($stage_name);
+        
+        // UPDATE probability to match stage (this fixes the main bug!)
+        $current_probability = (int) ($node->get('field_probability')->value ?? 50);
+        if ($current_probability !== $new_probability) {
+          $node->set('field_probability', $new_probability);
+          
+          \Drupal::logger('crm_workflow')->notice(
+            'Deal @id (@title) stage probability auto-updated from @old_prob% to @new_prob% for stage @stage',
+            [
+              '@id' => $node->id() ?? 'new',
+              '@title' => $node->getTitle(),
+              '@old_prob' => $current_probability,
+              '@new_prob' => $new_probability,
+              '@stage' => $stage_name,
+            ]
+          );
+        }
+      } catch (\Exception $e) {
+        \Drupal::logger('crm_workflow')->warning(
+          'Could not update deal probability: @error',
+          ['@error' => $e->getMessage()]
+        );
+      }
+    }
+    
+    // If stage = "Won", ensure closing date and contract file
+    if (strtolower($stage_name) === 'won') {
+      // Set closing date to today if not already set
+      if ($node->hasField('field_closing_date') && $node->get('field_closing_date')->isEmpty()) {
+        $node->set('field_closing_date', date('Y-m-d'));
+      }
+
+      // Warn if contract file is missing
       if ($node->hasField('field_contract_file')) {
         if ($node->get('field_contract_file')->isEmpty()) {
-          // Add warning message
           \Drupal::messenger()->addWarning(t('Note: You should upload a contract file when marking a Deal as Won!'));
-          // Note: We use warning instead of blocking to maintain flexibility
-          // If you want to block, uncomment the line below:
-          // throw new \Drupal\Core\Entity\EntityStorageException('Missing contract file');
         }
       }
       
       \Drupal::logger('crm_workflow')->notice('Deal marked as Won: @title', [
         '@title' => $node->label(),
       ]);
+    }
+    
+    // If stage = "Lost", ensure lost reason is documented
+    if (strtolower($stage_name) === 'lost') {
+      if ($node->hasField('field_lost_reason') && $node->get('field_lost_reason')->isEmpty()) {
+        \Drupal::messenger()->addWarning(t('Consider documenting the reason this deal was lost for future reference.'));
+      }
     }
   }
 }

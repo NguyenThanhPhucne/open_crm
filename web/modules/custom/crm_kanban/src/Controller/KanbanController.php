@@ -90,8 +90,11 @@ class KanbanController extends ControllerBase {
       $totals_by_stage[$stage_id] = 0;
 
       foreach ($deals as $deal) {
-        $value = $deal->get('field_amount')->value ?? 0;
-        $totals_by_stage[$stage_id] += $value;
+        // Calculate probability-weighted value for pipeline calculation
+        $amount = (float) ($deal->get('field_amount')->value ?? 0);
+        $probability = (int) ($deal->get('field_probability')->value ?? 50);
+        $weighted_value = $amount * ($probability / 100);
+        $totals_by_stage[$stage_id] += $weighted_value;
 
         // Get organization name.
         $org_name = '';
@@ -131,7 +134,9 @@ class KanbanController extends ControllerBase {
         $deals_by_stage[$stage_id][] = [
           'nid'            => $deal->id(),
           'title'          => $deal->getTitle(),
-          'value'          => $value,
+          'value'          => $amount,
+          'probability'    => $probability,
+          'weighted_value' => $weighted_value,
           'organization'   => $org_name,
           'owner'          => $owner_name,
           'owner_initials' => $owner_initials,
@@ -572,14 +577,38 @@ HTML;
       else {
         foreach ($deals as $deal) {
           $val = (float) $deal['value'];
+          $probability = (int) ($deal['probability'] ?? 50);
+          $weighted_val = (float) ($deal['weighted_value'] ?? 0);
+          
+          // Format both raw and weighted values
           $value_formatted = $val >= 1000000
             ? '$' . number_format($val / 1000000, 1) . 'M'
             : ($val >= 1000 ? '$' . number_format($val / 1000, 0) . 'K' : '$' . number_format($val, 0));
+          
+          $weighted_formatted = $weighted_val >= 1000000
+            ? '$' . number_format($weighted_val / 1000000, 1) . 'M'
+            : ($weighted_val >= 1000 ? '$' . number_format($weighted_val / 1000, 0) . 'K' : '$' . number_format($weighted_val, 0));
+          
           $org_display   = $deal['organization'] ?: 'No organization';
           $owner_display = $deal['owner'] ?: 'Unassigned';
           $owner_av      = $deal['owner_initials'] ?: '?';
           $card_color    = $stage_info['color'];
           $created_ts    = $deal['created'] ?? 0;
+          
+          // Get probability label and color
+          $prob_colors = [
+            0 => '#ef4444',    // Red for lost
+            25 => '#f59e0b',   // Orange
+            50 => '#3b82f6',   // Blue  
+            75 => '#10b981',   // Green
+            100 => '#059669',  // Dark Green
+          ];
+          $prob_color = '#3b82f6'; // Default blue
+          if ($probability <= 10) $prob_color = '#ef4444';   // Very low - red
+          elseif ($probability <= 25) $prob_color = '#f59e0b'; // Low - orange
+          elseif ($probability <= 50) $prob_color = '#3b82f6'; // Medium - blue
+          elseif ($probability <= 75) $prob_color = '#10b981'; // High - green
+          else $prob_color = '#059669'; // Very high - dark green
 
           $due_badge_html = '';
           if (!empty($deal['closing_date'])) {
@@ -600,14 +629,18 @@ HTML;
           $search_text = htmlspecialchars(strtolower($deal['title'] . ' ' . $org_display . ' ' . $owner_display), ENT_QUOTES, 'UTF-8');
 
           $html .= <<<HTML
-          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}" data-deal-value="{$val}" data-search-text="{$search_text}">
+          <div class="deal-card" style="border-left-color:{$card_color}" data-deal-id="{$deal['nid']}" data-deal-value="{$val}" data-weighted-value="{$weighted_val}" data-probability="{$probability}" data-search-text="{$search_text}">
             <div class="card-actions">
               <a href="/node/{$deal['nid']}" class="ca-btn" title="View"><i data-lucide="eye"></i></a>
               <button type="button" class="ca-btn" title="Edit" onclick="if(window.CRMInlineEdit)CRMInlineEdit.openModal({$deal['nid']},'deal');else location='/node/{$deal['nid']}/edit';"><i data-lucide="pencil"></i></button>
             </div>
             <div class="deal-title">{$deal['title']}</div>
             <div class="card-value-row">
-              <span class="deal-value" style="color:{$card_color}">{$value_formatted}</span>
+              <div style="flex:1">
+                <span class="deal-value" style="color:{$card_color}">{$value_formatted}</span>
+                <span style="font-size:10px;color:#94a3b8;margin-left:4px;display:inline-block">({$probability}%)</span>
+              </div>
+              <span class="deal-weighted-value" style="color:{$prob_color};font-weight:600;font-size:12px" title="Probability-weighted value">{$weighted_formatted}</span>
               {$due_badge_html}
             </div>
             <div class="card-footer">
@@ -1257,9 +1290,48 @@ HTML;
         }
       }
 
+      // Update deal stage
       if ($deal->hasField('field_stage')) {
         $deal->set('field_stage', ['target_id' => $numeric_stage_id]);
+        
+        // AUTO-UPDATE PROBABILITY based on new stage
+        // This is critical for CRM workflow - probability should reflect stage progress
+        if ($deal->hasField('field_probability')) {
+          $probability_map = [
+            'new' => 10,
+            'qualified' => 25,
+            'proposal' => 50,
+            'negotiation' => 75,
+            'won' => 100,
+            'lost' => 0,
+          ];
+          
+          try {
+            $stage_term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($numeric_stage_id);
+            if ($stage_term && $stage_term->bundle() === 'pipeline_stage') {
+              $stage_name = strtolower($stage_term->getName());
+              $new_probability = $probability_map[$stage_name] ?? 50;
+              $deal->set('field_probability', $new_probability);
+              
+              \Drupal::logger('crm_kanban')->notice(
+                'Deal @deal_id (@title) moved to stage @stage - probability auto-updated to @prob%',
+                [
+                  '@deal_id' => $deal_id,
+                  '@title' => $deal->getTitle(),
+                  '@stage' => $stage_term->getName(),
+                  '@prob' => $new_probability,
+                ]
+              );
+            }
+          } catch (\Exception $e) {
+            \Drupal::logger('crm_kanban')->warning(
+              'Could not auto-update probability for deal @deal_id: @error',
+              ['@deal_id' => $deal_id, '@error' => $e->getMessage()]
+            );
+          }
+        }
       }
+      
       $deal->save();
 
       \Drupal::entityTypeManager()->getStorage('node')->resetCache([$deal_id]);
