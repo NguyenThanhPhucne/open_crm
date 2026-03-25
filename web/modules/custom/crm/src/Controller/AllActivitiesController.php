@@ -509,10 +509,7 @@ HTML;
         <i data-lucide="plus-circle"></i>
         Add Activity
       </a>
-      <button id="crm-ai-generate-btn" class="btn-generate" data-entity-type="activity">
-        <i data-lucide="sparkles"></i>
-        Generate data
-      </button>
+
     </div>
   </div>
 HTML;
@@ -757,7 +754,7 @@ JS;
           'crm/crm_shared',
           'crm/crm-ui-professional',
           'crm_edit/inline_edit',
-          'crm_ai_autocomplete/ai-generate-button',
+
         ],
       ],
       '#cache' => [

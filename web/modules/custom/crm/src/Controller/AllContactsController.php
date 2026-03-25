@@ -516,10 +516,7 @@ HTML;
         <i data-lucide="user-plus"></i>
         Add Contact
       </a>
-      <button id="crm-ai-generate-btn" class="btn-generate" data-entity-type="contact">
-        <i data-lucide="sparkles"></i>
-        Generate data
-      </button>
+
     </div>
   </div>
 
@@ -772,7 +769,7 @@ JS;
       '#attached' => [
         'library' => [
           'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
-          'crm_ai_autocomplete/ai-generate-button',
+
         ],
       ],
       '#cache' => [

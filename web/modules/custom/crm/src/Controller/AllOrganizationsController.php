@@ -533,10 +533,7 @@ HTML;
         <i data-lucide="plus-circle"></i>
         Add Organization
       </a>
-      <button id="crm-ai-generate-btn" class="btn-generate" data-entity-type="organization">
-        <i data-lucide="sparkles"></i>
-        Generate data
-      </button>
+
     </div>
   </div>
 
@@ -807,7 +804,7 @@ JS;
       '#attached' => [
         'library' => [
           'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
-          'crm_ai_autocomplete/ai-generate-button',
+
         ],
       ],
       '#cache' => [

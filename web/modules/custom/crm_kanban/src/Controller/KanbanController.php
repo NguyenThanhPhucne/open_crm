@@ -513,7 +513,7 @@ HTML;
     <div class="page-actions">
       <a href="{$list_url}" class="btn-secondary"><i data-lucide="list"></i> List view</a>
       <a href="/crm/add/deal" class="btn-primary"><i data-lucide="plus-circle"></i> Add Deal</a>
-      <button id="crm-ai-generate-btn" class="btn-generate" data-entity-type="deal"><i data-lucide="sparkles"></i>Generate data</button>
+
     </div>
   </div>
 
