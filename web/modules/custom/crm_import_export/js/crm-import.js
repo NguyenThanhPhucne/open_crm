@@ -1,235 +1,177 @@
 /**
  * CRM Import — Premium JS
- * Drag-drop upload, CSV preview, field mapping, progress simulation
+ * Drag-drop + CSV preview + progress animation
+ *
+ * The file input physically overlays the dropzone (position:absolute;inset:0;
+ * opacity:0), so clicking anywhere in the zone opens the OS file picker.
+ * For drag-and-drop, we intercept the drop event, push the file into the
+ * input's file list via DataTransfer, then dispatch a synthetic 'change'.
  */
-(function ($, Drupal) {
+(function ($, Drupal, once) {
   'use strict';
 
-  Drupal.behaviors.crmImport = {
+  Drupal.behaviors.crmImportDrop = {
     attach: function (context, settings) {
-      // Init drag-drop on each dropzone
-      once('crm-import-init', '.crm-dropzone', context).forEach(function (zone) {
-        initDropzone(zone);
-      });
+      once('crm-drop-init', '.crm-dropzone', context).forEach(initDropzone);
     }
   };
 
-  /* ---- Dropzone ---- */
+  // ── DROPZONE INIT ─────────────────────────────────────────────────────────
   function initDropzone(zone) {
-    var input = zone.querySelector('.crm-dropzone__input');
-    var fileInfo = zone.closest('.crm-import-form-wrap') ?
-      zone.closest('.crm-import-form-wrap').querySelector('.crm-file-info') :
-      document.querySelector('.crm-file-info');
-    var preview = document.querySelector('.crm-csv-preview');
-    var hiddenInput = document.getElementById('crm-csv-hidden-fid');
+    // The real file input that overlays the zone.
+    var input = zone.querySelector('input[type="file"]');
+    if (!input) return;
 
-    // Drag events
-    ['dragenter', 'dragover'].forEach(function (evt) {
-      zone.addEventListener(evt, function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        zone.classList.add('drag-over');
-      });
+    var zoneId   = zone.id || 'crm-dropzone';
+    var suffix   = zoneId.replace('crm-contacts-dropzone', 'contacts')
+                         .replace('crm-orgs-dropzone', 'orgs')
+                         .replace('crm-deals-dropzone', 'deals');
+
+    var fileInfo    = document.getElementById('crm-file-info-' + suffix);
+    var preview     = document.getElementById('crm-preview-' + suffix);
+    var removeBtn   = document.getElementById('crm-remove-' + suffix);
+    var badge       = document.getElementById('crm-preview-badge-' + suffix);
+    var tableWrap   = document.getElementById('crm-preview-table-' + suffix);
+
+    // ── Drag visual feedback (input captures drops natively, but we add
+    //    visual cues by listening on the parent zone).
+    zone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', function () {
+      zone.classList.remove('drag-over');
     });
 
-    ['dragleave', 'dragend'].forEach(function (evt) {
-      zone.addEventListener(evt, function () {
-        zone.classList.remove('drag-over');
-      });
-    });
-
+    // When a file is dropped, set it on the input so the form submission
+    // sees it in $_FILES['files']['csv_file'].
     zone.addEventListener('drop', function (e) {
       e.preventDefault();
       e.stopPropagation();
       zone.classList.remove('drag-over');
-      var files = e.dataTransfer.files;
-      if (files.length > 0) handleFile(files[0], zone, fileInfo, preview, input);
+
+      var files = e.dataTransfer && e.dataTransfer.files;
+      if (!files || !files.length) return;
+
+      // Assign the dropped file to the native file input.
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(files[0]);
+        input.files = dt.files;
+      }
+      catch (ex) {
+        // DataTransfer not supported — fall back: show error.
+        showAlert('error', 'Please use the Browse button to select a file on this browser.');
+        return;
+      }
+
+      handleFile(files[0], zone, fileInfo, preview, badge, tableWrap);
     });
 
-    // Click browse
-    if (input) {
-      input.addEventListener('change', function () {
-        if (this.files.length > 0) handleFile(this.files[0], zone, fileInfo, preview, input);
-      });
-    }
+    // When the user selects via file picker (click).
+    input.addEventListener('change', function () {
+      if (this.files && this.files.length) {
+        handleFile(this.files[0], zone, fileInfo, preview, badge, tableWrap);
+      }
+    });
 
-    // Also hook the Drupal managed_file upload trigger
-    var drupalFileInput = document.querySelector('input[data-drupal-selector="edit-csv-file-upload"]');
-    if (drupalFileInput) {
-      drupalFileInput.addEventListener('change', function () {
-        if (this.files.length > 0) {
-          handleFile(this.files[0], zone, fileInfo, preview, null);
-        }
+    // Remove / reset.
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        try { input.value = ''; } catch(ex) {}
+        zone.classList.remove('has-file', 'drag-over');
+        if (fileInfo)  fileInfo.classList.remove('visible');
+        if (preview)   preview.classList.remove('visible');
       });
     }
   }
 
-  /* ---- Handle file selection ---- */
-  function handleFile(file, zone, fileInfo, preview, input) {
-    // Validate extension
-    if (!file.name.match(/\.(csv|txt)$/i)) {
-      showAlert('error', 'Please upload a CSV or TXT file.');
+  // ── HANDLE SELECTED FILE ─────────────────────────────────────────────────
+  function handleFile(file, zone, fileInfo, preview, badge, tableWrap) {
+    if (!file) return;
+
+    var ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'csv' && ext !== 'txt') {
+      showAlert('error', 'Only CSV or TXT files are supported.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showAlert('error', 'File size exceeds 10 MB limit.');
       return;
     }
 
-    // Update zone appearance
     zone.classList.add('has-file');
-    zone.classList.remove('drag-over');
 
-    // Show file info bar
+    // Show file info bar.
     if (fileInfo) {
       fileInfo.classList.add('visible');
       var nameEl = fileInfo.querySelector('.crm-file-info__name');
       var metaEl = fileInfo.querySelector('.crm-file-info__meta');
       if (nameEl) nameEl.textContent = file.name;
-      if (metaEl) metaEl.textContent = formatFileSize(file.size) + ' · UTF-8 CSV';
-
-      // Remove button
-      var removeBtn = fileInfo.querySelector('.crm-file-info__remove');
-      if (removeBtn) {
-        removeBtn.addEventListener('click', function () {
-          zone.classList.remove('has-file');
-          fileInfo.classList.remove('visible');
-          if (preview) preview.classList.remove('visible');
-          if (input) input.value = '';
-        });
-      }
+      if (metaEl) metaEl.textContent = formatSize(file.size) + ' · UTF-8 CSV';
     }
 
-    // Parse CSV and show preview
-    readCSVPreview(file, preview);
-
-    // Also trigger the hidden Drupal file upload input so form submits correctly
-    if (input && input.closest('form')) {
-      // Create DataTransfer to programmatically set files
-      try {
-        var dt = new DataTransfer();
-        dt.items.add(file);
-        // Find the actual Drupal file input
-        var drupalInput = document.querySelector('input[data-drupal-selector="edit-csv-file-upload"]');
-        if (drupalInput) {
-          drupalInput.files = dt.files;
-          // Trigger change to activate Drupal's managed_file upload
-          drupalInput.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-      } catch (e) {
-        // Fallback: just allow the form to submit with the hidden input
-      }
+    // Render CSV preview.
+    if (preview) {
+      readCSVPreview(file, preview, badge, tableWrap);
     }
   }
 
-  /* ---- CSV Preview ---- */
-  function readCSVPreview(file, previewContainer) {
-    if (!previewContainer) return;
-
+  // ── CSV PREVIEW ───────────────────────────────────────────────────────────
+  function readCSVPreview(file, previewEl, badge, tableWrap) {
     var reader = new FileReader();
     reader.onload = function (e) {
       var text = e.target.result;
       var rows = parseCSV(text, 6); // header + 5 data rows
+      if (rows.length < 1) return;
 
-      if (rows.length < 2) return;
-
-      var headers = rows[0];
+      var headers  = rows[0];
       var dataRows = rows.slice(1);
 
-      // Build table HTML
       var html = '<table><thead><tr>';
-      headers.forEach(function (h) {
-        html += '<th>' + escapeHTML(h) + '</th>';
-      });
+      headers.forEach(function (h) { html += '<th>' + esc(h) + '</th>'; });
       html += '</tr></thead><tbody>';
-
       dataRows.forEach(function (row) {
         html += '<tr>';
         headers.forEach(function (_, i) {
-          html += '<td title="' + escapeHTML(row[i] || '') + '">' + escapeHTML(truncate(row[i] || '', 30)) + '</td>';
+          var v = row[i] || '';
+          html += '<td title="' + esc(v) + '">' + esc(trunc(v, 28)) + '</td>';
         });
         html += '</tr>';
       });
-
       html += '</tbody></table>';
 
-      var scrollDiv = previewContainer.querySelector('.crm-csv-preview__scroll');
-      if (scrollDiv) scrollDiv.innerHTML = html;
+      if (tableWrap) tableWrap.innerHTML = html;
 
-      // Count total rows (rough approximation)
-      var totalLines = text.split('\n').filter(function (l) { return l.trim(); }).length - 1;
-      var badge = previewContainer.querySelector('.crm-csv-preview__badge');
-      if (badge) badge.textContent = totalLines + ' rows detected';
+      // Count total lines.
+      var total = Math.max(0, text.split('\n').filter(function (l) { return l.trim(); }).length - 1);
+      if (badge) badge.textContent = total.toLocaleString() + ' row' + (total !== 1 ? 's' : '') + ' detected';
 
-      previewContainer.classList.add('visible');
+      previewEl.classList.add('visible');
     };
-
     reader.readAsText(file, 'UTF-8');
   }
 
-  /* ---- Simple CSV parser ---- */
-  function parseCSV(text, maxRows) {
-    var rows = [];
-    var lines = text.split('\n');
-    var count = 0;
-
-    for (var i = 0; i < lines.length && count < maxRows; i++) {
-      var line = lines[i].trim();
-      if (!line) continue;
-      rows.push(parseCSVLine(line));
-      count++;
-    }
-
-    return rows;
-  }
-
-  function parseCSVLine(line) {
-    var result = [];
-    var current = '';
-    var inQuotes = false;
-
-    for (var i = 0; i < line.length; i++) {
-      var ch = line[i];
-      if (ch === '"') {
-        inQuotes = !inQuotes;
-      } else if (ch === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += ch;
-      }
-    }
-    result.push(current.trim());
-    return result;
-  }
-
-  /* ---- Progress bar (used during Drupal Batch API) ---- */
-  Drupal.behaviors.crmImportProgress = {
-    attach: function (context, settings) {
-      var bar = document.querySelector('.crm-import-progress');
-      if (!bar) return;
-
-      // Listen to Drupal batch progress events
-      $(document).on('drupalBatchUpdate', function (e, data) {
-        if (!bar.classList.contains('visible')) bar.classList.add('visible');
-        var pct = Math.round(data.percentage || 0);
-        var fill = bar.querySelector('.crm-import-progress__fill');
-        var pctEl = bar.querySelector('.crm-import-progress__pct');
-        var statusEl = bar.querySelector('.crm-import-progress__status');
-        if (fill) fill.style.width = pct + '%';
-        if (pctEl) pctEl.textContent = pct + '%';
-        if (statusEl && data.message) statusEl.textContent = data.message;
-      });
-    }
-  };
-
-  /* ---- Form submit animation ---- */
+  // ── PROGRESS ANIMATION on submit ─────────────────────────────────────────
   Drupal.behaviors.crmImportSubmit = {
     attach: function (context, settings) {
       once('crm-submit', '.crm-import-submit-btn', context).forEach(function (btn) {
-        btn.closest('form') && btn.closest('form').addEventListener('submit', function () {
+        var form = btn.closest('form');
+        if (!form) return;
+        form.addEventListener('submit', function () {
+          // Check file is set before allowing submit.
+          var fileInput = form.querySelector('input[type="file"]');
+          if (fileInput && !fileInput.files.length) {
+            // Drupal validation will catch this, but show a hint anyway.
+            return; // let form submit and server validates.
+          }
           btn.disabled = true;
-          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Processing…';
-          var progress = document.querySelector('.crm-import-progress');
-          if (progress) {
-            progress.classList.add('visible');
-            animateProgress(progress);
+          btn.textContent = 'Importing…';
+          var prog = form.querySelector('.crm-import-progress');
+          if (prog) {
+            prog.classList.add('visible');
+            animateProgress(prog);
           }
         });
       });
@@ -237,57 +179,66 @@
   };
 
   function animateProgress(bar) {
-    var fill = bar.querySelector('.crm-import-progress__fill');
-    var pctEl = bar.querySelector('.crm-import-progress__pct');
-    var statusEl = bar.querySelector('.crm-import-progress__status');
-    var pct = 0;
-
-    var messages = ['Reading CSV file…', 'Validating rows…', 'Creating records…', 'Finalizing…'];
-    var msgIdx = 0;
-
+    var fill   = bar.querySelector('.crm-import-progress__fill');
+    var pctEl  = bar.querySelector('.crm-import-progress__pct');
+    var statEl = bar.querySelector('.crm-import-progress__status');
+    var msgs   = ['Reading CSV file…', 'Validating data…', 'Creating records…', 'Finalizing…'];
+    var pct = 0, idx = 0;
     var iv = setInterval(function () {
       if (pct >= 90) { clearInterval(iv); return; }
-      pct += Math.random() * 3 + 1;
-      pct = Math.min(pct, 90);
-      if (fill) fill.style.width = pct + '%';
+      pct = Math.min(90, pct + Math.random() * 3.5 + 0.5);
+      if (fill)  fill.style.width = pct + '%';
       if (pctEl) pctEl.textContent = Math.round(pct) + '%';
-      if (statusEl && pct > msgIdx * 22 && messages[msgIdx]) {
-        statusEl.textContent = messages[msgIdx++];
-      }
+      if (statEl && pct > idx * 22 && msgs[idx]) statEl.textContent = msgs[idx++];
     }, 300);
   }
 
-  /* ---- Helpers ---- */
-  function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
+  // ── CSV PARSER ────────────────────────────────────────────────────────────
+  function parseCSV(text, max) {
+    var rows = [], lines = text.split('\n'), count = 0;
+    for (var i = 0; i < lines.length && count < max; i++) {
+      var l = lines[i].trim();
+      if (l) { rows.push(parseLine(l)); count++; }
+    }
+    return rows;
   }
 
-  function escapeHTML(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function parseLine(line) {
+    var res = [], cur = '', inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    res.push(cur.trim());
+    return res;
   }
 
-  function truncate(str, max) {
-    return str.length > max ? str.substring(0, max) + '…' : str;
+  // ── HELPERS ───────────────────────────────────────────────────────────────
+  function formatSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
   }
 
-  function showAlert(type, message) {
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function trunc(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+
+  function showAlert(type, msg) {
     var el = document.createElement('div');
-    el.style.cssText = 'position:fixed;top:24px;right:24px;z-index:9999;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;color:white;box-shadow:0 8px 20px rgba(0,0,0,.15);animation:slideIn .3s ease;';
+    el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;padding:14px 20px;border-radius:10px;font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:crmSlideIn .3s ease;';
     el.style.background = type === 'error' ? '#ef4444' : '#10b981';
-    el.textContent = message;
+    el.textContent = msg;
     document.body.appendChild(el);
-    setTimeout(function () { el.remove(); }, 4000);
+    setTimeout(function () { el.remove(); }, 5000);
   }
 
-  // CSS animation for spinner + slide-in alert
-  var style = document.createElement('style');
-  style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}';
-  document.head.appendChild(style);
+  var _styleEl = document.createElement('style');
+  _styleEl.textContent = '@keyframes crmSlideIn{from{transform:translateX(120px);opacity:0}to{transform:translateX(0);opacity:1}}';
+  document.head.appendChild(_styleEl);
 
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

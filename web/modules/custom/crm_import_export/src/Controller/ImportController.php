@@ -23,28 +23,30 @@ class ImportController extends ControllerBase {
     $html = <<<HTML
 <div class="crm-import-hub">
 
-  <!-- ── HERO ── -->
-  <div class="crm-import-hero">
-    <div class="crm-import-hero-inner">
-      <div class="crm-import-hero-icon">
-        <i data-lucide="upload-cloud" width="32" height="32"></i>
+  <!-- ── HEADER ── -->
+  <div class="crm-import-header">
+    <div class="crm-import-header-inner">
+      <div class="crm-import-header-title">
+        <div class="crm-icon-wrapper">
+          <i data-lucide="upload-cloud" width="28" height="28"></i>
+        </div>
+        <div>
+          <h1>Import Data</h1>
+          <p>Bulk import your CRM data natively and securely</p>
+        </div>
       </div>
-      <div class="crm-import-hero-text">
-        <h1>Import Data</h1>
-        <p>Bulk import contacts, deals &amp; organizations from CSV files — fast, smart, and reliable</p>
-        <div class="crm-import-stats">
-          <div class="crm-import-stat">
-            <i data-lucide="users" width="14" height="14"></i>
-            <strong>{$contact_count}</strong> contacts in system
-          </div>
-          <div class="crm-import-stat">
-            <i data-lucide="briefcase" width="14" height="14"></i>
-            <strong>{$deal_count}</strong> deals
-          </div>
-          <div class="crm-import-stat">
-            <i data-lucide="building-2" width="14" height="14"></i>
-            <strong>{$org_count}</strong> organizations
-          </div>
+      <div class="crm-import-stats">
+        <div class="crm-import-stat">
+          <i data-lucide="users" width="14" height="14"></i>
+          <span><strong>{$contact_count}</strong> contacts</span>
+        </div>
+        <div class="crm-import-stat">
+          <i data-lucide="briefcase" width="14" height="14"></i>
+          <span><strong>{$deal_count}</strong> deals</span>
+        </div>
+        <div class="crm-import-stat">
+          <i data-lucide="building-2" width="14" height="14"></i>
+          <span><strong>{$org_count}</strong> organizations</span>
         </div>
       </div>
     </div>
@@ -68,10 +70,10 @@ class ImportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-schema">
-          <h4>CSV Columns</h4>
+          <h4>Columns</h4>
           <div class="crm-import-tags">
-            <span class="crm-import-tag crm-import-tag--required">name *</span>
-            <span class="crm-import-tag crm-import-tag--required">email *</span>
+            <span class="crm-import-tag crm-import-tag--required">name</span>
+            <span class="crm-import-tag crm-import-tag--required">email</span>
             <span class="crm-import-tag">phone</span>
             <span class="crm-import-tag">position</span>
             <span class="crm-import-tag">organization</span>
@@ -104,11 +106,11 @@ class ImportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-schema">
-          <h4>CSV Columns</h4>
+          <h4>Columns</h4>
           <div class="crm-import-tags">
-            <span class="crm-import-tag crm-import-tag--required">title *</span>
-            <span class="crm-import-tag crm-import-tag--required">amount *</span>
-            <span class="crm-import-tag crm-import-tag--required">stage *</span>
+            <span class="crm-import-tag crm-import-tag--required">title</span>
+            <span class="crm-import-tag crm-import-tag--required">amount</span>
+            <span class="crm-import-tag crm-import-tag--required">stage</span>
             <span class="crm-import-tag">contact</span>
             <span class="crm-import-tag">close_date</span>
             <span class="crm-import-tag">probability</span>
@@ -139,9 +141,9 @@ class ImportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-schema">
-          <h4>CSV Columns</h4>
+          <h4>Columns</h4>
           <div class="crm-import-tags">
-            <span class="crm-import-tag crm-import-tag--required">name *</span>
+            <span class="crm-import-tag crm-import-tag--required">name</span>
             <span class="crm-import-tag">website</span>
             <span class="crm-import-tag">industry</span>
             <span class="crm-import-tag">address</span>
@@ -167,29 +169,21 @@ class ImportController extends ControllerBase {
     <!-- How to import guide -->
     <div class="crm-import-guide">
       <h3>
-        <i data-lucide="book-open" width="20" height="20" style="color:#3b82f6"></i>
+        <i data-lucide="book-open" width="20" height="20" style="color:#64748b"></i>
         How to Import
       </h3>
       <div class="crm-import-steps">
         <div class="crm-import-step">
           <div class="crm-import-step__num">1</div>
-          <div class="crm-import-step__text"><strong>Download</strong> the CSV template for the entity type you want to import</div>
+          <div class="crm-import-step__text"><strong>Download</strong> the CSV template for the entity type you want to import.</div>
         </div>
         <div class="crm-import-step">
           <div class="crm-import-step__num">2</div>
-          <div class="crm-import-step__text"><strong>Fill in</strong> your data following the template format — keep the header row</div>
+          <div class="crm-import-step__text"><strong>Fill in</strong> your data following the template format. Keep the header row.</div>
         </div>
         <div class="crm-import-step">
           <div class="crm-import-step__num">3</div>
-          <div class="crm-import-step__text"><strong>Upload</strong> — drag &amp; drop your CSV or click "Start Import"</div>
-        </div>
-        <div class="crm-import-step">
-          <div class="crm-import-step__num">4</div>
-          <div class="crm-import-step__text"><strong>Preview</strong> the first rows and configure import options</div>
-        </div>
-        <div class="crm-import-step">
-          <div class="crm-import-step__num">5</div>
-          <div class="crm-import-step__text"><strong>Import</strong> — track real-time progress and review results</div>
+          <div class="crm-import-step__text"><strong>Upload</strong> your CSV and configure import options like duplicate handling.</div>
         </div>
       </div>
     </div>

@@ -142,6 +142,20 @@ function _crm_actions_build_navbar() {
 }
 
 /**
+ * Implements hook_page_attachments().
+ * Forcibly hide Gin's sticky region on all pages since we have custom nav.
+ */
+function crm_actions_page_attachments(array &$attachments) {
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'style',
+      '#value' => '.region-sticky, .region-sticky-watcher { display: none !important; }',
+    ],
+    'crm_actions_hide_sticky',
+  ];
+}
+
+/**
  * Implements hook_preprocess_page().
  *
  * Removes the Gin sticky header region (region-sticky) from all CRM pages.
@@ -171,3 +185,5 @@ function crm_actions_preprocess_views_view(&$variables) {
     $variables['#attached']['library'][] = 'crm_actions/global_nav';
   }
 }
+
+

@@ -5,7 +5,8 @@ namespace Drupal\crm_import_export\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
-use Drupal\file\Entity\File;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Url;
 
 /**
  * Form for importing organizations from CSV — premium drag-drop UI + batch.
@@ -24,82 +25,87 @@ class ImportOrganizationsForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['#attributes']['class'][] = 'crm-import-form-page';
+    $form['#attributes']['enctype'] = 'multipart/form-data';
     $form['#attached']['library'][] = 'crm_import_export/import_ui';
     $form['#attached']['library'][] = 'core/once';
 
-    $form['breadcrumb'] = [
-      '#markup' => '<div class="crm-import-breadcrumb">
-        <i data-lucide="home" width="14" height="14"></i>
+    $dropzone_html = Markup::create('
+      <div class="crm-import-breadcrumb">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <a href="/admin/crm/import">Import Data</a>
-        <i data-lucide="chevron-right" width="14" height="14"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         <span>Import Organizations</span>
-      </div>',
-    ];
+      </div>
 
-    $form['heading'] = [
-      '#markup' => '<div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;">
-        <div style="width:52px;height:52px;background:#f0fdfa;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#14b8a6;flex-shrink:0;">
-          <i data-lucide="building-2" width="26" height="26"></i>
+      <div class="crm-import-page-header">
+        <div class="crm-import-page-icon" style="background:#f0fdfa; color:#14b8a6">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
         </div>
         <div>
-          <h2 style="font-size:22px;font-weight:800;color:#1e293b;margin:0 0 3px;">Import Organizations</h2>
-          <p style="font-size:14px;color:#64748b;margin:0;">Drag &amp; drop your CSV file or click to browse</p>
+          <h2 class="crm-import-page-title">Import Organizations</h2>
+          <p class="crm-import-page-sub">Click or drag and drop a CSV file to begin. Supports up to 10 MB.</p>
         </div>
-      </div>',
-    ];
+      </div>
 
-    $form['dropzone'] = [
-      '#markup' => '<div class="crm-dropzone" id="crm-orgs-dropzone">
-        <input type="file" accept=".csv,.txt" class="crm-dropzone__input" id="crm-orgs-file-browse" aria-label="Upload CSV file">
-        <div class="crm-dropzone__icon" style="color:#14b8a6;">
-          <i data-lucide="cloud-upload" width="32" height="32"></i>
+      <!-- SCHEMA HINT -->
+      <div class="crm-schema-hint">
+        <div class="crm-schema-hint__label">Required</div>
+        <span class="crm-import-tag crm-import-tag--required">name</span>
+        <div class="crm-schema-hint__label" style="margin-left:12px">Optional</div>
+        <span class="crm-import-tag">website</span>
+        <span class="crm-import-tag">industry</span>
+        <span class="crm-import-tag">address</span>
+        <span class="crm-import-tag">status</span>
+      </div>
+
+      <!-- DROP ZONE -->
+      <div class="crm-dropzone" id="crm-orgs-dropzone">
+        <input
+          type="file"
+          name="files[csv_file]"
+          id="crm-csv-input-orgs"
+          accept=".csv,.txt"
+          aria-label="Upload CSV file"
+          style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;">
+
+        <div class="crm-dropzone__icon" id="crm-dz-icon-orgs">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
         </div>
-        <h3>Drop your CSV file here</h3>
-        <p>Supports CSV and TXT files up to 10 MB</p>
-        <label class="crm-dropzone__browse" style="background:#14b8a6;" for="crm-orgs-file-browse">
-          <i data-lucide="folder-open" width="16" height="16"></i>
-          Browse File
-        </label>
-      </div>',
-    ];
+        <p class="crm-dropzone__title">Drop CSV here or <span class="crm-dropzone__link">click to choose file</span></p>
+        <p class="crm-dropzone__hint">CSV · TXT &nbsp;·&nbsp; UTF-8 &nbsp;·&nbsp; Max 10 MB</p>
+      </div>
 
-    $form['file_info'] = [
-      '#markup' => '<div class="crm-file-info">
-        <div class="crm-file-info__icon"><i data-lucide="file-check" width="22" height="22"></i></div>
+      <!-- FILE INFO (shown by JS after selection) -->
+      <div class="crm-file-info" id="crm-file-info-orgs">
+        <div class="crm-file-info__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
         <div class="crm-file-info__details">
-          <div class="crm-file-info__name">No file selected</div>
-          <div class="crm-file-info__meta"></div>
+          <div class="crm-file-info__name">—</div>
+          <div class="crm-file-info__meta">—</div>
         </div>
-        <button type="button" class="crm-file-info__remove">
-          <i data-lucide="x" width="18" height="18"></i>
+        <button type="button" class="crm-file-info__remove" id="crm-remove-orgs" title="Remove file">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
-      </div>',
-    ];
+      </div>
 
-    $form['csv_preview'] = [
-      '#markup' => '<div class="crm-csv-preview">
+      <!-- CSV PREVIEW (shown by JS) -->
+      <div class="crm-csv-preview" id="crm-preview-orgs">
         <div class="crm-csv-preview__header">
-          <h4><i data-lucide="table" width="16" height="16"></i> Data Preview</h4>
-          <span class="crm-csv-preview__badge">0 rows detected</span>
+          <h4>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+            Preview <small style="font-weight:400;color:#94a3b8;margin-left:4px;">(first 5 rows)</small>
+          </h4>
+          <span class="crm-csv-preview__badge" id="crm-preview-badge-orgs">0 rows</span>
         </div>
-        <div class="crm-csv-preview__scroll"></div>
-      </div>',
-    ];
+        <div class="crm-csv-preview__scroll" id="crm-preview-table-orgs"></div>
+      </div>
+    ');
 
-    $form['csv_file'] = [
-      '#type' => 'managed_file',
-      '#title' => $this->t('CSV File'),
-      '#upload_validators' => [
-        'FileExtension' => ['extensions' => 'csv txt'],
-      ],
-      '#upload_location' => 'public://crm_imports',
-      '#required' => TRUE,
-      '#attributes' => ['class' => ['crm-hidden-file-upload']],
-    ];
+    $form['ui'] = ['#markup' => $dropzone_html];
 
-    $form['options_wrap'] = [
-      '#markup' => '<div class="crm-import-options">
-        <h4><i data-lucide="settings-2" width="16" height="16"></i> Import Options</h4>',
+    $form['options_wrap_open'] = [
+      '#markup' => '<div class="crm-import-options"><h4><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 2.12 3.64"/><path d="M21.17 11h2.17"/><path d="M19.07 19.07a10 10 0 0 1-14.14 0"/><path d="M4.93 4.93a10 10 0 0 1 3.64-2.12"/><path d="M3 12H.83"/><path d="M4.93 19.07a10 10 0 0 1-2.12-3.64"/><path d="M11 3V.83"/><path d="M13 3V.83"/><path d="M19.07 4.93"/></svg>Import Options</h4>',
     ];
 
     $form['skip_duplicates'] = [
@@ -118,43 +124,40 @@ class ImportOrganizationsForm extends FormBase {
       '#suffix' => '</div>',
     ];
 
-    $form['options_close'] = ['#markup' => '</div>'];
+    $form['options_wrap_close'] = ['#markup' => '</div>'];
 
-    $form['progress'] = [
-      '#markup' => '<div class="crm-import-progress">
-        <div class="crm-import-progress__label">
-          <span>Importing…</span>
-          <span class="crm-import-progress__pct">0%</span>
+    $form['progress_html'] = [
+      '#markup' => Markup::create('
+        <div class="crm-import-progress" id="crm-progress-orgs">
+          <div class="crm-import-progress__label">
+            <span>Importing organizations…</span>
+            <span class="crm-import-progress__pct">0%</span>
+          </div>
+          <div class="crm-import-progress__bar">
+            <div class="crm-import-progress__fill" style="width:0%"></div>
+          </div>
+          <div class="crm-import-progress__status">Preparing…</div>
         </div>
-        <div class="crm-import-progress__bar">
-          <div class="crm-import-progress__fill" style="width:0%"></div>
-        </div>
-        <div class="crm-import-progress__status">Preparing…</div>
-      </div>',
+      '),
     ];
 
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Import Organizations'),
+      '#type'       => 'submit',
+      '#value'      => $this->t('Import Organizations'),
       '#attributes' => [
         'class' => ['crm-import-submit-btn'],
-        'style' => 'background:linear-gradient(135deg,#14b8a6 0%,#0d9488 100%);box-shadow:0 4px 14px rgba(20,184,166,.35);',
+        'id'    => 'crm-orgs-submit',
       ],
       '#prefix' => '<div class="crm-import-submit">',
       '#suffix' => '</div>',
     ];
 
     $form['actions']['cancel'] = [
-      '#type' => 'link',
-      '#title' => $this->t('← Back to Import Hub'),
-      '#url' => \Drupal\Core\Url::fromRoute('crm_import_export.import_page'),
+      '#type'       => 'link',
+      '#title'      => $this->t('← Back'),
+      '#url'        => Url::fromRoute('crm_import_export.import_page'),
       '#attributes' => ['class' => ['btn-import', 'btn-import--secondary'], 'style' => 'display:inline-flex;align-items:center;gap:8px;padding:12px 20px;'],
-    ];
-
-    $form['icons_init'] = [
-      '#markup' => '<script>if(typeof lucide!=="undefined"){lucide.createIcons();}else{var _s=document.createElement("script");_s.src="https://unpkg.com/lucide@latest";_s.onload=function(){lucide.createIcons();};document.head.appendChild(_s);}</script>',
-      '#allowed_tags' => ['script'],
     ];
 
     return $form;
@@ -164,20 +167,24 @@ class ImportOrganizationsForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $file_id = $form_state->getValue('csv_file');
-    if (empty($file_id[0])) return;
-
-    $file = File::load($file_id[0]);
-    if (!$file) return;
-
-    $path = \Drupal::service('file_system')->realpath($file->getFileUri());
-    $handle = fopen($path, 'r');
-    if (!$handle) {
-      $form_state->setErrorByName('csv_file', $this->t('Unable to read CSV file.'));
+    if (empty($_FILES['files']['name']['csv_file'])) {
+      $form_state->setErrorByName('csv_file', $this->t('Please select a CSV file.'));
       return;
     }
 
-    $headers = fgetcsv($handle, 0, ',', '"', '');
+    $tmp_name = $_FILES['files']['tmp_name']['csv_file'];
+    if (!is_uploaded_file($tmp_name)) {
+      $form_state->setErrorByName('csv_file', $this->t('Error uploading file.'));
+      return;
+    }
+
+    $handle = fopen($tmp_name, 'r');
+    if ($handle === FALSE) {
+      $form_state->setErrorByName('csv_file', $this->t('Cannot read file.'));
+      return;
+    }
+
+    $headers = fgetcsv($handle);
     fclose($handle);
 
     if (!$headers) {
@@ -185,8 +192,8 @@ class ImportOrganizationsForm extends FormBase {
       return;
     }
 
-    $h = array_map('strtolower', array_map('trim', $headers));
-    if (!in_array('name', $h)) {
+    $headers_lower = array_map('strtolower', array_map('trim', $headers));
+    if (!in_array('name', $headers_lower)) {
       $form_state->setErrorByName('csv_file', $this->t('CSV must have a "name" column.'));
     }
   }
@@ -195,100 +202,122 @@ class ImportOrganizationsForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $file_id = $form_state->getValue('csv_file');
-    if (empty($file_id[0])) return;
+    if (empty($_FILES['files']['tmp_name']['csv_file'])) {
+      return;
+    }
 
-    $file = File::load($file_id[0]);
-    $file_path = \Drupal::service('file_system')->realpath($file->getFileUri());
+    $tmpUpload = $_FILES['files']['tmp_name']['csv_file'];
+    
+    $handle = fopen($tmpUpload, 'r');
+    $rows = [];
+    while (($data = fgetcsv($handle)) !== FALSE) {
+      $rows[] = $data;
+    }
+    fclose($handle);
+
+    if (count($rows) < 2) {
+      $this->messenger()->addError($this->t('CSV contains no data.'));
+      return;
+    }
+
+    $headers = array_shift($rows);
+    $headers = array_map('strtolower', array_map('trim', $headers));
+
+    $batch_data = [];
+    foreach ($rows as $data) {
+      if (count($data) !== count($headers)) continue;
+      
+      $row = [];
+      foreach ($headers as $i => $h) {
+        $row[$h] = trim($data[$i] ?? '');
+      }
+      $batch_data[] = $row;
+    }
+
+    if (empty($batch_data)) {
+      $this->messenger()->addError('No valid data found to import.');
+      return;
+    }
 
     $options = [
       'skip_duplicates' => (bool) $form_state->getValue('skip_duplicates'),
       'update_existing' => (bool) $form_state->getValue('update_existing'),
     ];
 
-    batch_set([
-      'title'      => $this->t('Importing organizations…'),
-      'operations' => [[[static::class, 'batchImport'], [$file_path, $options]]],
-      'finished'   => [static::class, 'batchFinished'],
-    ]);
+    $chunks = array_chunk($batch_data, 50);
+    $operations = [];
+    
+    foreach ($chunks as $chunk) {
+      $operations[] = [
+        '\Drupal\crm_import_export\Form\ImportOrganizationsForm::batchProcess',
+        [$chunk, $options]
+      ];
+    }
 
-    $form_state->setRedirect('view.my_organizations.page_1');
+    $batch = [
+      'title' => $this->t('Importing Organizations...'),
+      'operations' => $operations,
+      'finished' => '\Drupal\crm_import_export\Form\ImportOrganizationsForm::batchFinished',
+      'init_message' => $this->t('Initializing import...'),
+      'progress_message' => $this->t('Processed @current of @total batches.'),
+      'error_message' => $this->t('An error occurred during import.'),
+    ];
+
+    batch_set($batch);
+    $form_state->setRedirect('crm.all_organizations');
   }
 
   /**
    * Batch operation.
    */
-  public static function batchImport($file_path, $options, &$context) {
-    $batch_size = 25;
-
-    if (empty($context['sandbox'])) {
-      $context['sandbox']['handle'] = fopen($file_path, 'r');
-      $context['sandbox']['headers'] = [];
-      $context['sandbox']['current'] = 0;
+  public static function batchProcess($chunk, $options, &$context) {
+    if (empty($context['results'])) {
       $context['results'] = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => 0];
+    }
 
-      if ($context['sandbox']['handle']) {
-        $raw = fgetcsv($context['sandbox']['handle'], 0, ',', '"', '');
-        $context['sandbox']['headers'] = array_map('strtolower', array_map('trim', $raw ?? []));
-        $context['sandbox']['total'] = max(0, count(file($file_path)) - 1);
+    foreach ($chunk as $row) {
+      $name = $row['name'] ?? '';
+      if (empty($name)) { 
+        $context['results']['errors']++; 
+        continue; 
+      }
+
+      $nids = \Drupal::entityQuery('node')
+        ->condition('type', 'organization')
+        ->condition('title', $name)
+        ->accessCheck(FALSE)
+        ->range(0, 1)
+        ->execute();
+
+      $existing = $nids ? Node::load(reset($nids)) : NULL;
+
+      if ($existing && $options['skip_duplicates'] && !$options['update_existing']) {
+        $context['results']['skipped']++;
+      }
+      elseif ($existing && $options['update_existing']) {
+        if (!empty($row['website']))  $existing->set('field_website', ['uri' => $row['website']]);
+        if (!empty($row['industry'])) $existing->set('field_industry', $row['industry']);
+        if (!empty($row['address']))  $existing->set('field_address', $row['address']);
+        if (!empty($row['status']))   $existing->set('field_status', $row['status']);
+        $existing->save();
+        $context['results']['updated']++;
+      }
+      elseif (!$existing) {
+        $values = [
+          'type' => 'organization', 'title' => $name,
+          'field_owner' => \Drupal::currentUser()->id(),
+          'status' => 1, 'uid' => \Drupal::currentUser()->id(),
+        ];
+        if (!empty($row['website']))  $values['field_website']  = ['uri' => $row['website']];
+        if (!empty($row['industry'])) $values['field_industry'] = $row['industry'];
+        if (!empty($row['address']))  $values['field_address']  = $row['address'];
+        if (!empty($row['status']))   $values['field_status']   = $row['status'];
+        Node::create($values)->save();
+        $context['results']['created']++;
       }
     }
 
-    $handle  = $context['sandbox']['handle'];
-    $headers = $context['sandbox']['headers'];
-
-    if (!$handle) { $context['finished'] = 1; return; }
-
-    $processed = 0;
-    while ($processed < $batch_size && ($data = fgetcsv($handle, 0, ',', '"', '')) !== FALSE) {
-      if (array_filter($data)) {
-        $row = [];
-        foreach ($headers as $idx => $h) {
-          $row[$h] = isset($data[$idx]) ? trim($data[$idx]) : '';
-        }
-        $name = $row['name'] ?? '';
-        if (empty($name)) { $context['results']['errors']++; $processed++; continue; }
-
-        $nids = \Drupal::entityQuery('node')
-          ->condition('type', 'organization')
-          ->condition('title', $name)
-          ->accessCheck(FALSE)->range(0, 1)->execute();
-
-        $existing = $nids ? Node::load(reset($nids)) : NULL;
-
-        if ($existing && $options['skip_duplicates'] && !$options['update_existing']) {
-          $context['results']['skipped']++;
-        }
-        elseif ($existing && $options['update_existing']) {
-          if (!empty($row['website']))  $existing->set('field_website', ['uri' => $row['website']]);
-          if (!empty($row['industry'])) $existing->set('field_industry', $row['industry']);
-          if (!empty($row['address']))  $existing->set('field_address', $row['address']);
-          if (!empty($row['status']))   $existing->set('field_status', $row['status']);
-          $existing->save();
-          $context['results']['updated']++;
-        }
-        else {
-          $values = [
-            'type' => 'organization', 'title' => $name,
-            'field_owner' => \Drupal::currentUser()->id(),
-            'status' => 1, 'uid' => \Drupal::currentUser()->id(),
-          ];
-          if (!empty($row['website']))  $values['field_website']  = ['uri' => $row['website']];
-          if (!empty($row['industry'])) $values['field_industry'] = $row['industry'];
-          if (!empty($row['address']))  $values['field_address']  = $row['address'];
-          if (!empty($row['status']))   $values['field_status']   = $row['status'];
-          Node::create($values)->save();
-          $context['results']['created']++;
-        }
-      }
-      $processed++;
-      $context['sandbox']['current']++;
-    }
-
-    $total = $context['sandbox']['total'] ?: 1;
-    $context['finished'] = $context['sandbox']['current'] / $total;
-    if ($context['finished'] >= 1) fclose($handle);
-    $context['message'] = t('Processed @cur of @total rows…', ['@cur' => $context['sandbox']['current'], '@total' => $context['sandbox']['total']]);
+    $context['message'] = 'Processed ' . count($chunk) . ' organizations...';
   }
 
   /**
@@ -297,7 +326,7 @@ class ImportOrganizationsForm extends FormBase {
   public static function batchFinished(bool $success, array $results, array $operations) {
     $m = \Drupal::messenger();
     if ($success) {
-      $m->addStatus(t('✅ Import completed! Created: @c, Updated: @u, Skipped: @s, Errors: @e', [
+      $m->addStatus(t('Import completed successfully. Created: @c, Updated: @u, Skipped: @s, Errors: @e.', [
         '@c' => $results['created'] ?? 0, '@u' => $results['updated'] ?? 0,
         '@s' => $results['skipped'] ?? 0, '@e' => $results['errors'] ?? 0,
       ]));

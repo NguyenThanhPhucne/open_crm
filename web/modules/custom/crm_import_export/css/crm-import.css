@@ -31,73 +31,68 @@
   color: var(--import-text);
 }
 
-/* Hero Header */
-.crm-import-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #3b82f6 100%);
-  padding: 40px 32px 36px;
-  position: relative;
-  overflow: hidden;
+/* Header */
+.crm-import-header {
+  background: var(--import-surface);
+  border-bottom: 1px solid var(--import-border);
+  padding: 32px 32px 28px;
 }
 
-.crm-import-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-.crm-import-hero-inner {
-  position: relative;
+.crm-import-header-inner {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 24px;
 }
 
-.crm-import-hero-icon {
-  width: 64px;
-  height: 64px;
-  background: rgba(255,255,255,.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.2);
-  border-radius: 16px;
+.crm-import-header-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.crm-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: #f1f5f9;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #3b82f6;
   flex-shrink: 0;
-  color: white;
 }
 
-.crm-import-hero-text h1 {
-  font-size: 28px;
+.crm-import-header-title h1 {
+  font-size: 24px;
   font-weight: 700;
-  color: white;
-  margin: 0 0 6px;
-  letter-spacing: -0.3px;
+  color: #0f172a;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
 }
 
-.crm-import-hero-text p {
-  font-size: 15px;
-  color: rgba(255,255,255,.75);
+.crm-import-header-title p {
+  font-size: 14px;
+  color: #64748b;
   margin: 0;
 }
 
 /* Stats bar */
 .crm-import-stats {
   display: flex;
-  gap: 6px;
-  margin-top: 20px;
-  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 
 .crm-import-stat {
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.15);
-  backdrop-filter: blur(8px);
+  background: var(--import-surface);
+  border: 1px solid var(--import-border);
   border-radius: 8px;
-  padding: 8px 16px;
-  color: white;
+  padding: 8px 14px;
+  color: #475569;
   font-size: 13px;
   font-weight: 500;
   display: flex;
@@ -107,7 +102,7 @@
 
 .crm-import-stat strong {
   font-weight: 700;
-  color: #93c5fd;
+  color: #1e293b;
 }
 
 /* ---- MAIN CONTENT ---- */
@@ -771,7 +766,97 @@
 }
 .crm-import-submit-btn:active { transform: translateY(0); }
 
-/* Hide default Drupal file widget — we use custom drag zone */
-.crm-import-form-page .form-item--csv-file .form-managed-file {
+/* ── Page header (form pages) ── */
+.crm-import-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.crm-import-page-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.crm-import-page-icon--blue   { background: #eff6ff; color: #3b82f6; }
+.crm-import-page-icon--teal   { background: #f0fdfa; color: #14b8a6; }
+.crm-import-page-icon--purple { background: #f5f3ff; color: #8b5cf6; }
+
+.crm-import-page-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 3px;
+  letter-spacing: -0.2px;
+}
+
+.crm-import-page-sub {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Schema hint bar ── */
+.crm-schema-hint {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.crm-schema-hint__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #94a3b8;
+  margin-right: 2px;
+}
+
+/* ── Dropzone text ── */
+.crm-dropzone__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 6px;
+}
+
+.crm-dropzone__link {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.crm-dropzone__hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+  letter-spacing: .3px;
+}
+
+/* File input inside dropzone — covers full area for click-anywhere UX */
+.crm-dropzone > input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Hide default Drupal file/managed-file labels — we use custom drag zone */
+.crm-import-form-page .form-item--csv-file,
+.crm-import-form-page .crm-hidden-file-upload {
   display: none;
 }

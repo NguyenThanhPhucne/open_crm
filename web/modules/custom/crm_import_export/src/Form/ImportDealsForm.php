@@ -6,948 +6,425 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\node\Entity\Node;
-use Drupal\file\Entity\File;
 use Drupal\crm_import_export\Service\DataValidationService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * Form for importing deals from CSV.
- *
- * Provides functionality to import deals through CSV upload with options for
- * handling duplicates, creating missing contacts, and setting default stages.
+ * Form for importing Deals via CSV with Drag & Drop UI.
  */
 class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
 
-  /**
-   * Date format constant for Drupal datetime fields.
-   */
   private const DATE_FORMAT = 'Y-m-d\TH:i:s';
-
-  /**
-   * The data validation service.
-   *
-   * @var \Drupal\crm_import_export\Service\DataValidationService
-   */
   protected $validationService;
 
-  /**
-   * Constructs ImportDealsForm.
-   *
-   * @param \Drupal\crm_import_export\Service\DataValidationService $validation_service
-   *   The data validation service.
-   */
   public function __construct(DataValidationService $validation_service) {
     $this->validationService = $validation_service;
   }
 
-  /**
-   * {@inheritdoc}
-   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('crm_import_export.data_validation')
     );
   }
 
-  /**
-   * {@inheritdoc}
-   */
   public function getFormId() {
     return 'crm_import_deals_form';
   }
 
-  /**
-   * {@inheritdoc}
-   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['#attributes']['class'][] = 'crm-import-form';
-    
-    // Header
-    $form['header'] = [
-      '#markup' => '<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; color: white;">
-        <h2 style="margin: 0;">💰 Import Deals from CSV</h2>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Upload a CSV file to import multiple deals at once</p>
-      </div>',
-    ];
-    
-    // File upload
-    $form['csv_file'] = [
-      '#type' => 'managed_file',
-      '#title' => $this->t('CSV File'),
-      '#description' => $this->t('Upload a CSV file with deal data. Maximum file size: 10MB. Must include headers in first row.'),
-      '#upload_validators' => [
-        'FileExtension' => ['extensions' => 'csv txt'],
-      ],
-      '#upload_location' => 'public://crm_imports',
-      '#required' => TRUE,
-    ];
-    
-    // Import options
-    $form['options'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Import Options'),
-      '#open' => TRUE,
-    ];
-    
-    $form['options']['skip_duplicates'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Skip duplicate deals'),
-      '#description' => $this->t('Skip deals with titles that already exist in the system.'),
-      '#default_value' => TRUE,
-    ];
-    
-    $form['options']['update_existing'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Update existing deals'),
-      '#description' => $this->t('Update existing deals if title matches (overrides skip duplicates).'),
-      '#default_value' => FALSE,
-    ];
-    
-    $form['options']['create_missing_contacts'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Create missing contacts'),
-      '#description' => $this->t('Automatically create contacts that don\'t exist yet (based on email).'),
-      '#default_value' => FALSE,
-    ];
-    
-    $form['options']['default_stage'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Default stage for new deals'),
-      '#description' => $this->t('Pipeline stage to use if not specified in CSV.'),
-      '#options' => $this->get_stage_options(),
-      '#default_value' => 'new',
-    ];
-    
-    // CSV Format help
-    $form['help'] = [
-      '#type' => 'details',
-      '#title' => $this->t('📖 CSV Format Guide'),
-      '#open' => FALSE,
-    ];
-    
-    $form['help']['content'] = [
-      '#markup' => '
-        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
-          <h4>Required Columns:</h4>
-          <ul>
-            <li><strong>Title</strong> - Deal name/title</li>
-            <li><strong>Amount</strong> - Deal value (numeric)</li>
-          </ul>
-          
-          <h4>Optional Columns:</h4>
-          <ul>
-            <li><strong>Contact</strong> or <strong>Contact Email</strong> - Related contact</li>
-            <li><strong>Organization</strong> - Company name</li>
-            <li><strong>Stage</strong> - Pipeline stage (New, Proposal, Negotiation, etc.)</li>
-            <li><strong>Probability</strong> - Win probability percentage (0-100)</li>
-            <li><strong>Expected Close Date</strong> - Date in YYYY-MM-DD format</li>
-            <li><strong>Closing Date</strong> - Actual close date in YYYY-MM-DD format</li>
-            <li><strong>Notes</strong> - Internal notes</li>
-          </ul>
-          
-          <h4>Example CSV Format (NOT real data - replace with your actual data):</h4>
-          <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.875rem;">
-Title,Amount,Contact Email,Organization,Stage,Expected Close Date
-Your Deal Title 1,[Amount],[Contact Email],[Organization Name],[Stage ID or Name],[YYYY-MM-DD]
-Your Deal Title 2,[Amount],[Contact Email],[Organization Name],[Stage ID or Name],[YYYY-MM-DD]
-Your Deal Title 3,[Amount],[Contact Email],[Organization Name],[Stage ID or Name],[YYYY-MM-DD]
-          </pre>
+    $form['#attributes']['enctype'] = 'multipart/form-data';
+    $form['#attached']['library'][] = 'crm_import_export/import_ui';
+
+    $dropzone_html = Markup::create('
+      <div class="crm-import-breadcrumb">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <a href="/admin/crm/import">Import Data</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Import Deals</span>
+      </div>
+
+      <div class="crm-import-page-header">
+        <div class="crm-import-page-icon" style="background:#fefce8; color:#eab308">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         </div>
-      ',
+        <div>
+          <h2 class="crm-import-page-title">Import Deals</h2>
+          <p class="crm-import-page-sub">Click or drag and drop a CSV file to begin. Supports up to 10 MB.</p>
+        </div>
+      </div>
+
+      <div class="crm-schema-hint">
+        <div class="crm-schema-hint__label">Required</div>
+        <span class="crm-import-tag crm-import-tag--required">title</span>
+        <span class="crm-import-tag crm-import-tag--required">amount</span>
+        <div class="crm-schema-hint__label" style="margin-left:12px">Optional</div>
+        <span class="crm-import-tag">stage</span>
+        <span class="crm-import-tag">contact email</span>
+        <span class="crm-import-tag">organization</span>
+        <span class="crm-import-tag">probability</span>
+        <span class="crm-import-tag">expected close date</span>
+        <span class="crm-import-tag">notes</span>
+      </div>
+
+      <div class="crm-dropzone" id="crm-deals-dropzone">
+        <input type="file" name="files[csv_file]" id="crm-csv-input-deals" accept=".csv,.txt"
+          style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;">
+        <div class="crm-dropzone__icon" id="crm-dz-icon-deals">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        </div>
+        <p class="crm-dropzone__title">Drop CSV here or <span class="crm-dropzone__link">click to choose file</span></p>
+        <p class="crm-dropzone__hint">CSV · TXT &nbsp;·&nbsp; UTF-8 &nbsp;·&nbsp; Max 10 MB</p>
+      </div>
+
+      <div class="crm-file-info" id="crm-file-info-deals">
+        <div class="crm-file-info__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="crm-file-info__details">
+          <div class="crm-file-info__name">—</div>
+          <div class="crm-file-info__meta">—</div>
+        </div>
+        <button type="button" class="crm-file-info__remove" id="crm-remove-deals" title="Remove file">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="crm-csv-preview" id="crm-preview-deals">
+        <div class="crm-csv-preview__header">
+          <h4>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+            Preview <small style="font-weight:400;color:#94a3b8;margin-left:4px;">(first 5 rows)</small>
+          </h4>
+          <span class="crm-csv-preview__badge" id="crm-preview-badge-deals">0 rows</span>
+        </div>
+        <div class="crm-csv-preview__scroll" id="crm-preview-table-deals"></div>
+      </div>
+    ');
+
+    $form['ui'] = ['#markup' => $dropzone_html];
+
+    $form['options_wrap_open'] = [
+      '#markup' => '<div class="crm-import-options"><h4><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 2.12 3.64"/><path d="M21.17 11h2.17"/><path d="M19.07 19.07a10 10 0 0 1-14.14 0"/><path d="M4.93 4.93a10 10 0 0 1 3.64-2.12"/><path d="M3 12H.83"/><path d="M4.93 19.07a10 10 0 0 1-2.12-3.64"/><path d="M11 3V.83"/><path d="M13 3V.83"/><path d="M19.07 4.93"/></svg>Import Options</h4>',
     ];
-    
-    // Actions
-    $form['actions'] = [
-      '#type' => 'actions',
+
+    $form['skip_duplicates'] = [
+      '#type'          => 'checkbox',
+      '#title'         => $this->t('Skip Duplicates'),
+      '#default_value' => TRUE,
+      '#prefix'        => '<div class="crm-toggle-row"><div class="crm-toggle-label"><strong>Skip Duplicates</strong><span>Skip deals with titles that already exist</span></div>',
+      '#suffix'        => '</div>',
     ];
-    
+
+    $form['update_existing'] = [
+      '#type'          => 'checkbox',
+      '#title'         => $this->t('Update Existing'),
+      '#default_value' => FALSE,
+      '#prefix'        => '<div class="crm-toggle-row"><div class="crm-toggle-label"><strong>Update Existing</strong><span>Overwrite data when title matches</span></div>',
+      '#suffix'        => '</div>',
+    ];
+
+    $form['create_missing'] = [
+      '#type'          => 'checkbox',
+      '#title'         => $this->t('Auto-create Contacts & Orgs'),
+      '#default_value' => FALSE,
+      '#prefix'        => '<div class="crm-toggle-row"><div class="crm-toggle-label"><strong>Auto-create Contacts & Orgs</strong><span>Create relations from CSV if they don\'t exist</span></div>',
+      '#suffix'        => '</div>',
+    ];
+
+    $form['options_wrap_close'] = ['#markup' => '</div>'];
+
+    $form['progress_html'] = [
+      '#markup' => Markup::create('
+        <div class="crm-import-progress" id="crm-progress-deals">
+          <div class="crm-import-progress__label">
+            <span>Importing deals…</span>
+            <span class="crm-import-progress__pct">0%</span>
+          </div>
+          <div class="crm-import-progress__bar"><div class="crm-import-progress__fill" style="width:0%"></div></div>
+          <div class="crm-import-progress__status">Preparing…</div>
+        </div>
+      '),
+    ];
+
+    $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Import Deals'),
-      '#button_type' => 'primary',
+      '#type'       => 'submit',
+      '#value'      => $this->t('Import Deals'),
       '#attributes' => [
-        'style' => 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600;',
+        'class' => ['crm-import-submit-btn'],
+        'id'    => 'crm-deals-submit',
       ],
+      '#prefix' => '<div class="crm-import-submit">',
+      '#suffix' => '</div>',
     ];
     
     $form['actions']['cancel'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('crm_import_export.import_page'),
-      '#attributes' => [
-        'class' => ['button'],
-        'style' => 'margin-left: 1rem;',
-      ],
+      '#type'       => 'link',
+      '#title'      => $this->t('← Back'),
+      '#url'        => Url::fromRoute('crm_import_export.import_page'),
+      '#attributes' => ['class' => ['btn-import', 'btn-import--secondary'], 'style' => 'display:inline-flex;align-items:center;gap:8px;padding:12px 20px;'],
     ];
 
     return $form;
   }
 
-  /**
-   * Get available pipeline stages.
-   *
-   * @return array
-   *   Array of stage options keyed by stage ID.
-   */
-  private function get_stage_options() {
-    $options = [];
-
-    // Load stage taxonomy terms dynamically from database.
-    $terms = \Drupal::entityTypeManager()
-      ->getStorage('taxonomy_term')
-      ->loadTree('pipeline_stage');
-
-    foreach ($terms as $term) {
-      $options[$term->tid] = $term->name;
-    }
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $file_id = $form_state->getValue('csv_file');
-
-    if (empty($file_id[0])) {
+    if (empty($_FILES['files']['name']['csv_file'])) {
+      $form_state->setErrorByName('csv_file', $this->t('Please select a CSV file.'));
       return;
     }
 
-    $file = File::load($file_id[0]);
-    if (!$file) {
+    $tmp_name = $_FILES['files']['tmp_name']['csv_file'];
+    if (!is_uploaded_file($tmp_name)) {
+      $form_state->setErrorByName('csv_file', $this->t('Error uploading file.'));
       return;
     }
 
-    $this->validate_csv_file($file, $form_state);
-  }
-
-  /**
-   * Validate CSV file structure and required columns.
-   *
-   * @param \Drupal\file\Entity\File $file
-   *   File entity.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   Form state.
-   */
-  private function validate_csv_file(File $file, FormStateInterface $form_state) {
-    $file_path = \Drupal::service('file_system')->realpath($file->getFileUri());
-    $handle = fopen($file_path, 'r');
-
+    $handle = fopen($tmp_name, 'r');
     if ($handle === FALSE) {
-      $form_state->setErrorByName('csv_file', $this->t('Unable to read the CSV file.'));
+      $form_state->setErrorByName('csv_file', $this->t('Cannot read file.'));
       return;
     }
 
-    $headers = fgetcsv($handle, 0, ',', '"', '');
+    $headers = fgetcsv($handle);
+    fclose($handle);
 
     if (!$headers) {
-      $form_state->setErrorByName('csv_file', $this->t('The CSV file appears to be empty or invalid.'));
-      fclose($handle);
+      $form_state->setErrorByName('csv_file', $this->t('CSV is empty or invalid.'));
       return;
     }
 
-    $this->check_required_columns($headers, $form_state);
-    fclose($handle);
-  }
-
-  /**
-   * Check for required CSV columns.
-   *
-   * @param array $headers
-   *   CSV headers.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   Form state.
-   */
-  private function check_required_columns(array $headers, FormStateInterface $form_state) {
-    $headers_lower = array_map('strtolower', $headers);
-    $has_title = in_array('title', $headers_lower) || in_array('name', $headers_lower);
-    $has_amount = in_array('amount', $headers_lower) || in_array('value', $headers_lower);
-
-    if (!$has_title) {
-      $form_state->setErrorByName('csv_file', $this->t('The CSV file must have a "Title" column.'));
+    $headers_lower = array_map('strtolower', array_map('trim', $headers));
+    if (!in_array('title', $headers_lower) && !in_array('name', $headers_lower)) {
+      $form_state->setErrorByName('csv_file', $this->t('CSV must have a "Title" column.'));
     }
-
-    if (!$has_amount) {
-      $form_state->setErrorByName('csv_file', $this->t('The CSV file must have an "Amount" column.'));
+    if (!in_array('amount', $headers_lower) && !in_array('value', $headers_lower)) {
+      $form_state->setErrorByName('csv_file', $this->t('CSV must have an "Amount" column.'));
     }
   }
 
-  /**
-   * {@inheritdoc}
-   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $file_id = $form_state->getValue('csv_file');
-    $skip_duplicates = $form_state->getValue('skip_duplicates');
-    $update_existing = $form_state->getValue('update_existing');
-    $create_missing_contacts = $form_state->getValue('create_missing_contacts');
-    $default_stage = $form_state->getValue('default_stage');
+    if (empty($_FILES['files']['tmp_name']['csv_file'])) {
+      return;
+    }
+
+    $tmpUpload = $_FILES['files']['tmp_name']['csv_file'];
     
-    if (!empty($file_id[0])) {
-      $file = File::load($file_id[0]);
-      $file_path = \Drupal::service('file_system')->realpath($file->getFileUri());
-      
-      $results = $this->process_csv(
-        $file_path,
-        $skip_duplicates,
-        $update_existing,
-        $create_missing_contacts,
-        $default_stage
-      );
-
-      $this->display_import_results($results);
-      
-      // Redirect to deals list
-      $form_state->setRedirect('view.my_deals.page_1');
+    $handle = fopen($tmpUpload, 'r');
+    $rows = [];
+    while (($data = fgetcsv($handle)) !== FALSE) {
+      $rows[] = $data;
     }
-  }
-
-  /**
-   * Display import results to the user.
-   *
-   * @param array $results
-   *   Array containing counts of created, updated, skipped, and error records.
-   */
-  private function display_import_results(array $results) {
-    $this->messenger()->addStatus($this->t('Import completed successfully!'));
-    $this->messenger()->addStatus($this->t('Created: @created deals', ['@created' => $results['created']]));
-
-    if ($results['updated'] > 0) {
-      $this->messenger()->addStatus($this->t('Updated: @updated deals', ['@updated' => $results['updated']]));
-    }
-
-    if ($results['skipped'] > 0) {
-      $this->messenger()->addWarning($this->t('Skipped: @skipped duplicates', ['@skipped' => $results['skipped']]));
-    }
-
-    if ($results['errors'] > 0) {
-      $this->messenger()->addError($this->t('Errors: @errors rows had errors', ['@errors' => $results['errors']]));
-    }
-  }
-
-  /**
-   * Process the CSV file and import deals.
-   *
-   * @param string $file_path
-   *   Path to the CSV file.
-   * @param bool $skip_duplicates
-   *   Whether to skip duplicate deals.
-   * @param bool $update_existing
-   *   Whether to update existing deals.
-   * @param bool $create_missing_contacts
-   *   Whether to create contacts that don't exist.
-   * @param mixed $default_stage
-   *   Default pipeline stage for new deals.
-   *
-   * @return array
-   *   Results array with counts.
-   */
-  private function process_csv($file_path, $skip_duplicates, $update_existing, $create_missing_contacts, $default_stage) {
-    $results = [
-      'created' => 0,
-      'updated' => 0,
-      'skipped' => 0,
-      'errors' => 0,
-    ];
-
-    if (($handle = fopen($file_path, 'r')) === FALSE) {
-      return $results;
-    }
-
-    $headers = $this->read_csv_headers($handle);
-    $row_number = 1;
-
-    while (($data = fgetcsv($handle, 0, ',', '"', '')) !== FALSE) {
-      $row_number++;
-      $row = $this->map_csv_row($headers, $data);
-
-      $this->process_deal_row(
-        $row,
-        $row_number,
-        $skip_duplicates,
-        $update_existing,
-        $create_missing_contacts,
-        $default_stage,
-        $results
-      );
-    }
-
     fclose($handle);
-    return $results;
-  }
 
-  /**
-   * Read and normalize CSV headers.
-   *
-   * @param resource $handle
-   *   File handle.
-   *
-   * @return array
-   *   Normalized header array.
-   */
-  private function read_csv_headers($handle) {
-    $headers = fgetcsv($handle, 0, ',', '"', '');
-    $headers = array_map('strtolower', $headers);
-    return array_map('trim', $headers);
-  }
-
-  /**
-   * Map CSV row data to associative array.
-   *
-   * @param array $headers
-   *   CSV headers.
-   * @param array $data
-   *   CSV row data.
-   *
-   * @return array
-   *   Mapped row data.
-   */
-  private function map_csv_row(array $headers, array $data) {
-    $row = [];
-    foreach ($headers as $index => $header) {
-      $row[$header] = isset($data[$index]) ? trim($data[$index]) : '';
-    }
-    return $row;
-  }
-
-  /**
-   * Process a single deal row from CSV.
-   *
-   * @param array $row
-   *   CSV row data.
-   * @param int $row_number
-   *   Row number for error reporting.
-   * @param bool $skip_duplicates
-   *   Whether to skip duplicates.
-   * @param bool $update_existing
-   *   Whether to update existing deals.
-   * @param bool $create_missing_contacts
-   *   Whether to create missing contacts.
-   * @param mixed $default_stage
-   *   Default pipeline stage.
-   * @param array &$results
-   *   Results array (passed by reference).
-   */
-  private function process_deal_row($row, $row_number, $skip_duplicates, $update_existing, $create_missing_contacts, $default_stage, array &$results) {
-    try {
-      $title = $row['title'] ?? $row['name'] ?? '';
-
-      if (empty($title)) {
-        $this->log_import_error($row_number, 'Missing required field: title');
-        $results['errors']++;
-        return;
-      }
-
-      // Validate deal data before processing
-      $deal_data = [
-        'title' => $title,
-        'amount' => $row['amount'] ?? $row['value'] ?? 0,
-        'stage' => $row['stage'] ?? NULL,
-        'contact' => $row['contact'] ?? NULL,
-      ];
-
-      $validation = $this->validationService->validateDeal($deal_data);
-      if (!$validation['valid']) {
-        $error_msg = implode('; ', $validation['errors']);
-        $this->log_import_error($row_number, 'Validation failed: ' . $error_msg);
-        $results['errors']++;
-        return;
-      }
-
-      $existing = $this->find_existing_deal($title);
-
-      if ($existing && $this->should_skip_duplicate($existing, $skip_duplicates, $update_existing)) {
-        $results['skipped']++;
-        return;
-      }
-
-      if ($existing && $update_existing) {
-        $this->update_deal($existing, $row, $create_missing_contacts);
-        $results['updated']++;
-      }
-      else {
-        $this->create_deal($row, $create_missing_contacts, $default_stage);
-        $results['created']++;
-      }
-    }
-    catch (\Exception $e) {
-      $this->log_import_error($row_number, $e->getMessage());
-      $results['errors']++;
-    }
-  }
-
-  /**
-   * Check if duplicate should be skipped.
-   *
-   * @param \Drupal\node\Entity\Node $existing
-   *   Existing deal node.
-   * @param bool $skip_duplicates
-   *   Skip duplicates flag.
-   * @param bool $update_existing
-   *   Update existing flag.
-   *
-   * @return bool
-   *   TRUE if should skip.
-   */
-  private function should_skip_duplicate($existing, $skip_duplicates, $update_existing) {
-    return $existing && !$update_existing && $skip_duplicates;
-  }
-
-  /**
-   * Log import error.
-   *
-   * @param int $row_number
-   *   Row number.
-   * @param string $message
-   *   Error message.
-   */
-  private function log_import_error($row_number, $message) {
-    \Drupal::logger('crm_import_export')->error('Error importing deal row @row: @message', [
-      '@row' => $row_number,
-      '@message' => $message,
-    ]);
-  }
-
-  /**
-   * Find existing deal by title.
-   *
-   * @param string $title
-   *   Deal title to search for.
-   *
-   * @return \Drupal\node\Entity\Node|null
-   *   Deal node if found, NULL otherwise.
-   */
-  private function find_existing_deal($title) {
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->condition('title', $title)
-      ->accessCheck(FALSE)
-      ->range(0, 1);
-
-    $nids = $query->execute();
-
-    if (!empty($nids)) {
-      return Node::load(reset($nids));
+    if (count($rows) < 2) {
+      $this->messenger()->addError($this->t('CSV contains no data.'));
+      return;
     }
 
-    return NULL;
-  }
+    $headers = array_shift($rows);
+    $headers = array_map('strtolower', array_map('trim', $headers));
 
-  /**
-   * Create a new deal from CSV row.
-   *
-   * @param array $row
-   *   CSV row data.
-   * @param bool $create_missing_contacts
-   *   Whether to create missing contacts.
-   * @param mixed $default_stage
-   *   Default pipeline stage.
-   *
-   * @return \Drupal\node\Entity\Node
-   *   Created deal node.
-   */
-  private function create_deal($row, $create_missing_contacts, $default_stage) {
-    $values = [
-      'type' => 'deal',
-      'title' => $row['title'] ?? $row['name'],
-      'field_amount' => $this->parse_amount($row),
-      'status' => 1,
-      'uid' => \Drupal::currentUser()->id(),
-      'field_owner' => \Drupal::currentUser()->id(),
+    $batch_data = [];
+    foreach ($rows as $data) {
+      if (count($data) !== count($headers)) continue;
+      
+      $row = [];
+      foreach ($headers as $i => $h) {
+        $row[$h] = trim($data[$i] ?? '');
+      }
+      $batch_data[] = $row;
+    }
+
+    if (empty($batch_data)) {
+      $this->messenger()->addError('No valid data found to import.');
+      return;
+    }
+
+    $options = [
+      'skip_duplicates' => $form_state->getValue('skip_duplicates'),
+      'update_existing' => $form_state->getValue('update_existing'),
+      'create_missing'  => $form_state->getValue('create_missing'),
+      'uid'             => \Drupal::currentUser()->id(),
     ];
 
-    $this->add_contact_to_values($values, $row, $create_missing_contacts);
-    $this->add_organization_to_values($values, $row);
-    $this->add_stage_to_values($values, $row, $default_stage);
-    $this->add_probability_to_values($values, $row);
-    $this->add_dates_to_values($values, $row);
-    $this->add_notes_to_values($values, $row);
+    $chunks = array_chunk($batch_data, 50);
+    $operations = [];
+    
+    foreach ($chunks as $chunk) {
+      $operations[] = [
+        '\Drupal\crm_import_export\Form\ImportDealsForm::batchProcess',
+        [$chunk, $options]
+      ];
+    }
 
-    $deal = Node::create($values);
-    $deal->save();
+    $batch = [
+      'title' => $this->t('Importing Deals...'),
+      'operations' => $operations,
+      'finished' => '\Drupal\crm_import_export\Form\ImportDealsForm::batchFinished',
+      'init_message' => $this->t('Initializing import...'),
+      'progress_message' => $this->t('Processed @current of @total batches.'),
+      'error_message' => $this->t('An error occurred during import.'),
+    ];
 
-    return $deal;
+    batch_set($batch);
+    $form_state->setRedirect('view.my_deals.page_1');
   }
 
-  /**
-   * Parse amount from row data.
-   *
-   * @param array $row
-   *   CSV row data.
-   *
-   * @return float
-   *   Parsed amount.
-   */
-  private function parse_amount(array $row) {
-    $amount = $row['amount'] ?? $row['value'] ?? 0;
-    // Remove currency symbols.
-    $amount = preg_replace('/[^0-9.]/', '', $amount);
-    return floatval($amount);
-  }
+  public static function batchProcess($chunk, $options, &$context) {
+    if (empty($context['results'])) {
+      $context['results'] = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => 0];
+    }
 
-  /**
-   * Add contact reference to values array.
-   *
-   * @param array &$values
-   *   Node values array (passed by reference).
-   * @param array $row
-   *   CSV row data.
-   * @param bool $create_missing_contacts
-   *   Whether to create missing contacts.
-   */
-  private function add_contact_to_values(array &$values, array $row, $create_missing_contacts) {
-    $contact_email = $row['contact email'] ?? $row['contact'] ?? '';
-    if (!empty($contact_email)) {
-      $contact = $this->find_or_create_contact($contact_email, $create_missing_contacts);
-      if ($contact) {
-        $values['field_contact'] = $contact->id();
+    foreach ($chunk as $row) {
+      $title = $row['title'] ?? $row['name'] ?? '';
+      if (!$title) {
+        $context['results']['errors']++;
+        continue;
+      }
+
+      $amount_str = $row['amount'] ?? $row['value'] ?? '0';
+      $amount = floatval(preg_replace('/[^0-9.]/', '', $amount_str));
+
+      $query = \Drupal::entityQuery('node')
+        ->condition('type', 'deal')
+        ->condition('title', $title)
+        ->accessCheck(FALSE)
+        ->range(0, 1);
+      $nids = $query->execute();
+
+      $values = self::mapRowToValues($row, $amount, $options);
+
+      if (!empty($nids)) {
+        if ($options['skip_duplicates'] && !$options['update_existing']) {
+          $context['results']['skipped']++;
+          continue;
+        }
+        if ($options['update_existing']) {
+          $nid = reset($nids);
+          $node = Node::load($nid);
+          foreach ($values as $key => $val) {
+            $node->set($key, $val);
+          }
+          $node->save();
+          $context['results']['updated']++;
+        }
+      } 
+      else {
+        $create_vals = array_merge(['type' => 'deal', 'title' => $title, 'status' => 1, 'uid' => $options['uid'], 'field_owner' => $options['uid']], $values);
+        $node = Node::create($create_vals);
+        $node->save();
+        $context['results']['created']++;
       }
     }
+    
+    $context['message'] = 'Processed ' . count($chunk) . ' deals...';
   }
 
-  /**
-   * Add organization reference to values array.
-   *
-   * @param array &$values
-   *   Node values array (passed by reference).
-   * @param array $row
-   *   CSV row data.
-   */
-  private function add_organization_to_values(array &$values, array $row) {
-    if (!empty($row['organization'])) {
-      $org = $this->find_or_create_organization($row['organization']);
-      if ($org) {
-        $values['field_organization'] = $org->id();
-      }
-    }
-  }
+  private static function mapRowToValues($row, $amount, $options) {
+    $vals = ['field_amount' => $amount];
 
-  /**
-   * Add stage to values array.
-   *
-   * @param array &$values
-   *   Node values array (passed by reference).
-   * @param array $row
-   *   CSV row data.
-   * @param mixed $default_stage
-   *   Default stage value.
-   */
-  private function add_stage_to_values(array &$values, array $row, $default_stage) {
+    // Stage
     if (!empty($row['stage'])) {
-      $stage = $this->find_stage_by_name($row['stage']);
-      $values['field_stage'] = $stage ?? $default_stage;
+      $stage = self::find_stage_by_name($row['stage']);
+      if ($stage) $vals['field_stage'] = $stage;
     }
-    else {
-      $values['field_stage'] = $default_stage;
-    }
-  }
 
-  /**
-   * Add probability to values array.
-   *
-   * @param array &$values
-   *   Node values array (passed by reference).
-   * @param array $row
-   *   CSV row data.
-   */
-  private function add_probability_to_values(array &$values, array $row) {
+    // Probability
     if (!empty($row['probability'])) {
-      $values['field_probability'] = intval($row['probability']);
+      $vals['field_probability'] = intval($row['probability']);
     }
-  }
 
-  /**
-   * Add dates to values array.
-   *
-   * @param array &$values
-   *   Node values array (passed by reference).
-   * @param array $row
-   *   CSV row data.
-   */
-  private function add_dates_to_values(array &$values, array $row) {
-    // Expected Close Date.
+    // Dates
     if (!empty($row['expected close date'])) {
       $date = strtotime($row['expected close date']);
-      if ($date) {
-        $values['field_expected_close_date'] = date(self::DATE_FORMAT, $date);
-      }
+      if ($date) $vals['field_expected_close_date'] = date(self::DATE_FORMAT, $date);
     }
-
-    // Closing Date.
     if (!empty($row['closing date'])) {
       $date = strtotime($row['closing date']);
-      if ($date) {
-        $values['field_closing_date'] = date(self::DATE_FORMAT, $date);
-      }
+      if ($date) $vals['field_closing_date'] = date(self::DATE_FORMAT, $date);
     }
-  }
 
-  /**
-   * Add notes to values array.
-   *
-   * @param array &$values
-   *   Node values array (passed by reference).
-   * @param array $row
-   *   CSV row data.
-   */
-  private function add_notes_to_values(array &$values, array $row) {
+    // Notes
     if (!empty($row['notes'])) {
-      $values['field_notes'] = [
-        'value' => $row['notes'],
-        'format' => 'basic_html',
-      ];
+      $vals['field_notes'] = ['value' => $row['notes'], 'format' => 'basic_html'];
     }
-  }
 
-  /**
-   * Update an existing deal from CSV row.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Existing deal node to update.
-   * @param array $row
-   *   CSV row data.
-   * @param bool $create_missing_contacts
-   *   Whether to create missing contacts.
-   *
-   * @return \Drupal\node\Entity\Node
-   *   Updated deal node.
-   */
-  private function update_deal($deal, $row, $create_missing_contacts) {
-    $this->update_deal_amount($deal, $row);
-    $this->update_deal_contact($deal, $row, $create_missing_contacts);
-    $this->update_deal_organization($deal, $row);
-    $this->update_deal_stage($deal, $row);
-    $this->update_deal_probability($deal, $row);
-    $this->update_deal_dates($deal, $row);
-    $this->update_deal_notes($deal, $row);
-
-    $deal->save();
-    return $deal;
-  }
-
-  /**
-   * Update deal amount.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   */
-  private function update_deal_amount($deal, array $row) {
-    if (isset($row['amount']) || isset($row['value'])) {
-      $deal->set('field_amount', $this->parse_amount($row));
-    }
-  }
-
-  /**
-   * Update deal contact.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   * @param bool $create_missing_contacts
-   *   Whether to create missing contacts.
-   */
-  private function update_deal_contact($deal, array $row, $create_missing_contacts) {
+    // Realations
     $contact_email = $row['contact email'] ?? $row['contact'] ?? '';
-    if (empty($contact_email)) {
-      return;
+    if (!empty($contact_email)) {
+      $contact = self::find_or_create_contact($contact_email, $options['create_missing'], $options['uid']);
+      if ($contact) $vals['field_contact'] = $contact->id();
     }
 
-    $contact = $this->find_or_create_contact($contact_email, $create_missing_contacts);
-    if ($contact) {
-      $deal->set('field_contact', $contact->id());
+    if (!empty($row['organization'])) {
+      $org = self::find_or_create_organization($row['organization'], $options['uid'], $options['create_missing']);
+      if ($org) $vals['field_organization'] = $org->id();
     }
+
+    return $vals;
   }
 
-  /**
-   * Update deal organization.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   */
-  private function update_deal_organization($deal, array $row) {
-    if (empty($row['organization'])) {
-      return;
-    }
+  private static function find_or_create_contact($email, $create_if_missing, $uid) {
+    $nids = \Drupal::entityQuery('node')->condition('type', 'contact')->condition('field_email', $email)->accessCheck(FALSE)->range(0, 1)->execute();
+    if (!empty($nids)) return Node::load(reset($nids));
 
-    $org = $this->find_or_create_organization($row['organization']);
-    if ($org) {
-      $deal->set('field_organization', $org->id());
-    }
-  }
-
-  /**
-   * Update deal stage.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   */
-  private function update_deal_stage($deal, array $row) {
-    if (empty($row['stage'])) {
-      return;
-    }
-
-    $stage = $this->find_stage_by_name($row['stage']);
-    if ($stage) {
-      $deal->set('field_stage', $stage);
-    }
-  }
-
-  /**
-   * Update deal probability.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   */
-  private function update_deal_probability($deal, array $row) {
-    if (!empty($row['probability'])) {
-      $deal->set('field_probability', intval($row['probability']));
-    }
-  }
-
-  /**
-   * Update deal dates.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   */
-  private function update_deal_dates($deal, array $row) {
-    if (!empty($row['expected close date'])) {
-      $date = strtotime($row['expected close date']);
-      if ($date) {
-        $deal->set('field_expected_close_date', date(self::DATE_FORMAT, $date));
-      }
-    }
-  }
-
-  /**
-   * Update deal notes.
-   *
-   * @param \Drupal\node\Entity\Node $deal
-   *   Deal node.
-   * @param array $row
-   *   CSV row data.
-   */
-  private function update_deal_notes($deal, array $row) {
-    if (!empty($row['notes'])) {
-      $deal->set('field_notes', [
-        'value' => $row['notes'],
-        'format' => 'basic_html',
-      ]);
-    }
-  }
-
-  /**
-   * Find or create contact by email.
-   *
-   * @param string $email
-   *   Contact email address.
-   * @param bool $create_if_missing
-   *   Whether to create contact if not found.
-   *
-   * @return \Drupal\node\Entity\Node|null
-   *   Contact node if found or created, NULL otherwise.
-   */
-  private function find_or_create_contact($email, $create_if_missing) {
-    // Search for existing contact.
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'contact')
-      ->condition('field_email', $email)
-      ->accessCheck(FALSE)
-      ->range(0, 1);
-
-    $nids = $query->execute();
-
-    if (!empty($nids)) {
-      return Node::load(reset($nids));
-    }
-
-    // Create if allowed.
     if ($create_if_missing) {
       $contact = Node::create([
         'type' => 'contact',
         'title' => $email,
         'field_email' => $email,
         'status' => 1,
-        'uid' => \Drupal::currentUser()->id(),
-        'field_owner' => \Drupal::currentUser()->id(),
+        'uid' => $uid,
+        'field_owner' => $uid,
       ]);
       $contact->save();
-
       return $contact;
     }
-
     return NULL;
   }
 
-  /**
-   * Find or create organization by name.
-   *
-   * @param string $org_name
-   *   Organization name.
-   *
-   * @return \Drupal\node\Entity\Node
-   *   Organization node.
-   */
-  private function find_or_create_organization($org_name) {
-    // Search for existing organization.
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'organization')
-      ->condition('title', $org_name)
-      ->accessCheck(FALSE)
-      ->range(0, 1);
+  private static function find_or_create_organization($org_name, $uid, $create_if_missing) {
+    $nids = \Drupal::entityQuery('node')->condition('type', 'organization')->condition('title', $org_name)->accessCheck(FALSE)->range(0, 1)->execute();
+    if (!empty($nids)) return Node::load(reset($nids));
 
-    $nids = $query->execute();
-
-    if (!empty($nids)) {
-      return Node::load(reset($nids));
-    }
-
-    // Create new organization.
-    $org = Node::create([
-      'type' => 'organization',
-      'title' => $org_name,
-      'status' => 1,
-      'uid' => \Drupal::currentUser()->id(),
-      'field_owner' => \Drupal::currentUser()->id(),
-    ]);
-    $org->save();
-
-    return $org;
-  }
-
-  /**
-   * Find stage taxonomy term by name.
-   *
-   * @param string $stage_name
-   *   Stage name to search for.
-   *
-   * @return int|null
-   *   Term ID if found, NULL otherwise.
-   */
-  private function find_stage_by_name($stage_name) {
-    $terms = \Drupal::entityTypeManager()
-      ->getStorage('taxonomy_term')
-      ->loadByProperties([
-        'vid' => 'pipeline_stage',
-        'name' => $stage_name,
+    if ($create_if_missing) {
+      $org = Node::create([
+        'type' => 'organization',
+        'title' => $org_name,
+        'status' => 1,
+        'uid' => $uid,
+        'field_owner' => $uid,
       ]);
-
-    if (!empty($terms)) {
-      return reset($terms)->id();
+      $org->save();
+      return $org;
     }
-
     return NULL;
+  }
+
+  private static function find_stage_by_name($stage_name) {
+    $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties([
+      'vid' => 'pipeline_stage',
+      'name' => $stage_name,
+    ]);
+    if (!empty($terms)) return reset($terms)->id();
+    return NULL;
+  }
+
+  public static function batchFinished($success, $results, $operations) {
+    $messenger = \Drupal::messenger();
+    if ($success) {
+      $msg = sprintf("Import completed successfully. Created: %d, Updated: %d, Skipped: %d, Errors: %d.",
+        $results['created'], $results['updated'], $results['skipped'], $results['errors']);
+      $messenger->addStatus($msg);
+    } 
+    else {
+      $messenger->addError('The import process failed.');
+    }
   }
 
 }
