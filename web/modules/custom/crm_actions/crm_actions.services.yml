@@ -1,0 +1,6 @@
+services:
+  crm_actions.breadcrumb:
+    class: Drupal\crm_actions\Breadcrumb\CrmBreadcrumbBuilder
+    arguments: ['@request_stack']
+    tags:
+      - { name: breadcrumb_builder, priority: 100 }

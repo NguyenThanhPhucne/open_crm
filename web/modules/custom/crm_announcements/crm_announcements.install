@@ -1,0 +1,105 @@
+<?php
+
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\node\Entity\NodeType;
+
+/**
+ * Implements hook_install().
+ */
+function crm_announcements_install() {
+  crm_announcements_ensure_content_model();
+}
+
+/**
+ * Backfill content model for environments where module was enabled earlier.
+ */
+function crm_announcements_update_9001(&$sandbox) {
+  crm_announcements_ensure_content_model();
+}
+
+/**
+ * Ensures crm_announcement bundle and required fields exist.
+ */
+function crm_announcements_ensure_content_model() {
+  $type = NodeType::load('crm_announcement');
+  if (!$type) {
+    $type = NodeType::create([
+      'type' => 'crm_announcement',
+      'name' => 'Internal Announcement',
+      'description' => 'Used for internal CRM team announcements.',
+      'display_submitted' => TRUE,
+    ]);
+    $type->save();
+    node_add_body_field($type);
+  }
+
+  if (!FieldStorageConfig::loadByName('node', 'field_announcement_level')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_announcement_level',
+      'entity_type' => 'node',
+      'type' => 'list_string',
+      'settings' => [
+        'allowed_values' => [
+          'info' => 'Information',
+          'success' => 'Success',
+          'warning' => 'Warning',
+          'danger' => 'Critical / Danger',
+        ],
+      ],
+    ])->save();
+  }
+
+  if (!FieldConfig::loadByName('node', 'crm_announcement', 'field_announcement_level')) {
+    FieldConfig::create([
+      'field_name' => 'field_announcement_level',
+      'entity_type' => 'node',
+      'bundle' => 'crm_announcement',
+      'label' => 'Announcement Level',
+      'required' => TRUE,
+      'default_value' => [['value' => 'info']],
+    ])->save();
+  }
+
+  if (!FieldStorageConfig::loadByName('node', 'field_announcement_target')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_announcement_target',
+      'entity_type' => 'node',
+      'type' => 'list_string',
+      'settings' => [
+        'allowed_values' => [
+          'all' => 'All Users',
+          'admin' => 'Administrators Only',
+          'sales' => 'Sales Team',
+        ],
+      ],
+    ])->save();
+  }
+
+  if (!FieldConfig::loadByName('node', 'crm_announcement', 'field_announcement_target')) {
+    FieldConfig::create([
+      'field_name' => 'field_announcement_target',
+      'entity_type' => 'node',
+      'bundle' => 'crm_announcement',
+      'label' => 'Target Audience',
+      'required' => TRUE,
+      'default_value' => [['value' => 'all']],
+    ])->save();
+  }
+
+  $form_display = \Drupal::service('entity_display.repository')
+    ->getFormDisplay('node', 'crm_announcement', 'default');
+
+  $form_display
+    ->setComponent('title', ['weight' => 0])
+    ->setComponent('field_announcement_level', [
+      'type' => 'options_select',
+      'weight' => 1,
+    ])
+    ->setComponent('body', ['weight' => 2])
+    ->setComponent('field_announcement_target', [
+      'type' => 'options_select',
+      'weight' => 3,
+    ])
+    ->save();
+}

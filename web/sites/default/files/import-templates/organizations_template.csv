@@ -1,6 +1,4 @@
-name,website,industry,address,status
-TechCorp Inc,https://techcorp.com,Technology,123 Tech Street San Francisco CA 94102,active
-Innovate Solutions,https://innovate.io,Software,456 Innovation Ave New York NY 10001,active
-Global Trading Co,https://globaltrading.com,Retail,789 Commerce Blvd Chicago IL 60601,active
-Green Energy Ltd,https://greenenergy.com,Energy,321 Eco Park Austin TX 78701,active
-Finance Masters,https://financemasters.com,Finance,654 Wall Street New York NY 10005,active
+name,website,industry,address,phone,status,employees,notes
+ABC Company,https://abc.com,Technology,123 Main St Hanoi,0241234567,active,50,Leading tech firm
+XYZ Corporation,https://xyz.vn,Finance,456 Ba Dinh Hanoi,0249876543,active,200,Financial services
+Tech Startup,https://startup.io,Software,,active,12,Early-stage startup

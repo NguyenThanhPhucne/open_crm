@@ -1,0 +1,11 @@
+import_ui:
+  version: 1.0
+  css:
+    theme:
+      css/crm-import.css: {}
+  js:
+    js/crm-import.js: { minified: false }
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupal.ajax

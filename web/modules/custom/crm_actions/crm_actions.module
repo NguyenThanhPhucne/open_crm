@@ -142,6 +142,41 @@ function _crm_actions_build_navbar() {
 }
 
 /**
+ * Implements hook_page_attachments().
+ * Forcibly hide Gin's sticky region on all pages since we have custom nav.
+ */
+function crm_actions_page_attachments(array &$attachments) {
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'style',
+      '#value' => '
+        .region-sticky, .region-sticky-watcher { display: none !important; }
+        .gin--high-contrast-mode { --gin-bg-app: var(--gin-bg-layer, #ffffff) !important; }
+      ',
+    ],
+    'crm_actions_hide_sticky',
+  ];
+}
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * Removes the Gin sticky header region (region-sticky) from all CRM pages.
+ * The sticky bar is not needed since CRM has its own custom navigation.
+ * We suppress gin_form_actions so the <header class="region region-sticky">
+ * renders empty and the CSS display:none rule hides it cleanly.
+ */
+function crm_actions_preprocess_page(&$variables) {
+  // Unset Gin form-actions variables so the sticky bar has no content.
+  $variables['gin_form_actions'] = '';
+  $variables['gin_form_actions_class'] = '';
+
+  // Also unset local actions from the sticky bar position.
+  // They will still render in page.content via the normal content region.
+  unset($variables['page']['header']['gin_primary_local_tasks']);
+}
+
+/**
  * Implements hook_preprocess_views_view().
  */
 function crm_actions_preprocess_views_view(&$variables) {
@@ -153,3 +188,5 @@ function crm_actions_preprocess_views_view(&$variables) {
     $variables['#attached']['library'][] = 'crm_actions/global_nav';
   }
 }
+
+
