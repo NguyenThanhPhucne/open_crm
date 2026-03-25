@@ -51,9 +51,9 @@ body.path-crm .layout-content,
 }
 
 /* Remove default padding from layout wrappers */
-body.path-user .layout-container > .container,
-body.path-crm .layout-container > .container,
-[data-crm-page] .layout-container > .container {
+body.path-user .layout-container>.container,
+body.path-crm .layout-container>.container,
+[data-crm-page] .layout-container>.container {
   padding: 0 !important;
 }
 
@@ -139,10 +139,12 @@ body.path-crm,
   --crm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --crm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
+
 /* Responsive Layout for Sidebar Navigation */
 
 /* Mobile: Sidebar collapses or hides */
 @media (max-width: 639px) {
+
   body.path-user .layout-main-wrapper,
   body.path-crm .layout-main-wrapper,
   [data-crm-page] .layout-main-wrapper {
@@ -165,6 +167,7 @@ body.path-crm,
 
 /* Tablet: Reduced sidebar width */
 @media (min-width: 640px) and (max-width: 1023px) {
+
   body.path-user .layout-sidebar,
   body.path-crm .layout-sidebar,
   [data-crm-page] .layout-sidebar {
@@ -176,6 +179,7 @@ body.path-crm,
 
 /* Desktop: Full sidebar */
 @media (min-width: 1024px) {
+
   body.path-user .layout-sidebar,
   body.path-crm .layout-sidebar,
   [data-crm-page] .layout-sidebar {
