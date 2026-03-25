@@ -149,7 +149,10 @@ function crm_actions_page_attachments(array &$attachments) {
   $attachments['#attached']['html_head'][] = [
     [
       '#tag' => 'style',
-      '#value' => '.region-sticky, .region-sticky-watcher { display: none !important; }',
+      '#value' => '
+        .region-sticky, .region-sticky-watcher { display: none !important; }
+        .gin--high-contrast-mode { --gin-bg-app: var(--gin-bg-layer, #ffffff) !important; }
+      ',
     ],
     'crm_actions_hide_sticky',
   ];
