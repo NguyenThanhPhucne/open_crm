@@ -145,11 +145,14 @@
 
     // Clear the dirty flag after a successful form submit so the
     // beforeunload guard doesn't trigger on the redirect.
-    $form[0].addEventListener("submit", function () {
-      // Allow the optimistic-UI handler to decide; it calls
-      // handleOptimisticSubmit which sets isSaving=true before leaving.
-    }, { capture: true });
-
+    $form[0].addEventListener(
+      "submit",
+      function () {
+        // Allow the optimistic-UI handler to decide; it calls
+        // handleOptimisticSubmit which sets isSaving=true before leaving.
+      },
+      { capture: true },
+    );
   }
 
   /**
@@ -354,7 +357,6 @@
     setTimeout(function () {
       $field.removeClass("is-changed");
     }, 1000);
-
   }
 
   /**
@@ -395,7 +397,7 @@
     }
 
     var $recoveryBtn = jQuery(
-      "<button type='button' class='crm-btn crm-btn--secondary' style='margin-top: 10px;'>" +
+      "<button type='button' class='crm-btn crm-btn--secondary crm-form-recovery__retry'>" +
         "↻ Retry Save</button>",
     );
 
@@ -406,7 +408,7 @@
     });
 
     $recoveryContainer.html(
-      "<p style='color: #d9534f; padding: 10px; background: #f8d7da; border-radius: 4px; margin: 10px 0;'>" +
+      "<p class='crm-form-recovery__message'>" +
         "Error saving form. Changes are still in the form. You can try again.</p>",
     );
     $recoveryContainer.append($recoveryBtn);
@@ -447,9 +449,10 @@
     window.CRM = window.CRM || {};
     window.CRM.toast = function (message, type) {
       // Fallback: crm-shared.js should supply the real implementation.
-      console.warn('[CRM] Toast not yet ready. Ensure crm/crm_shared is a dependency of crm/crm_optimistic_ui. Message:', message);
+      console.warn(
+        "[CRM] Toast not yet ready. Ensure crm/crm_shared is a dependency of crm/crm_optimistic_ui. Message:",
+        message,
+      );
     };
   }
 })(Drupal, jQuery);
-
-

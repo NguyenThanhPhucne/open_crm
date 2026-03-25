@@ -32,6 +32,12 @@
   font-weight: 500;
 }
 
+.crm-lazy-load__indicator-body {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
 /* Spinner */
 .crm-lazy-load__spinner {
   display: inline-block;
@@ -69,6 +75,10 @@
   margin-bottom: 0.5rem;
 }
 
+.crm-lazy-load__skeleton--short {
+  width: 60%;
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -80,8 +90,11 @@
 
 /* Multiple skeleton lines */
 .crm-lazy-load__skeleton-row {
+  width: min(620px, 92%);
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .crm-lazy-load__skeleton-row .crm-lazy-load__skeleton:last-child {
@@ -119,6 +132,10 @@
   text-align: center;
   color: #999;
   font-size: 0.9rem;
+}
+
+.crm-lazy-load__retry-btn {
+  margin-top: 10px;
 }
 
 /* Scroll-to-load hint */

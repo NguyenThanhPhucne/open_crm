@@ -109,7 +109,6 @@
           }, CRMLazyLoad.scrollDebounceMs);
         });
       }
-
     }
   }
 
@@ -163,18 +162,18 @@
     var $indicator = jQuery(
       '<div class="crm-lazy-load__indicator" id="' +
         listId +
-        '-indicator"' +
-        ' style="display: none; padding: 20px; text-align: center;">' +
-        '<div class="crm-lazy-load__spinner" style="display: inline-block; width: 20px; height: 20px; ' +
-        "border: 3px solid #f3f3f3; border-top: 3px solid #0066cc; border-radius: 50%; " +
-        'animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;"></div>' +
+        '-indicator">' +
+        '<div class="crm-lazy-load__indicator-body">' +
+        '<div class="crm-lazy-load__skeleton-row">' +
+        '<span class="crm-lazy-load__skeleton"></span>' +
+        '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
+        "</div>" +
         '<span id="' +
         listId +
         '-indicator-text">Loading more items...</span>' +
+        "</div>" +
         "</div>",
     );
-
-
 
     $list.after($indicator);
   }
@@ -242,7 +241,6 @@
         : "Loading more items...";
     jQuery("#" + listId + "-indicator-text").text(indicatorText);
 
-
     // Build request URL
     var url = listUrl + "?page=" + nextPage;
     if (viewName) {
@@ -303,7 +301,6 @@
 
           // Clean up scroll listener if using fallback
           jQuery(window).off("scroll.crm-lazy-load-" + listId);
-
         } else {
           // Check for data integrity
           validateAndAddRows($list, $newRows, listId);
@@ -319,7 +316,6 @@
 
           // Hide indicator
           $indicator.hide();
-
 
           // Trigger custom event for other scripts
           $list.trigger("crm.items.loaded", [$newRows]);
@@ -411,7 +407,7 @@
     }
 
     var $retryBtn = jQuery(
-      '<button class="crm-btn crm-btn--secondary" style="margin-top: 10px;">' +
+      '<button class="crm-btn crm-btn--secondary crm-lazy-load__retry-btn">' +
         "↻ Retry</button>",
     );
 
@@ -423,7 +419,6 @@
       performLoadMoreItems(listId);
     });
 
-    $retryBtn.addClass("crm-lazy-load__retry-btn");
     $indicator.append($retryBtn);
   }
 
