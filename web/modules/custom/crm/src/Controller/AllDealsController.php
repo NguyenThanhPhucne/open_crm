@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\crm\Helper\CrmActionHelper;
 
 /**
  * Professional All Deals list controller — UI consistent with AllContactsController.
@@ -264,10 +265,27 @@ class AllDealsController extends ControllerBase {
 
     // ── URL helpers ───────────────────────────────────────────────────────────
     $current_path = $request->getPathInfo();
-    $deals_url    = $current_path;
     $add_url      = '/crm/add/deal';
-    $pipeline_url = $can_manage ? '/crm/all-pipeline' : '/crm/my-pipeline';
+    $deals_url    = $is_my_view ? '/crm/my-deals' : '/crm/all-deals';
+    $pipeline_url = $is_my_view ? '/crm/my-pipeline' : '/crm/all-pipeline';
 
+    // ── Build dynamic actions ───────────────────────────────────────────────
+    $actions_html = CrmActionHelper::renderActions('deal', [
+      'pipeline' => [
+        'label' => 'Pipeline view',
+        'url' => $pipeline_url,
+        'icon' => 'kanban-square',
+        'class' => 'btn-secondary',
+      ],
+      'add' => [
+        'label' => 'Add Deal',
+        'url' => $add_url,
+        'icon' => 'plus-circle',
+        'class' => 'btn-primary',
+      ],
+    ]);
+
+    // ── Pagination helper ─────────────────────────────────────────────────────
     $page_url = function ($p) use ($search_name, $filter_stage, $sort_field, $sort_dir, $per_page, $current_path) {
       $params = ['page' => $p, 'sort' => $sort_field, 'dir' => $sort_dir, 'per_page' => $per_page];
       if ($search_name)  { $params['search'] = $search_name; }
@@ -536,15 +554,7 @@ HTML;
         <button class="dn-btn on" data-dn="default" title="Default rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2.5" x2="13" y2="2.5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="1" y1="11.5" x2="13" y2="11.5"/></svg></button>
         <button class="dn-btn" data-dn="roomy" title="Roomy rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="8" x2="13" y2="8"/></svg></button>
       </div>
-      <a href="{$pipeline_url}" class="btn-secondary">
-        <i data-lucide="kanban-square"></i>
-        Pipeline view
-      </a>
-      <a href="{$add_url}" class="btn-primary">
-        <i data-lucide="plus-circle"></i>
-        Add Deal
-      </a>
-
+      {$actions_html}
     </div>
   </div>
 HTML;

@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\crm\Helper\CrmActionHelper;
 
 /**
  * Professional All Organizations list controller.
@@ -234,10 +235,20 @@ class AllOrganizationsController extends ControllerBase {
     // ── Navigation URLs ───────────────────────────────────────────────────────
     $current_path      = $request->getPathInfo();
     $contacts_url      = $can_manage ? '/crm/all-contacts'      : '/crm/my-contacts';
-    $organizations_url = $current_path;
+    $organizations_url = $is_my_view ? '/crm/my-organizations' : '/crm/all-organizations';
     $deals_url         = $can_manage ? '/crm/all-deals'         : '/crm/my-deals';
     $activities_url    = $can_manage ? '/crm/all-activities'    : '/crm/my-activities';
     $add_url           = '/crm/add/organization';
+
+    // ── Build dynamic actions ───────────────────────────────────────────────
+    $actions_html = CrmActionHelper::renderActions('organization', [
+      'add' => [
+        'label' => 'Add Organization',
+        'url' => $add_url,
+        'icon' => 'plus-circle',
+        'class' => 'btn-primary',
+      ],
+    ]);
 
     // ── Pagination helper ─────────────────────────────────────────────────────
     $page_url = function ($p) use ($search_name, $search_industry, $search_status, $sort_field, $sort_dir, $per_page, $current_path) {
@@ -442,7 +453,7 @@ class AllOrganizationsController extends ControllerBase {
   .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f1f5f9;background:#fafafa;flex-wrap:wrap;gap:10px}
   .page-info{font-size:13px;color:#64748b}
   .page-links{display:flex;align-items:center;gap:4px}
-  .page-link{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 8px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#374151;text-decoration:none;transition:all .15s;white-space:nowrap}
+  .page-link{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 8px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#374151;text-decoration:none;transition:all .15s}
   .page-link:hover{border-color:#bfdbfe;background:#eff6ff;color:#2563eb}
   .page-link.active{background:#3b82f6;border-color:#3b82f6;color:#fff;font-weight:700}
   .page-link.disabled{opacity:.4;pointer-events:none}
@@ -529,11 +540,7 @@ HTML;
         <button class="dn-btn on" data-dn="default" title="Default rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2.5" x2="13" y2="2.5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="1" y1="11.5" x2="13" y2="11.5"/></svg></button>
         <button class="dn-btn" data-dn="roomy" title="Roomy rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="8" x2="13" y2="8"/></svg></button>
       </div>
-      <a href="{$add_url}" class="btn-primary">
-        <i data-lucide="plus-circle"></i>
-        Add Organization
-      </a>
-
+      {$actions_html}
     </div>
   </div>
 

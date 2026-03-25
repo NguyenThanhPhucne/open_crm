@@ -9,6 +9,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\crm\Helper\CrmActionHelper;
 
 /**
  * Controller for CRM Kanban Pipeline.
@@ -158,12 +159,6 @@ class KanbanController extends ControllerBase {
       }
     }
 
-    $fmt_pipeline = '$' . (
-      $pipeline_value >= 1000000
-        ? number_format($pipeline_value / 1000000, 1) . 'M'
-        : ($pipeline_value >= 1000 ? number_format($pipeline_value / 1000, 0) . 'K' : number_format($pipeline_value, 0))
-    );
-
     // Determine page context.
     $current_path = \Drupal::service('path.current')->getPath();
     $is_all_pipeline = str_contains($current_path, 'all-pipeline');
@@ -173,13 +168,36 @@ class KanbanController extends ControllerBase {
     $page_title = $is_all_pipeline ? 'All Pipeline' : 'My Pipeline';
     $list_url   = $is_all_pipeline ? '/crm/all-deals' : '/crm/my-deals';
 
+    // ── Build dynamic actions ───────────────────────────────────────────────
+    $actions_html = CrmActionHelper::renderActions('deal', [
+      'list' => [
+        'label' => 'List view',
+        'url' => $list_url,
+        'icon' => 'list',
+        'class' => 'btn-secondary',
+      ],
+      'add' => [
+        'label' => 'Add Deal',
+        'url' => '/crm/add/deal',
+        'icon' => 'plus-circle',
+        'class' => 'btn-primary',
+      ],
+    ]);
+
+    $fmt_pipeline = '$' . (
+      $pipeline_value >= 1000000
+        ? number_format($pipeline_value / 1000000, 1) . 'M'
+        : ($pipeline_value >= 1000 ? number_format($pipeline_value / 1000, 0) . 'K' : number_format($pipeline_value, 0))
+    );
+
     $stats = [
-      'total_count'  => $total_count,
-      'fmt_pipeline' => $fmt_pipeline,
-      'won_count'    => $won_count,
-      'page_title'   => $page_title,
-      'list_url'     => $list_url,
-      'is_admin'     => $can_see_all,
+      'total_count'   => $total_count,
+      'fmt_pipeline'  => $fmt_pipeline,
+      'won_count'     => $won_count,
+      'page_title'    => $page_title,
+      'list_url'      => $list_url,
+      'is_admin'      => $can_see_all,
+      'actions_html'  => $actions_html,
     ];
 
     $html = $this->buildKanbanHtml($stages, $deals_by_stage, $totals_by_stage, $stats);
@@ -192,7 +210,7 @@ class KanbanController extends ControllerBase {
           'crm/crm_shared',
           'crm/crm_layout',
           'crm_edit/inline_edit',
-          'crm_ai_autocomplete/ai-generate-button',
+
         ],
       ],
       '#cache' => [
@@ -212,6 +230,7 @@ class KanbanController extends ControllerBase {
     $total_count  = $stats['total_count']  ?? 0;
     $fmt_pipeline = $stats['fmt_pipeline'] ?? '$0';
     $won_count    = $stats['won_count']    ?? 0;
+    $actions_html = $stats['actions_html']  ?? '';
 
     // Build stage options for filter dropdown.
     $stage_options_html = '';
@@ -511,9 +530,7 @@ HTML;
       <div class="page-subtitle">Drag cards between columns to update deal stages</div>
     </div>
     <div class="page-actions">
-      <a href="{$list_url}" class="btn-secondary"><i data-lucide="list"></i> List view</a>
-      <a href="/crm/add/deal" class="btn-primary"><i data-lucide="plus-circle"></i> Add Deal</a>
-
+      {$actions_html}
     </div>
   </div>
 
