@@ -75,7 +75,10 @@ window.CRMInlineEdit = {
       return Promise.resolve(false);
     }
 
-    return fetch(window.location.href, {
+    const url = new URL(window.location.href);
+    url.searchParams.set("_ts", Date.now());
+
+    return fetch(url.toString(), {
       credentials: "same-origin",
       cache: "no-store",
     })
@@ -322,6 +325,22 @@ window.CRMInlineEdit = {
       modal.classList.add("is-saving");
     }
 
+    // OPTIMISTIC UI (Zero-Latency feel)
+    // 1. Immediately close the modal and show loading state on the row
+    const overlay = document.getElementById("crm-modal-overlay");
+    if (overlay) overlay.style.display = "none"; // Hide instead of remove in case we need to rollback
+
+    const rowNode = document.querySelector(`tr[data-entity-id="${nid}"], .crm-kanban-card[data-entity-id="${nid}"], .crm-card[data-entity-id="${nid}"]`);
+    if (rowNode) {
+      rowNode.style.opacity = "0.5";
+      rowNode.style.pointerEvents = "none";
+      rowNode.style.filter = "grayscale(100%)";
+    }
+
+    if (window.CRM && window.CRM.toast) {
+      window.CRM.toast("Saving changes...", "info", 2000);
+    }
+
     this.getCsrfToken().then((csrfToken) => {
       let fetchOptions;
 
@@ -358,38 +377,37 @@ window.CRMInlineEdit = {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            const overlay = document.getElementById("crm-modal-overlay");
+            // Actual delete of the overlay
             if (overlay) overlay.remove();
 
             this.refreshCurrentView(nid, type, data);
 
             if (window.CRM && window.CRM.toast) {
               window.CRM.toast("Changes saved successfully!", "success");
-            } else {
-              localStorage.setItem(
-                "crmToast",
-                JSON.stringify({
-                  message: "Changes saved successfully!",
-                  type: "success",
-                }),
-              );
             }
           } else {
-            this.showMessage(data.message || "Error saving changes", "error");
-            if (modal) {
-              modal.classList.remove("is-saving");
+            // Rollback: show modal again, remove row skeleton
+            if (overlay) overlay.style.display = "";
+            if (rowNode) {
+              rowNode.style.opacity = "";
+              rowNode.style.pointerEvents = "";
+              rowNode.style.filter = "";
             }
+            this.showMessage(data.message || "Error saving changes", "error");
           }
         })
         .catch((error) => {
           console.error("Save error:", error);
+          if (overlay) overlay.style.display = "";
+          if (rowNode) {
+            rowNode.style.opacity = "";
+            rowNode.style.pointerEvents = "";
+            rowNode.style.filter = "";
+          }
           this.showMessage(
             "Failed to save changes. Please try again.",
             "error",
           );
-          if (modal) {
-            modal.classList.remove("is-saving");
-          }
         });
     }); // end getCsrfToken
   },
@@ -718,10 +736,38 @@ window.CRMInlineEdit = {
 
   performDelete: function (nid, type, title, confirmation) {
     const modal = document.querySelector(".crm-delete-modal");
-    if (modal) {
-      modal.classList.add("is-deleting");
+    
+    // Close delete modal immediately for Optimistic UI feel
+    const overlay =
+      document.getElementById("crm-delete-step3") ||
+      document.getElementById("crm-delete-step2") ||
+      document.getElementById("crm-delete-step1");
+    if (overlay) overlay.remove();
+
+    // Show optimistic toast
+    if (window.CRM && window.CRM.toast) {
+      window.CRM.toast(`Deleting ${title}...`, "info", 2000);
     }
 
+    // 1. Optimistic UI: Find and clone the row for rollback, then hide/remove it immediately.
+    let rowParent = null;
+    let nextSibling = null;
+    let rowClone = null;
+    let tableWrap = null;
+    let rowNode = null;
+
+    // Support both table row and kanban card
+    rowNode = document.querySelector(`tr[data-entity-id="${nid}"], .crm-kanban-card[data-entity-id="${nid}"], .crm-card[data-entity-id="${nid}"]`);
+    
+    if (rowNode) {
+      rowParent = rowNode.parentNode;
+      nextSibling = rowNode.nextSibling;
+      rowClone = rowNode.cloneNode(true);
+      // Remove immediately from UI
+      rowNode.remove();
+    }
+
+    // 2. Fetch API in background
     this.getCsrfToken().then((csrfToken) => {
       fetch("/crm/edit/ajax/delete", {
         method: "POST",
@@ -738,58 +784,48 @@ window.CRMInlineEdit = {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            // Close delete modal immediately
-            const overlay =
-              document.getElementById("crm-delete-step3") ||
-              document.getElementById("crm-delete-step2") ||
-              document.getElementById("crm-delete-step1");
-            if (overlay) overlay.remove();
-
-            // Show toast immediately (no localStorage needed — we're on the same page)
+            // Success: update toast
             if (window.CRM && window.CRM.toast) {
               window.CRM.toast(
                 data.message || "Deleted successfully!",
-                "success",
-              );
-            } else {
-              localStorage.setItem(
-                "crmToast",
-                JSON.stringify({
-                  message: data.message || "Deleted successfully!",
-                  type: "success",
-                }),
+                "success"
               );
             }
-
-            const removed = this.removeEntityRowOptimistically(nid, type);
-
-            if (removed) {
-              // Keep UX snappy: update immediately, then reconcile in background.
-              setTimeout(() => {
-                this.refreshListSections();
-              }, 250);
-            } else {
-              this.refreshListSections().then((refreshed) => {
-                if (!refreshed) {
-                  setTimeout(() => location.reload(), 100);
-                }
-              });
-            }
+            // Background reconcile
+            setTimeout(() => {
+              this.refreshListSections();
+            }, 300);
           } else {
-            this.showMessage(data.message || "Error deleting", "error");
-            if (modal) {
-              modal.classList.remove("is-deleting");
+            // Server returned error (e.g. ConstraintViolation) -> Rollback!
+            this.showMessage(data.message || "Error deleting constraints.", "error");
+            if (rowClone && rowParent) {
+              if (nextSibling) {
+                rowParent.insertBefore(rowClone, nextSibling);
+              } else {
+                rowParent.appendChild(rowClone);
+              }
+              // Flash red to indicate rollback
+              rowClone.style.backgroundColor = "#fee2e2";
+              setTimeout(() => { rowClone.style.backgroundColor = ""; }, 1000);
             }
+            this.refreshListSections();
           }
         })
         .catch((error) => {
           console.error("Delete error:", error);
           this.showMessage("Failed to delete. Please try again.", "error");
-          if (modal) {
-            modal.classList.remove("is-deleting");
+          // Rollback on network error!
+          if (rowClone && rowParent) {
+            if (nextSibling) {
+              rowParent.insertBefore(rowClone, nextSibling);
+            } else {
+              rowParent.appendChild(rowClone);
+            }
+            rowClone.style.backgroundColor = "#fee2e2";
+            setTimeout(() => { rowClone.style.backgroundColor = ""; }, 1000);
           }
         });
-    }); // end getCsrfToken
+    });
   },
 
   openAddModal: function (type) {
@@ -902,16 +938,31 @@ window.CRMInlineEdit = {
       data[key] = value;
     });
 
-    // Show saving state
-    const saveBtn = form.querySelector(".save-btn");
-    const originalBtnHtml = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<i data-lucide="loader"></i> <span>Creating...</span>';
-    saveBtn.disabled = true;
-    if (typeof lucide !== "undefined") {
-      lucide.createIcons();
+    // 1. Optimistic UI: Close Modal Immediately & Inject Skeleton
+    const overlay = document.getElementById("crm-modal-overlay");
+    if (overlay) overlay.style.display = "none"; // Hide instead of completely remove for rollback
+    
+    // Inject a skeleton "Creating..." row at the top of the list or kanban
+    let skeletonNode = null;
+    const tableBody = document.querySelector("#crm-results-wrap table.crm-table tbody");
+    const kanbanBoard = document.querySelector("#crm-results-wrap .crm-kanban-board > div");
+    
+    if (window.CRM && window.CRM.toast) {
+      window.CRM.toast("Creating...", "info", 2000);
+    }
+    
+    if (tableBody) {
+      skeletonNode = document.createElement("tr");
+      skeletonNode.innerHTML = `<td colspan="8"><div style="height:48px;border-radius:6px;background:linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);background-size:200% 100%;animation:crm-skeleton-shimmer 1.5s infinite linear;"></div></td>`;
+      tableBody.prepend(skeletonNode);
+    } else if (kanbanBoard) {
+      skeletonNode = document.createElement("div");
+      skeletonNode.className = "crm-kanban-card";
+      skeletonNode.innerHTML = `<div style="height:100px;border-radius:8px;background:linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);background-size:200% 100%;animation:crm-skeleton-shimmer 1.5s infinite linear;"></div>`;
+      kanbanBoard.prepend(skeletonNode);
     }
 
-    // Send AJAX request (CSRF-protected)
+    // 2. Send AJAX request (CSRF-protected)
     this.getCsrfToken().then((csrfToken) => {
       fetch("/crm/edit/ajax/create", {
         method: "POST",
@@ -924,52 +975,27 @@ window.CRMInlineEdit = {
         .then((response) => response.json())
         .then((result) => {
           if (result.success) {
-            if (statusDiv) {
-              statusDiv.className = "save-status success";
-              statusDiv.innerHTML =
-                '<i data-lucide="check-circle"></i> ' +
-                (result.message || "Created successfully!");
-              if (typeof lucide !== "undefined") {
-                lucide.createIcons();
-              }
+            // Success: remove modal completely
+            if (overlay) overlay.remove();
+
+            if (window.CRM && window.CRM.toast) {
+              window.CRM.toast(result.message || "Created successfully!", "success");
             }
-
-            // Save toast message to localStorage and redirect
-            localStorage.setItem(
-              "crmToast",
-              JSON.stringify({
-                message: result.message || "Created successfully!",
-                type: "success",
-              }),
-            );
-
-            // Close modal and redirect immediately
+            // Reconcile list to fetch the newly created real node HTML
             setTimeout(() => {
-              this.closeModal();
-              if (result.nid) {
-                // Redirect to new entity or reload page
-                window.location.href = "/node/" + result.nid;
-              } else {
-                location.reload();
-              }
-            }, 100);
+              this.refreshListSections();
+            }, 300);
           } else {
-            // Show error
+            // Error: Rollback
+            if (skeletonNode) skeletonNode.remove();
+            if (overlay) overlay.style.display = ""; // Show modal again
+            
             if (statusDiv) {
               statusDiv.className = "save-status error";
               statusDiv.innerHTML =
                 '<i data-lucide="alert-circle"></i> ' +
                 (result.message || "Error creating content");
-              if (typeof lucide !== "undefined") {
-                lucide.createIcons();
-              }
-            }
-
-            // Restore button
-            saveBtn.innerHTML = originalBtnHtml;
-            saveBtn.disabled = false;
-            if (typeof lucide !== "undefined") {
-              lucide.createIcons();
+              if (typeof lucide !== "undefined") lucide.createIcons();
             }
 
             // Show field errors if any
@@ -990,17 +1016,15 @@ window.CRMInlineEdit = {
         })
         .catch((error) => {
           console.error("Create error:", error);
+          if (skeletonNode) skeletonNode.remove();
+          if (overlay) overlay.style.display = ""; // Show modal again
+
           if (statusDiv) {
             statusDiv.className = "save-status error";
             statusDiv.innerHTML =
               '<i data-lucide="alert-circle"></i> Failed to create. Please try again.';
-            if (typeof lucide !== "undefined") {
-              lucide.createIcons();
-            }
+            if (typeof lucide !== "undefined") lucide.createIcons();
           }
-          // Restore button
-          saveBtn.innerHTML = originalBtnHtml;
-          saveBtn.disabled = false;
         });
     }); // end getCsrfToken
   },

@@ -1931,48 +1931,7 @@ class DashboardController extends ControllerBase {
       z-index: 1;
     }
 
-    .hero-action-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 9px 18px;
-      border-radius: 16px;
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1.5px solid transparent;
-      white-space: nowrap;
-      cursor: pointer;
-    }
-
-    .hero-btn-primary {
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #2563eb;
-    }
-
-    .hero-btn-primary:hover {
-      background: #1d4ed8;
-      border-color: #1d4ed8;
-      color: #ffffff;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-    }
-
-    .hero-btn-outline {
-      background: #ffffff;
-      color: #2563eb;
-      border-color: #dbeafe;
-    }
-
-    .hero-btn-outline:hover {
-      background: #eff6ff;
-      border-color: #93c5fd;
-      color: #1d4ed8;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
-    }
+    /* Hero button styles have been moved to crm-ui-polish.css to apply globally to .qac-hero */
 
     /* ================================================================
        STATS SECTION LABELS — Group headers inside the stats grid

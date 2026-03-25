@@ -1,0 +1,320 @@
+/* =========================================================================
+   CRM UI Polish - Micro-interactions & Zero-Latency Feel
+   ========================================================================= */
+
+/* ── 1. Clear Filter Button ────────────────────────────────────────────── */
+.crm-filter-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94a3b8;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  z-index: 3;
+  transition: color 0.15s, background 0.15s;
+}
+
+.crm-filter-clear.visible {
+  display: flex;
+}
+
+.crm-filter-clear:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ── 2. ClickUp-style Skeleton Loading (Replaces opacity) ──────────────── */
+.filter-bar.is-submitting {
+  opacity: 0.65;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+#crm-results-wrap {
+  transition: opacity 0.15s;
+}
+
+#crm-results-wrap.crm-loading {
+  pointer-events: none;
+}
+
+#crm-results-wrap.crm-loading table tbody td,
+#crm-results-wrap.crm-loading .crm-kanban-card,
+#crm-results-wrap.crm-loading .crm-card {
+  color: transparent !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+#crm-results-wrap.crm-loading table tbody td *,
+#crm-results-wrap.crm-loading .crm-kanban-card *,
+#crm-results-wrap.crm-loading .crm-card * {
+  color: transparent !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#crm-results-wrap.crm-loading table tbody td::after {
+  content: '';
+  position: absolute;
+  inset: 12px 16px;
+  border-radius: 6px;
+  z-index: 10;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: crm-skeleton-shimmer 1.5s infinite linear;
+}
+
+#crm-results-wrap.crm-loading .crm-kanban-card::after,
+#crm-results-wrap.crm-loading .crm-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  z-index: 10;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: crm-skeleton-shimmer 1.5s infinite linear;
+}
+
+@keyframes crm-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── 3. Premium Hover Effects (Lists & Kanban) ─────────────────────────── */
+table.crm-table tbody tr {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+table.crm-table tbody tr:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  z-index: 2;
+  position: relative;
+  background-color: #ffffff;
+}
+
+.crm-kanban-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crm-kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ── 4. Bulk Delete Confirm Modal ───────────────────────────────────────── */
+.crm-bulk-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.crm-bulk-confirm__card {
+  width: min(520px, calc(100vw - 32px));
+  background: #fff;
+  border: 1px solid #dbe7f6;
+  border-radius: 14px;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.25);
+  padding: 18px 18px 14px;
+}
+
+.crm-bulk-confirm__ttl { margin: 0 0 8px; font-size: 18px; font-weight: 800; color: #0f172a; }
+.crm-bulk-confirm__txt { margin: 0 0 12px; font-size: 13px; line-height: 1.55; color: #334155; }
+.crm-bulk-confirm__warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.crm-bulk-confirm__row { margin-top: 14px; }
+.crm-bulk-confirm__lbl { display: block; margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #334155; }
+.crm-bulk-confirm__input { width: 100%; height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 11px; font-size: 13px; outline: none; }
+.crm-bulk-confirm__input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); }
+.crm-bulk-confirm__hint { margin-top: 6px; font-size: 12px; color: #64748b; }
+.crm-bulk-confirm__actions { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
+.crm-bulk-confirm__btn { height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid #d1d9e6; background: #fff; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; }
+.crm-bulk-confirm__btn:hover { background: #f8fafc; }
+.crm-bulk-confirm__btn--danger { border-color: #ef4444; background: #ef4444; color: #fff; }
+.crm-bulk-confirm__btn--danger:hover { background: #dc2626; border-color: #dc2626; }
+.crm-bulk-confirm__btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* ── 5. Standard Spin Animation ─────────────────────────────────────────── */
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+
+/* ── 6. Premium Hero Buttons (.hero-actions & .qac-hero) ──────────── */
+.hero-actions a,
+.hero-actions button,
+.qac-hero a,
+.qac-hero button,
+.hero-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* All Hero Buttons (both Outline and Primary) share the unified White/Blue styling */
+.hero-action-btn,
+.hero-actions a,
+.hero-actions button,
+.qac-hero a,
+.qac-hero button {
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #dbeafe;
+}
+
+.hero-action-btn:hover,
+.hero-actions a:hover,
+.hero-actions button:hover,
+.qac-hero a:hover,
+.qac-hero button:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+/* ── 7. Global Button Outline Style (User Requested Premium Style) ──────────── */
+/* Apply to all standard buttons in the CRM (excluding specific fab/chat buttons) */
+.btn,
+.button,
+.btn-primary,
+.button--primary,
+.btn-save,
+.save-btn,
+.btn-cancel,
+.btn-delete,
+.btn-proceed-delete,
+.btn-understand-delete,
+.btn-delete-final,
+.btn-auth-submit,
+.crm-bulk-confirm__btn,
+.btn-filter-apply,
+.btn-import,
+.btn-import--primary,
+.btn-import--secondary,
+.qa-btn,
+.qa-primary,
+.qa-secondary {
+  background: #ffffff !important;
+  color: #2563eb !important;
+  border: 1.5px solid #dbeafe !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  border-radius: 16px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  box-shadow: none !important; /* Reset old shadows */
+}
+
+/* Base Hover State */
+.btn:hover,
+.button:hover,
+.btn-primary:hover,
+.button--primary:hover,
+.btn-save:hover,
+.save-btn:hover,
+.btn-cancel:hover,
+.btn-delete:hover,
+.btn-proceed-delete:hover,
+.btn-understand-delete:hover,
+.btn-delete-final:hover,
+.btn-auth-submit:hover,
+.crm-bulk-confirm__btn:hover,
+.btn-filter-apply:hover,
+.btn-import:hover,
+.btn-import--primary:hover,
+.btn-import--secondary:hover,
+.qa-btn:hover,
+.qa-primary:hover,
+.qa-secondary:hover {
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Semantic Overrides for Delete/Danger (Red Outline) */
+.btn-delete,
+.btn-proceed-delete,
+.btn-understand-delete,
+.btn-delete-final,
+.crm-bulk-confirm__btn--danger,
+.button--danger {
+  color: #ef4444 !important;
+  border-color: #fee2e2 !important;
+}
+
+.btn-delete:hover,
+.btn-proceed-delete:hover,
+.btn-understand-delete:hover,
+.btn-delete-final:hover,
+.crm-bulk-confirm__btn--danger:hover,
+.button--danger:hover {
+  background: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.12) !important;
+}
+
+/* Semantic Overrides for Cancel (Gray Outline) */
+.btn-cancel,
+.button--cancel {
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+}
+
+.btn-cancel:hover,
+.button--cancel:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.12) !important;
+}

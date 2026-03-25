@@ -187,24 +187,6 @@
     var form = input.closest("form") || input.form;
     var resultsWrap = document.getElementById("crm-results-wrap");
 
-    // ── Inject shared CSS once per page ──────────────────────────────────
-    if (!document.getElementById("crm-irs-style")) {
-      var styleEl = document.createElement("style");
-      styleEl.id = "crm-irs-style";
-      styleEl.textContent =
-        ".crm-filter-clear{position:absolute;right:8px;top:50%;" +
-        "transform:translateY(-50%);width:22px;height:22px;display:none;" +
-        "align-items:center;justify-content:center;cursor:pointer;" +
-        "color:#94a3b8;background:none;border:none;padding:0;" +
-        "border-radius:50%;font-size:18px;line-height:1;z-index:3;" +
-        "transition:color .15s,background .15s}" +
-        ".crm-filter-clear.visible{display:flex}" +
-        ".crm-filter-clear:hover{color:#ef4444;background:rgba(239,68,68,.08)}" +
-        ".filter-bar.is-submitting{opacity:.65;pointer-events:none;transition:opacity .2s}" +
-        "#crm-results-wrap{transition:opacity .15s}" +
-        "#crm-results-wrap.crm-loading{opacity:.45;pointer-events:none}";
-      document.head.appendChild(styleEl);
-    }
 
     // ── Serialize form fields to a clean URL ──────────────────────────────
     function getFormUrl() {
@@ -231,7 +213,10 @@
       if (resultsWrap) resultsWrap.classList.add("crm-loading");
       if (form) form.classList.add("is-submitting");
 
-      fetch(url, { credentials: "same-origin" })
+      var fetchUrl = new URL(url, window.location.origin);
+      fetchUrl.searchParams.set("_ts", Date.now());
+
+      fetch(fetchUrl.toString(), { credentials: "same-origin", cache: "no-store" })
         .then(function (r) {
           if (!r.ok) throw new Error("HTTP " + r.status);
           return r.text();
@@ -784,32 +769,7 @@
       }
     }
 
-    function ensureBulkConfirmStyle() {
-      if (document.getElementById("crm-bulk-confirm-style")) return;
-      var style = document.createElement("style");
-      style.id = "crm-bulk-confirm-style";
-      style.textContent =
-        ".crm-bulk-confirm{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.45);backdrop-filter:blur(2px)}" +
-        ".crm-bulk-confirm__card{width:min(520px,calc(100vw - 32px));background:#fff;border:1px solid #dbe7f6;border-radius:14px;box-shadow:0 24px 50px rgba(15,23,42,.25);padding:18px 18px 14px}" +
-        ".crm-bulk-confirm__ttl{margin:0 0 8px;font-size:18px;font-weight:800;color:#0f172a}" +
-        ".crm-bulk-confirm__txt{margin:0 0 12px;font-size:13px;line-height:1.55;color:#334155}" +
-        ".crm-bulk-confirm__warn{display:inline-flex;align-items:center;gap:6px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}" +
-        ".crm-bulk-confirm__row{margin-top:14px}" +
-        ".crm-bulk-confirm__lbl{display:block;margin:0 0 6px;font-size:12px;font-weight:700;color:#334155}" +
-        ".crm-bulk-confirm__input{width:100%;height:38px;border:1px solid #cbd5e1;border-radius:8px;padding:0 11px;font-size:13px;outline:none}" +
-        ".crm-bulk-confirm__input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}" +
-        ".crm-bulk-confirm__hint{margin-top:6px;font-size:12px;color:#64748b}" +
-        ".crm-bulk-confirm__actions{margin-top:14px;display:flex;justify-content:flex-end;gap:8px}" +
-        ".crm-bulk-confirm__btn{height:34px;padding:0 12px;border-radius:8px;border:1px solid #d1d9e6;background:#fff;color:#334155;font-size:12px;font-weight:700;cursor:pointer}" +
-        ".crm-bulk-confirm__btn:hover{background:#f8fafc}" +
-        ".crm-bulk-confirm__btn--danger{border-color:#ef4444;background:#ef4444;color:#fff}" +
-        ".crm-bulk-confirm__btn--danger:hover{background:#dc2626;border-color:#dc2626}" +
-        ".crm-bulk-confirm__btn[disabled]{opacity:.45;cursor:not-allowed}";
-      document.head.appendChild(style);
-    }
-
     function confirmBulkDelete(count) {
-      ensureBulkConfirmStyle();
 
       return new Promise(function (resolve) {
         var overlay = document.createElement("div");

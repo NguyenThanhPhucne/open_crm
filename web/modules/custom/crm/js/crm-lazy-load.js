@@ -174,14 +174,7 @@
         "</div>",
     );
 
-    // Add spinner animation style if not exists
-    if (!document.getElementById("crm-lazy-load-styles")) {
-      var style = document.createElement("style");
-      style.id = "crm-lazy-load-styles";
-      style.textContent =
-        "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
-      document.head.appendChild(style);
-    }
+
 
     $list.after($indicator);
   }

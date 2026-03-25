@@ -4,9 +4,18 @@ global_nav:
     theme:
       css/crm_actions.css: {}
       css/views-table-improvements.css: {}
+      css/crm-ui-polish.css: {}
   js:
     js/crm_actions.js: {}
     https://unpkg.com/lucide@latest: { type: external, minified: true }
   dependencies:
     - core/drupal
     - core/once
+
+announcement_form:
+  version: 1.0
+  css:
+    theme:
+      css/announcement-form.css: {}
+  dependencies:
+    - core/drupal

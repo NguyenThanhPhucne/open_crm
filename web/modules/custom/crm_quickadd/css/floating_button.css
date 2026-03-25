@@ -14,47 +14,54 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #2563eb;
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
   color: #ffffff;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.26);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.32);
+  /* Very smooth cubic-bezier for spring-like feel */
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              background 0.3s ease, 
+              box-shadow 0.3s ease;
   position: relative;
+  z-index: 2;
 }
 
 .crm-fab-button:hover {
-  background: #1d4ed8;
+  background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
   color: #ffffff;
   transform: scale(1.08);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.38);
 }
 
 .crm-fab-button.active {
+  /* Smooth 45deg rotation with slight scale */
   transform: rotate(45deg) scale(1.05);
-  background: #ef4444;
+  background: linear-gradient(135deg, #065f46 0%, #0f766e 100%);
   color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 12px 28px rgba(6, 95, 70, 0.32);
 }
 
 .crm-fab-menu {
-  display: none;
+  display: flex; /* Always flex to maintain layout computation */
+  visibility: hidden; /* Hide using visibility instead of display:none to allow transitions */
+  pointer-events: none;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  /* Container transition only for visibility & opacity */
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s ease, visibility 0.2s;
 }
 
 .crm-fab-menu.active {
-  display: flex;
+  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
-  transform: translateY(0);
 }
 
 .crm-fab-menu-item {
@@ -70,16 +77,38 @@
   font-size: 14px;
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
   white-space: nowrap;
   min-width: 200px;
+  
+  /* Initial state for Staggered Animation */
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
+  transform-origin: right center;
+  /* Fast transition for closing */
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.crm-fab-menu-item:hover {
+.crm-fab-menu.active .crm-fab-menu-item {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  /* Spring-like transition when opening */
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Staggered delays: 3rd is closest to the button, animates first */
+.crm-fab-menu.active .crm-fab-menu-item:nth-child(3) { transition-delay: 0.02s; }
+.crm-fab-menu.active .crm-fab-menu-item:nth-child(2) { transition-delay: 0.06s; }
+.crm-fab-menu.active .crm-fab-menu-item:nth-child(1) { transition-delay: 0.1s; }
+
+.crm-fab-menu.active .crm-fab-menu-item:hover {
+  /* Reset delay immediately on hover so it responds instantly */
+  transition-delay: 0s !important;
   background: #eff6ff;
   border-color: #3b82f6;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transform: translateX(-4px);
+  transform: translateY(0) scale(1) translateX(-4px); 
 }
 
 .crm-fab-menu-item i {
@@ -141,29 +170,4 @@
   }
 }
 
-/* Animation keyframes */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.crm-fab-menu-item:nth-child(1) {
-  animation: fadeInUp 0.3s ease forwards;
-  animation-delay: 0.05s;
-}
-
-.crm-fab-menu-item:nth-child(2) {
-  animation: fadeInUp 0.3s ease forwards;
-  animation-delay: 0.1s;
-}
-
-.crm-fab-menu-item:nth-child(3) {
-  animation: fadeInUp 0.3s ease forwards;
-  animation-delay: 0.15s;
-}
+/* Animation keyframes removed - relying on fluid CSS transitions instead */
