@@ -63,3 +63,19 @@ crm_import_export.export_deals:
     _title: "Export Deals"
   requirements:
     _permission: "administer crm import export"
+
+crm_import_export.export_organizations:
+  path: "/admin/crm/export/organizations"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ExportController::exportOrganizations'
+    _title: "Export Organizations"
+  requirements:
+    _permission: "administer crm import export"
+
+crm_import_export.export_page:
+  path: "/admin/content/export"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ExportController::exportPage'
+    _title: "Export Data"
+  requirements:
+    _permission: "administer crm import export"

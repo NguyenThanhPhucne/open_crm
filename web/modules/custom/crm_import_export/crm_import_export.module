@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for CRM Import Export module.
+ */
+
+/**
+ * Implements hook_crm_page_actions_alter().
+ */
+function crm_import_export_crm_page_actions_alter(&$actions, $entity_type) {
+  // Add "Import data" button to all CRM pages.
+  // We use btn-primary to match the "Add" buttons as requested by the user.
+  $actions['import_data'] = [
+    'label' => t('Import data'),
+    'url' => '/admin/content/import',
+    'icon' => 'upload-cloud',
+    'class' => 'btn-primary',
+    'attributes' => [
+      'title' => t('Import data from CSV/Excel'),
+    ],
+  ];
+
+  $actions['export_data'] = [
+    'label' => t('Export data'),
+    'url' => '/admin/content/export',
+    'icon' => 'download-cloud',
+    'class' => 'btn-secondary',
+    'attributes' => [
+      'title' => t('Export data to CSV'),
+      'style' => 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;',
+    ],
+  ];
+}
