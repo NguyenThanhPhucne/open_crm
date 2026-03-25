@@ -1,0 +1,4 @@
+title,amount,stage,contact,close_date,probability,currency,notes
+Deal with Acme Corp,50000,qualification,john.doe@example.com,2026-06-30,40,USD,Initial discussion done
+Big Enterprise Deal,250000,proposal,jane.smith@example.com,2026-09-15,65,USD,Proposal sent
+Renewal Contract,15000,negotiation,bob@techcorp.vn,2026-04-30,80,VND,Final review stage

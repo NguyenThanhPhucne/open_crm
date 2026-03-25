@@ -6,6 +6,15 @@ crm_import_export.import_page:
   requirements:
     _permission: "administer crm import export"
 
+# Alias: /admin/content/import → same hub page
+crm_import_export.import_page_admin_content:
+  path: "/admin/content/import"
+  defaults:
+    _controller: '\Drupal\crm_import_export\Controller\ImportController::importPage'
+    _title: "Import Data"
+  requirements:
+    _permission: "administer crm import export"
+
 crm_import_export.import_page_user:
   path: "/crm/import"
   defaults:
@@ -28,6 +37,14 @@ crm_import_export.import_deals:
   defaults:
     _form: '\Drupal\crm_import_export\Form\ImportDealsForm'
     _title: "Import Deals"
+  requirements:
+    _permission: "administer crm import export"
+
+crm_import_export.import_organizations:
+  path: "/admin/crm/import/organizations"
+  defaults:
+    _form: '\Drupal\crm_import_export\Form\ImportOrganizationsForm'
+    _title: "Import Organizations"
   requirements:
     _permission: "administer crm import export"
 
