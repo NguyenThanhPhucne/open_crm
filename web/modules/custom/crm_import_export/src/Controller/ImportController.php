@@ -162,38 +162,6 @@ class ImportController extends ControllerBase {
         </div>
       </div>
 
-      <!-- EXPORT -->
-      <div class="qac-card crm-import-card crm-import-card--blue">
-        <div class="crm-import-card__head">
-          <div class="crm-import-card__icon crm-import-card__icon--blue">
-            <i data-lucide="download" width="24" height="24"></i>
-          </div>
-          <div class="crm-import-card__title">
-            <h3>Export Data</h3>
-            <p>Download contacts, deals, and organizations to CSV</p>
-          </div>
-        </div>
-        <div class="crm-import-schema">
-          <h4>Available Exports</h4>
-          <div class="crm-import-tags">
-            <span class="crm-import-tag">contacts</span>
-            <span class="crm-import-tag">deals</span>
-            <span class="crm-import-tag">organizations</span>
-            <span class="crm-import-tag">filtered data</span>
-          </div>
-        </div>
-        <div class="crm-import-card__actions">
-          <a href="/admin/content/export" class="btn-import btn-import--primary btn-import--contacts">
-            <i data-lucide="download-cloud" width="15" height="15"></i>
-            Open Export Hub
-          </a>
-          <a href="/admin/crm/export/contacts" class="btn-import btn-import--secondary btn-import--contacts">
-            <i data-lucide="file-down" width="15" height="15"></i>
-            Quick Export
-          </a>
-        </div>
-      </div>
-
     </div><!-- /grid -->
 
     <!-- How to import guide -->
