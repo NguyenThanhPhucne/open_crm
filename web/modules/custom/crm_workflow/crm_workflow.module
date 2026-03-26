@@ -280,8 +280,8 @@ function crm_workflow_mail($key, &$message, $params) {
 function crm_workflow_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Add custom validation to deal form
   if ($form_id === 'node_deal_form' || $form_id === 'node_deal_edit_form') {
-    // TODO: Add custom validation
-    // $form['#validate'][] = '_crm_workflow_validate_deal_won';
+    // Add custom validation to check contract file on deal won
+    $form['#validate'][] = '_crm_workflow_validate_deal_won';
   }
 }
 
