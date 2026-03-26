@@ -328,7 +328,7 @@ class AllActivitiesController extends ControllerBase {
   .stat-chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid;min-width:160px}
   .stat-chip.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
   .stat-chip.green{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
-  .stat-chip.amber{background:#fffbeb;color:#b45309;border-color:#fde68a}
+  .stat-chip.purple{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe}
   .stat-chip i{width:14px;height:14px}
 
   /* Header */
@@ -341,14 +341,17 @@ class AllActivitiesController extends ControllerBase {
 
   /* Buttons */
   .btn-primary,.btn-secondary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap}
-  .btn-primary {color:#2563eb !important;border:1.5px solid #2563eb !important;background:#ffffff !important;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
-  .btn-primary:hover {background:#eff6ff !important;border-color:#1d4ed8 !important;color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
-  .btn-primary i, .btn-primary svg { color: #2563eb !important; stroke: #2563eb !important; }
-  .btn-primary:hover i, .btn-primary:hover svg { color: #1d4ed8 !important; stroke: #1d4ed8 !important; }
-  .btn-secondary{color:#475569;border:1.5px solid #e2e8f0;background:#fff}
-  .btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
-  .btn-generate{color:#7c3aed;border:1.5px solid #7c3aed;background:#fff}
-  .btn-generate:hover{background:#f5f3ff;border-color:#6d28d9;color:#6d28d9}
+  .btn-primary { background: #2563eb !important; border-color: #2563eb !important; color: #ffffff !important; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1); }
+  .btn-primary:hover { background: #1d4ed8 !important; border-color: #1d4ed8 !important; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+  .btn-primary i, .btn-primary svg { color: #ffffff !important; stroke: #ffffff !important; }
+  .btn-primary:active{background:#1e40af}
+  .btn-primary:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+  
+  .btn-secondary { color: #475569; border: 1.5px solid #e2e8f0; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; color: #1e293b; transform: translateY(-1px); }
+  
+  .btn-generate { color: #7c3aed; border: 1.5px solid #7c3aed; background: #fff; }
+  .btn-generate:hover { background: #f5f3ff; border-color: #6d28d9; color: #6d28d9; transform: translateY(-1px); }
   .btn-primary i,.btn-secondary i,.btn-generate i{width:15px;height:15px;color:inherit}
 
   /* Filter bar */
@@ -499,7 +502,7 @@ HTML;
   <div class="stats-bar">
     <span class="stat-chip blue"><i data-lucide="activity"></i>{$total_all} total activities</span>
     <span class="stat-chip green"><i data-lucide="clock"></i>{$upcoming_count} upcoming</span>
-    <span class="stat-chip amber"><i data-lucide="calendar-plus"></i>{$new_this_month} added this month</span>
+    <span class="stat-chip purple"><i data-lucide="alert-circle"></i>{$overdue_count} overdue</span>
   </div>
 
   <!-- Page header -->

@@ -327,15 +327,14 @@ class AllOrganizationsController extends ControllerBase {
   .page-subtitle{font-size:13px;color:#64748b}
   .page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
   .btn-primary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fff;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
-  .btn-primary {color:#2563eb !important;border:1.5px solid #2563eb !important;background:#ffffff !important;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
-  .btn-primary:hover {background:#eff6ff !important;border-color:#1d4ed8 !important;color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
-  .btn-primary i, .btn-primary svg { color: #2563eb !important; stroke: #2563eb !important; }
-  .btn-primary:hover i, .btn-primary:hover svg { color: #1d4ed8 !important; stroke: #1d4ed8 !important; }
-  .btn-primary:active{background:#dbeafe}
-  .btn-primary:focus-visible{outline:2px solid #3b82f6;outline-offset:2px}
+  .btn-primary { background: #2563eb !important; border-color: #2563eb !important; color: #ffffff !important; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1); }
+  .btn-primary:hover { background: #1d4ed8 !important; border-color: #1d4ed8 !important; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+  .btn-primary i, .btn-primary svg { color: #ffffff !important; stroke: #ffffff !important; }
+  .btn-primary:active{background:#1e40af}
+  .btn-primary:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
   .btn-primary i{width:15px;height:15px;color:inherit}
-  .btn-generate{color:#7c3aed;border:1.5px solid #7c3aed}
-  .btn-generate:hover{background:#f5f3ff;border-color:#6d28d9;color:#6d28d9}
+  .btn-generate{color:#7c3aed;border:1.5px solid #7c3aed;background:#fff}
+  .btn-generate:hover{background:#f5f3ff;border-color:#6d28d9;color:#6d28d9;transform:translateY(-1px)}
   .btn-generate:active{background:#ede9fe}
   .btn-generate i{width:15px;height:15px;color:inherit}
 

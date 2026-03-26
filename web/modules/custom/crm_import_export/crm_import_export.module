@@ -21,14 +21,20 @@ function crm_import_export_crm_page_actions_alter(&$actions, $entity_type) {
     ],
   ];
 
+  $is_deal = ($entity_type === 'deal');
+
   $actions['export_data'] = [
     'label' => t('Export data'),
     'url' => '/admin/content/export',
     'icon' => 'download-cloud',
-    'class' => 'btn-secondary',
+    'class' => 'btn-primary',
     'attributes' => [
       'title' => t('Export data to CSV'),
-      'style' => 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;',
     ],
   ];
+
+  // For deals, we keep the secondary look to match the existing UI balance.
+  if ($is_deal) {
+    $actions['export_data']['attributes']['style'] = 'background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;';
+  }
 }

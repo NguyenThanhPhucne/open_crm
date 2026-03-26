@@ -2023,17 +2023,13 @@ class DashboardController extends ControllerBase {
     <!-- Dashboard Hero: Greeting + Quick Actions -->
     <div class="dashboard-hero">
       <div class="hero-left">
-        <div class="hero-greeting">{$greeting}, {$user_display_name}!</div>
+        <div class="hero-greeting">Admin Quick Access</div>
         <div class="hero-date">
-          <i data-lucide="calendar" width="13" height="13"></i>
-          {$today_display}
+          <i data-lucide="layout-dashboard" width="13" height="13"></i>
+          Jump to any section of your CRM workspace
         </div>
       </div>
       <div class="hero-actions">
-        <a href="/crm/realtime-chat" class="hero-action-btn hero-btn-outline">
-          <i data-lucide="messages-square" width="15" height="15"></i>
-          <span>Open Chat</span>
-        </a>
         <a href="/crm/add/contact" class="hero-action-btn hero-btn-primary">
           <i data-lucide="user-plus" width="15" height="15"></i>
           <span>New Contact</span>
@@ -2046,15 +2042,95 @@ class DashboardController extends ControllerBase {
           <i data-lucide="plus-circle" width="15" height="15"></i>
           <span>New Deal</span>
         </a>
-        <a href="/crm/add/activity" class="hero-action-btn hero-btn-primary">
-          <i data-lucide="calendar-plus" width="15" height="15"></i>
-          <span>New Activity</span>
-        </a>
       </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
+      <div class="stats-row-label">CORE CRM</div>
+      <a href="/crm/dashboard" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="pie-chart" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">ANALYTICS</div>
+          <div class="stat-value">Dashboard</div>
+        </div>
+      </a>
+      
+      <a href="{$contacts_url}" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="users" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">PEOPLE</div>
+          <div class="stat-value">All Contacts</div>
+        </div>
+      </a>
+
+      <a href="{$deals_url}" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="briefcase" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">DEALS</div>
+          <div class="stat-value">All Deals</div>
+        </div>
+      </a>
+
+      <a href="{$pipeline_url}" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="trello" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">PIPELINE</div>
+          <div class="stat-value">All Pipeline</div>
+        </div>
+      </a>
+
+      <a href="/crm/activities" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="activity" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">ACTIVITIES</div>
+          <div class="stat-value">All Activities</div>
+        </div>
+      </a>
+
+      <a href="{$organizations_url}" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="database" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">ORGANIZATIONS</div>
+          <div class="stat-value">All Orgs</div>
+        </div>
+      </a>
+
+      <div class="stats-row-label">TOOLS & ADMIN</div>
+      <a href="/admin/content/import" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="upload-cloud" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">CSV IMPORT</div>
+          <div class="stat-value">Import Data</div>
+          <div class="stat-desc">Bulk import contacts & orgs</div>
+        </div>
+      </a>
+
+      <a href="/admin/content/export" class="stat-card stat-card-blue">
+        <div class="stat-icon blue">
+          <i data-lucide="download-cloud" width="20" height="20"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-label">DATA EXPORT</div>
+          <div class="stat-value">Export Data</div>
+          <div class="stat-desc">Download your CRM data</div>
+        </div>
+      </a>
+
       <div class="stats-row-label">Core Metrics</div>
       <a href="{$contacts_url}" class="stat-card stat-card-blue">
         <div class="stat-icon blue">
@@ -2063,10 +2139,6 @@ class DashboardController extends ControllerBase {
         <div class="stat-body">
           <div class="stat-label">Contacts</div>
           <div class="stat-value">{$contacts_count}</div>
-          <div class="stat-trend positive">
-            <span class="stat-trend-icon">↑</span>
-            <span>+{$contacts_this_week} this week</span>
-          </div>
         </div>
       </a>
       
@@ -2077,106 +2149,9 @@ class DashboardController extends ControllerBase {
         <div class="stat-body">
           <div class="stat-label">Organizations</div>
           <div class="stat-value">{$orgs_count}</div>
-          <div class="stat-trend positive">
-            <span class="stat-trend-icon">↑</span>
-            <span>+{$orgs_this_month} this month</span>
-          </div>
         </div>
       </a>
-      
-      <a href="{$deals_url}" class="stat-card stat-card-orange">
-        <div class="stat-icon orange">
-          <i data-lucide="briefcase" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Deals</div>
-          <div class="stat-value">{$deals_count}</div>
-          <div class="stat-desc">In pipeline</div>
-        </div>
-      </a>
-      
-      <a href="{$deals_url}" class="stat-card stat-card-teal">
-        <div class="stat-icon green">
-          <i data-lucide="dollar-sign" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Total Value</div>
-          <div class="stat-value">{$total_value_display}</div>
-          <div class="stat-desc">Deal value</div>
-        </div>
-      </a>
-      
-      <div class="stats-row-label">Deal Performance</div>
-      <a href="{$pipeline_url}" class="stat-card stat-card-green">
-        <div class="stat-icon green">
-          <i data-lucide="trending-up" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Won Deals</div>
-          <div class="stat-value">{$won_count}</div>
-          <div class="stat-desc">{$won_value_display} revenue</div>
-        </div>
-      </a>
-      
-      <a href="{$pipeline_url}" class="stat-card stat-card-red">
-        <div class="stat-icon red">
-          <i data-lucide="trending-down" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Lost Deals</div>
-          <div class="stat-value">{$lost_count}</div>
-          <div class="stat-desc">{$lost_value_display} lost</div>
-        </div>
-      </a>
-      
-      <a href="{$pipeline_url}" class="stat-card stat-card-pink">
-        <div class="stat-icon pink">
-          <i data-lucide="target" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value">{$win_rate}%</div>
-          <div class="stat-desc">Deals won rate</div>
-        </div>
-      </a>
-      
-      <a href="{$activities_url}" class="stat-card stat-card-cyan">
-        <div class="stat-icon cyan">
-          <i data-lucide="activity" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Activities</div>
-          <div class="stat-value">{$activities_count}</div>
-          <div class="stat-trend positive">
-            <span class="stat-trend-icon">↑</span>
-            <span>+{$activities_this_week} this week</span>
-          </div>
-        </div>
-      </a>
-      
-      <div class="stats-row-label">Pipeline Intelligence</div>
-      <a href="{$pipeline_url}" class="stat-card stat-card-purple">
-        <div class="stat-icon blue">
-          <i data-lucide="percent" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Conversion</div>
-          <div class="stat-value">{$conversion_rate}%</div>
-          <div class="stat-desc">Overall rate</div>
-        </div>
-      </a>
-      
-      <a href="{$deals_url}" class="stat-card stat-card-purple">
-        <div class="stat-icon purple">
-          <i data-lucide="bar-chart-3" width="20" height="20"></i>
-        </div>
-        <div class="stat-body">
-          <div class="stat-label">Avg Deal</div>
-          <div class="stat-value">{$avg_deal_display}</div>
-          <div class="stat-desc">Average value</div>
-        </div>
-      </a>
-      
+
       <!-- Enhanced Metrics Row 1 -->
       <a href="{$activities_url}" class="stat-card stat-card-red">
         <div class="stat-icon red">

@@ -27,7 +27,7 @@ class ExportController extends ControllerBase {
   <div class="crm-import-header">
     <div class="crm-import-header-inner">
       <div class="crm-import-header-title">
-        <div class="crm-icon-wrapper" style="background: #ec4899; color: #fff;">
+        <div class="crm-icon-wrapper">
           <i data-lucide="download-cloud" width="28" height="28"></i>
         </div>
         <div>
@@ -70,7 +70,7 @@ class ExportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-schema">
-          <h4>Included Fields</h4>
+          <h4>Columns</h4>
           <div class="crm-import-tags">
             <span class="crm-import-tag">name</span>
             <span class="crm-import-tag">email</span>
@@ -82,9 +82,13 @@ class ExportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-card__actions">
-          <a href="/admin/crm/export/contacts" class="btn-import btn-import--primary" style="background:#3b82f6">
+          <a href="/admin/crm/export/contacts" class="btn-import btn-import--primary">
             <i data-lucide="download" width="15" height="15"></i>
             Start Export
+          </a>
+          <a href="#" class="btn-import btn-import--secondary">
+            <i data-lucide="history" width="15" height="15"></i>
+            View History
           </a>
         </div>
       </div>
@@ -101,7 +105,7 @@ class ExportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-schema">
-          <h4>Included Fields</h4>
+          <h4>Columns</h4>
           <div class="crm-import-tags">
             <span class="crm-import-tag">title</span>
             <span class="crm-import-tag">amount</span>
@@ -112,9 +116,13 @@ class ExportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-card__actions">
-          <a href="/admin/crm/export/deals" class="btn-import btn-import--primary" style="background:#8b5cf6">
+          <a href="/admin/crm/export/deals" class="btn-import btn-import--primary">
             <i data-lucide="download" width="15" height="15"></i>
             Start Export
+          </a>
+          <a href="#" class="btn-import btn-import--secondary">
+            <i data-lucide="history" width="15" height="15"></i>
+            View History
           </a>
         </div>
       </div>
@@ -131,7 +139,7 @@ class ExportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-schema">
-          <h4>Included Fields</h4>
+          <h4>Columns</h4>
           <div class="crm-import-tags">
             <span class="crm-import-tag">name</span>
             <span class="crm-import-tag">website</span>
@@ -142,9 +150,13 @@ class ExportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-card__actions">
-          <a href="/admin/crm/export/organizations" class="btn-import btn-import--primary" style="background:#14b8a6">
+          <a href="/admin/crm/export/organizations" class="btn-import btn-import--primary">
             <i data-lucide="download" width="15" height="15"></i>
             Start Export
+          </a>
+          <a href="#" class="btn-import btn-import--secondary">
+            <i data-lucide="history" width="15" height="15"></i>
+            View History
           </a>
         </div>
       </div>
@@ -152,22 +164,22 @@ class ExportController extends ControllerBase {
     </div><!-- /grid -->
 
     <!-- How to export guide -->
-    <div class="crm-import-guide" style="border-left: 4px solid #ec4899;">
+    <div class="crm-import-guide">
       <h3>
-        <i data-lucide="file-down" width="20" height="20" style="color:#64748b"></i>
-        Exporting your data
+        <i data-lucide="book-open" width="20" height="20" style="color:#1e40af"></i>
+        How to Export
       </h3>
       <div class="crm-import-steps">
         <div class="crm-import-step">
-          <div class="crm-import-step__num" style="background:#ec4899">1</div>
+          <div class="crm-import-step__num">1</div>
           <div class="crm-import-step__text"><strong>Select</strong> the entity type (Contacts, Deals, or Organizations) you want to export.</div>
         </div>
         <div class="crm-import-step">
-          <div class="crm-import-step__num" style="background:#ec4899">2</div>
+          <div class="crm-import-step__num">2</div>
           <div class="crm-import-step__text"><strong>Click</strong> the "Start Export" button to generate a real-time CSV file.</div>
         </div>
         <div class="crm-import-step">
-          <div class="crm-import-step__num" style="background:#ec4899">3</div>
+          <div class="crm-import-step__num">3</div>
           <div class="crm-import-step__text"><strong>Save</strong> the file to your computer. The export includes all primary fields and metadata.</div>
         </div>
       </div>
@@ -373,7 +385,7 @@ HTML;
     $output = fopen('php://temp', 'r+');
     fputs($output, "\xEF\xBB\xBF");
     foreach ($data as $row) {
-      fputcsv($output, $row);
+      fputcsv($output, $row, ',', '"', '\\');
     }
     rewind($output);
     $csv = stream_get_contents($output);
