@@ -41,7 +41,6 @@ class DashboardController extends ControllerBase {
   public function view() {
     $html = $this->buildDashboardLegacyHtml();
 
-<<<<<<< HEAD
     // Contacts this week
     $contacts_this_week_query = \Drupal::entityQuery('node')
       ->condition('type', 'contact')
@@ -3012,7 +3011,6 @@ HTML;
 
     // Return render array with Drupal toolbar support
 =======
->>>>>>> upstream/main
     // IMPORTANT: Disable page cache to ensure real-time data updates
     // when admins or staff edit CRM entities.
     return [
