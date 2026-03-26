@@ -10,6 +10,12 @@
           return;
         }
 
+        // If the FAB menu already has an Open Chat item, skip the standalone launcher
+        const fabChatLink = document.querySelector('.crm-fab-menu-item[data-type="chat"]');
+        if (fabChatLink) {
+          return;
+        }
+
         const launcher = document.createElement("a");
         launcher.href = chatUrl;
         launcher.className = "crm-chat-launcher";
