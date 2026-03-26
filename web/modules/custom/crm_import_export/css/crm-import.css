@@ -125,6 +125,12 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
+.crm-icon-wrapper--magenta {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+  color: #be185d;
+  border-color: #f9a8d4;
+}
+
 .crm-import-header-title h1 {
   font-size: 24px;
   font-weight: 700;
@@ -1119,8 +1125,15 @@
   z-index: 10;
 }
 
-/* Hide default Drupal file/managed-file labels — we use custom drag zone */
 .crm-import-form-page .form-item--csv-file,
 .crm-import-form-page .crm-hidden-file-upload {
   display: none;
 }
+
+/* Export Page Utilities */
+.crm-export-bg-blue { background: #3b82f6 !important; }
+.crm-export-bg-purple { background: #8b5cf6 !important; }
+.crm-export-bg-teal { background: #14b8a6 !important; }
+.crm-export-bg-pink { background: #ec4899 !important; }
+.crm-export-border-pink { border-left: 4px solid #ec4899 !important; }
+.crm-export-color-slate { color: #64748b !important; }

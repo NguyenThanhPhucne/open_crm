@@ -340,10 +340,6 @@ body {
   --stat-bg: #f5f3ff;
 }
 
-.stat-card.stat-card-slate {
-  --stat-color: #475569;
-  --stat-bg: #f1f5f9;
-}
 
 .stat-card::before {
   display: none;
@@ -1495,4 +1491,233 @@ body {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* ── QUICK ACCESS CARDS (QAC) ────────────────────────── */
+.qac-wrapper {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+  background: #ffffff;
+  animation: qacFadeIn 0.3s ease;
+}
+
+@keyframes qacFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.qac-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 60%, #f5f0ff 100%);
+  border-radius: 16px;
+  border: 1px solid #dde8ff;
+  border-top: 3px solid #2563eb;
+  padding: 36px 40px;
+  margin-bottom: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
+}
+
+.qac-hero::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -3%;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.qac-hero-text { position: relative; z-index: 1; }
+.qac-hero-text h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+.qac-hero-text p { font-size: 14px; color: #64748b; font-weight: 500; }
+
+.qac-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.qac-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+}
+
+.qac-btn i { width: 15px; height: 15px; stroke-width: 2; }
+
+.qac-btn-white { background: #2563eb; color: white; border-color: #2563eb; }
+.qac-btn-white:hover {
+  background: #1d4ed8; border-color: #1d4ed8; color: white;
+  transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+
+.qac-btn-outline { background: white; color: #2563eb; border-color: #dbeafe; }
+.qac-btn-outline:hover {
+  background: #eff6ff; border-color: #93c5fd; color: #1d4ed8;
+  transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.12);
+}
+
+.qac-btn-login {
+  background: #2563eb; color: white; border-color: #2563eb;
+  font-size: 14px; padding: 12px 28px;
+}
+.qac-btn-login:hover {
+  background: #1d4ed8; color: white; border-color: #1d4ed8;
+  transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+
+.qac-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #b0b8c8;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qac-section-label::after {
+  content: ''; flex: 1; height: 1px; background: #eaedf2;
+}
+
+.qac-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.qac-grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+.qac-card {
+  background: white;
+  border-radius: 10px;
+  padding: 22px 20px 18px;
+  border: 1px solid #e9edf2;
+  border-left: 3px solid var(--cc, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.qac-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.09);
+  background: #ffffff;
+}
+
+.qac-card-top { display: flex; align-items: center; gap: 13px; }
+
+.qac-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--ci, #eff6ff);
+  color: var(--cc, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.qac-card-icon i { width: 20px; height: 20px; stroke-width: 2; }
+
+.qac-card-meta { flex: 1; min-width: 0; }
+.qac-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.qac-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qac-card-desc {
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.qac-card-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--cc, #3b82f6);
+  margin-top: 4px;
+  transition: gap 0.15s ease;
+}
+
+.qac-card:hover .qac-card-action { gap: 8px; }
+.qac-card-action i { width: 13px; height: 13px; stroke-width: 2.5; }
+
+/* Modifier Classes for QAC Cards */
+.qac-card--blue { --cc: #3b82f6; --ci: #eff6ff; }
+.qac-card--emerald { --cc: #10b981; --ci: #ecfdf5; }
+.qac-card--pink { --cc: #ec4899; --ci: #fdf2f8; }
+.qac-card--teal { --cc: #14b8a6; --ci: #f0fdfa; }
+.qac-card--violet { --cc: #8b5cf6; --ci: #f5f3ff; }
+.qac-card--amber { --cc: #f59e0b; --ci: #fffbeb; }
+.qac-card--cyan { --cc: #06b6d4; --ci: #ecfeff; }
+.qac-card--indigo { --cc: #6366f1; --ci: #eef2ff; }
+.qac-card--slate { --cc: #64748b; --ci: #f1f5f9; }
+
+@media (max-width: 1200px) {
+  .qac-grid     { grid-template-columns: repeat(3, 1fr); }
+  .qac-grid-3   { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .qac-grid     { grid-template-columns: repeat(2, 1fr); }
+  .qac-grid-3   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .qac-wrapper  { padding: 16px 14px 40px; }
+  .qac-hero     { flex-direction: column; align-items: flex-start; gap: 20px; padding: 24px 20px; }
+  .qac-hero-actions { width: 100%; }
+  .qac-btn      { flex: 1; justify-content: center; }
+  .qac-grid, .qac-grid-3 { grid-template-columns: 1fr; }
 }

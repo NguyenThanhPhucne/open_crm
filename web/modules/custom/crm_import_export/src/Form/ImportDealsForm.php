@@ -48,7 +48,7 @@ class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
       </div>
 
       <div class="crm-import-page-header">
-        <div class="crm-import-page-icon" style="background:#fefce8; color:#eab308">
+        <div class="crm-import-page-icon crm-import-icon-yellow">
           <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         </div>
         <div>
@@ -61,7 +61,7 @@ class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
         <div class="crm-schema-hint__label">Required</div>
         <span class="crm-import-tag crm-import-tag--required">title</span>
         <span class="crm-import-tag crm-import-tag--required">amount</span>
-        <div class="crm-schema-hint__label" style="margin-left:12px">Optional</div>
+        <div class="crm-schema-hint__label crm-schema-hint__label--optional">Optional</div>
         <span class="crm-import-tag">stage</span>
         <span class="crm-import-tag">contact email</span>
         <span class="crm-import-tag">organization</span>
@@ -72,7 +72,7 @@ class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
 
       <div class="crm-dropzone" id="crm-deals-dropzone">
         <input type="file" name="files[csv_file]" id="crm-csv-input-deals" accept=".csv,.txt"
-          style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;">
+          class="crm-csv-input-hidden">
         <div class="crm-dropzone__icon" id="crm-dz-icon-deals">
           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
         </div>
@@ -95,9 +95,7 @@ class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
 
       <div class="crm-csv-preview" id="crm-preview-deals">
         <div class="crm-csv-preview__header">
-          <h4>
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
-            Preview <small style="font-weight:400;color:#94a3b8;margin-left:4px;">(first 5 rows)</small>
+            Preview <small class="crm-import-preview-hint">(first 5 rows)</small>
           </h4>
           <span class="crm-csv-preview__badge" id="crm-preview-badge-deals">0 rows</span>
         </div>
@@ -108,7 +106,7 @@ class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
     $form['ui'] = ['#markup' => $dropzone_html];
 
     $form['options_wrap_open'] = [
-      '#markup' => '<div class="crm-import-options"><h4><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 2.12 3.64"/><path d="M21.17 11h2.17"/><path d="M19.07 19.07a10 10 0 0 1-14.14 0"/><path d="M4.93 4.93a10 10 0 0 1 3.64-2.12"/><path d="M3 12H.83"/><path d="M4.93 19.07a10 10 0 0 1-2.12-3.64"/><path d="M11 3V.83"/><path d="M13 3V.83"/><path d="M19.07 4.93"/></svg>Import Options</h4>',
+      '#markup' => '<div class="crm-import-options"><h4><svg class="crm-import-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 2.12 3.64"/><path d="M21.17 11h2.17"/><path d="M19.07 19.07a10 10 0 0 1-14.14 0"/><path d="M4.93 4.93a10 10 0 0 1 3.64-2.12"/><path d="M3 12H.83"/><path d="M4.93 19.07a10 10 0 0 1-2.12-3.64"/><path d="M11 3V.83"/><path d="M13 3V.83"/><path d="M19.07 4.93"/></svg>Import Options</h4>',
     ];
 
     $form['skip_duplicates'] = [
@@ -166,7 +164,7 @@ class ImportDealsForm extends FormBase implements ContainerInjectionInterface {
       '#type'       => 'link',
       '#title'      => $this->t('← Back'),
       '#url'        => Url::fromRoute('crm_import_export.import_page'),
-      '#attributes' => ['class' => ['btn-import', 'btn-import--secondary'], 'style' => 'display:inline-flex;align-items:center;gap:8px;padding:12px 20px;'],
+      '#attributes' => ['class' => ['btn-import', 'btn-import--secondary', 'crm-import-btn-cancel']],
     ];
 
     return $form;

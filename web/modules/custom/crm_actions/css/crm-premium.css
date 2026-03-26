@@ -1,0 +1,268 @@
+/* ==========================================================================
+   CRM PREMIUM POLISH — 24 SECTIONS
+   ========================================================================== */
+
+/* 1. Design Tokens */
+:root {
+  --crm-bg-gradient: linear-gradient(135deg, #fdfdfd 0%, #f4f7fb 100%);
+  --crm-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --crm-card-hover-shadow: 0 12px 30px rgba(0, 0, 0, 0.09);
+  --crm-card-radius: 16px;
+  --crm-transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --crm-transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --crm-row-hover-bg: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%);
+  --crm-header-bg: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+  --crm-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  --crm-border-color: #e2e8f0;
+}
+
+/* 2. Font Antialiasing Global */
+body, .crm-page-shell {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 3. Page background — subtle off-white gradient */
+body {
+  background: var(--crm-bg-gradient) !important;
+}
+
+.crm-page-shell {
+  background: transparent !important;
+}
+
+/* 4. Stat cards hover lift */
+.stat-card {
+  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth) !important;
+}
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow: var(--crm-card-hover-shadow) !important;
+}
+
+/* 5. Table card wrapper */
+.table-wrapper, .view-content > .views-table {
+  border-radius: var(--crm-card-radius);
+  box-shadow: var(--crm-card-shadow);
+  transition: box-shadow var(--crm-transition-smooth);
+  background: #ffffff;
+  border: 1px solid var(--crm-border-color);
+  overflow: hidden;
+}
+.table-wrapper:hover, .view-content > .views-table:hover {
+  box-shadow: var(--crm-card-hover-shadow);
+}
+
+/* 6. Table links hover grow */
+.views-table td a, .crm-entities-list td a {
+  position: relative;
+  text-decoration: none !important;
+  color: #2563eb;
+  font-weight: 600;
+  transition: color var(--crm-transition-smooth);
+}
+.views-table td a::after, .crm-entities-list td a::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #2563eb;
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+.views-table td a:hover, .crm-entities-list td a:hover {
+  color: #1d4ed8;
+}
+.views-table td a:hover::after, .crm-entities-list td a:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* 7. View Filters Card */
+.view-filters {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1px solid var(--crm-border-color);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--crm-card-shadow);
+  transition: transform var(--crm-transition-smooth), box-shadow var(--crm-transition-smooth);
+}
+.view-filters:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--crm-card-hover-shadow);
+}
+
+/* 8. Table row hover */
+.views-table tbody tr, .crm-entities-list tbody tr {
+  transition: background var(--crm-transition-smooth), transform var(--crm-transition-smooth);
+}
+.views-table tbody tr:hover, .crm-entities-list tbody tr:hover {
+  background: var(--crm-row-hover-bg) !important;
+}
+
+/* 9. Form Inputs */
+input[type="text"], input[type="email"], select, textarea {
+  transition: all var(--crm-transition-smooth);
+}
+input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: var(--crm-focus-ring) !important;
+  border-color: #3b82f6 !important;
+}
+
+/* 10. Breadcrumb bar */
+.breadcrumb-wrapper, .view-header {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  margin-bottom: 20px;
+}
+
+/* 11. Page Header Card */
+.crm-import-header-inner, .contacts-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: var(--crm-card-radius);
+  padding: 24px 32px;
+  box-shadow: var(--crm-card-shadow);
+  margin-bottom: 32px;
+  border: 1px solid var(--crm-border-color);
+}
+
+/* 12. Avatar circles */
+img.contact-avatar, .contact-avatar-placeholder {
+  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth);
+}
+img.contact-avatar:hover, .contact-avatar-placeholder:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+/* 13. Custom thin scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 14. Pagination */
+.pager__item a {
+  border-radius: 20px !important;
+  transition: all var(--crm-transition-smooth);
+}
+.pager__item.is-active a {
+  background: #2563eb !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+/* 15. Status badges */
+.badge {
+  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth);
+}
+.badge:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 16. Checkbox */
+input[type="checkbox"] {
+  accent-color: #2563eb;
+  transition: transform 0.1s ease;
+}
+input[type="checkbox"]:active {
+  transform: scale(0.9);
+}
+
+/* 17. FAB (Spring logic already in JS/CSS, just ensure hardware accel) */
+.crm-fab-container {
+  transform: translateZ(0);
+}
+
+/* 18. Modal Backdrop */
+.crm-modal-backdrop, .crm-delete-modal__overlay, .ui-widget-overlay {
+  backdrop-filter: blur(5px);
+  background: rgba(15, 23, 42, 0.5) !important;
+  transition: opacity 0.3s ease;
+}
+
+/* 19. Toast (Handled in existing CSS, adding z-index fix) */
+.crm-toast-container {
+  z-index: 10000;
+}
+
+/* 20. Skeleton structure */
+.crm-skeleton-animate {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 21. Empty State */
+.empty-state, .crm-empty-state {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-radius: var(--crm-card-radius);
+  padding: 48px;
+  box-shadow: var(--crm-card-shadow);
+}
+
+/* 22. Nav back button */
+.nav-back-button, .btn-back {
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform var(--crm-transition-smooth);
+}
+.nav-back-button:hover, .btn-back:hover {
+  transform: translateX(-3px);
+  background: #f8fafc !important;
+}
+
+/* 23. Kanban cards */
+.kanban-card, .deal-card {
+  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth);
+}
+.kanban-card:hover, .deal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--crm-card-hover-shadow);
+}
+
+/* 24. Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* TABLE HEADER OVERRIDE */
+.views-table thead, .crm-entities-list thead, .views-table caption {
+  background: var(--crm-header-bg) !important;
+}
+.views-table th, .crm-entities-list th {
+  color: #ffffff !important;
+  letter-spacing: 0.5px;
+}
+.views-table th a, .crm-entities-list th a {
+  color: #93c5fd !important;
+}
+.views-table th a:hover, .crm-entities-list th a:hover {
+  color: #ffffff !important;
+}

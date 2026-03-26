@@ -159,27 +159,22 @@
    */
   function addLoadingIndicator(listId) {
     var $list = jQuery("#" + listId);
-    var $indicator = jQuery(
-      '<div class="crm-lazy-load__indicator" id="' +
-        listId +
-        '-indicator" aria-live="polite" aria-busy="false">' +
-        '<div class="crm-lazy-load__indicator-body">' +
-        '<div class="crm-lazy-load__skeleton-table" aria-hidden="true">' +
-        '<div class="crm-lazy-load__skeleton-row">' +
-        '<span class="crm-lazy-load__skeleton"></span>' +
-        '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
-        "</div>" +
-        '<div class="crm-lazy-load__skeleton-row">' +
-        '<span class="crm-lazy-load__skeleton"></span>' +
-        '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
-        "</div>" +
-        "</div>" +
-        '<span id="' +
-        listId +
-        '-indicator-text">Loading more items...</span>' +
-        "</div>" +
-        "</div>",
-    );
+      '<div class="crm-lazy-load__indicator" id="' + listId + '-indicator" aria-live="polite" aria-busy="false">' +
+        '<div class="crm-skeleton-row" style="width: 100%; border-bottom: none; margin-top: 10px;">' +
+          '<div class="col-main">' +
+            '<div class="crm-skeleton crm-skeleton-animate crm-skeleton--title"></div>' +
+            '<div class="crm-skeleton crm-skeleton-animate crm-skeleton--text crm-skeleton--text-short"></div>' +
+          '</div>' +
+          '<div class="col-side">' +
+            '<div class="crm-skeleton crm-skeleton-animate crm-skeleton--text"></div>' +
+            '<div class="crm-skeleton crm-skeleton-animate crm-skeleton--text crm-skeleton--text-medium"></div>' +
+          '</div>' +
+          '<div class="col-action">' +
+            '<div class="crm-skeleton crm-skeleton-animate crm-skeleton--btn"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 8px;" id="' + listId + '-indicator-text">Loading more items...</div>' +
+      '</div>',
 
     $list.after($indicator);
   }

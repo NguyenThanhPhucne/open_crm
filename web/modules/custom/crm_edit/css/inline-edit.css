@@ -458,11 +458,11 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(30px);
+    transform: translateY(20px) scale(0.96);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
@@ -2175,4 +2175,62 @@ svg.animate-spin {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* File Upload Field Styles */
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--crm-border, #e2e8f0);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.file-image-preview {
+  width: 40px;
+  height: 40px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.file-info-col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-left: 12px;
+}
+.file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-size {
+  font-size: 12px;
+  color: #64748b;
+}
+.file-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
+}
+.file-download.btn-icon {
+  color: #3b82f6;
+}
+.file-remove.btn-icon {
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.file-upload-zone--modal {
+  margin-top: 10px;
+}
+.file-help {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
 }

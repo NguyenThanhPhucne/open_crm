@@ -210,7 +210,7 @@ class KanbanController extends ControllerBase {
           'crm/crm_shared',
           'crm/crm_layout',
           'crm_edit/inline_edit',
-
+          'crm_kanban/kanban_board',
         ],
       ],
       '#cache' => [
@@ -242,162 +242,7 @@ class KanbanController extends ControllerBase {
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  /* ── Force Full Width Layout ── */
-  html body .layout-container { max-width: 100% !important; padding: 0 24px !important; }
-  /* ── Page wrapper ── */
-  .pipeline-page{width:100%;padding:24px 28px;box-sizing:border-box;animation:fadeIn .3s ease}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  /* ── Stats bar ── */
-  .stats-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-  .stat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius: 20px;font-size:13px;font-weight:600;border:1px solid}
-  .stats-bar{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:14px 20px;box-shadow:0 1px 2px 0 rgba(0,0,0,0.03)}
-  .stat-chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid;min-width:160px}
-  .stat-chip.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
-  .stat-chip.green{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
-  .stat-chip.purple{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe}
-  .stat-chip i{width:14px;height:14px;flex-shrink:0}
-  /* ── Page header ── */
-  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 2px 0 rgba(0,0,0,0.03), 0 4px 12px 0 rgba(0,0,0,0.04);flex-wrap:wrap}
-  .page-header-left{display:flex;flex-direction:column;gap:4px}
-  .page-title{font-size:20px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:9px;letter-spacing:-.02em}
-  .page-title i{color:#3b82f6;width:22px;height:22px}
-  .page-subtitle{font-size:12px;color:#64748b}
-  .page-header{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 4px 12px 0 rgba(0,0,0,0.04);flex-wrap:wrap}
-  .page-header-left{display:flex;flex-direction:column;gap:6px}
-  .page-title{font-size:22px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:10px;letter-spacing:-.02em}
-  .page-title i{color:#3b82f6;width:24px;height:24px}
-  .page-subtitle{font-size:13px;color:#64748b}
-  .page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
-  .btn-primary,.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;border:1.5px solid}
-  .btn-primary,.btn-secondary,.btn-generate{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius: 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap}
-  .btn-primary {color:#2563eb !important;border:1.5px solid #2563eb !important;background:#ffffff !important;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
-  .btn-primary:hover {background:#eff6ff !important;border-color:#1d4ed8 !important;color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
-  .btn-primary i, .btn-primary svg { color: #2563eb !important; stroke: #2563eb !important; }
-  .btn-primary:hover i, .btn-primary:hover svg { color: #1d4ed8 !important; stroke: #1d4ed8 !important; }
-  .btn-secondary{color:#475569;border:1.5px solid #e2e8f0;background:#fff}
-  .btn-secondary:hover{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
-  .btn-generate{color:#7c3aed;border:1.5px solid #7c3aed;background:#fff}
-  .btn-generate:hover{background:#f5f3ff;border-color:#6d28d9;color:#6d28d9}
-  .btn-primary i,.btn-secondary i,.btn-generate i{width:15px;height:15px;color:inherit}
-  /* ── Kanban layout ── */
-  .kanban-container{overflow-x:auto;overflow-y:hidden;width:100%;display:flex;padding-bottom:8px}
-  .kanban-container::-webkit-scrollbar{height:6px}
-  .kanban-container::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}
-  .kanban-container::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-  .kanban-container::-webkit-scrollbar-thumb:hover{background:#94a3b8}
-  .kanban-board{display:flex;flex-wrap:nowrap;gap:10px;padding-bottom:12px;width:100%;align-items:flex-start}
-  .kanban-column{background:#f1f5f9;border-radius:16px;display:flex;flex-direction:column;min-height:100px;max-height:calc(100vh - 310px);flex:1 1 0;min-width:260px;max-width:320px}
-  /* ── Column header ── */
-  .column-header{padding:10px 10px 8px;border-bottom:2px solid;background:#fff;border-radius:12px 12px 0 0}
-  .column-title{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-  .col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .column-title h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151;flex:1;word-break:break-word}
-  .column-count{background:#e2e8f0;color:#64748b;padding:1px 6px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
-  .column-total{font-size:13px;font-weight:700;margin-top:0;padding-left:14px}
-  /* ── Column cards ── */
-  .column-cards{padding:8px 8px 30px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:60px}
-  .column-cards::-webkit-scrollbar{width:3px}
-  .column-cards::-webkit-scrollbar-track{background:transparent}
-  .column-cards::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
-  /* ── Deal card ── */
-  .deal-card{position:relative;background:#fff;border-radius:16px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .15s,transform .15s;width:100%;overflow:hidden}
-  .deal-card:hover{box-shadow:0 5px 15px rgba(0,0,0,.11);transform:translateY(-2px)}
-  .deal-card.sortable-ghost{opacity:.4;background:#e2e8f0}
-  .deal-card.sortable-drag{opacity:.85;transform:rotate(1.5deg);cursor:grabbing}
-  .deal-card{position:relative;background:#fff;border-radius: 16px;padding:10px 12px 8px;margin-bottom:7px;cursor:grab;border-left:3px solid;border-top:1px solid rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.03);border-bottom:1px solid rgba(0,0,0,.03);box-shadow:0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.03);transition:all .25s cubic-bezier(.2,.8,.2,1);width:100%;overflow:hidden}
-  .deal-card:hover{box-shadow:0 12px 24px -6px rgba(0,0,0,.1), 0 4px 10px -2px rgba(0,0,0,.05);transform:translateY(-4px);border-color:rgba(0,0,0,.05);z-index:10;position:relative}
-  .deal-card.sortable-ghost{opacity:.4;background:#f8fafc;border:2px dashed #cbd5e1;box-shadow:none}
-  .deal-card.sortable-drag{opacity:1;transform:rotate(2deg) scale(1.02);cursor:grabbing;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04)}
-  .deal-title{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-right:36px}
-  .card-value-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
-  .deal-value{font-size:15px;font-weight:800}
-  .card-footer{display:flex;align-items:center;justify-content:space-between;gap:4px;border-top:1px solid #f1f5f9;padding-top:6px;margin-top:2px}
-  .card-footer-left{display:flex;align-items:center;gap:4px;font-size:10.5px;color:#64748b;overflow:hidden;min-width:0}
-  .card-footer-left i,.card-footer-left svg{width:10px;height:10px;flex-shrink:0;stroke-width:2;color:#94a3b8}
-  .card-footer-left span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .card-footer-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
-  .owner-av{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:8px;font-weight:700;flex-shrink:0;border:1.5px solid #bfdbfe}
-  .card-actions{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;transition:opacity .15s}
-  .deal-card:hover .card-actions{opacity:1}
-  .ca-btn{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:20px;color:#94a3b8;text-decoration:none;transition:all .15s ease;background:rgba(255,255,255,.9);border:none;padding:0;cursor:pointer;}
-  .ca-btn:hover{background:#eff6ff;color:#2563eb !important;}
-  .ca-btn i, .ca-btn svg { width:11px !important; height:11px !important; flex-shrink:0; color:inherit !important; stroke:currentColor !important; fill:none !important; stroke-width:2.2px; }
-  .empty-state{text-align:center;padding:28px 12px;color:#cbd5e1;font-size:12px}
-  .empty-state i{display:block;margin:0 auto 6px;opacity:.5}
-  /* ── Modal ── */
-  .deal-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:2000;pointer-events:none}
-  .deal-modal-overlay.active{display:flex;align-items:center;justify-content:center;pointer-events:auto}
-  .deal-modal{background:#fff;border-radius:16px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUp .3s ease}
-  @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-  .modal-header{padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px}
-  .modal-header h2{font-size:18px;font-weight:700;color:#1e293b;flex:1;margin:0}
-  .modal-icon{width:36px;height:36px;background:linear-gradient(135deg,#10b981,#059669);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff}
-  .modal-icon i{width:18px;height:18px}
-  .modal-body{padding:20px 24px}
-  .info-box{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:20px;margin-bottom:16px;font-size:13px;color:#92400e;display:flex;gap:10px}
-  .info-box i{flex-shrink:0;margin-top:2px;width:16px;height:16px}
-  .form-group{margin-bottom:16px}
-  .form-label{display:flex;align-items:center;gap:6px;font-weight:600;color:#1e293b;margin-bottom:6px;font-size:13px}
-  .form-label .required{color:#ef4444}
-  .form-input{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:20px;font-size:14px;transition:border-color .2s,box-shadow .2s;outline:none}
-  .form-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
-  .file-upload-zone{border:2px dashed #cbd5e1;border-radius:20px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
-  .file-upload-zone:hover,.file-upload-zone.has-file{border-color:#10b981;background:#f0fdf4}
-  .file-icon{width:44px;height:44px;background:#e2e8f0;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;color:#64748b}
-  .file-upload-zone.has-file .file-icon{background:#d1fae5;color:#10b981}
-  .file-icon i{width:22px;height:22px}
-  .file-instructions{font-size:13px;color:#64748b;margin-bottom:4px}
-  .file-name{font-size:13px;color:#10b981;font-weight:600;margin-top:6px}
-  .file-hint{font-size:12px;color:#94a3b8}
-  .modal-actions{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end}
-  .modal-btn{padding:9px 18px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s;border:1.5px solid;display:inline-flex;align-items:center;gap:7px}
-  .modal-btn i{width:14px;height:14px}
-  .modal-btn-cancel{background:#fff;color:#64748b;border-color:#cbd5e1}
-  .modal-btn-cancel:hover{background:#f8fafc;border-color:#94a3b8}
-  .modal-btn-confirm{background:#fff;color:#2563eb;border-color:#2563eb}
-  .modal-btn-confirm:hover{background:#eff6ff;color:#1d4ed8;border-color:#1d4ed8}
-  .modal-btn-confirm:disabled{opacity:.5;cursor:not-allowed}
-  .modal-btn-confirm.loading{position:relative;color:transparent}
-  .modal-btn-confirm.loading::after{content:'';position:absolute;width:14px;height:14px;top:50%;left:50%;margin:-7px 0 0 -7px;border:2px solid #2563eb;border-radius:50%;border-top-color:transparent;animation:spin .6s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .error-message{background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:20px;font-size:13px;margin-top:12px;display:none;align-items:center;gap:8px}
-  .error-message.show{display:flex}
-  .error-message i{width:14px;height:14px;flex-shrink:0}
-  .time-ago{font-size:9.5px;color:#94a3b8;line-height:1;white-space:nowrap}
-  .due-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
-  .due-badge i{width:9px;height:9px;flex-shrink:0}
-  .due-badge.urgent{background:#fef2f2;color:#dc2626}
-  .due-badge.soon{background:#fffbeb;color:#d97706}
-  /* ── Board filter bar ── */
-  .filter-bar{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-  .filter-input-wrap{position:relative;flex:1;min-width:160px;max-width:280px;border:1px solid #e5e7eb;border-radius:20px;background:#fff;transition:border-color .15s,box-shadow .15s}
-  .filter-input-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
-  .filter-input-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#3b82f6;pointer-events:none;z-index:2;flex-shrink:0;stroke-width:2.2}
-  .filter-input{width:100%;height:40px !important;padding:0 12px 0 36px !important;margin:0;border:none !important;font-size:14px !important;color:#1e293b;outline:none;box-sizing:border-box !important;background:transparent !important;display:block;box-shadow:none !important}
-  .filter-input:focus{outline:none}
-  .filter-input::placeholder{color:#9ca3af}
-  .filter-select-wrap{display:flex;align-items:center;height:40px;min-width:160px;border:1px solid #e5e7eb;border-radius:20px;background:#fff;transition:border-color .15s,box-shadow .15s;overflow:hidden}
-  .filter-select-wrap:focus-within{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
-  .flt-sel-ico{display:flex;align-items:center;justify-content:center;padding:0 6px 0 10px;flex-shrink:0;color:#3b82f6;pointer-events:none}.flt-sel-ico i{width:15px;height:15px;display:block;flex-shrink:0}
-  .flt-sel-arr{display:flex;align-items:center;padding:0 9px 0 2px;flex-shrink:0;color:#9ca3af;pointer-events:none}.flt-sel-arr svg{width:13px;height:13px;display:block}
-  .filter-select{flex:1;height:100%;min-width:0;border:none !important;padding:0 2px !important;font-size:14px !important;color:#1e293b;background:transparent;outline:none !important;cursor:pointer;appearance:none;-webkit-appearance:none;box-shadow:none !important}
-  .btn-filter-apply {display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;background:#ffffff !important;color:#2563eb !important;border:1.5px solid #2563eb !important;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s ease;white-space:nowrap;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
-  .btn-filter-apply:hover {background:#eff6ff !important;color:#1d4ed8 !important;border-color:#1d4ed8 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.15);}
-  .btn-filter-apply i, .btn-filter-apply svg { color:#1d4ed8 !important; stroke:#1d4ed8 !important; }
-  .btn-filter-apply i{width:15px;height:15px;color:inherit;flex-shrink:0}
-  .btn-filter-clear{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:40px;padding:0 12px;background:transparent;color:#94a3b8;border:1px solid transparent;border-radius:20px;font-size:14px;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0}
-  .btn-filter-clear:hover{color:#ef4444;border-color:#fee2e2;background:#fef2f2}
-  .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
-  .card-hidden{display:none!important}
-  @keyframes cardShowFilter{from{opacity:0;transform:translateY(-5px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-  .deal-card.card-just-shown{animation:cardShowFilter .22s cubic-bezier(.4,0,.2,1)}
-  .filter-input-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:20px;height:20px;display:none;align-items:center;justify-content:center;cursor:pointer;color:#94a3af;background:none;border:none;padding:0;border-radius:50%;font-size:15px;line-height:1;transition:color .15s}
-  .filter-input-clear.visible{display:flex}
-  .filter-input-clear:hover{color:#ef4444;background:rgba(239,68,68,.08)}
-  .crm-board-card {background:#ffffff;border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.03);margin-bottom:12px;transition:all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);cursor:grab}
-  .crm-board-card:hover {transform:translateY(-4px);box-shadow:0 12px 24px -6px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.05);z-index:10;position:relative;}
-</style>
+
 
   <div class="deal-modal-overlay" id="dealClosingModal">
     <div class="deal-modal">
@@ -419,7 +264,7 @@ class KanbanController extends ControllerBase {
 
           <div class="form-group">
             <label class="form-label">
-              <i data-lucide="calendar-check" width="16" height="16" style="vertical-align: middle;"></i>
+              <i data-lucide="calendar-check" width="16" height="16" class="lucide-v-middle"></i>
               Close Date <span class="required">*</span>
             </label>
             <input type="date" name="closing_date" class="form-input" required>
@@ -427,8 +272,8 @@ class KanbanController extends ControllerBase {
 
           <div class="form-group">
             <label class="form-label">
-              <i data-lucide="file-text" width="16" height="16" style="vertical-align: middle;"></i>
-              Attached Contract <span style="color: #94a3b8; font-size: 13px;">(optional)</span>
+              <i data-lucide="file-text" width="16" height="16" class="lucide-v-middle"></i>
+              Attached Contract <span class="help-text-optional">(optional)</span>
             </label>
             <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('contractFile').click()">
               <div class="file-icon">
@@ -436,9 +281,9 @@ class KanbanController extends ControllerBase {
               </div>
               <div class="file-instructions">Click to select contract file (optional)</div>
               <div class="file-hint">PDF, DOC, DOCX (max 10MB)</div>
-              <div class="file-name" id="fileName" style="display: none;"></div>
+              <div class="file-name crm-hidden" id="fileName"></div>
             </div>
-            <input type="file" id="contractFile" name="contract" accept=".pdf,.doc,.docx" style="display: none;">
+            <input type="file" id="contractFile" name="contract" accept=".pdf,.doc,.docx" class="crm-hidden">
           </div>
 
           <div class="error-message" id="errorMessage">
@@ -463,13 +308,13 @@ class KanbanController extends ControllerBase {
   <div class="deal-modal-overlay" id="dealLostModal">
     <div class="deal-modal">
       <div class="modal-header">
-        <div class="modal-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+        <div class="modal-icon crm-icon-danger">
           <i data-lucide="x-circle" width="24" height="24"></i>
         </div>
         <h2>Mark Deal as Lost</h2>
       </div>
       <div class="modal-body">
-        <div class="info-box" style="background:#fef2f2;border-left-color:#ef4444;color:#991b1b">
+        <div class="info-box crm-box-danger">
           <i data-lucide="alert-circle" width="18" height="18"></i>
           <div>Please select a reason and optionally add notes before marking this deal as lost.</div>
         </div>
@@ -477,7 +322,7 @@ class KanbanController extends ControllerBase {
           <input type="hidden" name="deal_id" id="lostModalDealId">
           <div class="form-group">
             <label class="form-label">
-              <i data-lucide="help-circle" width="16" height="16" style="vertical-align:middle"></i>
+              <i data-lucide="help-circle" width="16" height="16" class="lucide-v-middle"></i>
               Lost Reason <span class="required">*</span>
             </label>
             <select name="lost_reason" id="lostReasonSelect" class="form-input" required>
@@ -492,10 +337,10 @@ class KanbanController extends ControllerBase {
           </div>
           <div class="form-group">
             <label class="form-label">
-              <i data-lucide="file-text" width="16" height="16" style="vertical-align:middle"></i>
-              Notes <span style="color:#94a3b8;font-size:13px">(optional)</span>
+              <i data-lucide="file-text" width="16" height="16" class="lucide-v-middle"></i>
+              Notes <span class="help-text-optional">(optional)</span>
             </label>
-            <textarea name="lost_notes" class="form-input" rows="3" placeholder="Any additional context…" style="resize:vertical"></textarea>
+            <textarea name="lost_notes" class="form-input crm-resize-v" rows="3" placeholder="Any additional context…"></textarea>
           </div>
           <div class="error-message" id="lostErrorMessage">
             <i data-lucide="alert-circle" width="16" height="16"></i>
@@ -507,7 +352,7 @@ class KanbanController extends ControllerBase {
         <button type="button" class="modal-btn modal-btn-cancel" onclick="closeLostModal()">
           <i data-lucide="x"></i> Cancel
         </button>
-        <button type="button" class="modal-btn" onclick="submitDealLost()" style="background:#fff;color:#ef4444;border-color:#ef4444">
+        <button type="button" class="modal-btn crm-btn-danger" onclick="submitDealLost()">
           <i data-lucide="x-circle"></i> Confirm Lost
         </button>
       </div>
@@ -548,8 +393,8 @@ HTML;
       </select>
       <span class="flt-sel-arr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 4 7 9 12 4"/></svg></span>
     </div>
-    <span class="stat-chip blue" id="kanban-filter-total-chip" style="height:40px;border-radius:20px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
-    <span class="stat-chip green" id="kanban-filter-pipeline-chip" style="height:40px;border-radius:20px;padding:0 14px;font-size:13px;margin:0"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
+    <span class="stat-chip blue crm-chip-lg" id="kanban-filter-total-chip"><i data-lucide="kanban-square"></i>{$total_count} deals</span>
+    <span class="stat-chip green crm-chip-lg" id="kanban-filter-pipeline-chip"><i data-lucide="trending-up"></i>{$fmt_pipeline}</span>
     <span id="filter-count" class="filter-count"></span>
   </div>
 

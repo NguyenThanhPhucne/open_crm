@@ -1,0 +1,7 @@
+kanban_board:
+  version: 1.0
+  css:
+    theme:
+      css/kanban.css: {}
+  dependencies:
+    - core/drupal

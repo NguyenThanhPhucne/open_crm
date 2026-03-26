@@ -43,6 +43,16 @@
           }
         });
       }
+
+      // Override Drupal Core AJAX throbber with CRM Skeleton
+      if (Drupal.theme) {
+        Drupal.theme.ajaxProgressThrobber = function (message) {
+          return '<div class="ajax-progress ajax-progress-throbber"><div class="crm-skeleton-row" style="width: 100%; border: none;"><div class="col-main"><div class="crm-skeleton crm-skeleton-animate crm-skeleton--title"></div><div class="crm-skeleton crm-skeleton-animate crm-skeleton--text crm-skeleton--text-medium"></div></div></div></div>';
+        };
+        Drupal.theme.ajaxProgressIndicatorFullscreen = function () {
+          return '<div class="ajax-progress ajax-progress-fullscreen"><div class="crm-skeleton-row" style="width: 100%; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"><div class="col-main"><div class="crm-skeleton crm-skeleton-animate crm-skeleton--title"></div><div class="crm-skeleton crm-skeleton-animate crm-skeleton--text crm-skeleton--text-short"></div></div></div></div>';
+        };
+      }
     },
   };
 })(Drupal, once);

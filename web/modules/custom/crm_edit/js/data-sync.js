@@ -63,11 +63,22 @@
      */
     queueChange: function (entityType, entityId, fieldName, newValue) {
       const key = entityType + ":" + entityId;
+      
+      // Get old value for rollback
+      const selector = '[data-entity-id="' + entityId + '"][data-field-name="' + fieldName + '"]';
+      const $field = jQuery(selector);
+      let oldValue = "";
+      if ($field.find(".field-display-value").length) {
+        oldValue = $field.find(".field-display-value").text();
+      } else if ($field.find("input, select, textarea").length) {
+        oldValue = $field.find("input, select, textarea").val() || "";
+      }
       const update = {
         entity_type: entityType,
         entity_id: entityId,
         field: fieldName,
         value: newValue,
+        oldValue: oldValue,
         expected_revision_id: this.state.entityRevisions[key]
           ? this.state.entityRevisions[key].revisionId
           : null,
@@ -250,12 +261,21 @@
           // Show conflict warning
           this.showToast(
             "warning",
-            "Field was edited by another user. Please refresh to see latest changes.",
+            "Field was edited by another user. Values have been rolled back.",
             7000,
           );
 
-          // Highlight the conflicted field
-          this.highlightField(entityId, fieldName);
+          // Rollback to fresh data from server
+          if (data.fields && data.fields[fieldName] !== undefined) {
+             this.rollbackField(entityId, fieldName, data.fields[fieldName]);
+          } else {
+             const updateItem = originalBatch.find((u) => u.entity_id === entityId && u.field === fieldName);
+             if (updateItem) {
+               this.rollbackField(entityId, fieldName, updateItem.oldValue);
+             } else {
+               this.highlightField(entityId, fieldName);
+             }
+          }
         },
       });
     },
@@ -324,9 +344,13 @@
       if (retryableItems.length === 0) {
         this.showToast(
           "error",
-          "Some changes could not be synced. Please refresh.",
+          "Some changes could not be synced and have been reverted.",
           6000,
         );
+        // Rollback un-retryable items
+        batch.forEach((item) => {
+          this.rollbackField(item.entity_id, item.field, item.oldValue);
+        });
         return;
       }
 
@@ -389,6 +413,39 @@
 
       if ($field.length) {
         $field.addClass("has-conflict");
+        setTimeout(() => {
+          $field.removeClass("has-conflict");
+        }, 3000);
+      }
+    },
+
+    /**
+     * Rollback a field to its previous value.
+     */
+    rollbackField: function (entityId, fieldName, oldValue) {
+      const selector =
+        '[data-entity-id="' +
+        entityId +
+        '"][data-field-name="' +
+        fieldName +
+        '"]';
+      const $field = jQuery(selector);
+
+      if ($field.length && oldValue !== undefined) {
+        $field.removeClass("is-saving").addClass("has-conflict");
+        
+        // Restore display value
+        const $display = $field.find(".field-display-value");
+        if ($display.length) {
+          $display.text(oldValue);
+        }
+        
+        // Restore input value if exists
+        const $input = $field.find("input, select, textarea");
+        if ($input.length) {
+          $input.val(oldValue);
+        }
+
         setTimeout(() => {
           $field.removeClass("has-conflict");
         }, 3000);
