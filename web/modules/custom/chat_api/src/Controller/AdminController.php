@@ -98,7 +98,7 @@ class AdminController extends ControllerBase {
         'tags' => ['chat_api:dashboard'],
       ],
       '#attached' => [
-        'library' => ['chat_api/admin', 'chat_api/charts'],
+        'library' => ['chat_api/admin', 'chat_api/charts', 'crm_actions/global_nav'],
         'drupalSettings' => [
           'chatAdmin' => [
             'activityTrends' => $activity_trends,
@@ -165,7 +165,7 @@ class AdminController extends ControllerBase {
       '#users' => $users,
       '#stats' => $stats,
       '#attached' => [
-        'library' => ['chat_api/listing'],
+        'library' => ['chat_api/listing', 'crm_actions/global_nav'],
       ],
     ];
     
@@ -479,26 +479,26 @@ class AdminController extends ControllerBase {
     // Lấy dữ liệu thời gian thực từ MongoDB qua API Node.js
     $node_api_url = 'http://localhost:5001/api/conversations/admin/conversations';
 
-    $currentUser = $this->currentUser();
-    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
-    $jwt = JWT::encode(
-      [
-        'userId' => $currentUser->id(),
-        'username' => $currentUser->getAccountName(),
-        'email' => $currentUser->getEmail(),
-        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
-        'iat' => time(),
-        'exp' => time() + (60 * 60 * 24 * 14),
-      ],
-      $key,
-      'HS256'
-    );
-    
     \Drupal::logger('chat_api')->info('📊 [AdminController] Đang lấy dữ liệu từ: @url', [
       '@url' => $node_api_url,
     ]);
     
     try {
+      $currentUser = $this->currentUser();
+      $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+      $jwt = JWT::encode(
+        [
+          'userId' => $currentUser->id(),
+          'username' => $currentUser->getAccountName(),
+          'email' => $currentUser->getEmail(),
+          'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+          'iat' => time(),
+          'exp' => time() + (60 * 60 * 24 * 14),
+        ],
+        $key,
+        'HS256'
+      );
+
       $response = \Drupal::httpClient()->get($node_api_url, [
         'timeout' => 5,
         'headers' => [
@@ -535,15 +535,19 @@ class AdminController extends ControllerBase {
       \Drupal::logger('chat_api')->notice('✅ Đã lấy @count cuộc trò chuyện từ MongoDB', [
         '@count' => count($conversations),
       ]);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
       \Drupal::logger('chat_api')->error('❌ Lỗi khi lấy cuộc trò chuyện: @error', [
         '@error' => $e->getMessage(),
       ]);
 
-      // Show error to user
-      $this->messenger()->addError($this->t('Error connecting to API: @error', [
-        '@error' => $e->getMessage(),
-      ]));
+      if (str_contains($e->getMessage(), 'Provided key is too short')) {
+        $this->messenger()->addError($this->t('Chat JWT secret is too short. Please configure "chat_api_access_token_secret" with at least 32 characters in settings.php and use the same value in the Node chat API.'));
+      }
+      else {
+        $this->messenger()->addError($this->t('Error connecting to API: @error', [
+          '@error' => $e->getMessage(),
+        ]));
+      }
       
       // Fallback về dữ liệu rỗng nếu API lỗi
       $conversations = [];
@@ -562,7 +566,7 @@ class AdminController extends ControllerBase {
       '#conversations' => $conversations,
       '#stats' => $stats,
       '#attached' => [
-        'library' => ['chat_api/admin', 'chat_api/admin-tables', 'chat_api/live-updates'],
+        'library' => ['chat_api/admin', 'chat_api/admin-tables', 'chat_api/live-updates', 'crm_actions/global_nav'],
         'drupalSettings' => [
           'chatAdminLive' => [
             'apiUrl' => $node_api_url,
@@ -592,22 +596,22 @@ class AdminController extends ControllerBase {
     // Lấy cuộc trò chuyện từ MongoDB qua API Node.js
     $node_api_url = 'http://localhost:5001/api/conversations/admin/' . $conversation_id;
 
-    $currentUser = $this->currentUser();
-    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
-    $jwt = JWT::encode(
-      [
-        'userId' => $currentUser->id(),
-        'username' => $currentUser->getAccountName(),
-        'email' => $currentUser->getEmail(),
-        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
-        'iat' => time(),
-        'exp' => time() + (60 * 60 * 24 * 14),
-      ],
-      $key,
-      'HS256'
-    );
-
     try {
+      $currentUser = $this->currentUser();
+      $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+      $jwt = JWT::encode(
+        [
+          'userId' => $currentUser->id(),
+          'username' => $currentUser->getAccountName(),
+          'email' => $currentUser->getEmail(),
+          'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+          'iat' => time(),
+          'exp' => time() + (60 * 60 * 24 * 14),
+        ],
+        $key,
+        'HS256'
+      );
+
       $response = \Drupal::httpClient()->get($node_api_url, [
         'timeout' => 5,
         'headers' => [
@@ -653,10 +657,15 @@ class AdminController extends ControllerBase {
       ];
 
       return $build;
-    } catch (\Exception $e) {
-      $this->messenger()->addError($this->t('Error loading conversation data: @error', [
-        '@error' => $e->getMessage(),
-      ]));
+    } catch (\Throwable $e) {
+      if (str_contains($e->getMessage(), 'Provided key is too short')) {
+        $this->messenger()->addError($this->t('Chat JWT secret is too short. Please configure "chat_api_access_token_secret" with at least 32 characters in settings.php and use the same value in the Node chat API.'));
+      }
+      else {
+        $this->messenger()->addError($this->t('Error loading conversation data: @error', [
+          '@error' => $e->getMessage(),
+        ]));
+      }
       return $this->redirect('chat_api.admin_conversations');
     }
   }
@@ -674,22 +683,22 @@ class AdminController extends ControllerBase {
     
     $node_api_url = 'http://localhost:5001/api/conversations/admin/' . $conversation_id;
 
-    $currentUser = $this->currentUser();
-    $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
-    $jwt = JWT::encode(
-      [
-        'userId' => $currentUser->id(),
-        'username' => $currentUser->getAccountName(),
-        'email' => $currentUser->getEmail(),
-        'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
-        'iat' => time(),
-        'exp' => time() + (60 * 60 * 24 * 14),
-      ],
-      $key,
-      'HS256'
-    );
-
     try {
+      $currentUser = $this->currentUser();
+      $key = Settings::get('chat_api_access_token_secret', 'fallback_secret_key');
+      $jwt = JWT::encode(
+        [
+          'userId' => $currentUser->id(),
+          'username' => $currentUser->getAccountName(),
+          'email' => $currentUser->getEmail(),
+          'roles' => method_exists($currentUser, 'getRoles') ? $currentUser->getRoles() : [],
+          'iat' => time(),
+          'exp' => time() + (60 * 60 * 24 * 14),
+        ],
+        $key,
+        'HS256'
+      );
+
       $response = \Drupal::httpClient()->delete($node_api_url, [
         'timeout' => 5,
         'headers' => [
@@ -712,13 +721,21 @@ class AdminController extends ControllerBase {
         }
         $this->messenger()->addError($this->t('Conversation not found to delete.'));
       }
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
       if ($is_ajax) {
-        return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
+        $error_message = str_contains($e->getMessage(), 'Provided key is too short')
+          ? 'Chat JWT secret is too short. Configure chat_api_access_token_secret with at least 32 characters.'
+          : $e->getMessage();
+        return new JsonResponse(['success' => false, 'error' => $error_message], 500);
       }
-      $this->messenger()->addError($this->t('Error deleting conversation: @error', [
-        '@error' => $e->getMessage(),
-      ]));
+      if (str_contains($e->getMessage(), 'Provided key is too short')) {
+        $this->messenger()->addError($this->t('Chat JWT secret is too short. Please configure "chat_api_access_token_secret" with at least 32 characters in settings.php and use the same value in the Node chat API.'));
+      }
+      else {
+        $this->messenger()->addError($this->t('Error deleting conversation: @error', [
+          '@error' => $e->getMessage(),
+        ]));
+      }
     }
 
     return new RedirectResponse(Url::fromRoute('chat_api.admin_conversations')->toString());
@@ -875,7 +892,7 @@ class AdminController extends ControllerBase {
       '#theme' => 'chat_admin_reports',
       '#stats' => $stats,
       '#attached' => [
-        'library' => ['chat_api/admin', 'chat_api/charts'],
+        'library' => ['chat_api/admin', 'chat_api/charts', 'chat_api/listing', 'crm_actions/global_nav'],
       ],
     ];
     

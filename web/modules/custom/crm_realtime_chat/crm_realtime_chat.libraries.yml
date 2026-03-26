@@ -1,5 +1,5 @@
 chat_embed:
-  version: 1.1.0
+  version: 4.0
   css:
     theme:
       css/chat-embed.css: {}
@@ -11,7 +11,7 @@ chat_embed:
     - core/drupalSettings
 
 chat_launcher:
-  version: 1.1.0
+  version: 4.0
   css:
     theme:
       css/chat-launcher.css: {}

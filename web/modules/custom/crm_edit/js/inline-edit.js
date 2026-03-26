@@ -4,7 +4,7 @@
  */
 
 // Global CRMInlineEdit object for modal functionality
-window.CRMInlineEdit = {
+globalThis.CRMInlineEdit = {
   // Cached CSRF token (fetched once per page load)
   _csrfToken: null,
 
@@ -36,7 +36,7 @@ window.CRMInlineEdit = {
       return Promise.resolve(false);
     }
 
-    return fetch(window.location.href, {
+    return fetch(globalThis.location.href, {
       credentials: "same-origin",
       cache: "no-store",
     })
@@ -75,7 +75,10 @@ window.CRMInlineEdit = {
       return Promise.resolve(false);
     }
 
-    return fetch(window.location.href, {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set("_ts", Date.now());
+
+    return fetch(url.toString(), {
       credentials: "same-origin",
       cache: "no-store",
     })
@@ -119,38 +122,36 @@ window.CRMInlineEdit = {
       });
   },
 
-  refreshCurrentView: function (nid, type, data) {
-    return this.refreshEntityRow(nid, type).then((refreshedRow) => {
-      if (refreshedRow) {
-        return true;
+  refreshCurrentView: async function (nid, type, data) {
+    const refreshedRow = await this.refreshEntityRow(nid, type);
+    if (refreshedRow) {
+      return true;
+    }
+
+    const refreshedList = await this.refreshListSections();
+    if (refreshedList) {
+      return true;
+    }
+
+    const rowEl = document.getElementById(this.getRowId(nid, type));
+    if (rowEl) {
+      rowEl.style.transition = "background-color 0.5s ease";
+      rowEl.style.backgroundColor = "#dcfce7";
+      const timeCell = rowEl.querySelector(".td-time");
+      if (timeCell) timeCell.textContent = "just now";
+      if (data.title) {
+        const nameLink = rowEl.querySelector("[class$='-name-link']");
+        if (nameLink) nameLink.textContent = data.title;
       }
+      return true;
+    }
 
-      return this.refreshListSections().then((refreshedList) => {
-        if (refreshedList) {
-          return true;
-        }
+    if (globalThis.location.pathname.startsWith("/node/")) {
+      globalThis.location.reload();
+      return true;
+    }
 
-        const rowEl = document.getElementById(this.getRowId(nid, type));
-        if (rowEl) {
-          rowEl.style.transition = "background-color 0.5s ease";
-          rowEl.style.backgroundColor = "#dcfce7";
-          const timeCell = rowEl.querySelector(".td-time");
-          if (timeCell) timeCell.textContent = "just now";
-          if (data.title) {
-            const nameLink = rowEl.querySelector("[class$='-name-link']");
-            if (nameLink) nameLink.textContent = data.title;
-          }
-          return true;
-        }
-
-        if (window.location.pathname.startsWith("/node/")) {
-          window.location.reload();
-          return true;
-        }
-
-        return false;
-      });
-    });
+    return false;
   },
 
   removeEntityRowOptimistically: function (nid, type) {
@@ -171,7 +172,7 @@ window.CRMInlineEdit = {
       const countEl = document.querySelector(".filter-count");
       if (countEl) {
         const text = countEl.textContent || "";
-        const m = text.match(/(\d+)/);
+        const m = /(\d+)/.exec(text);
         if (m) {
           const oldNum = Number(m[1]);
           if (Number.isFinite(oldNum) && oldNum > 0) {
@@ -187,7 +188,16 @@ window.CRMInlineEdit = {
   openModal: function (nid, type) {
     // Show loading overlay
     const loadingHtml =
-      '<div class="crm-modal-overlay" id="crm-modal-overlay"><div class="crm-modal-loading"><div class="spinner"></div><p>Loading...</p></div></div>';
+      '<div class="crm-modal-overlay" id="crm-modal-overlay">' +
+      '<div class="crm-modal-loading" role="status" aria-live="polite" aria-label="Loading form">' +
+      '<div class="crm-modal-loading__skeleton">' +
+      '<div class="crm-skeleton crm-skeleton--title"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line crm-skeleton--short"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line crm-skeleton--short"></div>' +
+      "</div>" +
+      "<p>Loading...</p></div></div>";
     document.body.insertAdjacentHTML("beforeend", loadingHtml);
 
     // Fetch modal form via AJAX
@@ -219,15 +229,32 @@ window.CRMInlineEdit = {
   },
 
   closeModal: function () {
+    if (this._modalTrapCleanup) {
+      this._modalTrapCleanup();
+      this._modalTrapCleanup = null;
+    }
+    if (this._modalShortcutHandler) {
+      document.removeEventListener("keydown", this._modalShortcutHandler);
+      this._modalShortcutHandler = null;
+    }
+
     const overlay = document.getElementById("crm-modal-overlay");
     if (overlay) {
       overlay.classList.add("closing");
       setTimeout(() => {
         overlay.remove();
+        if (
+          this._lastFocusedElement &&
+          typeof this._lastFocusedElement.focus === "function"
+        ) {
+          this._lastFocusedElement.focus();
+        }
+        this._lastFocusedElement = null;
+
         // If on a dedicated add page, redirect to the matching list instead of
         // leaving the user staring at the "Loading create form…" background.
-        const path = window.location.pathname;
-        const addMatch = path.match(/^\/crm\/add\/(\w+)/);
+        const path = globalThis.location.pathname;
+        const addMatch = /^\/crm\/add\/(\w+)/.exec(path);
         if (addMatch) {
           const listMap = {
             contact: "/crm/all-contacts",
@@ -235,7 +262,7 @@ window.CRMInlineEdit = {
             organization: "/crm/all-organizations",
             activity: "/crm/all-activities",
           };
-          window.location.href = listMap[addMatch[1]] || "/crm/dashboard";
+          globalThis.location.href = listMap[1] || "/crm/dashboard";
         }
       }, 300);
     }
@@ -244,6 +271,8 @@ window.CRMInlineEdit = {
   setupModalHandlers: function () {
     const overlay = document.getElementById("crm-modal-overlay");
     if (!overlay) return;
+
+    this.applyModalAccessibility(overlay);
 
     // Close on overlay click
     overlay.addEventListener("click", (e) => {
@@ -276,7 +305,6 @@ window.CRMInlineEdit = {
     // Keyboard shortcuts for the edit modal
     const editKeyHandler = (e) => {
       if (e.key === "Escape") {
-        document.removeEventListener("keydown", editKeyHandler);
         this.closeModal();
       } else if (
         // Ctrl+Enter or Cmd+Enter anywhere → save
@@ -288,10 +316,13 @@ window.CRMInlineEdit = {
         // Don't intercept if a submit/button is focused (browser handles it)
         if (activeTag === "BUTTON" || activeTag === "A") return;
         e.preventDefault();
-        document.removeEventListener("keydown", editKeyHandler);
         this.saveModal(form);
       }
     };
+    if (this._modalShortcutHandler) {
+      document.removeEventListener("keydown", this._modalShortcutHandler);
+    }
+    this._modalShortcutHandler = editKeyHandler;
     document.addEventListener("keydown", editKeyHandler);
   },
 
@@ -306,14 +337,14 @@ window.CRMInlineEdit = {
 
     // Detect if form has file inputs with files selected or removed files
     const fileInputs = form.querySelectorAll('input[type="file"]');
-    const removedFidsInputs = form.querySelectorAll('.removed-fids-input');
+    const removedFidsInputs = form.querySelectorAll(".removed-fids-input");
     let hasFiles = false;
     let hasRemovedFiles = false;
     fileInputs.forEach(function (input) {
       if (input.files && input.files.length > 0) hasFiles = true;
     });
     removedFidsInputs.forEach(function (input) {
-      if (input.value && input.value.trim() !== '') hasRemovedFiles = true;
+      if (input.value && input.value.trim() !== "") hasRemovedFiles = true;
     });
 
     // Show saving state
@@ -322,20 +353,37 @@ window.CRMInlineEdit = {
       modal.classList.add("is-saving");
     }
 
+    // OPTIMISTIC UI (Zero-Latency feel)
+    // 1. Immediately close the modal and show loading state on the row
+    const overlay = document.getElementById("crm-modal-overlay");
+    if (overlay) overlay.style.display = "none"; // Hide instead of remove in case we need to rollback
+
+    const rowNode = document.querySelector(
+      `tr[data-entity-id="${nid}"], .crm-kanban-card[data-entity-id="${nid}"], .crm-card[data-entity-id="${nid}"]`,
+    );
+    if (rowNode) {
+      rowNode.style.opacity = "0.5";
+      rowNode.style.pointerEvents = "none";
+      rowNode.style.filter = "grayscale(100%)";
+    }
+
+    globalThis.CRM?.toast?.("Saving changes...", "info", 2000);
+
     this.getCsrfToken().then((csrfToken) => {
       let fetchOptions;
+      let saveUrl;
 
       if (hasFiles || hasRemovedFiles) {
         // Use FormData for multipart upload
         const formData = new FormData(form);
-        formData.set('nid', nid);
-        formData.set('type', type);
+        formData.set("nid", nid);
+        formData.set("type", type);
         fetchOptions = {
           method: "POST",
           headers: { "X-CSRF-Token": csrfToken },
           body: formData,
         };
-        var saveUrl = "/crm/edit/ajax/save-with-files";
+        saveUrl = "/crm/edit/ajax/save-with-files";
       } else {
         // Use JSON for regular fields (no files)
         const formData = new FormData(form);
@@ -351,73 +399,76 @@ window.CRMInlineEdit = {
           },
           body: JSON.stringify(jsonData),
         };
-        var saveUrl = "/crm/edit/ajax/save";
+        saveUrl = "/crm/edit/ajax/save";
       }
 
       fetch(saveUrl, fetchOptions)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            const overlay = document.getElementById("crm-modal-overlay");
+            // Actual delete of the overlay
             if (overlay) overlay.remove();
 
             this.refreshCurrentView(nid, type, data);
 
-            if (window.CRM && window.CRM.toast) {
-              window.CRM.toast("Changes saved successfully!", "success");
-            } else {
-              localStorage.setItem(
-                "crmToast",
-                JSON.stringify({
-                  message: "Changes saved successfully!",
-                  type: "success",
-                }),
-              );
-            }
+            globalThis.CRM?.toast?.("Changes saved successfully!", "success");
           } else {
-            this.showMessage(data.message || "Error saving changes", "error");
-            if (modal) {
-              modal.classList.remove("is-saving");
+            // Rollback: show modal again, remove row skeleton
+            if (overlay) overlay.style.display = "";
+            if (rowNode) {
+              rowNode.style.opacity = "";
+              rowNode.style.pointerEvents = "";
+              rowNode.style.filter = "";
             }
+            this.showMessage(data.message || "Error saving changes", "error");
           }
         })
         .catch((error) => {
           console.error("Save error:", error);
+          if (overlay) overlay.style.display = "";
+          if (rowNode) {
+            rowNode.style.opacity = "";
+            rowNode.style.pointerEvents = "";
+            rowNode.style.filter = "";
+          }
           this.showMessage(
             "Failed to save changes. Please try again.",
             "error",
           );
-          if (modal) {
-            modal.classList.remove("is-saving");
-          }
         });
     }); // end getCsrfToken
   },
 
   removeFileItem: function (fid, fieldName) {
     // Remove the file item from DOM
-    var item = document.getElementById('file-item-' + fid);
+    const item = document.getElementById("file-item-" + fid);
     if (item) {
-      item.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-      item.style.opacity = '0';
-      item.style.transform = 'translateX(8px)';
-      setTimeout(function () { item.remove(); }, 200);
+      item.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+      item.style.opacity = "0";
+      item.style.transform = "translateX(8px)";
+      setTimeout(function () {
+        item.remove();
+      }, 200);
     }
     // Add fid to removed_fids hidden input
-    var form = document.querySelector('#crm-modal-overlay form') || document.getElementById('crm-edit-form');
+    const form =
+      document.querySelector("#crm-modal-overlay form") ||
+      document.getElementById("crm-edit-form");
     if (!form) return;
-    var hiddenInput = form.querySelector('input[name="' + fieldName + '__removed_fids"]');
+    const hiddenInput = form.querySelector(
+      'input[name="' + fieldName + '__removed_fids"]',
+    );
     if (hiddenInput) {
-      var current = hiddenInput.value ? hiddenInput.value.split(',').filter(Boolean) : [];
+      const current = hiddenInput.value
+        ? hiddenInput.value.split(",").filter(Boolean)
+        : [];
       current.push(String(fid));
-      hiddenInput.value = current.join(',');
+      hiddenInput.value = current.join(",");
     }
   },
 
   showMessage: function (message, type) {
-    if (window.CRM && window.CRM.toast) {
-      window.CRM.toast(message, type || "success");
-    }
+    globalThis.CRM?.toast?.(message, type || "success");
   },
 
   confirmDelete: function (nid, type, title) {
@@ -717,11 +768,36 @@ window.CRMInlineEdit = {
   },
 
   performDelete: function (nid, type, title, confirmation) {
-    const modal = document.querySelector(".crm-delete-modal");
-    if (modal) {
-      modal.classList.add("is-deleting");
+    // Close delete modal immediately for Optimistic UI feel
+    const overlay =
+      document.getElementById("crm-delete-step3") ||
+      document.getElementById("crm-delete-step2") ||
+      document.getElementById("crm-delete-step1");
+    if (overlay) overlay.remove();
+
+    // Show optimistic toast
+    globalThis.CRM?.toast?.(`Deleting ${title}...`, "info", 2000);
+
+    // 1. Optimistic UI: Find and clone the row for rollback, then hide/remove it immediately.
+    let rowParent = null;
+    let nextSibling = null;
+    let rowClone = null;
+    let rowNode = null;
+
+    // Support both table row and kanban card
+    rowNode = document.querySelector(
+      `tr[data-entity-id="${nid}"], .crm-kanban-card[data-entity-id="${nid}"], .crm-card[data-entity-id="${nid}"]`,
+    );
+
+    if (rowNode) {
+      rowParent = rowNode.parentNode;
+      nextSibling = rowNode.nextSibling;
+      rowClone = rowNode.cloneNode(true);
+      // Remove immediately from UI
+      rowNode.remove();
     }
 
+    // 2. Fetch API in background
     this.getCsrfToken().then((csrfToken) => {
       fetch("/crm/edit/ajax/delete", {
         method: "POST",
@@ -738,64 +814,70 @@ window.CRMInlineEdit = {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            // Close delete modal immediately
-            const overlay =
-              document.getElementById("crm-delete-step3") ||
-              document.getElementById("crm-delete-step2") ||
-              document.getElementById("crm-delete-step1");
-            if (overlay) overlay.remove();
-
-            // Show toast immediately (no localStorage needed — we're on the same page)
-            if (window.CRM && window.CRM.toast) {
-              window.CRM.toast(
+            // Success: update toast
+            if (globalThis.CRM?.toast) {
+              globalThis.CRM.toast(
                 data.message || "Deleted successfully!",
                 "success",
               );
-            } else {
-              localStorage.setItem(
-                "crmToast",
-                JSON.stringify({
-                  message: data.message || "Deleted successfully!",
-                  type: "success",
-                }),
-              );
             }
-
-            const removed = this.removeEntityRowOptimistically(nid, type);
-
-            if (removed) {
-              // Keep UX snappy: update immediately, then reconcile in background.
-              setTimeout(() => {
-                this.refreshListSections();
-              }, 250);
-            } else {
-              this.refreshListSections().then((refreshed) => {
-                if (!refreshed) {
-                  setTimeout(() => location.reload(), 100);
-                }
-              });
-            }
+            // Background reconcile
+            setTimeout(() => {
+              this.refreshListSections();
+            }, 300);
           } else {
-            this.showMessage(data.message || "Error deleting", "error");
-            if (modal) {
-              modal.classList.remove("is-deleting");
+            // Server returned error (e.g. ConstraintViolation) -> Rollback!
+            this.showMessage(
+              data.message || "Error deleting constraints.",
+              "error",
+            );
+            if (rowClone && rowParent) {
+              if (nextSibling) {
+                nextSibling.before(rowClone);
+              } else {
+                rowParent.appendChild(rowClone);
+              }
+              // Flash red to indicate rollback
+              rowClone.style.backgroundColor = "#fee2e2";
+              setTimeout(() => {
+                rowClone.style.backgroundColor = "";
+              }, 1000);
             }
+            this.refreshListSections();
           }
         })
         .catch((error) => {
           console.error("Delete error:", error);
           this.showMessage("Failed to delete. Please try again.", "error");
-          if (modal) {
-            modal.classList.remove("is-deleting");
+          // Rollback on network error!
+          if (rowClone && rowParent) {
+            if (nextSibling) {
+              nextSibling.before(rowClone);
+            } else {
+              rowParent.appendChild(rowClone);
+            }
+            rowClone.style.backgroundColor = "#fee2e2";
+            setTimeout(() => {
+              rowClone.style.backgroundColor = "";
+            }, 1000);
           }
         });
-    }); // end getCsrfToken
+    });
   },
 
   openAddModal: function (type) {
     // Show loading overlay
     const loadingHtml =
-      '<div class="crm-modal-overlay" id="crm-modal-overlay"><div class="crm-modal-loading"><div class="spinner"></div><p>Loading create form...</p></div></div>';
+      '<div class="crm-modal-overlay" id="crm-modal-overlay">' +
+      '<div class="crm-modal-loading" role="status" aria-live="polite" aria-label="Loading create form">' +
+      '<div class="crm-modal-loading__skeleton">' +
+      '<div class="crm-skeleton crm-skeleton--title"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line crm-skeleton--short"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line"></div>' +
+      '<div class="crm-skeleton crm-skeleton--line crm-skeleton--short"></div>' +
+      "</div>" +
+      "<p>Loading create form...</p></div></div>";
     document.body.insertAdjacentHTML("beforeend", loadingHtml);
 
     // Fetch create form via AJAX
@@ -832,6 +914,8 @@ window.CRMInlineEdit = {
     const overlay = document.getElementById("crm-modal-overlay");
     if (!overlay) return;
 
+    this.applyModalAccessibility(overlay);
+
     // Close on overlay click
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) {
@@ -863,7 +947,6 @@ window.CRMInlineEdit = {
     // Keyboard shortcuts for the add modal
     const addKeyHandler = (e) => {
       if (e.key === "Escape") {
-        document.removeEventListener("keydown", addKeyHandler);
         this.closeModal();
       } else if (
         (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ||
@@ -872,11 +955,137 @@ window.CRMInlineEdit = {
         const activeTag = document.activeElement?.tagName;
         if (activeTag === "BUTTON" || activeTag === "A") return;
         e.preventDefault();
-        document.removeEventListener("keydown", addKeyHandler);
         this.saveAddModal(form);
       }
     };
+    if (this._modalShortcutHandler) {
+      document.removeEventListener("keydown", this._modalShortcutHandler);
+    }
+    this._modalShortcutHandler = addKeyHandler;
     document.addEventListener("keydown", addKeyHandler);
+  },
+
+  applyModalAccessibility: function (overlay) {
+    const container = overlay.querySelector(".crm-modal-container");
+    if (!container) {
+      return;
+    }
+
+    this._lastFocusedElement = document.activeElement;
+    container.setAttribute("role", "dialog");
+    container.setAttribute("aria-modal", "true");
+    if (!container.hasAttribute("tabindex")) {
+      container.setAttribute("tabindex", "-1");
+    }
+
+    if (this._modalTrapCleanup) {
+      this._modalTrapCleanup();
+    }
+    this._modalTrapCleanup = this.trapFocus(container, () => this.closeModal());
+
+    const focusable = this.getFocusableElements(container);
+    if (focusable.length) {
+      focusable[0].focus();
+    } else {
+      container.focus();
+    }
+  },
+
+  getFocusableElements: function (container) {
+    const selector =
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.from(container.querySelectorAll(selector)).filter(
+      (el) =>
+        el.offsetParent !== null && el.getAttribute("aria-hidden") !== "true",
+    );
+  },
+
+  trapFocus: function (container, onEscape) {
+    const keyHandler = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onEscape();
+        return;
+      }
+
+      if (e.key !== "Tab") {
+        return;
+      }
+
+      const focusable = this.getFocusableElements(container);
+      if (!focusable.length) {
+        e.preventDefault();
+        container.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", keyHandler, true);
+    return () => document.removeEventListener("keydown", keyHandler, true);
+  },
+
+  renderCreateErrors: function (form, errors) {
+    Object.keys(errors).forEach((fieldName) => {
+      const fieldWrapper = form
+        .querySelector(`[name="${fieldName}"]`)
+        ?.closest(".form-field");
+      if (fieldWrapper) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "field-error";
+        errorDiv.textContent = errors[fieldName];
+        fieldWrapper.appendChild(errorDiv);
+      }
+    });
+  },
+
+  showCreateFailure: function (statusDiv, message) {
+    if (!statusDiv) {
+      return;
+    }
+
+    statusDiv.className = "save-status error";
+    statusDiv.innerHTML =
+      '<i data-lucide="alert-circle"></i> ' +
+      (message || "Failed to create. Please try again.");
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+  },
+
+  handleCreateResult: function (result, options) {
+    const { overlay, skeletonNode, statusDiv, form } = options;
+
+    if (result.success) {
+      if (overlay) overlay.remove();
+      globalThis.CRM?.toast?.(
+        result.message || "Created successfully!",
+        "success",
+      );
+      setTimeout(() => {
+        this.refreshListSections();
+      }, 300);
+      return;
+    }
+
+    if (skeletonNode) skeletonNode.remove();
+    if (overlay) overlay.style.display = "";
+    this.showCreateFailure(
+      statusDiv,
+      result.message || "Error creating content",
+    );
+    if (result.errors) {
+      this.renderCreateErrors(form, result.errors);
+    }
   },
 
   saveAddModal: function (form) {
@@ -902,16 +1111,35 @@ window.CRMInlineEdit = {
       data[key] = value;
     });
 
-    // Show saving state
-    const saveBtn = form.querySelector(".save-btn");
-    const originalBtnHtml = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<i data-lucide="loader"></i> <span>Creating...</span>';
-    saveBtn.disabled = true;
-    if (typeof lucide !== "undefined") {
-      lucide.createIcons();
+    // 1. Optimistic UI: Close Modal Immediately & Inject Skeleton
+    const overlay = document.getElementById("crm-modal-overlay");
+    if (overlay) overlay.style.display = "none"; // Hide instead of completely remove for rollback
+
+    // Inject a skeleton "Creating..." row at the top of the list or kanban
+    let skeletonNode = null;
+    const tableBody = document.querySelector(
+      "#crm-results-wrap table.crm-table tbody",
+    );
+    const kanbanBoard = document.querySelector(
+      "#crm-results-wrap .crm-kanban-board > div",
+    );
+
+    globalThis.CRM?.toast?.("Creating...", "info", 2000);
+
+    if (tableBody) {
+      skeletonNode = document.createElement("tr");
+      skeletonNode.innerHTML =
+        '<td colspan="8"><div class="crm-create-skeleton crm-create-skeleton--row"></div></td>';
+      tableBody.prepend(skeletonNode);
+    } else if (kanbanBoard) {
+      skeletonNode = document.createElement("div");
+      skeletonNode.className = "crm-kanban-card";
+      skeletonNode.innerHTML =
+        '<div class="crm-create-skeleton crm-create-skeleton--card"></div>';
+      kanbanBoard.prepend(skeletonNode);
     }
 
-    // Send AJAX request (CSRF-protected)
+    // 2. Send AJAX request (CSRF-protected)
     this.getCsrfToken().then((csrfToken) => {
       fetch("/crm/edit/ajax/create", {
         method: "POST",
@@ -923,84 +1151,18 @@ window.CRMInlineEdit = {
       })
         .then((response) => response.json())
         .then((result) => {
-          if (result.success) {
-            if (statusDiv) {
-              statusDiv.className = "save-status success";
-              statusDiv.innerHTML =
-                '<i data-lucide="check-circle"></i> ' +
-                (result.message || "Created successfully!");
-              if (typeof lucide !== "undefined") {
-                lucide.createIcons();
-              }
-            }
-
-            // Save toast message to localStorage and redirect
-            localStorage.setItem(
-              "crmToast",
-              JSON.stringify({
-                message: result.message || "Created successfully!",
-                type: "success",
-              }),
-            );
-
-            // Close modal and redirect immediately
-            setTimeout(() => {
-              this.closeModal();
-              if (result.nid) {
-                // Redirect to new entity or reload page
-                window.location.href = "/node/" + result.nid;
-              } else {
-                location.reload();
-              }
-            }, 100);
-          } else {
-            // Show error
-            if (statusDiv) {
-              statusDiv.className = "save-status error";
-              statusDiv.innerHTML =
-                '<i data-lucide="alert-circle"></i> ' +
-                (result.message || "Error creating content");
-              if (typeof lucide !== "undefined") {
-                lucide.createIcons();
-              }
-            }
-
-            // Restore button
-            saveBtn.innerHTML = originalBtnHtml;
-            saveBtn.disabled = false;
-            if (typeof lucide !== "undefined") {
-              lucide.createIcons();
-            }
-
-            // Show field errors if any
-            if (result.errors) {
-              Object.keys(result.errors).forEach((fieldName) => {
-                const fieldWrapper = form
-                  .querySelector(`[name="${fieldName}"]`)
-                  ?.closest(".form-field");
-                if (fieldWrapper) {
-                  const errorDiv = document.createElement("div");
-                  errorDiv.className = "field-error";
-                  errorDiv.textContent = result.errors[fieldName];
-                  fieldWrapper.appendChild(errorDiv);
-                }
-              });
-            }
-          }
+          this.handleCreateResult(result, {
+            overlay,
+            skeletonNode,
+            statusDiv,
+            form,
+          });
         })
         .catch((error) => {
           console.error("Create error:", error);
-          if (statusDiv) {
-            statusDiv.className = "save-status error";
-            statusDiv.innerHTML =
-              '<i data-lucide="alert-circle"></i> Failed to create. Please try again.';
-            if (typeof lucide !== "undefined") {
-              lucide.createIcons();
-            }
-          }
-          // Restore button
-          saveBtn.innerHTML = originalBtnHtml;
-          saveBtn.disabled = false;
+          if (skeletonNode) skeletonNode.remove();
+          if (overlay) overlay.style.display = ""; // Show modal again
+          this.showCreateFailure(statusDiv);
         });
     }); // end getCsrfToken
   },
@@ -1023,18 +1185,14 @@ window.CRMInlineEdit = {
       $(context).on("click", ".crm-edit-action", function () {
         const nid = $(this).data("nid");
         const bundle = $(this).data("bundle");
-        if (window.CRMInlineEdit && window.CRMInlineEdit.openModal) {
-          window.CRMInlineEdit.openModal(nid, bundle);
-        }
+        globalThis.CRMInlineEdit?.openModal?.(nid, bundle);
       });
 
       $(context).on("click", ".crm-delete-action", function () {
         const nid = $(this).data("nid");
         const bundle = $(this).data("bundle");
         const title = $(this).data("title");
-        if (window.CRMInlineEdit && window.CRMInlineEdit.confirmDelete) {
-          window.CRMInlineEdit.confirmDelete(nid, bundle, title);
-        }
+        globalThis.CRMInlineEdit?.confirmDelete?.(nid, bundle, title);
       });
 
       // Auto-save functionality (optional)
@@ -1062,16 +1220,11 @@ window.CRMInlineEdit = {
         }
         $(this).data("crm-leave-warning", true);
 
-        const form = this;
+        const $form = $(this);
 
-        window.addEventListener("beforeunload", function (e) {
-          if (
-            $(form).hasClass("has-changes") &&
-            !$(form).hasClass("is-saving")
-          ) {
+        globalThis.addEventListener("beforeunload", function (e) {
+          if ($form.hasClass("has-changes") && !$form.hasClass("is-saving")) {
             e.preventDefault();
-            e.returnValue = "";
-            return "You have unsaved changes. Are you sure you want to leave?";
           }
         });
       });

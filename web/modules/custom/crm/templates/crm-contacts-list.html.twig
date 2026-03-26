@@ -117,7 +117,7 @@
 </div>
 
 {# Delete Confirmation Modal — ClickUp-style #}
-<div id="delete-modal" class="crm-delete-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+<dialog id="delete-modal" class="crm-delete-modal" aria-modal="true" aria-labelledby="delete-modal-title" aria-hidden="true">
   <div class="crm-delete-modal__overlay"></div>
   <div class="crm-delete-modal__card">
     <div class="crm-delete-modal__header">
@@ -140,7 +140,7 @@
       <button type="button" class="crm-delete-modal__btn crm-delete-modal__btn--danger" id="delete-confirm-btn" disabled>Delete permanently</button>
     </div>
   </div>
-</div>
+</dialog>
 
 <style>
 /* Wrapper */
@@ -230,7 +230,11 @@
 /* ── ClickUp-style delete modal ─────────────────────── */
 .crm-delete-modal {
   position: fixed; inset: 0; z-index: 10000;
-  display: flex; align-items: center; justify-content: center;
+  display: none; align-items: center; justify-content: center;
+}
+.crm-delete-modal.is-open,
+.crm-delete-modal[aria-hidden="false"] {
+  display: flex;
 }
 .crm-delete-modal__overlay {
   position: absolute; inset: 0;
@@ -314,7 +318,33 @@
 .crm-delete-modal__btn--danger:hover {
   background: #dc2626; border-color: #dc2626;
 }
+.crm-delete-modal__btn--danger.is-loading {
+  color: transparent;
+  pointer-events: none;
+  position: relative;
+}
+.crm-delete-modal__btn--danger.is-loading::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 50%;
+  height: 10px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(255,255,255,.28) 25%, rgba(255,255,255,.55) 50%, rgba(255,255,255,.28) 75%);
+  background-size: 220% 100%;
+  animation: crm-delete-btn-skeleton 1.1s ease-in-out infinite;
+}
+.crm-delete-modal__card[aria-busy="true"] .crm-delete-modal__input {
+  opacity: 0.7;
+  pointer-events: none;
+}
 .crm-delete-modal__btn[disabled] { opacity: .45; cursor: not-allowed; }
+@keyframes crm-delete-btn-skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -333,28 +363,80 @@
   var pendingNid = null;
   var pendingName = null;
   var modal = document.getElementById('delete-modal');
+  var modalCard = modal ? modal.querySelector('.crm-delete-modal__card') : null;
   var confirmInput = document.getElementById('delete-confirm-input');
   var confirmBtn = document.getElementById('delete-confirm-btn');
   var cancelBtn = document.getElementById('delete-cancel-btn');
   var closeBtn = modal ? modal.querySelector('.crm-delete-modal__close') : null;
   var overlay = modal ? modal.querySelector('.crm-delete-modal__overlay') : null;
   var nameEl = document.getElementById('delete-name-confirm');
+  var focusedBeforeOpen = null;
+  var triggerButton = null;
 
-  function openModal(nid, name) {
+  function getFocusableElements() {
+    if (!modal) return [];
+    var selector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.prototype.slice.call(modal.querySelectorAll(selector)).filter(function (el) {
+      return el.offsetParent !== null;
+    });
+  }
+
+  function setModalOpenState(isOpen) {
+    if (!modal) return;
+    modal.classList.toggle('is-open', isOpen);
+    modal.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.body.classList.toggle('crm-modal-open', isOpen);
+  }
+
+  function setModalLoadingState(isLoading) {
+    if (modalCard) {
+      modalCard.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+    }
+    if (confirmBtn) {
+      confirmBtn.classList.toggle('is-loading', isLoading);
+    }
+  }
+
+  function openModal(nid, name, trigger) {
     pendingNid = nid;
     pendingName = name;
+    triggerButton = trigger || null;
+    focusedBeforeOpen = document.activeElement;
+
+    if (triggerButton) {
+      triggerButton.setAttribute('aria-expanded', 'true');
+    }
+
     if (nameEl) nameEl.textContent = name;
     if (confirmInput) { confirmInput.value = ''; confirmInput.focus(); }
     if (confirmBtn) confirmBtn.disabled = true;
-    if (modal) modal.style.display = 'flex';
+    setModalLoadingState(false);
+    setModalOpenState(true);
+
+    var focusables = getFocusableElements();
+    if (focusables.length) {
+      focusables[0].focus();
+    }
   }
 
   function closeModal() {
-    if (modal) modal.style.display = 'none';
+    setModalOpenState(false);
     pendingNid = null;
     pendingName = null;
     if (confirmInput) confirmInput.value = '';
     if (confirmBtn) confirmBtn.disabled = true;
+    setModalLoadingState(false);
+
+    if (triggerButton) {
+      triggerButton.setAttribute('aria-expanded', 'false');
+    }
+
+    if (focusedBeforeOpen && typeof focusedBeforeOpen.focus === 'function') {
+      focusedBeforeOpen.focus();
+    }
+
+    focusedBeforeOpen = null;
+    triggerButton = null;
   }
 
   // Enable confirm button only when name matches exactly
@@ -369,7 +451,7 @@
     confirmBtn.addEventListener('click', async function () {
       if (!pendingNid || !pendingName) return;
       confirmBtn.disabled = true;
-      confirmBtn.textContent = 'Deleting…';
+      setModalLoadingState(true);
 
       try {
         // Fetch CSRF token from Drupal session
@@ -406,7 +488,7 @@
           throw new Error(data.message || 'Delete failed');
         }
       } catch (err) {
-        confirmBtn.textContent = 'Delete permanently';
+        setModalLoadingState(false);
         confirmBtn.disabled = false;
         if (window.CRM && window.CRM.toast) {
           window.CRM.toast('Error: ' + err.message, 'error', 5000);
@@ -423,15 +505,44 @@
 
   // Keyboard: Escape closes, Enter submits
   document.addEventListener('keydown', function (e) {
-    if (!modal || modal.style.display === 'none') return;
-    if (e.key === 'Escape') closeModal();
-    if (e.key === 'Enter' && confirmBtn && !confirmBtn.disabled) confirmBtn.click();
+    if (!modal || modal.getAttribute('aria-hidden') === 'true') return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeModal();
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      var focusables = getFocusableElements();
+      if (!focusables.length) return;
+
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+
+    if (e.key === 'Enter' && confirmBtn && !confirmBtn.disabled) {
+      e.preventDefault();
+      confirmBtn.click();
+    }
   });
 
   // Wire up delete buttons in table
   document.querySelectorAll('.delete-btn').forEach(function (btn) {
+    btn.setAttribute('aria-haspopup', 'dialog');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'delete-modal');
     btn.addEventListener('click', function () {
-      openModal(this.dataset.nid, this.dataset.name);
+      openModal(this.dataset.nid, this.dataset.name, this);
     });
   });
 })();

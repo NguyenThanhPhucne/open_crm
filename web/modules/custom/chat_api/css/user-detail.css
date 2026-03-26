@@ -20,11 +20,22 @@
 .profile-card {
   background: white;
   border-radius: 12px;
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   padding: 32px;
   display: flex;
   align-items: flex-start;
   gap: 24px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.profile-card:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
 .profile-avatar {
@@ -136,10 +147,21 @@
   background: white;
   padding: 16px;
   border-radius: 10px;
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   gap: 12px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.stats-grid .stat-box:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
 .stats-grid .stat-icon {
@@ -194,8 +216,19 @@
 .section-card {
   background: white;
   border-radius: 12px;
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.section-card:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
 .section-header {
@@ -562,12 +595,23 @@
 .profile-meta-extended {
   background: white;
   border-radius: 12px;
+  border: 1px solid var(--border-color);
   padding: 20px;
   box-shadow: var(--shadow-sm);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
   margin-top: 24px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.profile-meta-extended:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
 .profile-meta-extended .meta-item {

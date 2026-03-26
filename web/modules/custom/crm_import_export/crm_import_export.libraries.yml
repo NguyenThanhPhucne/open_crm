@@ -1,5 +1,5 @@
 import_ui:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-import.css: {}

@@ -41,6 +41,10 @@
       let updateTimeout;
       let eventSource = null;
       let isUpdating = false;
+      const iconUsers = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
+      const iconInfo = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+      const iconEye = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+      const iconTrash = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
 
       /**
        * Fetch fresh data from MongoDB API
@@ -104,11 +108,7 @@
         // Add live indicator to page title
         const titleArea = document.querySelector('h1.page-title') || document.querySelector('.block-page-title-block');
         if (titleArea && !document.querySelector('.live-indicator')) {
-           titleArea.insertAdjacentHTML('beforeend', ' <span class="live-indicator" style="font-size:14px;font-weight:bold;color:#ef4444;vertical-align:middle;margin-left:12px;animation:pulseLive 2s infinite">● Connecting</span>');
-           
-           const style = document.createElement("style");
-           style.textContent = `@keyframes pulseLive { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`;
-           document.head.appendChild(style);
+            titleArea.insertAdjacentHTML('beforeend', ' <span class="live-indicator is-connecting">Connecting</span>');
         }
 
         eventSource = new EventSource('/admin/chat/api/stream');
@@ -117,8 +117,8 @@
           if (DEBUG_MODE) console.log("[SSE] Connected to stream");
           const ind = document.querySelector('.live-indicator');
           if (ind) { 
-            ind.style.color = '#10b981'; // Green
-            ind.textContent = '● Live'; 
+            ind.classList.remove('is-connecting');
+            ind.textContent = 'Live'; 
           }
         };
 
@@ -132,8 +132,8 @@
           if (DEBUG_MODE) console.error("[SSE] Connection error");
           const ind = document.querySelector('.live-indicator');
           if (ind) { 
-            ind.style.color = '#ef4444'; // Red
-            ind.textContent = '● Reconnecting'; 
+            ind.classList.add('is-connecting');
+            ind.textContent = 'Reconnecting'; 
           }
         };
       }
@@ -223,7 +223,7 @@
 
         const button = rowElement.querySelector(".delete-conversation");
         const originalHTML = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.textContent = 'Deleting...';
         button.disabled = true;
 
         getAdminCsrfToken().then(function(csrfToken) { return fetch(drupalDeleteUrl, {
@@ -304,7 +304,7 @@
           <td class="conversation-id"><strong>#${conversation._id.substring(0, 8)}</strong></td>
           <td class="conversation-info">
             <div class="conversation-avatar">
-              ${conversation.type === "group" ? '<i class="fas fa-users"></i>' : '<i class="fas fa-user-friends"></i>'}
+              ${iconUsers}
             </div>
             <div class="conversation-details">
               <div class="conversation-name">
@@ -317,7 +317,7 @@
                 }
               </div>
               <div class="conversation-meta" title="${(conversation.participants || []).map((p) => `${p.displayName} (Drupal ID: ${p.drupalId})`).join(", ")}">
-                <i class="fas fa-hashtag"></i> ${conversation._id.substring(0, 8)}
+                ${iconInfo} ${conversation._id.substring(0, 8)}
                 <span class="participants-list">
                   ${(conversation.participants || []).map((p) => `<span class="participant-badge" title="${p.displayName}">${escapeHtml(p.displayName.substring(0, 10))}</span>`).join("")}
                 </span>
@@ -331,7 +331,7 @@
           </td>
           <td class="participants-cell">
             <div class="participants-list">
-              ${(conversation.participants || []).map((p) => `<span class="participant-badge" title="Drupal ID: ${p.drupalId}"><i class="fas fa-user-circle"></i> ${escapeHtml(p.displayName)}</span>`).join("")}
+              ${(conversation.participants || []).map((p) => `<span class="participant-badge" title="Drupal ID: ${p.drupalId}">${iconUsers} ${escapeHtml(p.displayName)}</span>`).join("")}
             </div>
           </td>
           <td class="last-message-cell">
@@ -353,10 +353,10 @@
           </td>
           <td class="actions">
             <a href="/admin/chat/conversations/${conversation._id}" class="btn btn-sm btn-info">
-              <i class="fas fa-eye"></i> View
+              ${iconEye} View
             </a>
             <button class="btn btn-sm btn-danger delete-conversation" data-id="${conversation._id}">
-              <i class="fas fa-trash"></i> Delete
+              ${iconTrash} Delete
             </button>
           </td>
         `;

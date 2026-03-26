@@ -69,53 +69,13 @@ class ContactsListController extends ControllerBase {
    *   JSON response with status and message.
    */
   public function deleteContact(Request $request, $nid) {
+    $result = $this->validateContactDeleteRequest($request, $nid);
+    if (!$result['valid']) {
+      return new JsonResponse($result['response'], $result['status']);
+    }
+
+    $node = $result['node'];
     $account = $this->currentUser();
-
-    $token = $request->headers->get('X-CSRF-Token');
-    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
-      return new JsonResponse([
-        'status' => 'error',
-        'message' => 'CSRF token validation failed.',
-        'code' => 403,
-      ], 403);
-    }
-
-    // Load the contact.
-    $node = $this->entityTypeManager->getStorage('node')->load($nid);
-
-    if (!$node) {
-      return new JsonResponse([
-        'status' => 'error',
-        'message' => 'Contact not found.',
-        'code' => 404,
-      ], 404);
-    }
-
-    // Verify it's a contact.
-    if ($node->bundle() !== 'contact') {
-      return new JsonResponse([
-        'status' => 'error',
-        'message' => 'Invalid entity type.',
-        'code' => 400,
-      ], 400);
-    }
-
-    // Check delete access using the service.
-    $access_service = $this->container->get('crm.access_service');
-    if (!$access_service->canUserDeleteEntity($node, $account)) {
-      $this->loggerFactory->get('crm')->warning(
-        'User %uid attempted to delete contact %nid without permission.',
-        ['%uid' => $account->id(), '%nid' => $nid]
-      );
-
-      return new JsonResponse([
-        'status' => 'error',
-        'message' => 'You do not have permission to delete this contact.',
-        'code' => 403,
-      ], 403);
-    }
-
-    // Log the deletion action.
     $contact_name = $node->label();
     $this->loggerFactory->get('crm')->info(
       'User %uid deleted contact "%name" (NID: %nid).',
@@ -127,19 +87,17 @@ class ContactsListController extends ControllerBase {
     );
 
     try {
-      // Delete the contact.
-      $nid_deleted = $node->id();
-      $node->delete();
-
-      // Invalidate caches so list views update immediately without waiting
-      Cache::invalidateTags(['node:' . $nid_deleted, 'node_list']);
+      $delete_mode = $this->deleteContactEntity($node);
+      Cache::invalidateTags(['node:' . $node->id(), 'node_list', 'node_list:contact', 'rendered']);
 
       return new JsonResponse([
         'status' => 'success',
         'message' => 'Contact deleted successfully.',
         'nid' => $nid,
+        'delete_mode' => $delete_mode,
       ], 200);
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->loggerFactory->get('crm')->error(
         'Failed to delete contact %nid: %error',
         [
@@ -176,7 +134,7 @@ class ContactsListController extends ControllerBase {
     \Drupal::logger('crm')->info('AI autocomplete enabled: @enabled', ['@enabled' => $ai_autocomplete_enabled ? 'YES' : 'NO']);
 
     // Prepare render array using theme template.
-    $build = [
+    return [
       '#theme' => 'crm_contacts_list',
       '#contacts' => $contacts,
       '#account' => $account,
@@ -185,8 +143,6 @@ class ContactsListController extends ControllerBase {
         'library' => ['crm/contacts_list'],
       ],
     ];
-
-    return $build;
   }
 
   /**
@@ -199,74 +155,27 @@ class ContactsListController extends ControllerBase {
    *   Array of contact data.
    */
   protected function getContactsList(AccountInterface $account) {
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('type', 'contact')
-      ->sort('changed', 'DESC')
-      ->sort('created', 'DESC')
-      ->accessCheck(TRUE);
+    $contact_fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', 'contact');
+    $has_deleted_at = isset($contact_fields['field_deleted_at']);
+
+    $query = $this->buildContactsQuery($has_deleted_at);
 
     $nids = $query->execute();
     $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
 
     $access_service = $this->container->get('crm.access_service');
     $contacts = [];
-    $current_time = time();
-
     foreach ($nodes as $node) {
+      if ($this->isSoftDeletedContact($node, $has_deleted_at)) {
+        continue;
+      }
+
       // Check if user can view this contact.
       if (!$access_service->canUserViewEntity($node, $account)) {
         continue;
       }
 
-      $changed = $node->getChangedTime();
-      $created = $node->getCreatedTime();
-
-      // Format timestamp to relative time.
-      $changed_relative = $this->formatTimestamp($changed);
-      $created_relative = $this->formatTimestamp($created);
-
-      // Check if contact is badge-eligible (within 10 minutes).
-      $is_new = $this->isBadgeEligible($created, 600);
-      $is_updated = $this->isBadgeEligible($changed, 600) && $changed > $created;
-
-      // Get owner name.
-      $owner_name = '';
-      if ($node->hasField('field_owner') && !$node->get('field_owner')->isEmpty()) {
-        $owner_ref = $node->get('field_owner')->getValue();
-        if (!empty($owner_ref[0]['target_id'])) {
-          $owner = $this->entityTypeManager->getStorage('user')->load($owner_ref[0]['target_id']);
-          if ($owner) {
-            $owner_name = $owner->getDisplayName();
-          }
-        }
-      }
-
-      // Build contact data.
-      $organization_name = '';
-      if ($node->hasField('field_organization') && !$node->get('field_organization')->isEmpty()) {
-        $organization = $node->get('field_organization')->entity;
-        if ($organization) {
-          $organization_name = $organization->label();
-        }
-      }
-
-      $contact_data = [
-        'nid' => $node->id(),
-        'name' => $node->label(),
-        'email' => $node->hasField('field_email') ? $node->get('field_email')->value : '',
-        'organization' => $organization_name,
-        'owner' => $owner_name,
-        'created' => $created,
-        'created_relative' => $created_relative,
-        'changed' => $changed,
-        'changed_relative' => $changed_relative,
-        'is_new' => $is_new,
-        'is_updated' => $is_updated,
-        'can_edit' => $access_service->canUserEditEntity($node, $account),
-        'can_delete' => $access_service->canUserDeleteEntity($node, $account),
-      ];
-
-      $contacts[] = $contact_data;
+      $contacts[] = $this->buildContactData($node, $access_service, $account);
     }
 
     return $contacts;
@@ -285,24 +194,168 @@ class ContactsListController extends ControllerBase {
     $now = time();
     $diff = $now - $timestamp;
 
-    if ($diff < 60) {
-      return 'just now';
-    } elseif ($diff < 3600) {
+    $label = 'just now';
+    if ($diff >= 60 && $diff < 3600) {
       $minutes = floor($diff / 60);
-      return $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
-    } elseif ($diff < 86400) {
-      $hours = floor($diff / 3600);
-      return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
-    } elseif ($diff < 604800) {
-      $days = floor($diff / 86400);
-      if ($days == 1) {
-        return 'yesterday';
-      }
-      return $days . ' days ago';
-    } else {
-      $weeks = floor($diff / 604800);
-      return $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+      $label = $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
     }
+    elseif ($diff >= 3600 && $diff < 86400) {
+      $hours = floor($diff / 3600);
+      $label = $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+    }
+    elseif ($diff >= 86400 && $diff < 604800) {
+      $days = floor($diff / 86400);
+      $label = $days == 1 ? 'yesterday' : $days . ' days ago';
+    }
+    elseif ($diff >= 604800) {
+      $weeks = floor($diff / 604800);
+      $label = $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+    }
+
+    return $label;
+  }
+
+  /**
+   * Validate contact delete request.
+   */
+  protected function validateContactDeleteRequest(Request $request, $nid) {
+    $result = NULL;
+
+    $token = $request->headers->get('X-CSRF-Token');
+    if (empty($token) || !\Drupal::service('csrf_token')->validate($token, CsrfRequestHeaderAccessCheck::TOKEN_KEY)) {
+      $result = [
+        'valid' => FALSE,
+        'status' => 403,
+        'response' => ['status' => 'error', 'message' => 'CSRF token validation failed.', 'code' => 403],
+      ];
+    }
+    else {
+      $node = $this->entityTypeManager->getStorage('node')->load($nid);
+      if (!$node) {
+        $result = [
+          'valid' => FALSE,
+          'status' => 404,
+          'response' => ['status' => 'error', 'message' => 'Contact not found.', 'code' => 404],
+        ];
+      }
+      elseif ($node->bundle() !== 'contact') {
+        $result = [
+          'valid' => FALSE,
+          'status' => 400,
+          'response' => ['status' => 'error', 'message' => 'Invalid entity type.', 'code' => 400],
+        ];
+      }
+      else {
+        $access_service = $this->container->get('crm.access_service');
+        $account = $this->currentUser();
+        if (!$access_service->canUserDeleteEntity($node, $account)) {
+          $this->loggerFactory->get('crm')->warning(
+            'User %uid attempted to delete contact %nid without permission.',
+            ['%uid' => $account->id(), '%nid' => $nid]
+          );
+
+          $result = [
+            'valid' => FALSE,
+            'status' => 403,
+            'response' => ['status' => 'error', 'message' => 'You do not have permission to delete this contact.', 'code' => 403],
+          ];
+        }
+        else {
+          $result = ['valid' => TRUE, 'node' => $node];
+        }
+      }
+    }
+
+    return $result ?: [
+      'valid' => FALSE,
+      'status' => 400,
+      'response' => ['status' => 'error', 'message' => 'Invalid delete request.', 'code' => 400],
+    ];
+  }
+
+  /**
+   * Delete/soft-delete contact node.
+   */
+  protected function deleteContactEntity(NodeInterface $node) {
+    $node->delete();
+    return 'hard';
+  }
+
+  /**
+   * Build contacts query with optional soft-delete filter.
+   */
+  protected function buildContactsQuery($has_deleted_at) {
+    $query = $this->entityTypeManager->getStorage('node')->getQuery()
+      ->condition('type', 'contact')
+      ->sort('changed', 'DESC')
+      ->sort('created', 'DESC')
+      ->accessCheck(TRUE);
+
+    if ($has_deleted_at) {
+      $query->notExists('field_deleted_at');
+    }
+
+    return $query;
+  }
+
+  /**
+   * Check whether a contact is soft-deleted.
+   */
+  protected function isSoftDeletedContact(NodeInterface $node, $has_deleted_at) {
+    return $has_deleted_at && $node->hasField('field_deleted_at') && !$node->get('field_deleted_at')->isEmpty();
+  }
+
+  /**
+   * Build normalized contact data for list rendering.
+   */
+  protected function buildContactData(NodeInterface $node, $access_service, AccountInterface $account) {
+    $changed = $node->getChangedTime();
+    $created = $node->getCreatedTime();
+
+    return [
+      'nid' => $node->id(),
+      'name' => $node->label(),
+      'email' => $node->hasField('field_email') ? $node->get('field_email')->value : '',
+      'organization' => $this->getOrganizationName($node),
+      'owner' => $this->getOwnerName($node),
+      'created' => $created,
+      'created_relative' => $this->formatTimestamp($created),
+      'changed' => $changed,
+      'changed_relative' => $this->formatTimestamp($changed),
+      'is_new' => $this->isBadgeEligible($created, 600),
+      'is_updated' => $this->isBadgeEligible($changed, 600) && $changed > $created,
+      'can_edit' => $access_service->canUserEditEntity($node, $account),
+      'can_delete' => $access_service->canUserDeleteEntity($node, $account),
+    ];
+  }
+
+  /**
+   * Resolve contact owner display name.
+   */
+  protected function getOwnerName(NodeInterface $node) {
+    if (!$node->hasField('field_owner') || $node->get('field_owner')->isEmpty()) {
+      return '';
+    }
+
+    $owner_ref = $node->get('field_owner')->getValue();
+    if (empty($owner_ref[0]['target_id'])) {
+      return '';
+    }
+
+    $owner = $this->entityTypeManager->getStorage('user')->load($owner_ref[0]['target_id']);
+    return $owner ? $owner->getDisplayName() : '';
+  }
+
+  /**
+   * Resolve contact organization display name.
+   */
+  protected function getOrganizationName(NodeInterface $node) {
+    if (!$node->hasField('field_organization') || $node->get('field_organization')->isEmpty()) {
+      return '';
+    }
+
+    $organization = $node->get('field_organization')->entity;
+    return $organization ? $organization->label() : '';
   }
 
   /**

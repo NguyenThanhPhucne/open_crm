@@ -189,4 +189,13 @@ function crm_actions_preprocess_views_view(&$variables) {
   }
 }
 
-
+/**
+ * Implements hook_form_alter().
+ */
+function crm_actions_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Apply premium styling to CRM Announcement node forms.
+  if (in_array($form_id, ['node_crm_announcement_form', 'node_crm_announcement_edit_form'])) {
+    $form['#attached']['library'][] = 'crm_actions/announcement_form';
+    $form['#attributes']['class'][] = 'crm-premium-document-form';
+  }
+}

@@ -192,25 +192,25 @@
 .btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1.1rem;
-  background: #fff;
-  color: #374151;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  gap: 7px;
+  padding: 9px 18px;
+  background: #ffffff;
+  color: #2563eb;
+  border: 1.5px solid #dbeafe;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-secondary:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
-  color: #374151;
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
   text-decoration: none;
 }
 
@@ -1311,8 +1311,19 @@
 .ccontent-card {
   background: #fff;
   border-radius: 12px;
+  border: 1px solid #e2e8f0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ccontent-card:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 .ccard-header {
   display: flex;

@@ -14,6 +14,8 @@
   "use strict";
 
   let csrfToken = null;
+  let deleteModalTrapCleanup = null;
+  let lastFocusedElement = null;
 
   function getCsrfToken() {
     if (csrfToken) {
@@ -64,24 +66,30 @@
   Drupal.behaviors.contactsListDelete = {
     attach: function (context) {
       // Delete button click handler.
-      jQuery(".crm-contact__delete-btn", context).each(function () {
-        // Skip if already processed
-        if (jQuery(this).data("delete-initialized")) {
-          return;
-        }
-        jQuery(this).data("delete-initialized", true);
+      jQuery(".crm-contact__delete-btn, .delete-btn", context).each(
+        function () {
+          // Skip if already processed
+          if (jQuery(this).data("delete-initialized")) {
+            return;
+          }
+          jQuery(this).data("delete-initialized", true);
 
-        jQuery(this).on("click", function (e) {
-          e.preventDefault();
-          const nid = jQuery(this).data("nid");
-          const contactName =
-            jQuery(this).data("name") ||
-            jQuery(this).closest("tr").find(".crm-contact-link").text().trim();
+          jQuery(this).on("click", function (e) {
+            e.preventDefault();
+            const nid = jQuery(this).data("nid");
+            const contactName =
+              jQuery(this).data("name") ||
+              jQuery(this)
+                .closest("tr")
+                .find(".crm-contact-link")
+                .text()
+                .trim();
 
-          // Show confirmation modal.
-          showDeleteConfirmation(nid, contactName);
-        });
-      });
+            // Show confirmation modal.
+            showDeleteConfirmation(nid, contactName);
+          });
+        },
+      );
 
       // Initialize relative time formatting.
       updateRelativeTimes();
@@ -123,8 +131,95 @@
     // Update modal content and show.
     jQuery("#contact-name-display").text(contactName);
     const modal = jQuery("#DeleteConfirmationModal");
+    lastFocusedElement = document.activeElement;
+
+    if (deleteModalTrapCleanup) {
+      deleteModalTrapCleanup();
+      deleteModalTrapCleanup = null;
+    }
+
     modal.addClass("crm-modal--visible").data("nid", nid);
-    modal.focus();
+    modal.attr("aria-modal", "true");
+    modal.attr("tabindex", "-1");
+    deleteModalTrapCleanup = trapFocus(modal[0], closeDeleteModal);
+
+    const primaryAction = modal.find(".crm-modal__confirm-btn")[0];
+    if (primaryAction) {
+      primaryAction.focus();
+    } else {
+      modal[0].focus();
+    }
+  }
+
+  function closeDeleteModal() {
+    const modal = jQuery("#DeleteConfirmationModal");
+    modal.removeClass("crm-modal--visible");
+
+    if (deleteModalTrapCleanup) {
+      deleteModalTrapCleanup();
+      deleteModalTrapCleanup = null;
+    }
+
+    if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+      lastFocusedElement.focus();
+    }
+    lastFocusedElement = null;
+  }
+
+  function trapFocus(container, onEscape) {
+    const focusableSelector =
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const getFocusable = function () {
+      return Array.from(container.querySelectorAll(focusableSelector)).filter(
+        function (el) {
+          return (
+            el.offsetParent !== null &&
+            !el.hasAttribute("disabled") &&
+            el.getAttribute("aria-hidden") !== "true"
+          );
+        },
+      );
+    };
+
+    const keyHandler = function (e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (typeof onEscape === "function") {
+          onEscape();
+        }
+        return;
+      }
+
+      if (e.key !== "Tab") {
+        return;
+      }
+
+      const focusables = getFocusable();
+      if (!focusables.length) {
+        e.preventDefault();
+        container.focus();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", keyHandler, true);
+
+    return function cleanup() {
+      document.removeEventListener("keydown", keyHandler, true);
+    };
   }
 
   /**
@@ -135,12 +230,12 @@
 
     // Close button.
     jQuery(".crm-modal__close-btn").on("click", function () {
-      modal.removeClass("crm-modal--visible");
+      closeDeleteModal();
     });
 
     // Cancel button.
     jQuery(".crm-modal__cancel-btn").on("click", function () {
-      modal.removeClass("crm-modal--visible");
+      closeDeleteModal();
     });
 
     // Confirm button.
@@ -151,14 +246,7 @@
 
     // Close on overlay click.
     jQuery(".crm-modal__overlay").on("click", function () {
-      modal.removeClass("crm-modal--visible");
-    });
-
-    // Close on Escape key.
-    jQuery(document).on("keydown.modal", function (e) {
-      if (e.key === "Escape" && modal.hasClass("crm-modal--visible")) {
-        modal.removeClass("crm-modal--visible");
-      }
+      closeDeleteModal();
     });
   }
 
@@ -169,7 +257,9 @@
    */
   function deleteContact(nid) {
     const modal = jQuery("#DeleteConfirmationModal");
-    const contactRow = jQuery(`tr[data-nid="${nid}"]`);
+    const contactRow = jQuery(
+      `tr[data-nid="${nid}"], tr[data-entity-id="${nid}"], #contact-row-${nid}`,
+    );
 
     // Show loading state.
     const confirmBtn = modal.find(".crm-modal__confirm-btn");
@@ -191,18 +281,21 @@
       })
       .done(function (response) {
         if (response.status === "success") {
-          modal.removeClass("crm-modal--visible");
+          closeDeleteModal();
 
           window.CRM &&
             CRM.toast("Contact deleted — removed from your CRM.", "success");
 
           // Optimistically remove the row immediately for real-time feel
-          contactRow.fadeOut(300, function() {
+          contactRow.fadeOut(300, function () {
             jQuery(this).remove();
-            
+
             // Background refresh to keep pagination and counts accurate
             refreshContactsWrapper().then(function (refreshed) {
-              if (!refreshed && jQuery('.crm-contact__delete-btn').length === 0) {
+              if (
+                !refreshed &&
+                jQuery(".crm-contact__delete-btn").length === 0
+              ) {
                 // Only reload if wrapper refresh failed AND list is now empty
                 window.location.reload();
               }

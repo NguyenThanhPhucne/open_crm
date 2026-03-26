@@ -1,5 +1,5 @@
 register_form:
-  version: 2.0
+  version: 4.0
   css:
     theme:
       css/register-form.css: {}

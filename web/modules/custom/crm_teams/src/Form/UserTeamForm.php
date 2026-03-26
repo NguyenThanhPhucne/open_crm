@@ -98,12 +98,11 @@ class UserTeamForm extends FormBase {
         $form_state->setRedirect('crm_teams.settings');
       }
     } catch (\Exception $e) {
-      $this->messenger()->addError($this->t('Error assigning team: @error', [
-        '@error' => $e->getMessage(),
-      ]));
+      // Log full error but show generic message to user for security
       \Drupal::logger('crm_teams')->error('Error in UserTeamForm: @error', [
         '@error' => $e->getMessage(),
       ]);
+      $this->messenger()->addError($this->t('An error occurred while assigning the team. Please try again or contact support.'));
     }
   }
 

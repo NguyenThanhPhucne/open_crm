@@ -1,0 +1,6 @@
+vendor/
+backups/
+new/
+web/core/
+web/modules/contrib/
+web/themes/contrib/

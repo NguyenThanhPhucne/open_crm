@@ -6,7 +6,7 @@
   background: #f8fafc;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   max-width: 700px;
   margin: 20px auto;
   border: 1px solid #e2e8f0;
@@ -156,7 +156,9 @@
   padding: 0 !important;
   border: none !important;
   border-radius: 12px !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
   overflow: hidden !important;
   background: #fff !important;
 }
@@ -239,6 +241,17 @@
   margin: 15px 30px !important;
   padding: 0 !important;
   border: none !important;
+  border-radius: 10px !important;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease !important;
+}
+
+.crm-form-field-card:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08) !important;
+  border-color: #bfdbfe !important;
 }
 
 .crm-form-field-card label,
@@ -255,8 +268,8 @@
 
 /* Required star color */
 .crm-form-field-card label .form-required::after {
-    color: #ef4444 !important;
-    content: " * " !important;
+  color: #ef4444 !important;
+  content: " * " !important;
 }
 
 /* Inputs styled like Quick Add */

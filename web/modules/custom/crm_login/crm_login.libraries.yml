@@ -1,5 +1,5 @@
 login_form:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/login-form.css: {}
@@ -12,7 +12,7 @@ login_form:
     - core/jquery.once
 
 error_pages:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/error-pages.css: {}

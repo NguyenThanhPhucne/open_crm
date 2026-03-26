@@ -109,7 +109,6 @@
           }, CRMLazyLoad.scrollDebounceMs);
         });
       }
-
     }
   }
 
@@ -163,25 +162,24 @@
     var $indicator = jQuery(
       '<div class="crm-lazy-load__indicator" id="' +
         listId +
-        '-indicator"' +
-        ' style="display: none; padding: 20px; text-align: center;">' +
-        '<div class="crm-lazy-load__spinner" style="display: inline-block; width: 20px; height: 20px; ' +
-        "border: 3px solid #f3f3f3; border-top: 3px solid #0066cc; border-radius: 50%; " +
-        'animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;"></div>' +
+        '-indicator" aria-live="polite" aria-busy="false">' +
+        '<div class="crm-lazy-load__indicator-body">' +
+        '<div class="crm-lazy-load__skeleton-table" aria-hidden="true">' +
+        '<div class="crm-lazy-load__skeleton-row">' +
+        '<span class="crm-lazy-load__skeleton"></span>' +
+        '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
+        "</div>" +
+        '<div class="crm-lazy-load__skeleton-row">' +
+        '<span class="crm-lazy-load__skeleton"></span>' +
+        '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
+        "</div>" +
+        "</div>" +
         '<span id="' +
         listId +
         '-indicator-text">Loading more items...</span>' +
+        "</div>" +
         "</div>",
     );
-
-    // Add spinner animation style if not exists
-    if (!document.getElementById("crm-lazy-load-styles")) {
-      var style = document.createElement("style");
-      style.id = "crm-lazy-load-styles";
-      style.textContent =
-        "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
-      document.head.appendChild(style);
-    }
 
     $list.after($indicator);
   }
@@ -240,7 +238,8 @@
     var listUrl = $list.attr("data-list-url") || window.location.pathname;
 
     listState.isLoading = true;
-    $indicator.show();
+    $indicator.show().addClass("is-loading").removeClass("is-done is-error");
+    $indicator.attr("aria-busy", "true");
 
     // Update indicator text with attempt count
     var indicatorText =
@@ -248,7 +247,6 @@
         ? "Loading more items... (attempt " + (attemptCount + 1) + ")"
         : "Loading more items...";
     jQuery("#" + listId + "-indicator-text").text(indicatorText);
-
 
     // Build request URL
     var url = listUrl + "?page=" + nextPage;
@@ -301,7 +299,8 @@
         if ($newRows.length === 0) {
           // No more items to load
           jQuery("#" + listId + "-indicator-text").text("All items loaded");
-          $indicator.addClass("is-done");
+          $indicator.removeClass("is-loading is-error").addClass("is-done");
+          $indicator.attr("aria-busy", "false");
           listState.hasMore = false;
 
           setTimeout(function () {
@@ -310,7 +309,6 @@
 
           // Clean up scroll listener if using fallback
           jQuery(window).off("scroll.crm-lazy-load-" + listId);
-
         } else {
           // Check for data integrity
           validateAndAddRows($list, $newRows, listId);
@@ -325,8 +323,10 @@
           listState.retryAttempt = 0; // Reset retry counter on success
 
           // Hide indicator
-          $indicator.hide();
-
+          $indicator
+            .removeClass("is-loading")
+            .attr("aria-busy", "false")
+            .hide();
 
           // Trigger custom event for other scripts
           $list.trigger("crm.items.loaded", [$newRows]);
@@ -357,7 +357,8 @@
         } else {
           // Final error
           jQuery("#" + listId + "-indicator-text").text("Error loading items");
-          $indicator.addClass("is-error");
+          $indicator.removeClass("is-loading").addClass("is-error");
+          $indicator.attr("aria-busy", "false");
 
           setTimeout(function () {
             $indicator.fadeOut();
@@ -418,7 +419,7 @@
     }
 
     var $retryBtn = jQuery(
-      '<button class="crm-btn crm-btn--secondary" style="margin-top: 10px;">' +
+      '<button class="crm-btn crm-btn--secondary crm-lazy-load__retry-btn">' +
         "↻ Retry</button>",
     );
 
@@ -430,7 +431,6 @@
       performLoadMoreItems(listId);
     });
 
-    $retryBtn.addClass("crm-lazy-load__retry-btn");
     $indicator.append($retryBtn);
   }
 

@@ -198,31 +198,31 @@ class CrmRegisterForm extends FormBase {
     // Validate username
     $username = $form_state->getValue('username');
     if (!preg_match('/^[a-zA-Z0-9._]{3,}$/', $username)) {
-      $form_state->setErrorByName('username', $this->t('Username must be at least 3 characters.'));
+      $form_state->setErrorByName('username', $this->t('Username must be at least 3 characters and contain only letters, numbers, dots, and underscores.'));
     }
 
     // Check if username exists
     $existing_user = user_load_by_name($username);
     if ($existing_user) {
-      $form_state->setErrorByName('username', $this->t('Username is already taken.'));
+      $form_state->setErrorByName('username', $this->t('This username is already taken. Please choose a different one.'));
     }
 
     // Validate email
     $email = $form_state->getValue('email');
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      $form_state->setErrorByName('email', $this->t('Invalid email address.'));
+      $form_state->setErrorByName('email', $this->t('Please enter a valid email address (e.g. user@example.com).'));
     }
 
     // Check if email exists
     $existing_email = user_load_by_mail($email);
     if ($existing_email) {
-      $form_state->setErrorByName('email', $this->t('Email is already in use.'));
+      $form_state->setErrorByName('email', $this->t('This email address is already registered. Please use a different email or try logging in.'));
     }
 
     // Validate password (min 5 chars like Discord)
     $password = $form_state->getValue('password');
     if (strlen($password) < 5) {
-      $form_state->setErrorByName('password', $this->t('Password must be at least 5 characters.'));
+      $form_state->setErrorByName('password', $this->t('Password must be at least 5 characters long.'));
     }
   }
 
@@ -268,13 +268,12 @@ class CrmRegisterForm extends FormBase {
 
     }
     catch (\Exception $e) {
-      $this->messenger()->addError($this->t('An error occurred while creating your account: @error', [
-        '@error' => $e->getMessage(),
-      ]));
-      
+      // Log the full error for debugging but show generic message to user
       \Drupal::logger('crm_register')->error('Registration error: @error', [
         '@error' => $e->getMessage(),
       ]);
+      
+      $this->messenger()->addError($this->t('An error occurred while creating your account. Please try again later or contact support if the problem persists.'));
     }
   }
 

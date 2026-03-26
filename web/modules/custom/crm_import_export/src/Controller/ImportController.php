@@ -18,8 +18,6 @@ class ImportController extends ControllerBase {
     $deal_count    = $this->getLiveCount('deal');
     $org_count     = $this->getLiveCount('organization');
 
-    $base = \Drupal::request()->getBaseUrl();
-
     $html = <<<HTML
 <div class="crm-import-hub">
 
@@ -36,18 +34,18 @@ class ImportController extends ControllerBase {
         </div>
       </div>
       <div class="crm-import-stats">
-        <div class="crm-import-stat">
+        <a href="/crm/all-contacts" class="crm-import-stat crm-import-stat--contacts" title="View contacts list">
           <i data-lucide="users" width="14" height="14"></i>
           <span><strong>{$contact_count}</strong> contacts</span>
-        </div>
-        <div class="crm-import-stat">
+        </a>
+        <a href="/crm/all-deals" class="crm-import-stat crm-import-stat--deals" title="View deals list">
           <i data-lucide="briefcase" width="14" height="14"></i>
           <span><strong>{$deal_count}</strong> deals</span>
-        </div>
-        <div class="crm-import-stat">
+        </a>
+        <a href="/crm/all-organizations" class="crm-import-stat crm-import-stat--organizations" title="View organizations list">
           <i data-lucide="building-2" width="14" height="14"></i>
           <span><strong>{$org_count}</strong> organizations</span>
-        </div>
+        </a>
       </div>
     </div>
   </div>
@@ -83,11 +81,11 @@ class ImportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-card__actions">
-          <a href="/admin/crm/import/contacts" class="btn-import btn-import--primary">
+          <a href="/admin/crm/import/contacts" class="btn-import btn-import--primary btn-import--contacts">
             <i data-lucide="upload" width="15" height="15"></i>
             Start Import
           </a>
-          <a href="/sites/default/files/import-templates/contacts_template.csv" class="btn-import btn-import--secondary" download>
+          <a href="/sites/default/files/import-templates/contacts_template.csv" class="btn-import btn-import--secondary btn-import--contacts" download>
             <i data-lucide="download" width="15" height="15"></i>
             Template
           </a>
@@ -118,11 +116,11 @@ class ImportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-card__actions">
-          <a href="/admin/crm/import/deals" class="btn-import btn-import--primary">
+          <a href="/admin/crm/import/deals" class="btn-import btn-import--primary btn-import--deals">
             <i data-lucide="upload" width="15" height="15"></i>
             Start Import
           </a>
-          <a href="/sites/default/files/import-templates/deals_template.csv" class="btn-import btn-import--secondary" download>
+          <a href="/sites/default/files/import-templates/deals_template.csv" class="btn-import btn-import--secondary btn-import--deals" download>
             <i data-lucide="download" width="15" height="15"></i>
             Template
           </a>
@@ -153,13 +151,45 @@ class ImportController extends ControllerBase {
           </div>
         </div>
         <div class="crm-import-card__actions">
-          <a href="/admin/crm/import/organizations" class="btn-import btn-import--primary">
+          <a href="/admin/crm/import/organizations" class="btn-import btn-import--primary btn-import--organizations">
             <i data-lucide="upload" width="15" height="15"></i>
             Start Import
           </a>
-          <a href="/sites/default/files/import-templates/organizations_template.csv" class="btn-import btn-import--secondary" download>
+          <a href="/sites/default/files/import-templates/organizations_template.csv" class="btn-import btn-import--secondary btn-import--organizations" download>
             <i data-lucide="download" width="15" height="15"></i>
             Template
+          </a>
+        </div>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="qac-card crm-import-card crm-import-card--blue">
+        <div class="crm-import-card__head">
+          <div class="crm-import-card__icon crm-import-card__icon--blue">
+            <i data-lucide="download" width="24" height="24"></i>
+          </div>
+          <div class="crm-import-card__title">
+            <h3>Export Data</h3>
+            <p>Download contacts, deals, and organizations to CSV</p>
+          </div>
+        </div>
+        <div class="crm-import-schema">
+          <h4>Available Exports</h4>
+          <div class="crm-import-tags">
+            <span class="crm-import-tag">contacts</span>
+            <span class="crm-import-tag">deals</span>
+            <span class="crm-import-tag">organizations</span>
+            <span class="crm-import-tag">filtered data</span>
+          </div>
+        </div>
+        <div class="crm-import-card__actions">
+          <a href="/admin/content/export" class="btn-import btn-import--primary btn-import--contacts">
+            <i data-lucide="download-cloud" width="15" height="15"></i>
+            Open Export Hub
+          </a>
+          <a href="/admin/crm/export/contacts" class="btn-import btn-import--secondary btn-import--contacts">
+            <i data-lucide="file-down" width="15" height="15"></i>
+            Quick Export
           </a>
         </div>
       </div>

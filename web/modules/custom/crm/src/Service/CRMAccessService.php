@@ -357,6 +357,8 @@ class CRMAccessService {
    *   The user account.
    * @param string $node_alias
    *   The alias for the node_field_data table.
+   * @param bool $allowSameTeam
+   *   Whether to allow access based on same team membership.
    */
   protected function applyAccessFilteringForSalesRep(&$query, AccountInterface $account, $node_alias, bool $allowSameTeam = FALSE) {
     // Check if the query object supports leftJoin operations (Entity queries might not)
@@ -381,16 +383,16 @@ class CRMAccessService {
     // Optional: Add team-based filtering (used only for sales_manager).
     if ($allowSameTeam) {
       $user_team = $this->getUserTeam($account->id());
-    }
+      
+      if (!empty($user_team)) {
+        // Join on field_owner_target_id (the CRM ownership field), NOT the Drupal
+        // node author uid. Using uid would allow access based on who created the
+        // Drupal node, which is different from who "owns" the CRM record.
+        $query->leftJoin('user__field_team', 'crm_owner_team', "crm_owner.field_owner_target_id = crm_owner_team.entity_id");
 
-    if (!empty($allowSameTeam) && $user_team) {
-      // Join on field_owner_target_id (the CRM ownership field), NOT the Drupal
-      // node author uid. Using uid would allow access based on who created the
-      // Drupal node, which is different from who "owns" the CRM record.
-      $query->leftJoin('user__field_team', 'crm_owner_team', "crm_owner.field_owner_target_id = crm_owner_team.entity_id");
-
-      // Allow if the CRM record's owner is in the same team as the current user.
-      $or->condition('crm_owner_team.field_team_target_id', $user_team, '=');
+        // Allow if the CRM record's owner is in the same team as the current user.
+        $or->condition('crm_owner_team.field_team_target_id', $user_team, '=');
+      }
     }
 
     $query->condition($or);
