@@ -55,6 +55,15 @@ function crm_data_quality_form_alter(&$form, FormStateInterface $form_state, $fo
       }
     }
     
+    // Phone REQUIRED (for organization)
+    if (strpos($form_id, 'organization') !== FALSE && isset($form['field_phone'])) {
+      $form['field_phone']['#required'] = TRUE;
+      $form['field_phone']['widget'][0]['#required'] = TRUE;
+      if (isset($form['field_phone']['widget'][0]['value'])) {
+        $form['field_phone']['widget'][0]['value']['#required'] = TRUE;
+      }
+    }
+    
     // Add custom validation
     $form['#validate'][] = 'crm_data_quality_contact_form_validate';
   }
@@ -67,6 +76,7 @@ function crm_data_quality_contact_form_validate(&$form, FormStateInterface $form
   $email = $form_state->getValue(['field_email', 0, 'value']);
   $phone = $form_state->getValue(['field_phone', 0, 'value']);
   $nid = $form_state->getFormObject()->getEntity()->id();
+  $bundle = $form_state->getFormObject()->getEntity()->bundle();
   
   // Check email format
   if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -76,7 +86,7 @@ function crm_data_quality_contact_form_validate(&$form, FormStateInterface $form
   // Check email uniqueness (exclude current node and deleted records)
   if (!empty($email)) {
     $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
-      ->condition('type', 'contact')
+      ->condition('type', ['contact', 'organization'], 'IN')
       ->condition('field_email', $email)
       ->accessCheck(FALSE);
     
@@ -91,13 +101,13 @@ function crm_data_quality_contact_form_validate(&$form, FormStateInterface $form
       $existing_id = reset($existing);
       if ($existing_id != $nid) {
         $form_state->setErrorByName('field_email', 
-          t('This email is already in use by another contact.'));
+          t('This email is already in use by another record.'));
       }
     }
   }
   
-  // Check phone format (VN format)
-  if (!empty($phone)) {
+  // Check phone format (VN format) - only for contacts
+  if ($bundle === 'contact' && !empty($phone)) {
     $validator = \Drupal::service('crm_data_quality.phone_validator');
     $result = $validator->validate($phone);
     if (!$result['valid']) {
