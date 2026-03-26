@@ -3008,9 +3008,7 @@ HTML;
     });
   </script>
 HTML;
-
     // Return render array with Drupal toolbar support
-=======
     // IMPORTANT: Disable page cache to ensure real-time data updates
     // when admins or staff edit CRM entities.
     return [
