@@ -1,0 +1,103 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - crm_advanced_filters
+id: saved_filter
+label: "Saved Filter"
+module: crm_advanced_filters
+description: "Stores user-saved filter definitions for reuse"
+handler_class: Drupal\Core\Entity\ContentEntityHandler
+class: Drupal\crm_advanced_filters\Entity\SavedFilter
+base_table: saved_filter
+data_table: saved_filter_field_data
+revision_table: saved_filter_revision
+revision_data_table: saved_filter_field_revision
+translatable: true
+show_revision_ui: false
+entity_keys:
+  id: id
+  langcode: langcode
+  label: name
+  revision: vid
+  owner: uid
+  published: status
+revision_metadata_keys:
+  published: published_at
+  created: created
+  revision_default: revision_default
+links:
+  canonical: /api/crm/filters/{saved_filter}
+  edit-form: /admin/crm/saved-filters/{saved_filter}/edit
+  delete-form: /admin/crm/saved-filters/{saved_filter}/delete
+  collection: /admin/crm/saved-filters
+field_storage_definitions:
+  id:
+    type: integer
+    label: ID
+    description: "The saved filter ID"
+    read-only: true
+  uuid:
+    type: uuid
+    label: UUID
+    description: "The UUID of the saved filter"
+    read-only: true
+  langcode:
+    type: language
+    label: "Language"
+    description: "The language code"
+  name:
+    type: string
+    label: "Filter Name"
+    description: "The name of the saved filter"
+    required: true
+    max_length: 255
+  description:
+    type: string_long
+    label: "Description"
+    description: "Description of what this filter finds"
+    required: false
+  entity_type:
+    type: string
+    label: "Entity Type"
+    description: "The entity type being filtered (contact, deal, organization, activity)"
+    required: true
+    max_length: 50
+  filter_definition:
+    type: map
+    label: "Filter Definition"
+    description: "Serialized filter definition array"
+    required: true
+  is_public:
+    type: boolean
+    label: "Is Public"
+    description: "Whether this filter is shareable with the team"
+    default_value: false
+  uid:
+    type: entity_reference
+    label: "User"
+    description: "The owner of this filter"
+    settings:
+      target_type: user
+    required: true
+  created:
+    type: created
+    label: "Created"
+    description: "The creation timestamp"
+  changed:
+    type: changed
+    label: "Last modified"
+    description: "The last modification timestamp"
+  last_used:
+    type: timestamp
+    label: "Last Used"
+    description: "The timestamp when this filter was last used"
+  status:
+    type: boolean
+    label: "Published"
+    description: "The published status"
+    default_value: true
+base_fields: []
+bundle_entity_type: null
+common_reference_target: false

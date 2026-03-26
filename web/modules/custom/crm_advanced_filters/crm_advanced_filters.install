@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Install file for CRM Advanced Filters module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function crm_advanced_filters_install() {
+  // Module installation tasks can be added here if needed.
+  \Drupal::messenger()->addStatus(t('CRM Advanced Filters module has been installed successfully.'));
+  \Drupal::messenger()->addStatus(t('Navigate to /crm/filters/contact to start using advanced filters.'));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function crm_advanced_filters_uninstall() {
+  // Cleanup tasks if needed.
+}

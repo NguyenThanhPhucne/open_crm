@@ -1,0 +1,14 @@
+name: CRM Advanced Filters
+description: Advanced search and filtering capabilities for Open CRM
+type: module
+package: CRM
+
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:user
+  - drupal:search_api
+  - crm:crm
+  - crm:crm_data_quality
+
+configure: crm_advanced_filters.settings

@@ -1,0 +1,19 @@
+use advanced filters:
+  title: "Use advanced filters"
+  description: "Access advanced filter builder for CRM entities"
+
+save filter searches:
+  title: "Save filter searches"
+  description: "Save and reuse filter searches"
+
+administer saved_filter:
+  title: "Administer saved filters"
+  description: "Manage all saved filters (admin only)"
+
+export filter results:
+  title: "Export filter results"
+  description: "Export filtered results to CSV/PDF"
+
+view all filter results:
+  title: "View all filter results"
+  description: "Bypass access restrictions on filter results"
