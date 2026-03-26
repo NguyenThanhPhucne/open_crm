@@ -140,3 +140,23 @@ function crm_ai_autocomplete_form_views_exposed_form_alter(&$form, FormStateInte
 }
 
 
+
+/**
+ * Implements hook_crm_page_actions_alter().
+ */
+function crm_ai_autocomplete_crm_page_actions_alter(&$actions, $entity_type) {
+  $account = \Drupal::currentUser();
+  if (!$account->hasPermission('use crm ai autocomplete')) {
+    return;
+  }
+
+  $actions['generate_data'] = [
+    'label' => 'Generate data',
+    'icon' => 'sparkles',
+    'class' => 'btn-generate',
+    'attributes' => [
+      'id' => 'crm-ai-generate-btn',
+      'data-entity-type' => $entity_type,
+    ],
+  ];
+}

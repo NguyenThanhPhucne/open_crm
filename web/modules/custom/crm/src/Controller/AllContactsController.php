@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\crm\Helper\CrmActionHelper;
 
 /**
  * Professional All Contacts list controller with inline CRUD.
@@ -237,7 +238,18 @@ class AllContactsController extends ControllerBase {
     $activities_url    = $can_manage ? '/crm/all-activities'    : '/crm/my-activities';
     $dashboard_url     = '/crm/dashboard';
     $pipeline_url      = '/crm/my-pipeline';
-    $add_url           = '/crm/add/contact';
+    $add_url      = '/crm/add/contact';
+    $contacts_url = $is_my_view ? '/crm/my-contacts' : '/crm/all-contacts';
+
+    // ── Build dynamic actions ───────────────────────────────────────────────
+    $actions_html = CrmActionHelper::renderActions('contact', [
+      'add' => [
+        'label' => 'Add Contact',
+        'url' => $add_url,
+        'icon' => 'user-plus',
+        'class' => 'btn-primary',
+      ],
+    ]);
 
     // ── Pagination helper ─────────────────────────────────────────────────────
     $page_url = function ($p) use ($search_name, $search_email, $search_phone, $sort_field, $sort_dir, $per_page, $current_path) {
@@ -463,7 +475,7 @@ class AllContactsController extends ControllerBase {
   .contacts-table tbody tr:hover .cell-actions .crm-row-action.btn-edit{color:#2563eb}
   .contacts-table tbody tr:hover .cell-actions .crm-row-action.btn-delete{color:#dc2626}
   /* Bulk floating toolbar */
-  #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius: 16px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap}
+  #bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius: 16px;padding:10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9000;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
   #bulk-bar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
   .bk-ct{font-weight:700;color:#93c5fd;min-width:70px}.bk-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
   .btn-bulk{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:none;background:transparent;color:#e2e8f0;font-size:12px;font-weight:500;cursor:pointer;transition:background .12s;white-space:nowrap}.btn-bulk:hover{background:rgba(255,255,255,.12)}.btn-bulk svg{width:13px;height:13px;color:inherit;flex-shrink:0}
@@ -512,14 +524,7 @@ HTML;
         <button class="dn-btn on" data-dn="default" title="Default rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2.5" x2="13" y2="2.5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="1" y1="11.5" x2="13" y2="11.5"/></svg></button>
         <button class="dn-btn" data-dn="roomy" title="Roomy rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="8" x2="13" y2="8"/></svg></button>
       </div>
-      <a href="{$add_url}" class="btn-primary">
-        <i data-lucide="user-plus"></i>
-        Add Contact
-      </a>
-      <button id="crm-ai-generate-btn" class="btn-generate" data-entity-type="contact">
-        <i data-lucide="sparkles"></i>
-        Generate data
-      </button>
+      {$actions_html}
     </div>
   </div>
 
@@ -772,7 +777,7 @@ JS;
       '#attached' => [
         'library' => [
           'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
-          'crm_ai_autocomplete/ai-generate-button',
+
         ],
       ],
       '#cache' => [

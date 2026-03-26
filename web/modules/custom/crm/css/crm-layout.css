@@ -51,9 +51,9 @@ body.path-crm .layout-content,
 }
 
 /* Remove default padding from layout wrappers */
-body.path-user .layout-container > .container,
-body.path-crm .layout-container > .container,
-[data-crm-page] .layout-container > .container {
+body.path-user .layout-container>.container,
+body.path-crm .layout-container>.container,
+[data-crm-page] .layout-container>.container {
   padding: 0 !important;
 }
 
@@ -139,10 +139,12 @@ body.path-crm,
   --crm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --crm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
+
 /* Responsive Layout for Sidebar Navigation */
 
 /* Mobile: Sidebar collapses or hides */
 @media (max-width: 639px) {
+
   body.path-user .layout-main-wrapper,
   body.path-crm .layout-main-wrapper,
   [data-crm-page] .layout-main-wrapper {
@@ -165,6 +167,7 @@ body.path-crm,
 
 /* Tablet: Reduced sidebar width */
 @media (min-width: 640px) and (max-width: 1023px) {
+
   body.path-user .layout-sidebar,
   body.path-crm .layout-sidebar,
   [data-crm-page] .layout-sidebar {
@@ -176,6 +179,7 @@ body.path-crm,
 
 /* Desktop: Full sidebar */
 @media (min-width: 1024px) {
+
   body.path-user .layout-sidebar,
   body.path-crm .layout-sidebar,
   [data-crm-page] .layout-sidebar {
@@ -212,12 +216,43 @@ body.page-node-type-page .region-content {
   background: #ffffff;
 }
 
-/* Hide duplicate system page title on CRM node pages */
-body.page-node-type-contact .page-title,
-body.page-node-type-deal .page-title,
-body.page-node-type-organization .page-title,
-body.page-node-type-activity .page-title,
-body.page-node-type-crm-announcement .page-title,
-body.page-crm .page-title {
+/* Hide duplicate system page title on CRM node pages.
+ * NOTE: do NOT add body.path-crm .page-title here — the CRM list
+ * controllers reuse the ".page-title" class for their own headers.
+ * The Drupal system title is already invisible because .region-sticky
+ * is hidden via display:none below.  */
+body.page-node-type-contact .block-page-title-block .page-title,
+body.page-node-type-deal .block-page-title-block .page-title,
+body.page-node-type-organization .block-page-title-block .page-title,
+body.page-node-type-activity .block-page-title-block .page-title,
+body.page-node-type-crm-announcement .block-page-title-block .page-title,
+body.page-crm .block-page-title-block .page-title {
   display: none !important;
+}
+
+/* ── Collapse Gin theme structural gap on CRM pages ──────────────
+ * Gin renders .region-sticky (page-title bar), .sticky-shadow,
+ * .region-sticky-watcher, and .content-header between the admin
+ * toolbar and the page content. On CRM list pages these are empty
+ * but still occupy ~60-80 px, creating a visible blank gap.
+ * ---------------------------------------------------------------- */
+body.path-crm .region-sticky,
+body.path-crm-all-pipeline .region-sticky,
+body.path-crm-my-pipeline .region-sticky,
+body.path-crm .sticky-shadow,
+body.path-crm-all-pipeline .sticky-shadow,
+body.path-crm-my-pipeline .sticky-shadow,
+body.path-crm .region-sticky-watcher,
+body.path-crm-all-pipeline .region-sticky-watcher,
+body.path-crm-my-pipeline .region-sticky-watcher,
+body.path-crm .content-header,
+body.path-crm-all-pipeline .content-header,
+body.path-crm-my-pipeline .content-header {
+  display: none !important;
+}
+
+body.path-crm .page-content,
+body.path-crm-all-pipeline .page-content,
+body.path-crm-my-pipeline .page-content {
+  margin-block-start: 0 !important;
 }

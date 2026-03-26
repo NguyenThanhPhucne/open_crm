@@ -9,6 +9,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\crm\Helper\CrmActionHelper;
 
 /**
  * Professional All Activities list controller — UI consistent with AllContactsController.
@@ -273,6 +274,17 @@ class AllActivitiesController extends ControllerBase {
     $th_cls = fn($f) => $sort_field === $f ? ' class="th-sort th-sorted"' : ' class="th-sort"';
 
     $add_url     = '/crm/add/activity';
+
+    // ── Build dynamic actions ───────────────────────────────────────────────
+    $actions_html = CrmActionHelper::renderActions('activity', [
+      'add' => [
+        'label' => 'Add Activity',
+        'url' => $add_url,
+        'icon' => 'plus-circle',
+        'class' => 'btn-primary',
+      ],
+    ]);
+
     $e_search    = Html::escape($search_name);
     $page_title  = $is_my_view ? 'My Activities' : 'All Activities';
     $page_sub    = $is_my_view ? 'Activities assigned to you' : 'All CRM activities across the team';
@@ -505,14 +517,7 @@ HTML;
         <button class="dn-btn on" data-dn="default" title="Default rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2.5" x2="13" y2="2.5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="1" y1="11.5" x2="13" y2="11.5"/></svg></button>
         <button class="dn-btn" data-dn="roomy" title="Roomy rows"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="8" x2="13" y2="8"/></svg></button>
       </div>
-      <a href="{$add_url}" class="btn-primary">
-        <i data-lucide="plus-circle"></i>
-        Add Activity
-      </a>
-      <button id="crm-ai-generate-btn" class="btn-generate" data-entity-type="activity">
-        <i data-lucide="sparkles"></i>
-        Generate data
-      </button>
+      {$actions_html}
     </div>
   </div>
 HTML;
@@ -757,7 +762,7 @@ JS;
           'crm/crm_shared',
           'crm/crm-ui-professional',
           'crm_edit/inline_edit',
-          'crm_ai_autocomplete/ai-generate-button',
+
         ],
       ],
       '#cache' => [
