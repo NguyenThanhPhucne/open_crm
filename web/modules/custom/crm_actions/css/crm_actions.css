@@ -33,7 +33,7 @@
     "Segoe UI",
     Roboto,
     sans-serif;
-  background: #f8fafc;
+  background: transparent;
   color: #1e293b;
   border-radius: 16px;
   overflow: hidden;
@@ -113,7 +113,7 @@ body.path-crm-all-organizations {
 }
 
 .crm-data-table tbody tr:hover {
-  background: #f8fafc;
+  background: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%);
 }
 
 .crm-data-table tbody tr:last-child td {
@@ -285,7 +285,7 @@ body.path-crm-all-organizations {
 }
 
 .crm-quick-add-menu-item:hover {
-  background: #f8fafc;
+  background: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%);
   color: #0f172a;
 }
 
@@ -548,9 +548,18 @@ a.button--danger:active {
 
 /* Filters Section - Professional Styling */
 .view-filters {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 60%, #f5f0ff 100%);
   padding: 24px;
   border-bottom: 2px solid #e2e8f0;
+  border-radius: 12px 12px 0 0;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.view-filters:hover {
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+  border-bottom-color: #bfdbfe;
 }
 
 .views-exposed-form {
@@ -677,9 +686,9 @@ a.button--danger:active {
 }
 
 .views-table tbody tr:hover {
-  background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%);
   transform: scale(1.001);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
 }
 
 .views-table tbody tr:last-child {

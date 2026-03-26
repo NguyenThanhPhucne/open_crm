@@ -35,7 +35,7 @@
 
 /* Professional Header with Better Contrast for Light Background */
 .views-table thead {
-  background: #f8fafc !important; /* Đổi sang nền xám nhạt */
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -52,26 +52,26 @@
   text-align: left;
   font-weight: 700;
   font-size: 13px;
-  color: #475569 !important; /* Chữ xám đậm dễ đọc */
+  color: #ffffff !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #e2e8f0 !important;
+  border-bottom: 3px solid #3b82f6 !important;
   white-space: normal;
   word-wrap: break-word;
   vertical-align: middle;
   line-height: 1.4;
-  text-shadow: none; /* Bỏ đổ bóng để chữ sắc nét */
+  text-shadow: none;
 }
 
 /* Improve header readability */
 .views-table thead th a {
-  color: #475569 !important;
+  color: #ffffff !important;
   text-decoration: none;
 }
 
 .views-table thead th a:hover {
-  color: #0f172a !important;
-  text-decoration: underline;
+  color: #bfdbfe !important;
+  text-decoration: none;
 }
 
 /* Sort indicator visibility */
@@ -99,8 +99,8 @@
 }
 
 .views-table tbody tr:hover {
-  background-color: #f8fafc;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
 }
 
 .views-table tbody tr:last-child {
@@ -473,7 +473,7 @@
 .view-empty {
   padding: 60px 24px;
   text-align: center;
-  background: #f8fafc; /* Bỏ gradient để sạch sẽ hơn */
+  background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 100%);
   border-radius: 8px;
   margin: 0;
 }
