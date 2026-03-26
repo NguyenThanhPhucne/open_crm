@@ -125,15 +125,18 @@
 }
 
 .btn-secondary {
-  background: white;
-  color: var(--text-secondary);
-  border: 2px solid var(--border-color);
+  background: #ffffff;
+  color: #2563eb;
+  border: 1.5px solid #dbeafe;
+  border-radius: 16px;
 }
 
 .btn-secondary:hover {
-  background: var(--bg-light);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
 
 .btn-danger {
@@ -214,12 +217,14 @@
   align-items: center;
   gap: 16px;
   transition: var(--transition);
+  border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary-color);
 }
 
 .stat-box:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
 .stat-icon {
@@ -293,8 +298,19 @@
 .card {
   background: white;
   border-radius: 12px;
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
 /* =================================================================

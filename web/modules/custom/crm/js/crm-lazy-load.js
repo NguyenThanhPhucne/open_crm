@@ -162,11 +162,17 @@
     var $indicator = jQuery(
       '<div class="crm-lazy-load__indicator" id="' +
         listId +
-        '-indicator">' +
+        '-indicator" aria-live="polite" aria-busy="false">' +
         '<div class="crm-lazy-load__indicator-body">' +
+        '<div class="crm-lazy-load__skeleton-table" aria-hidden="true">' +
         '<div class="crm-lazy-load__skeleton-row">' +
         '<span class="crm-lazy-load__skeleton"></span>' +
         '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
+        "</div>" +
+        '<div class="crm-lazy-load__skeleton-row">' +
+        '<span class="crm-lazy-load__skeleton"></span>' +
+        '<span class="crm-lazy-load__skeleton crm-lazy-load__skeleton--short"></span>' +
+        "</div>" +
         "</div>" +
         '<span id="' +
         listId +
@@ -232,7 +238,8 @@
     var listUrl = $list.attr("data-list-url") || window.location.pathname;
 
     listState.isLoading = true;
-    $indicator.show();
+    $indicator.show().addClass("is-loading").removeClass("is-done is-error");
+    $indicator.attr("aria-busy", "true");
 
     // Update indicator text with attempt count
     var indicatorText =
@@ -292,7 +299,8 @@
         if ($newRows.length === 0) {
           // No more items to load
           jQuery("#" + listId + "-indicator-text").text("All items loaded");
-          $indicator.addClass("is-done");
+          $indicator.removeClass("is-loading is-error").addClass("is-done");
+          $indicator.attr("aria-busy", "false");
           listState.hasMore = false;
 
           setTimeout(function () {
@@ -315,7 +323,10 @@
           listState.retryAttempt = 0; // Reset retry counter on success
 
           // Hide indicator
-          $indicator.hide();
+          $indicator
+            .removeClass("is-loading")
+            .attr("aria-busy", "false")
+            .hide();
 
           // Trigger custom event for other scripts
           $list.trigger("crm.items.loaded", [$newRows]);
@@ -346,7 +357,8 @@
         } else {
           // Final error
           jQuery("#" + listId + "-indicator-text").text("Error loading items");
-          $indicator.addClass("is-error");
+          $indicator.removeClass("is-loading").addClass("is-error");
+          $indicator.attr("aria-busy", "false");
 
           setTimeout(function () {
             $indicator.fadeOut();

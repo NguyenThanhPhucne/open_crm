@@ -76,14 +76,18 @@
 }
 
 .btn-action.btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #2563eb;
+  border: 1.5px solid #dbeafe;
+  border-radius: 16px;
 }
 
 .btn-action.btn-secondary:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
 
 /* Empty State */
@@ -511,13 +515,16 @@
 }
 
 .activity-form-container .btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #2563eb;
+  border: 1.5px solid #dbeafe;
+  border-radius: 16px;
 }
 
 .activity-form-container .btn-secondary:hover {
-  background: #f9fafb;
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
 }
 
 .alert {

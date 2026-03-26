@@ -22,7 +22,9 @@
   font-size: 18px;
   line-height: 1;
   z-index: 3;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .crm-filter-clear.visible {
@@ -70,7 +72,7 @@
 }
 
 #crm-results-wrap.crm-loading table tbody td::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 12px 16px;
   border-radius: 6px;
@@ -82,7 +84,7 @@
 
 #crm-results-wrap.crm-loading .crm-kanban-card::after,
 #crm-results-wrap.crm-loading .crm-card::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 8px;
@@ -93,30 +95,43 @@
 }
 
 @keyframes crm-skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ── 3. Premium Hover Effects (Lists & Kanban) ─────────────────────────── */
 table.crm-table tbody tr {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease;
 }
 
 table.crm-table tbody tr:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
   z-index: 2;
   position: relative;
   background-color: #ffffff;
 }
 
 .crm-kanban-card {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .crm-kanban-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* ── 4. Bulk Delete Confirm Modal ───────────────────────────────────────── */
@@ -140,8 +155,18 @@ table.crm-table tbody tr:hover {
   padding: 18px 18px 14px;
 }
 
-.crm-bulk-confirm__ttl { margin: 0 0 8px; font-size: 18px; font-weight: 800; color: #0f172a; }
-.crm-bulk-confirm__txt { margin: 0 0 12px; font-size: 13px; line-height: 1.55; color: #334155; }
+.crm-bulk-confirm__ttl {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.crm-bulk-confirm__txt {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #334155;
+}
 .crm-bulk-confirm__warn {
   display: inline-flex;
   align-items: center;
@@ -154,22 +179,77 @@ table.crm-table tbody tr:hover {
   font-size: 12px;
   font-weight: 700;
 }
-.crm-bulk-confirm__row { margin-top: 14px; }
-.crm-bulk-confirm__lbl { display: block; margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #334155; }
-.crm-bulk-confirm__input { width: 100%; height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 11px; font-size: 13px; outline: none; }
-.crm-bulk-confirm__input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); }
-.crm-bulk-confirm__hint { margin-top: 6px; font-size: 12px; color: #64748b; }
-.crm-bulk-confirm__actions { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
-.crm-bulk-confirm__btn { height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid #d1d9e6; background: #fff; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; }
-.crm-bulk-confirm__btn:hover { background: #f8fafc; }
-.crm-bulk-confirm__btn--danger { border-color: #ef4444; background: #ef4444; color: #fff; }
-.crm-bulk-confirm__btn--danger:hover { background: #dc2626; border-color: #dc2626; }
-.crm-bulk-confirm__btn[disabled] { opacity: .45; cursor: not-allowed; }
+.crm-bulk-confirm__row {
+  margin-top: 14px;
+}
+.crm-bulk-confirm__lbl {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+.crm-bulk-confirm__input {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 11px;
+  font-size: 13px;
+  outline: none;
+}
+.crm-bulk-confirm__input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+.crm-bulk-confirm__hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+.crm-bulk-confirm__actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.crm-bulk-confirm__btn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d9e6;
+  background: #fff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crm-bulk-confirm__btn:hover {
+  background: #f8fafc;
+}
+.crm-bulk-confirm__btn--danger {
+  border-color: #dbeafe;
+  background: #ffffff;
+  color: #2563eb;
+}
+.crm-bulk-confirm__btn--danger:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+.crm-bulk-confirm__btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 /* ── 5. Standard Spin Animation ─────────────────────────────────────────── */
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── 6. Premium Hero Buttons (.hero-actions & .qac-hero) ──────────── */
@@ -188,20 +268,11 @@ table.crm-table tbody tr:hover {
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1.5px solid transparent;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-/* All Hero Buttons (both Outline and Primary) share the unified White/Blue styling */
-.hero-action-btn,
-.hero-actions a,
-.hero-actions button,
-.qac-hero a,
-.qac-hero button {
+  border: 1.5px solid #dbeafe;
   background: #ffffff;
   color: #2563eb;
-  border-color: #dbeafe;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .hero-action-btn:hover,
@@ -216,28 +287,59 @@ table.crm-table tbody tr:hover {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
 
-/* ── 7. Global Button Outline Style (User Requested Premium Style) ──────────── */
-/* Apply to all standard buttons in the CRM (excluding specific fab/chat buttons) */
-.btn,
-.button,
-.btn-primary,
-.button--primary,
-.btn-save,
-.save-btn,
-.btn-cancel,
-.btn-delete,
-.btn-proceed-delete,
-.btn-understand-delete,
-.btn-delete-final,
-.btn-auth-submit,
-.crm-bulk-confirm__btn,
-.btn-filter-apply,
-.btn-import,
-.btn-import--primary,
-.btn-import--secondary,
-.qa-btn,
-.qa-primary,
-.qa-secondary {
+/* ── 7. Global CRM Button Theme (except chat launcher + fab) ───────────────── */
+button:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+input[type="button"]:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+input[type="submit"]:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+input[type="reset"]:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+a.button:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.button:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn-primary:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn-secondary:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.button--primary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-save:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.save-btn:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn-cancel:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn-delete:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn-proceed-delete:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-understand-delete:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-delete-final:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-auth-submit:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.crm-bulk-confirm__btn:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-filter-apply:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-import:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.btn-import--primary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.btn-import--secondary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ),
+.qa-btn:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.qa-primary:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button),
+.qa-secondary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ) {
   background: #ffffff !important;
   color: #2563eb !important;
   border: 1.5px solid #dbeafe !important;
@@ -254,26 +356,76 @@ table.crm-table tbody tr:hover {
 }
 
 /* Base Hover State */
-.btn:hover,
-.button:hover,
-.btn-primary:hover,
-.button--primary:hover,
-.btn-save:hover,
-.save-btn:hover,
-.btn-cancel:hover,
-.btn-delete:hover,
-.btn-proceed-delete:hover,
-.btn-understand-delete:hover,
-.btn-delete-final:hover,
-.btn-auth-submit:hover,
-.crm-bulk-confirm__btn:hover,
-.btn-filter-apply:hover,
-.btn-import:hover,
-.btn-import--primary:hover,
-.btn-import--secondary:hover,
-.qa-btn:hover,
-.qa-primary:hover,
-.qa-secondary:hover {
+button:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button):hover,
+input[type="button"]:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+input[type="submit"]:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+input[type="reset"]:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+a.button:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.button:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button):hover,
+.btn:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button):hover,
+.btn-primary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-secondary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.button--primary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-save:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.save-btn:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-cancel:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-delete:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-proceed-delete:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-understand-delete:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-delete-final:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-auth-submit:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.crm-bulk-confirm__btn:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-filter-apply:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-import:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-import--primary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.btn-import--secondary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.qa-btn:not(.crm-chat-launcher):not(.crm-fab-button):not(#crm-fab-button):hover,
+.qa-primary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover,
+.qa-secondary:not(.crm-chat-launcher):not(.crm-fab-button):not(
+    #crm-fab-button
+  ):hover {
   background: #eff6ff !important;
   border-color: #93c5fd !important;
   color: #1d4ed8 !important;
@@ -281,40 +433,103 @@ table.crm-table tbody tr:hover {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12) !important;
 }
 
-/* Semantic Overrides for Delete/Danger (Red Outline) */
-.btn-delete,
-.btn-proceed-delete,
-.btn-understand-delete,
-.btn-delete-final,
-.crm-bulk-confirm__btn--danger,
-.button--danger {
-  color: #ef4444 !important;
-  border-color: #fee2e2 !important;
+/* ========================================================================
+   Standard Node Form Primary Submit Buttons 
+   Overrides the above global .button--primary styles for entity forms
+   ======================================================================== */
+
+/* Contact: Cyan */
+body.page-node-type-contact button.button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-contact input[type="submit"].button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-contact #edit-submit:not(#crm-fab-button) {
+  background: #0891b2 !important; /* Cyan-600 */
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(8, 145, 178, 0.4) !important;
+}
+body.page-node-type-contact button.button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-contact input[type="submit"].button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-contact #edit-submit:not(#crm-fab-button):hover {
+  background: #0e7490 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(8, 145, 178, 0.38) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+}
+body.page-node-type-contact button.button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-contact input[type="submit"].button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-contact #edit-submit:not(#crm-fab-button):active {
+  background: #155e75 !important;
+  transform: translateY(0) scale(1) !important;
 }
 
-.btn-delete:hover,
-.btn-proceed-delete:hover,
-.btn-understand-delete:hover,
-.btn-delete-final:hover,
-.crm-bulk-confirm__btn--danger:hover,
-.button--danger:hover {
-  background: #fef2f2 !important;
-  border-color: #fca5a5 !important;
-  color: #b91c1c !important;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.12) !important;
+/* Deal: Blue */
+body.page-node-type-deal button.button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-deal input[type="submit"].button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-deal #edit-submit:not(#crm-fab-button) {
+  background: #2563eb !important; /* Blue-600 */
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4) !important;
+}
+body.page-node-type-deal button.button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-deal input[type="submit"].button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-deal #edit-submit:not(#crm-fab-button):hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.38) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+}
+body.page-node-type-deal button.button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-deal input[type="submit"].button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-deal #edit-submit:not(#crm-fab-button):active {
+  background: #1e40af !important;
+  transform: translateY(0) scale(1) !important;
 }
 
-/* Semantic Overrides for Cancel (Gray Outline) */
-.btn-cancel,
-.button--cancel {
-  color: #64748b !important;
-  border-color: #e2e8f0 !important;
+/* Organization: Violet */
+body.page-node-type-organization button.button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-organization input[type="submit"].button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-organization #edit-submit:not(#crm-fab-button) {
+  background: #7c3aed !important; /* Violet-600 */
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(124, 58, 237, 0.4) !important;
+}
+body.page-node-type-organization button.button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-organization input[type="submit"].button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-organization #edit-submit:not(#crm-fab-button):hover {
+  background: #6d28d9 !important; /* Violet */
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.38) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+}
+body.page-node-type-organization button.button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-organization input[type="submit"].button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-organization #edit-submit:not(#crm-fab-button):active {
+  background: #5b21b6 !important;
+  transform: translateY(0) scale(1) !important;
 }
 
-.btn-cancel:hover,
-.button--cancel:hover {
-  background: #f8fafc !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
-  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.12) !important;
+/* Activity: Amber */
+body.page-node-type-activity button.button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-activity input[type="submit"].button--primary.form-submit:not(#crm-fab-button),
+body.page-node-type-activity #edit-submit:not(#crm-fab-button) {
+  background: #b45309 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.4) !important;
+}
+body.page-node-type-activity button.button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-activity input[type="submit"].button--primary.form-submit:not(#crm-fab-button):hover,
+body.page-node-type-activity #edit-submit:not(#crm-fab-button):hover {
+  background: #92400e !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.38) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+}
+body.page-node-type-activity button.button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-activity input[type="submit"].button--primary.form-submit:not(#crm-fab-button):active,
+body.page-node-type-activity #edit-submit:not(#crm-fab-button):active {
+  background: #78350f !important;
+  transform: translateY(0) scale(1) !important;
 }

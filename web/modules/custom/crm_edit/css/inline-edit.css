@@ -132,28 +132,28 @@
 /* Edit button - Clean minimal style with blue text on white background */
 .crm-edit-btn {
   background: white;
-  color: #3b82f6 !important;
-  border: 1.5px solid #3b82f6;
+  color: #1d4ed8 !important;
+  border: 1.5px solid #1d4ed8;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .crm-edit-btn svg {
-  color: #3b82f6;
-  stroke: #3b82f6;
+  color: #1d4ed8;
+  stroke: #1d4ed8;
 }
 
 .crm-edit-btn:hover {
   background: #eff6ff;
-  color: #3b82f6 !important;
-  border-color: #3b82f6;
+  color: #1d4ed8 !important;
+  border-color: #1d4ed8;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transform: none;
 }
 
 .crm-edit-btn:active {
   background: #dbeafe;
-  color: #2563eb !important;
-  border-color: #2563eb;
+  color: #1e40af !important;
+  border-color: #1e40af;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transform: none;
 }
@@ -207,8 +207,8 @@
   gap: 8px;
   padding: 8px 16px;
   background: white;
-  color: #3b82f6 !important;
-  border: 1.5px solid #3b82f6;
+  color: #1d4ed8 !important;
+  border: 1.5px solid #1d4ed8;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -222,8 +222,8 @@
 .views-field-edit-link .crm-edit-action-btn:hover,
 .crm-edit-action-btn:hover {
   background: #eff6ff;
-  color: #3b82f6 !important;
-  border-color: #3b82f6;
+  color: #1d4ed8 !important;
+  border-color: #1d4ed8;
   transform: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -231,8 +231,8 @@
 .views-field-edit-link .crm-edit-action-btn:active,
 .crm-edit-action-btn:active {
   background: #dbeafe;
-  color: #2563eb !important;
-  border-color: #2563eb;
+  color: #1e40af !important;
+  border-color: #1e40af;
   transform: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -240,7 +240,7 @@
 .views-field-edit-link .crm-edit-action-btn i,
 .crm-edit-action-btn i {
   flex-shrink: 0;
-  color: #3b82f6;
+  color: #1d4ed8;
 }
 
 .views-field-edit-link .crm-edit-action-btn svg,
@@ -651,7 +651,7 @@
 .crm-modal-body select:disabled,
 .crm-modal-body textarea:disabled {
   background: #f3f4f6;
-  color: #9ca3af;
+  color: #4b5563;
   cursor: not-allowed;
 }
 
@@ -1050,7 +1050,7 @@ svg.animate-spin {
 }
 
 .delete-confirmation label strong {
-  color: #ef4444;
+  color: #b91c1c;
   font-weight: 700;
   padding: 2px 6px;
   background: #fef2f2;
@@ -1100,7 +1100,7 @@ svg.animate-spin {
 /* Delete button in footer */
 .crm-modal-footer .btn-delete {
   background: #e5e7eb;
-  color: #9ca3af;
+  color: #4b5563;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -1265,7 +1265,7 @@ svg.animate-spin {
 .delete-footer-single .btn-proceed-delete {
   width: 100%;
   padding: 11px 20px;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1499,7 +1499,7 @@ svg.animate-spin {
 }
 
 .final-confirmation label strong {
-  color: #ef4444;
+  color: #b91c1c;
   font-weight: 600;
   padding: 2px 6px;
   background: #fee2e2;
@@ -1567,7 +1567,7 @@ svg.animate-spin {
   max-width: none;
   padding: 11px 20px;
   background: #e5e7eb;
-  color: #9ca3af;
+  color: #4b5563;
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -1705,15 +1705,15 @@ svg.animate-spin {
 }
 
 .add-modal-header .crm-modal-close {
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  background: rgba(6, 78, 59, 0.28);
   border-radius: 8px;
   border: none;
   flex-shrink: 0;
 }
 
 .add-modal-header .crm-modal-close:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(6, 78, 59, 0.42);
   color: #ffffff;
 }
 
@@ -1757,7 +1757,6 @@ svg.animate-spin {
 .add-form label {
   display: block;
   margin-bottom: 8px;
-  font-size: 13px;
   font-weight: 600;
   color: #475569;
   letter-spacing: 0.01em;
@@ -1843,12 +1842,6 @@ svg.animate-spin {
 }
 
 /* Placeholder colour for text inputs / textarea */
-.add-form input::placeholder,
-.add-form textarea::placeholder {
-  color: #94a3b8;
-  font-weight: 400;
-}
-
 /* Checkbox styling */
 .add-form .checkbox-label {
   display: flex;
@@ -1991,8 +1984,8 @@ svg.animate-spin {
   height: 15px;
 }
 
-.add-modal-footer .btn-save,
-.add-modal-footer .save-btn {
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button),
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -2001,47 +1994,49 @@ svg.animate-spin {
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  background: #059669;
+  background: #0891b2 !important; /* Cyan-600 */
   color: #ffffff !important;
-  border: none;
-  box-shadow: 0 1px 4px rgba(5, 150, 105, 0.4);
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(8, 145, 178, 0.4) !important;
   transition: all 0.15s ease;
 }
 
-.add-modal-footer .btn-save:hover,
-.add-modal-footer .save-btn:hover {
-  background: #047857;
-  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.38);
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover,
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover {
+  background: #0e7490 !important;
+  box-shadow: 0 4px 10px rgba(8, 145, 178, 0.38) !important;
+  transform: translateY(-1px) scale(1.02) !important;
 }
 
-.add-modal-footer .btn-save:active,
-.add-modal-footer .save-btn:active {
-  background: #065f46;
-  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.3);
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active,
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active {
+  background: #155e75 !important;
+  box-shadow: 0 1px 2px rgba(8, 145, 178, 0.3) !important;
+  transform: translateY(0) scale(1) !important;
 }
 
-.add-modal-footer .btn-save:focus-visible,
-.add-modal-footer .save-btn:focus-visible {
-  outline: 2px solid #10b981;
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):focus-visible,
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):focus-visible {
+  outline: 2px solid #06b6d4 !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15) !important;
 }
 
-.add-modal-footer .btn-save:disabled,
-.add-modal-footer .save-btn:disabled {
-  opacity: 0.5;
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):disabled,
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):disabled {
+  opacity: 0.5 !important;
   cursor: not-allowed;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
-.add-modal-footer .btn-save svg,
-.add-modal-footer .btn-save i,
-.add-modal-footer .save-btn svg,
-.add-modal-footer .save-btn i {
-  width: 15px;
-  height: 15px;
-  color: #ffffff;
-  stroke: #ffffff;
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) svg,
+.add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) i,
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) svg,
+.add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) i {
+  width: 15px !important;
+  height: 15px !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 /* Type-specific accent colours */
@@ -2061,15 +2056,19 @@ svg.animate-spin {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
-.add-modal-deal .add-modal-footer .btn-save,
-.add-modal-deal .add-modal-footer .save-btn {
-  background: #2563eb;
-  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4);
+.add-modal-deal .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button),
+.add-modal-deal .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) {
+  background: #2563eb !important; /* Update context to Blue */
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4) !important;
 }
-.add-modal-deal .add-modal-footer .btn-save:hover,
-.add-modal-deal .add-modal-footer .save-btn:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.38);
+.add-modal-deal .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover,
+.add-modal-deal .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover {
+  background: #1d4ed8 !important; /* Blue */
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.38) !important;
+}
+.add-modal-deal .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active,
+.add-modal-deal .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active {
+  background: #1e40af !important;
 }
 
 .add-modal-organization .add-modal-header {
@@ -2085,15 +2084,19 @@ svg.animate-spin {
   border-color: #8b5cf6;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
-.add-modal-organization .add-modal-footer .btn-save,
-.add-modal-organization .add-modal-footer .save-btn {
-  background: #7c3aed;
-  box-shadow: 0 1px 4px rgba(124, 58, 237, 0.4);
+.add-modal-organization .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button),
+.add-modal-organization .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) {
+  background: #7c3aed !important; /* Update to Violet */
+  box-shadow: 0 1px 4px rgba(124, 58, 237, 0.4) !important;
 }
-.add-modal-organization .add-modal-footer .btn-save:hover,
-.add-modal-organization .add-modal-footer .save-btn:hover {
-  background: #6d28d9;
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.38);
+.add-modal-organization .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover,
+.add-modal-organization .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover {
+  background: #6d28d9 !important; /* Violet */
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.38) !important;
+}
+.add-modal-organization .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active,
+.add-modal-organization .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active {
+  background: #5b21b6 !important;
 }
 
 .add-modal-activity .add-modal-header {
@@ -2109,15 +2112,33 @@ svg.animate-spin {
   border-color: #d97706;
   box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
-.add-modal-activity .add-modal-footer .btn-save,
-.add-modal-activity .add-modal-footer .save-btn {
-  background: #d97706;
-  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.4);
+.add-modal-activity .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button),
+.add-modal-activity .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) {
+  background: #b45309 !important; /* Amber for Activity */
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.4) !important;
 }
-.add-modal-activity .add-modal-footer .btn-save:hover,
-.add-modal-activity .add-modal-footer .save-btn:hover {
-  background: #b45309;
-  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.38);
+.add-modal-activity .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover,
+.add-modal-activity .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):hover {
+  background: #92400e !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.38) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+}
+.add-modal-activity .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active,
+.add-modal-activity .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button):active {
+  background: #78350f !important;
+  color: #ffffff !important;
+  transform: translateY(0) scale(1) !important;
+}
+.add-modal-activity .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) svg,
+.add-modal-activity .add-modal-footer .btn-save:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) i,
+.add-modal-activity .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) svg,
+.add-modal-activity .add-modal-footer .save-btn:not(#crm-fab-button):not(.crm-chat-launcher):not(.crm-fab-button) i {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 /* Responsive */

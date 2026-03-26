@@ -36,18 +36,18 @@ class ExportController extends ControllerBase {
         </div>
       </div>
       <div class="crm-import-stats">
-        <div class="crm-import-stat">
+        <a href="/crm/all-contacts" class="crm-import-stat crm-import-stat--contacts" title="View contacts list">
           <i data-lucide="users" width="14" height="14"></i>
           <span><strong>{$contact_count}</strong> contacts</span>
-        </div>
-        <div class="crm-import-stat">
+        </a>
+        <a href="/crm/all-deals" class="crm-import-stat crm-import-stat--deals" title="View deals list">
           <i data-lucide="briefcase" width="14" height="14"></i>
           <span><strong>{$deal_count}</strong> deals</span>
-        </div>
-        <div class="crm-import-stat">
+        </a>
+        <a href="/crm/all-organizations" class="crm-import-stat crm-import-stat--organizations" title="View organizations list">
           <i data-lucide="building-2" width="14" height="14"></i>
           <span><strong>{$org_count}</strong> organizations</span>
-        </div>
+        </a>
       </div>
     </div>
   </div>

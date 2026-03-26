@@ -1,5 +1,5 @@
 crm_shared:
-  version: 1.2
+  version: 4.0
   css:
     theme:
       css/crm-shared.css: {}
@@ -9,13 +9,13 @@ crm_shared:
     - core/drupal
 
 crm-design-system:
-  version: 1.0
+  version: 4.0
   css: {}
   dependencies:
     - core/drupal
 
 user_profile_styles:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/user-profile.css: {}
@@ -28,7 +28,7 @@ user_profile_styles:
     - crm/crm-design-system
 
 user_edit_styles:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/user-edit.css: {}
@@ -39,7 +39,7 @@ user_edit_styles:
     - core/once
 
 crm_layout:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-layout.css: {}
@@ -47,7 +47,7 @@ crm_layout:
     - core/drupal
 
 error_pages:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-error-pages.css: {}
@@ -58,7 +58,7 @@ error_pages:
     - core/once
 
 empty_states:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-empty-states.css: {}
@@ -69,7 +69,7 @@ empty_states:
     - core/once
 
 contacts_list:
-  version: 1.1
+  version: 4.0
   css:
     theme:
       css/crm-contacts-list.css: {}
@@ -83,7 +83,7 @@ contacts_list:
     - crm/crm_shared
 
 node_detail_styles:
-  version: 2.0
+  version: 4.0
   css:
     theme:
       css/node-detail.css: {}
@@ -95,7 +95,7 @@ node_detail_styles:
     - crm_edit/inline_edit
 
 node_form_styles:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-node-form.css: {}
@@ -107,7 +107,7 @@ node_form_styles:
     - core/drupal.form
 
 crm_optimistic_ui:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-optimistic-ui.css: {}
@@ -120,7 +120,7 @@ crm_optimistic_ui:
     - crm/crm_shared
 
 crm_inline_edit:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-inline-edit.css: {}
@@ -132,7 +132,7 @@ crm_inline_edit:
     - core/once
 
 crm_lazy_load:
-  version: 1.0
+  version: 4.0
   css:
     theme:
       css/crm-lazy-load.css: {}
@@ -144,7 +144,7 @@ crm_lazy_load:
     - core/once
 
 crm-ui-professional:
-  version: 1.4
+  version: 4.0
   css:
     theme:
       css/crm-ui-professional.css: {}

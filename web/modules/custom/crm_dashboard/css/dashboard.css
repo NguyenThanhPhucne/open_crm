@@ -241,8 +241,8 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: #065f46;
+  color: #ffffff;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -340,6 +340,11 @@ body {
   --stat-bg: #f5f3ff;
 }
 
+.stat-card.stat-card-slate {
+  --stat-color: #475569;
+  --stat-bg: #f1f5f9;
+}
+
 .stat-card::before {
   display: none;
 }
@@ -408,37 +413,37 @@ body {
 
 .stat-icon.blue {
   background: #eff6ff;
-  color: #3b82f6;
+  color: #1d4ed8;
 }
 
 .stat-icon.green {
   background: #ecfdf5;
-  color: #10b981;
+  color: #047857;
 }
 
 .stat-icon.purple {
   background: #f5f3ff;
-  color: #8b5cf6;
+  color: #6d28d9;
 }
 
 .stat-icon.orange {
   background: #fffbeb;
-  color: #f59e0b;
+  color: #b45309;
 }
 
 .stat-icon.pink {
   background: #fdf2f8;
-  color: #ec4899;
+  color: #be185d;
 }
 
 .stat-icon.cyan {
   background: #ecf9fd;
-  color: #06b6d4;
+  color: #0e7490;
 }
 
 .stat-icon.red {
   background: #fef2f2;
-  color: #ef4444;
+  color: #b91c1c;
 }
 
 .stat-icon.indigo {
@@ -448,22 +453,27 @@ body {
 
 .stat-icon.emerald {
   background: #ecfdf5;
-  color: #059669;
+  color: #065f46;
 }
 
 .stat-icon.sky {
   background: #e0f2fe;
-  color: #0284c7;
+  color: #0369a1;
 }
 
 .stat-icon.amber {
   background: #fef3c7;
-  color: #d97706;
+  color: #92400e;
 }
 
 .stat-icon.violet {
   background: #f5f3ff;
   color: #7c3aed;
+}
+
+.stat-icon.slate {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .stat-label {
@@ -623,8 +633,8 @@ body {
 }
 
 .view-all-link:hover {
-  color: #2563eb;
-  background: rgba(59, 130, 246, 0.08);
+  color: #1e40af;
+  background: #dbeafe;
 }
 
 /* Activity Items - Scrollable container */
@@ -688,7 +698,7 @@ body {
   justify-content: center;
   flex-shrink: 0;
   background: #eef2f7;
-  color: #4c6ef5;
+  color: #1d4ed8;
   font-weight: 600;
   min-width: 36px;
 }
@@ -1082,8 +1092,8 @@ body {
 }
 
 .crm-toolbar-brand:hover {
-  background: rgba(0, 0, 0, 0.03);
-  color: #0969da;
+  background: #e2e8f0;
+  color: #1e3a8a;
 }
 
 .crm-toolbar-item {
@@ -1102,8 +1112,8 @@ body {
 }
 
 .crm-toolbar-item:hover {
-  background: rgba(59, 130, 246, 0.08);
-  color: #2563eb;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .crm-toolbar-item.active {

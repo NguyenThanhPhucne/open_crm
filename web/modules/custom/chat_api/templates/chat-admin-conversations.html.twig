@@ -1,7 +1,7 @@
 {#
 /**
  * @file
- * Professional Conversations Management Template.
+ * Professional Conversations Management Template (Lucide icons only).
  *
  * Available variables:
  * - conversations: Array of conversation objects with enriched data
@@ -9,18 +9,18 @@
  */
 #}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% import '@chat_api/_icons.html.twig' as icons %}
 
 <div class="chat-admin-conversations">
   {# Page Header #}
   <div class="page-header">
     <div>
-      <h1><i class="fas fa-comments"></i> {{ 'Conversation Management'|t }}</h1>
+      <h1>{{ icons.icon_message_square('icon-inline') }} {{ 'Conversation Management'|t }}</h1>
       <p class="subtitle">{{ 'View and monitor all chat conversations'|t }}</p>
     </div>
     <div class="header-actions">
       <a href="/admin/chat" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> {{ 'Back to Dashboard'|t }}
+        {{ icons.icon_arrow_left('icon-inline') }} {{ 'Back to Dashboard'|t }}
       </a>
     </div>
   </div>
@@ -28,28 +28,28 @@
   {# Summary Statistics #}
   <div class="users-stats">
     <div class="stat-box">
-      <i class="fas fa-comments stat-icon"></i>
+      {{ icons.icon_message_square('stat-icon') }}
       <div class="stat-content">
         <div class="stat-value">{{ stats.total_conversations }}</div>
         <div class="stat-label">{{ 'Total Conversations'|t }}</div>
       </div>
     </div>
     <div class="stat-box">
-      <i class="fas fa-user-friends stat-icon stat-icon--success"></i>
+      {{ icons.icon_users('stat-icon stat-icon--success') }}
       <div class="stat-content">
         <div class="stat-value">{{ stats.private_conversations }}</div>
         <div class="stat-label">{{ 'Private Chats'|t }}</div>
       </div>
     </div>
     <div class="stat-box">
-      <i class="fas fa-users stat-icon stat-icon--info"></i>
+      {{ icons.icon_users('stat-icon stat-icon--info') }}
       <div class="stat-content">
         <div class="stat-value">{{ stats.group_conversations }}</div>
         <div class="stat-label">{{ 'Group Chats'|t }}</div>
       </div>
     </div>
     <div class="stat-box">
-      <i class="fas fa-fire stat-icon stat-icon--danger"></i>
+      {{ icons.icon_alert_circle('stat-icon stat-icon--danger') }}
       <div class="stat-content">
         <div class="stat-value">{{ stats.active_today }}</div>
         <div class="stat-label">{{ 'Active Today'|t }}</div>
@@ -60,10 +60,10 @@
   {# Conversations Table #}
   <div class="table-container">
     <div class="table-header">
-      <h2><i class="fas fa-list"></i> {{ 'All Conversations'|t }}</h2>
+      <h2>{{ icons.icon_list('icon-inline') }} {{ 'All Conversations'|t }}</h2>
       <div class="table-actions">
         <div class="search-box">
-          <i class="fas fa-search"></i>
+          {{ icons.icon_search('icon-inline') }}
           <input type="text" id="conversationSearch" placeholder="{{ 'Search conversations...'|t }}">
         </div>
         <select id="typeFilter" class="filter-select">
@@ -79,15 +79,15 @@
         <table class="users-table conversations-table">
           <thead>
             <tr>
-              <th><i class="fas fa-hashtag"></i> {{ 'ID'|t }}</th>
-              <th><i class="fas fa-comment-dots"></i> {{ 'Conversation'|t }}</th>
-              <th><i class="fas fa-tag"></i> {{ 'Type'|t }}</th>
-              <th><i class="fas fa-users"></i> {{ 'Participants'|t }}</th>
-              <th><i class="fas fa-message"></i> {{ 'Last Message'|t }}</th>
-              <th><i class="fas fa-envelope"></i> {{ 'Messages'|t }}</th>
-              <th><i class="far fa-calendar"></i> {{ 'Created'|t }}</th>
-              <th><i class="far fa-clock"></i> {{ 'Last Activity'|t }}</th>
-              <th><i class="fas fa-cog"></i> {{ 'Actions'|t }}</th>
+              <th>{{ icons.icon_info('icon-inline') }} {{ 'ID'|t }}</th>
+              <th>{{ icons.icon_message_square('icon-inline') }} {{ 'Conversation'|t }}</th>
+              <th>{{ icons.icon_list('icon-inline') }} {{ 'Type'|t }}</th>
+              <th>{{ icons.icon_users('icon-inline') }} {{ 'Participants'|t }}</th>
+              <th>{{ icons.icon_message_square('icon-inline') }} {{ 'Last Message'|t }}</th>
+              <th>{{ icons.icon_mail('icon-inline') }} {{ 'Messages'|t }}</th>
+              <th>{{ icons.icon_calendar('icon-inline') }} {{ 'Created'|t }}</th>
+              <th>{{ icons.icon_clock('icon-inline') }} {{ 'Last Activity'|t }}</th>
+              <th>{{ icons.icon_more_vertical('icon-inline') }} {{ 'Actions'|t }}</th>
             </tr>
           </thead>
           <tbody>
@@ -99,17 +99,17 @@
                 <td class="conversation-info">
                   {% if conversation.type == 'group' %}
                     <div class="conversation-avatar">
-                      <i class="fas fa-users"></i>
+                      {{ icons.icon_users('icon-inline') }}
                     </div>
                     <div class="conversation-details">
                       <span class="conversation-name">{{ conversation.name }}</span>
                       <div class="conversation-meta">
-                        <i class="fas fa-hashtag"></i> {{ conversation._id|slice(0, 8) }}
+                        {{ icons.icon_info('icon-inline') }} {{ conversation._id|slice(0, 8) }}
                       </div>
                     </div>
                   {% else %}
                     <div class="conversation-avatar">
-                      <i class="fas fa-user-friends"></i>
+                      {{ icons.icon_users('icon-inline') }}
                     </div>
                     <div class="conversation-details">
                       {% if conversation.participants|length > 0 %}
@@ -122,7 +122,7 @@
                         <span class="conversation-name">{{ 'Private Chat'|t }}</span>
                       {% endif %}
                       <div class="conversation-meta">
-                        <i class="fas fa-hashtag"></i> {{ conversation._id|slice(0, 8) }}
+                        {{ icons.icon_info('icon-inline') }} {{ conversation._id|slice(0, 8) }}
                       </div>
                     </div>
                   {% endif %}
@@ -130,11 +130,11 @@
                 <td class="text-center">
                   {% if conversation.type == 'group' %}
                     <span class="badge badge-info">
-                      <i class="fas fa-users"></i> {{ 'Group'|t }}
+                      {{ icons.icon_users('icon-inline') }} {{ 'Group'|t }}
                     </span>
                   {% else %}
                     <span class="badge badge-primary">
-                      <i class="fas fa-user-friends"></i> {{ 'Private'|t }}
+                      {{ icons.icon_users('icon-inline') }} {{ 'Private'|t }}
                     </span>
                   {% endif %}
                 </td>
@@ -142,7 +142,7 @@
                   <div class="participants-list">
                     {% for participant in conversation.participants %}
                       <span class="participant-badge" title="Drupal ID: {{ participant.drupalId }}">
-                        <i class="fas fa-user-circle"></i> {{ participant.displayName }}
+                        {{ icons.icon_user_circle('icon-inline') }} {{ participant.displayName }}
                       </span>
                     {% endfor %}
                   </div>
@@ -158,22 +158,22 @@
                 </td>
                 <td class="text-center">
                   <span class="badge badge-secondary">
-                    <i class="fas fa-user"></i> {{ conversation.participantCount }}
+                    {{ icons.icon_users('icon-inline') }} {{ conversation.participantCount }}
                   </span>
                 </td>
                 <td class="text-center">
                   <span class="badge badge-success">
-                    <i class="fas fa-envelope"></i> {{ conversation.messageCount }}
+                    {{ icons.icon_mail('icon-inline') }} {{ conversation.messageCount }}
                   </span>
                 </td>
                 <td class="conversation-date">
-                  <i class="far fa-calendar-alt"></i>
+                  {{ icons.icon_calendar('icon-inline') }}
                   {{ conversation.createdAt|date('M d, Y') }}
                   <div class="date-time">{{ conversation.createdAt|date('H:i') }}</div>
                 </td>
                 <td class="conversation-date">
                   {% if conversation.lastMessageAt %}
-                    <i class="far fa-clock"></i>
+                    {{ icons.icon_clock('icon-inline') }}
                     {{ conversation.lastMessageAt|date('M d, Y') }}
                     <div class="date-time">{{ conversation.timeAgo }}</div>
                   {% else %}
@@ -183,10 +183,10 @@
                 <td class="actions-cell">
                   <div class="action-buttons">
                     <a href="/admin/chat/conversations/{{ conversation._id }}" class="btn-action btn-view" title="{{ 'View Details'|t }}">
-                      <i class="fas fa-eye"></i>
+                      {{ icons.icon_eye('icon-inline') }}
                     </a>
-                    <button class="btn-action btn-danger action-delete" data-conversation-id="{{ conversation._id }}" title="{{ 'Delete Conversation'|t }}">
-                      <i class="fas fa-trash"></i>
+                    <button class="btn-action btn-danger delete-conversation" data-id="{{ conversation._id }}" title="{{ 'Delete Conversation'|t }}" type="button">
+                      {{ icons.icon_trash('icon-inline') }}
                     </button>
                   </div>
                 </td>
@@ -201,7 +201,7 @@
       
     {% else %}
       <div class="empty-state">
-        <i class="fas fa-comments"></i>
+        {{ icons.icon_message_square('icon-inline') }}
         <p>{{ 'No conversations found'|t }}</p>
         <small>{{ 'Conversations will appear here when users start chatting'|t }}</small>
       </div>

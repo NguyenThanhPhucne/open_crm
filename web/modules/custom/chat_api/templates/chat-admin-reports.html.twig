@@ -1,71 +1,113 @@
 {#
 /**
  * @file
- * Theme template for Chat Admin Reports.
+ * Theme template for Chat Admin Reports (CRM-aligned + Lucide icons).
  *
  * Available variables:
  * - stats: Array of statistics
  */
 #}
 
+{% import '@chat_api/_icons.html.twig' as icons %}
+
 <div class="chat-admin-reports">
   <div class="page-header">
-    <h1>{{ 'Reports & Analytics'|t }}</h1>
-    <p class="page-description">{{ 'View system statistics and activity reports'|t }}</p>
-  </div>
-
-  {# Overview statistics #}
-  <div class="report-stats">
-    <div class="stat-group">
-      <h2>{{ 'User Statistics'|t }}</h2>
-      <div class="stat-grid">
-        <div class="stat-item">
-          <span class="stat-label">{{ 'Total Users'|t }}</span>
-          <span class="stat-value">{{ stats.total_users }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">{{ 'Active Today'|t }}</span>
-          <span class="stat-value">{{ stats.active_users_today }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">{{ 'New This Week'|t }}</span>
-          <span class="stat-value">{{ stats.new_users_this_week }}</span>
-        </div>
-      </div>
-      <a href="/admin/chat/reports/users" class="btn btn-secondary">
-        {{ 'View detailed user report'|t }}
-      </a>
+    <div>
+      <h1>{{ icons.icon_bar_chart('icon-inline') }} {{ 'Reports & Analytics'|t }}</h1>
+      <p class="subtitle">{{ 'View system statistics and activity reports'|t }}</p>
     </div>
-
-    <div class="stat-group">
-      <h2>{{ 'Message Statistics'|t }}</h2>
-      <div class="chart-placeholder">
-        <p>{{ 'Biểu đồ thống kê tin nhắn đang được cập nhật'|t }}</p>
-        <canvas id="messageChart" width="600" height="300"></canvas>
-      </div>
-      <a href="/admin/chat/reports/messages" class="btn btn-secondary">
-        {{ 'View detailed message report'|t }}
+    <div class="header-actions">
+      <a href="/admin/chat" class="btn btn-secondary">
+        {{ icons.icon_arrow_left('icon-inline') }} {{ 'Back to Dashboard'|t }}
       </a>
     </div>
   </div>
 
-  {# Activity charts #}
-  <div class="report-charts">
-    <h2>{{ 'Activity Overview'|t }}</h2>
+  <div class="stats-section">
+    <h2 class="section-title">{{ icons.icon_bar_chart('icon-inline') }} {{ 'Overview'|t }}</h2>
+    <div class="users-stats">
+      <div class="stat-box">
+        {{ icons.icon_users('stat-icon') }}
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.total_users|number_format }}</div>
+          <div class="stat-label">{{ 'Total Users'|t }}</div>
+        </div>
+      </div>
+
+      <div class="stat-box">
+        {{ icons.icon_check_circle('stat-icon stat-icon--success') }}
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.active_users_today|number_format }}</div>
+          <div class="stat-label">{{ 'Active Today'|t }}</div>
+        </div>
+      </div>
+
+      <div class="stat-box">
+        {{ icons.icon_clock('stat-icon stat-icon--warning') }}
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.new_users_this_week|number_format }}</div>
+          <div class="stat-label">{{ 'New This Week'|t }}</div>
+        </div>
+      </div>
+
+      <div class="stat-box">
+        {{ icons.icon_message_square('stat-icon stat-icon--info') }}
+        <div class="stat-content">
+          <div class="stat-value">7</div>
+          <div class="stat-label">{{ 'Trend Window (Days)'|t }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-charts">
+    <h2 class="section-title">{{ icons.icon_history('icon-inline') }} {{ 'Activity Overview'|t }}</h2>
     <div class="charts-grid">
-      <div class="chart-container">
-        <h3>{{ 'Messages per Day (Last 7 Days)'|t }}</h3>
-        <canvas id="messagesPerDayChart"></canvas>
+      <div class="chart-card">
+        <h3>{{ icons.icon_users('icon-inline') }} {{ 'New Users (Last 7 Days)'|t }}</h3>
+        <canvas id="newUsersChart" height="250"></canvas>
       </div>
-      <div class="chart-container">
-        <h3>{{ 'New Users per Day (Last 7 Days)'|t }}</h3>
-        <canvas id="newUsersChart"></canvas>
+
+      <div class="chart-card">
+        <h3>{{ icons.icon_check_circle('icon-inline') }} {{ 'Active Users (Last 7 Days)'|t }}</h3>
+        <canvas id="activeUsersChart" height="250"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>{{ icons.icon_send('icon-inline') }} {{ 'Friend Requests (Last 7 Days)'|t }}</h3>
+        <canvas id="friendRequestsChart" height="250"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>{{ icons.icon_message_square('icon-inline') }} {{ 'Message Breakdown'|t }}</h3>
+        <canvas id="messageChart" height="250"></canvas>
       </div>
     </div>
   </div>
 
-  <div class="reports-footer-note" style="margin-top: 30px; padding: 15px; background: #f8fafc; border-radius: 8px; font-size: 13px; color: #64748b;">
-    <p>Hệ thống biểu đồ nâng cao đang trong quá trình phát triển để cung cấp cái nhìn chi tiết hơn về hoạt động realtime.</p>
+  <div class="quick-actions">
+    <h2 class="section-title">{{ icons.icon_zap('icon-inline') }} {{ 'Quick Report Actions'|t }}</h2>
+    <div class="action-links">
+      <a href="/admin/chat/reports/users" class="action-button action-button--primary">
+        {{ icons.icon_users('action-icon') }}
+        <span class="action-text">{{ 'Detailed User Report'|t }}</span>
+        {{ icons.icon_arrow_right('action-arrow') }}
+      </a>
+
+      <a href="/admin/chat/reports/messages" class="action-button action-button--info">
+        {{ icons.icon_message_square('action-icon') }}
+        <span class="action-text">{{ 'Detailed Message Report'|t }}</span>
+        {{ icons.icon_arrow_right('action-arrow') }}
+      </a>
+    </div>
+  </div>
+
+  <div class="secondary-stats" style="margin-top: 30px;">
+    <div class="stat-item">
+      {{ icons.icon_info('icon-inline') }}
+      <span class="stat-item-label">{{ 'Note'|t }}:</span>
+      <span class="stat-item-value">{{ 'Advanced reporting is being expanded for deeper realtime analytics.'|t }}</span>
+    </div>
   </div>
 
 </div>

@@ -3,7 +3,7 @@
    Inspired by Salesforce, HubSpot, Pipedrive design systems
    ============================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
   --import-primary: #3b82f6;
@@ -19,13 +19,18 @@
   --import-text: #1e293b;
   --import-muted: #64748b;
   --import-radius: 12px;
-  --import-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
-  --import-shadow-lg: 0 10px 25px rgba(0,0,0,.10), 0 4px 10px rgba(0,0,0,.06);
+  --import-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --import-shadow-lg:
+    0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
 /* ---- HUB PAGE ---- */
 .crm-import-hub {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   background: var(--import-bg);
   min-height: 100vh;
   color: var(--import-text);
@@ -33,9 +38,43 @@
 
 /* Header */
 .crm-import-header {
-  background: var(--import-surface);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 55%, #f7f5ff 100%);
   border-bottom: 1px solid var(--import-border);
-  padding: 32px 32px 28px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.crm-import-header::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -50px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.16) 0%,
+    rgba(59, 130, 246, 0) 68%
+  );
+  pointer-events: none;
+}
+
+.crm-import-header::after {
+  content: "";
+  position: absolute;
+  left: -80px;
+  bottom: -120px;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.14) 0%,
+    rgba(139, 92, 246, 0) 70%
+  );
+  pointer-events: none;
 }
 
 .crm-import-header-inner {
@@ -46,6 +85,24 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 24px;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 60%, #f5f0ff 100%);
+  border-radius: 16px;
+  border: 1px solid #dde8ff;
+  border-top: 3px solid #2563eb;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
+  padding: 24px 28px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.crm-import-header:hover .crm-import-header-inner {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+  border-color: #bfdbfe;
 }
 
 .crm-import-header-title {
@@ -57,13 +114,15 @@
 .crm-icon-wrapper {
   width: 48px;
   height: 48px;
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3b82f6;
+  color: #1d4ed8;
   flex-shrink: 0;
+  border: 1px solid #dbeafe;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .crm-import-header-title h1 {
@@ -71,7 +130,7 @@
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 4px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.01em;
 }
 
 .crm-import-header-title p {
@@ -90,14 +149,49 @@
 .crm-import-stat {
   background: var(--import-surface);
   border: 1px solid var(--import-border);
-  border-radius: 8px;
-  padding: 8px 14px;
+  border-radius: 10px;
+  padding: 9px 14px;
   color: #475569;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+  cursor: pointer;
+}
+
+.crm-import-stat:hover {
+  background: #f8fafc;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.12);
+}
+
+.crm-import-stat:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.crm-import-stat--contacts:hover {
+  border-color: #93c5fd;
+}
+
+.crm-import-stat--deals:hover {
+  border-color: #c4b5fd;
+  color: #6d28d9;
+}
+
+.crm-import-stat--organizations:hover {
+  border-color: #99f6e4;
+  color: #0f766e;
 }
 
 .crm-import-stat strong {
@@ -121,10 +215,14 @@
 }
 
 @media (max-width: 1100px) {
-  .crm-import-grid { grid-template-columns: repeat(2, 1fr); }
+  .crm-import-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 @media (max-width: 720px) {
-  .crm-import-grid { grid-template-columns: 1fr; }
+  .crm-import-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Import card */
@@ -134,7 +232,10 @@
   border: 1.5px solid var(--import-border);
   padding: 28px;
   box-shadow: var(--import-shadow);
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -142,14 +243,16 @@
 }
 
 .crm-import-card::after {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 3px;
   background: var(--card-accent, var(--import-primary));
   border-radius: 12px 12px 0 0;
   transform: scaleX(0);
-  transition: transform .25s ease;
+  transition: transform 0.25s ease;
   transform-origin: left;
 }
 
@@ -163,9 +266,15 @@
   transform: scaleX(1);
 }
 
-.crm-import-card--blue  { --card-accent: #3b82f6; }
-.crm-import-card--purple { --card-accent: #8b5cf6; }
-.crm-import-card--teal  { --card-accent: #14b8a6; }
+.crm-import-card--blue {
+  --card-accent: #3b82f6;
+}
+.crm-import-card--purple {
+  --card-accent: #8b5cf6;
+}
+.crm-import-card--teal {
+  --card-accent: #14b8a6;
+}
 
 /* Card header */
 .crm-import-card__head {
@@ -185,9 +294,18 @@
   flex-shrink: 0;
 }
 
-.crm-import-card__icon--blue   { background: #eff6ff; color: #3b82f6; }
-.crm-import-card__icon--purple { background: #f5f3ff; color: #8b5cf6; }
-.crm-import-card__icon--teal   { background: #f0fdfa; color: #14b8a6; }
+.crm-import-card__icon--blue {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+.crm-import-card__icon--purple {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
+.crm-import-card__icon--teal {
+  background: #f0fdfa;
+  color: #14b8a6;
+}
 
 .crm-import-card__title h3 {
   font-size: 17px;
@@ -206,9 +324,20 @@
 .crm-import-schema {
   background: #f8fafc;
   border-radius: 8px;
+  border: 1px solid #e2e8f0;
   padding: 14px 16px;
   margin-bottom: 20px;
   flex: 1;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.crm-import-card:hover .crm-import-schema {
+  transform: translateY(-1px);
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
 }
 
 .crm-import-schema h4 {
@@ -216,7 +345,7 @@
   font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: .6px;
+  letter-spacing: 0.6px;
   margin: 0 0 10px;
 }
 
@@ -236,7 +365,7 @@
   padding: 3px 10px;
   border-radius: 6px;
   font-size: 12px;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: "JetBrains Mono", "Courier New", monospace;
 }
 
 .crm-import-tag--required {
@@ -246,7 +375,7 @@
 }
 
 .crm-import-tag::before {
-  content: '';
+  content: "";
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -254,7 +383,9 @@
   flex-shrink: 0;
 }
 
-.crm-import-tag--required::before { background: #3b82f6; }
+.crm-import-tag--required::before {
+  background: #3b82f6;
+}
 
 /* Card actions */
 .crm-import-card__actions {
@@ -276,34 +407,87 @@
   gap: 7px;
   cursor: pointer;
   border: 1.5px solid;
-  transition: all .2s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .btn-import--primary {
-  background: white;
-  color: #2563eb;
-  border-color: #2563eb;
+  background: white !important;
+  color: #2563eb !important;
+  border-color: #2563eb !important;
 }
 .btn-import--primary:hover {
   background: #eff6ff;
   border-color: #1d4ed8;
   color: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37,99,235,.15);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
   text-decoration: none;
 }
 
+.btn-import--primary.btn-import--contacts {
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+.btn-import--primary.btn-import--contacts:hover {
+  background: #eff6ff !important;
+  border-color: #1d4ed8 !important;
+  color: #1d4ed8 !important;
+}
+
+.btn-import--primary.btn-import--deals {
+  border-color: #7c3aed !important;
+  color: #7c3aed !important;
+}
+
+.btn-import--primary.btn-import--deals:hover {
+  background: #f5f3ff !important;
+  border-color: #6d28d9 !important;
+  color: #6d28d9 !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.16);
+}
+
+.btn-import--primary.btn-import--organizations {
+  border-color: #0f766e !important;
+  color: #0f766e !important;
+}
+
+.btn-import--primary.btn-import--organizations:hover {
+  background: #f0fdfa !important;
+  border-color: #0f766e !important;
+  color: #0f766e !important;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.16);
+}
+
 .btn-import--secondary {
-  background: white;
-  color: #64748b;
-  border-color: #cbd5e1;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .btn-import--secondary:hover {
-  background: #f8fafc;
-  color: #475569;
-  border-color: #94a3b8;
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: #94a3b8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 9px rgba(15, 23, 42, 0.12);
   text-decoration: none;
+}
+
+.btn-import--secondary.btn-import--contacts:hover {
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+}
+
+.btn-import--secondary.btn-import--deals:hover {
+  border-color: #c4b5fd !important;
+  color: #6d28d9 !important;
+}
+
+.btn-import--secondary.btn-import--organizations:hover {
+  border-color: #99f6e4 !important;
+  color: #0f766e !important;
 }
 
 /* ---- GUIDE SECTION ---- */
@@ -313,6 +497,16 @@
   border-radius: 16px;
   padding: 28px 32px;
   margin-bottom: 24px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.crm-import-guide:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
 }
 
 .crm-import-guide h3 {
@@ -359,7 +553,10 @@
 
 /* ---- IMPORT FORM PAGE ---- */
 .crm-import-form-page {
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    sans-serif;
 }
 
 /* Form breadcrumb */
@@ -381,7 +578,9 @@
   text-decoration: none;
   font-weight: 500;
 }
-.crm-import-breadcrumb a:hover { text-decoration: underline; }
+.crm-import-breadcrumb a:hover {
+  text-decoration: underline;
+}
 
 /* Drop zone */
 .crm-dropzone {
@@ -391,7 +590,7 @@
   text-align: center;
   background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
   cursor: pointer;
-  transition: all .25s ease;
+  transition: all 0.25s ease;
   position: relative;
   margin-bottom: 24px;
 }
@@ -400,7 +599,7 @@
   border-color: #3b82f6;
   background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
   transform: scale(1.01);
-  box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
 }
 
 .crm-dropzone.has-file {
@@ -413,13 +612,13 @@
   height: 64px;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
   color: #3b82f6;
-  transition: transform .2s ease;
+  transition: transform 0.2s ease;
 }
 
 .crm-dropzone:hover .crm-dropzone__icon,
@@ -452,13 +651,13 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all 0.2s ease;
 }
 
 .crm-dropzone__browse:hover {
   background: #2563eb;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37,99,235,.3);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .crm-dropzone__input {
@@ -482,11 +681,17 @@
   margin-bottom: 20px;
 }
 
-.crm-file-info.visible { display: flex; }
+.crm-file-info.visible {
+  display: flex;
+}
 
-.crm-file-info__icon { color: #10b981; }
+.crm-file-info__icon {
+  color: #10b981;
+}
 
-.crm-file-info__details { flex: 1; }
+.crm-file-info__details {
+  flex: 1;
+}
 .crm-file-info__name {
   font-weight: 600;
   font-size: 14px;
@@ -506,9 +711,11 @@
   padding: 4px;
   border-radius: 4px;
   display: flex;
-  transition: color .15s;
+  transition: color 0.15s;
 }
-.crm-file-info__remove:hover { color: #ef4444; }
+.crm-file-info__remove:hover {
+  color: #ef4444;
+}
 
 /* CSV Preview */
 .crm-csv-preview {
@@ -516,7 +723,9 @@
   margin-bottom: 24px;
 }
 
-.crm-csv-preview.visible { display: block; }
+.crm-csv-preview.visible {
+  display: block;
+}
 
 .crm-csv-preview__header {
   display: flex;
@@ -568,16 +777,20 @@
   font-size: 11px;
   color: white;
   text-transform: uppercase;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
 .crm-csv-preview tbody tr {
   border-bottom: 1px solid #f1f5f9;
-  transition: background .15s;
+  transition: background 0.15s;
 }
-.crm-csv-preview tbody tr:hover { background: #f8fafc; }
-.crm-csv-preview tbody tr:last-child { border-bottom: none; }
+.crm-csv-preview tbody tr:hover {
+  background: #f8fafc;
+}
+.crm-csv-preview tbody tr:last-child {
+  border-bottom: none;
+}
 
 .crm-csv-preview tbody td {
   padding: 11px 16px;
@@ -615,9 +828,14 @@
   border-bottom: 1px solid #f1f5f9;
   gap: 16px;
 }
-.crm-toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+.crm-toggle-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
 
-.crm-toggle-label { flex: 1; }
+.crm-toggle-label {
+  flex: 1;
+}
 .crm-toggle-label strong {
   display: block;
   font-size: 14px;
@@ -640,7 +858,9 @@
   padding: 24px;
   margin-bottom: 24px;
 }
-.crm-import-progress.visible { display: block; }
+.crm-import-progress.visible {
+  display: block;
+}
 
 .crm-import-progress__label {
   display: flex;
@@ -671,22 +891,31 @@
   height: 100%;
   background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
   border-radius: 999px;
-  transition: width .4s ease;
+  transition: width 0.4s ease;
   position: relative;
   overflow: hidden;
 }
 
 .crm-import-progress__fill::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.3) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
   animation: shimmer 1.5s infinite;
 }
 
 @keyframes shimmer {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100%); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .crm-import-progress__status {
@@ -701,10 +930,14 @@
   gap: 12px;
   margin-bottom: 24px;
 }
-.crm-import-results.visible { display: grid; }
+.crm-import-results.visible {
+  display: grid;
+}
 
 @media (max-width: 700px) {
-  .crm-import-results { grid-template-columns: repeat(2, 1fr); }
+  .crm-import-results {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .crm-result-card {
@@ -713,10 +946,22 @@
   text-align: center;
   border: 1.5px solid;
 }
-.crm-result-card--created  { background: #ecfdf5; border-color: #6ee7b7; }
-.crm-result-card--updated  { background: #eff6ff; border-color: #93c5fd; }
-.crm-result-card--skipped  { background: #fffbeb; border-color: #fcd34d; }
-.crm-result-card--errors   { background: #fef2f2; border-color: #fca5a5; }
+.crm-result-card--created {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+.crm-result-card--updated {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+.crm-result-card--skipped {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+.crm-result-card--errors {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
 
 .crm-result-card__num {
   font-size: 28px;
@@ -724,17 +969,25 @@
   display: block;
   margin-bottom: 2px;
 }
-.crm-result-card--created .crm-result-card__num  { color: #059669; }
-.crm-result-card--updated .crm-result-card__num  { color: #2563eb; }
-.crm-result-card--skipped .crm-result-card__num  { color: #d97706; }
-.crm-result-card--errors .crm-result-card__num   { color: #dc2626; }
+.crm-result-card--created .crm-result-card__num {
+  color: #059669;
+}
+.crm-result-card--updated .crm-result-card__num {
+  color: #2563eb;
+}
+.crm-result-card--skipped .crm-result-card__num {
+  color: #d97706;
+}
+.crm-result-card--errors .crm-result-card__num {
+  color: #dc2626;
+}
 
 .crm-result-card__label {
   font-size: 12px;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: .4px;
+  letter-spacing: 0.4px;
 }
 
 /* Submit button */
@@ -757,14 +1010,16 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: all .2s ease;
-  box-shadow: 0 4px 14px rgba(59,130,246,.35);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
 }
 .crm-import-submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59,130,246,.45);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.45);
 }
-.crm-import-submit-btn:active { transform: translateY(0); }
+.crm-import-submit-btn:active {
+  transform: translateY(0);
+}
 
 /* ── Page header (form pages) ── */
 .crm-import-page-header {
@@ -783,9 +1038,18 @@
   justify-content: center;
   flex-shrink: 0;
 }
-.crm-import-page-icon--blue   { background: #eff6ff; color: #3b82f6; }
-.crm-import-page-icon--teal   { background: #f0fdfa; color: #14b8a6; }
-.crm-import-page-icon--purple { background: #f5f3ff; color: #8b5cf6; }
+.crm-import-page-icon--blue {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+.crm-import-page-icon--teal {
+  background: #f0fdfa;
+  color: #14b8a6;
+}
+.crm-import-page-icon--purple {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
 
 .crm-import-page-title {
   font-size: 22px;
@@ -818,7 +1082,7 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   color: #94a3b8;
   margin-right: 2px;
 }
@@ -841,7 +1105,7 @@
   font-size: 12px;
   color: #94a3b8;
   margin: 0;
-  letter-spacing: .3px;
+  letter-spacing: 0.3px;
 }
 
 /* File input inside dropzone — covers full area for click-anywhere UX */

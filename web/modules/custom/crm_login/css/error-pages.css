@@ -30,6 +30,20 @@
     0 4px 8px rgba(0, 0, 0, 0.06),
     0 20px 40px rgba(0, 0, 0, 0.1);
   animation: err-card-in 0.4s cubic-bezier(0.22, 0.68, 0, 1.2) both;
+  border: 1px solid #e2e8f0;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.crm-err-card:hover {
+  transform: translateY(-1px);
+  border-color: #bfdbfe;
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.05),
+    0 8px 18px rgba(15, 23, 42, 0.1),
+    0 26px 48px rgba(15, 23, 42, 0.14);
 }
 
 @keyframes err-card-in {
