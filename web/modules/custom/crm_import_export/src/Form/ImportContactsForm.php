@@ -245,12 +245,18 @@ class ImportContactsForm extends FormBase {
     $filename  = $_FILES['files']['name']['csv_file'];
 
     $destination = 'public://crm_imports';
-    \Drupal::service('file_system')->prepareDirectory($destination, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY);
+    \Drupal::service('file_system')->prepareDirectory($destination, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY | \Drupal\Core\File\FileSystemInterface::MODIFY_PERMISSIONS);
 
     $file_uri = $destination . '/' . basename($filename);
     try {
-      $file_uri = \Drupal::service('file_system')->move($tmpUpload, $file_uri, \Drupal\Core\File\FileSystemInterface::EXISTS_RENAME);
       $file_path = \Drupal::service('file_system')->realpath($file_uri);
+      
+      // Use PHP native move_uploaded_file for robust handling of $_FILES['...']['tmp_name']
+      if (!@move_uploaded_file($tmpUpload, $file_path)) {
+        if (!@copy($tmpUpload, $file_path)) {
+          throw new \Exception('Failed to move or copy the uploaded file.');
+        }
+      }
     } catch (\Exception $e) {
       $this->messenger()->addError($this->t('Could not move the uploaded file. Check directory permissions.'));
       return;

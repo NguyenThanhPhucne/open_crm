@@ -204,37 +204,22 @@ class ImportOrganizationsForm extends FormBase {
     if (empty($_FILES['files']['tmp_name']['csv_file'])) {
       return;
     }
-
     $tmpUpload = $_FILES['files']['tmp_name']['csv_file'];
-    
-    $handle = fopen($tmpUpload, 'r');
-    $rows = [];
-    while (($data = fgetcsv($handle)) !== FALSE) {
-      $rows[] = $data;
-    }
-    fclose($handle);
+    $filename  = $_FILES['files']['name']['csv_file'];
 
-    if (count($rows) < 2) {
-      $this->messenger()->addError($this->t('CSV contains no data.'));
-      return;
-    }
+    $destination = 'public://crm_imports';
+    \Drupal::service('file_system')->prepareDirectory($destination, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY | \Drupal\Core\File\FileSystemInterface::MODIFY_PERMISSIONS);
+    $file_uri = $destination . '/' . basename($filename);
 
-    $headers = array_shift($rows);
-    $headers = array_map('strtolower', array_map('trim', $headers));
-
-    $batch_data = [];
-    foreach ($rows as $data) {
-      if (count($data) !== count($headers)) continue;
-      
-      $row = [];
-      foreach ($headers as $i => $h) {
-        $row[$h] = trim($data[$i] ?? '');
+    try {
+      $file_path = \Drupal::service('file_system')->realpath($file_uri);
+      if (!@move_uploaded_file($tmpUpload, $file_path)) {
+        if (!@copy($tmpUpload, $file_path)) {
+          throw new \Exception('Failed to move or copy the uploaded file.');
+        }
       }
-      $batch_data[] = $row;
-    }
-
-    if (empty($batch_data)) {
-      $this->messenger()->addError('No valid data found to import.');
+    } catch (\Exception $e) {
+      $this->messenger()->addError($this->t('Could not move the uploaded file. Check directory permissions.'));
       return;
     }
 
@@ -243,42 +228,69 @@ class ImportOrganizationsForm extends FormBase {
       'update_existing' => (bool) $form_state->getValue('update_existing'),
     ];
 
-    $chunks = array_chunk($batch_data, 50);
-    $operations = [];
-    
-    foreach ($chunks as $chunk) {
-      $operations[] = [
-        '\Drupal\crm_import_export\Form\ImportOrganizationsForm::batchProcess',
-        [$chunk, $options]
-      ];
-    }
+    batch_set([
+      'title'            => $this->t('Importing organizations...'),
+      'init_message'     => $this->t('Reading CSV file...'),
+      'progress_message' => $this->t('Processed @current rows...'),
+      'error_message'    => $this->t('An error occurred.'),
+      'operations'       => [[static::class . '::batchProcess', [$file_path, $options]]],
+      'finished'         => static::class . '::batchFinished',
+    ]);
 
-    $batch = [
-      'title' => $this->t('Importing Organizations...'),
-      'operations' => $operations,
-      'finished' => '\Drupal\crm_import_export\Form\ImportOrganizationsForm::batchFinished',
-      'init_message' => $this->t('Initializing import...'),
-      'progress_message' => $this->t('Processed @current of @total batches.'),
-      'error_message' => $this->t('An error occurred during import.'),
-    ];
-
-    batch_set($batch);
     $form_state->setRedirect('crm.all_organizations');
   }
 
   /**
    * Batch operation.
    */
-  public static function batchProcess($chunk, $options, &$context) {
-    if (empty($context['results'])) {
-      $context['results'] = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => 0];
+  public static function batchProcess(string $file_path, array $options, &$context) {
+    if (empty($context['sandbox'])) {
+      $handle = @fopen($file_path, 'r');
+      $context['sandbox']['handle']  = $handle ?: NULL;
+      $context['sandbox']['current'] = 0;
+      $context['results']            = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => 0];
+
+      if ($handle) {
+        $raw = fgetcsv($handle, 0, ',', '"', '');
+        $context['sandbox']['headers'] = $raw ? array_map('strtolower', array_map('trim', $raw)) : [];
+        $context['sandbox']['total'] = max(0, count(file($file_path)) - 1);
+      } else {
+        $context['sandbox']['total'] = 0;
+        $context['finished'] = 1;
+        return;
+      }
     }
 
-    foreach ($chunk as $row) {
+    $handle  = $context['sandbox']['handle'];
+    $headers = $context['sandbox']['headers'] ?? [];
+
+    if (!$handle) { $context['finished'] = 1; return; }
+
+    $processed = 0;
+    while ($processed < 50 && ($data = fgetcsv($handle, 0, ',', '"', '')) !== FALSE) {
+      if (array_filter($data)) {
+        $row = [];
+        foreach ($headers as $i => $h) {
+          $row[$h] = isset($data[$i]) ? trim($data[$i]) : '';
+        }
+        static::processSingleRow($row, $options, $context['results']);
+      }
+      $processed++;
+      $context['sandbox']['current']++;
+    }
+
+    $total = max(1, $context['sandbox']['total']);
+    $context['finished'] = $context['sandbox']['current'] / $total;
+    if ($context['finished'] >= 1) @fclose($handle);
+
+    $context['message'] = 'Processed ' . $context['sandbox']['current'] . ' of ' . $context['sandbox']['total'] . ' rows...';
+  }
+
+  protected static function processSingleRow(array $row, array $options, array &$results): void {
       $name = $row['name'] ?? '';
       if (empty($name)) { 
-        $context['results']['errors']++; 
-        continue; 
+        $results['errors']++; 
+        return; 
       }
 
       $nids = \Drupal::entityQuery('node')
@@ -291,7 +303,7 @@ class ImportOrganizationsForm extends FormBase {
       $existing = $nids ? Node::load(reset($nids)) : NULL;
 
       if ($existing && $options['skip_duplicates'] && !$options['update_existing']) {
-        $context['results']['skipped']++;
+        $results['skipped']++;
       }
       elseif ($existing && $options['update_existing']) {
         if (!empty($row['website']))  $existing->set('field_website', ['uri' => $row['website']]);
@@ -299,7 +311,7 @@ class ImportOrganizationsForm extends FormBase {
         if (!empty($row['address']))  $existing->set('field_address', $row['address']);
         if (!empty($row['status']))   $existing->set('field_status', $row['status']);
         $existing->save();
-        $context['results']['updated']++;
+        $results['updated']++;
       }
       elseif (!$existing) {
         $values = [
@@ -312,11 +324,8 @@ class ImportOrganizationsForm extends FormBase {
         if (!empty($row['address']))  $values['field_address']  = $row['address'];
         if (!empty($row['status']))   $values['field_status']   = $row['status'];
         Node::create($values)->save();
-        $context['results']['created']++;
+        $results['created']++;
       }
-    }
-
-    $context['message'] = 'Processed ' . count($chunk) . ' organizations...';
   }
 
   /**

@@ -6,6 +6,8 @@ global_nav:
       css/views-table-improvements.css: {}
       css/crm-ui-polish.css: {}
       css/crm-premium.css: {}
+      css/crm-skeleton.css: {}
+
   js:
     js/crm_actions.js: {}
     https://unpkg.com/lucide@latest: { type: external, minified: true }

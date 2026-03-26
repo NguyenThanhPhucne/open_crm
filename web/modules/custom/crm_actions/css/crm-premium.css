@@ -1,268 +1,618 @@
 /* ==========================================================================
-   CRM PREMIUM POLISH — 24 SECTIONS
+   CRM PREMIUM POLISH v2.0 — FULL REWRITE WITH VERIFIED SELECTORS
    ========================================================================== */
 
-/* 1. Design Tokens */
+/* ─── 1. DESIGN TOKENS ─── */
 :root {
-  --crm-bg-gradient: linear-gradient(135deg, #fdfdfd 0%, #f4f7fb 100%);
-  --crm-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  --crm-card-hover-shadow: 0 12px 30px rgba(0, 0, 0, 0.09);
-  --crm-card-radius: 16px;
-  --crm-transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --crm-transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --crm-row-hover-bg: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%);
-  --crm-header-bg: linear-gradient(180deg, #1e293b 0%, #334155 100%);
-  --crm-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.25);
-  --crm-border-color: #e2e8f0;
+  --crm-bg: linear-gradient(160deg, #f0f4ff 0%, #faf8ff 50%, #eef9f4 100%);
+  --crm-white: #ffffff;
+  --crm-card-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  --crm-card-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.10);
+  --crm-card-shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.14);
+  --crm-radius-sm: 10px;
+  --crm-radius-md: 14px;
+  --crm-radius-lg: 18px;
+  --crm-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --crm-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --crm-t-fast: 0.15s;
+  --crm-t-base: 0.22s;
+  --crm-t-slow: 0.35s;
+  --crm-border: 1px solid rgba(226, 232, 240, 0.8);
+  --crm-blue-glow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  --crm-primary: #2563eb;
+  --crm-primary-dark: #1d4ed8;
+  --crm-text: #0f172a;
+  --crm-muted: #64748b;
 }
 
-/* 2. Font Antialiasing Global */
-body, .crm-page-shell {
+/* ─── 2. GLOBAL FOUNDATION ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--crm-bg) fixed !important;
 }
 
-/* 3. Page background — subtle off-white gradient */
-body {
-  background: var(--crm-bg-gradient) !important;
-}
-
-.crm-page-shell {
-  background: transparent !important;
-}
-
-/* 4. Stat cards hover lift */
-.stat-card {
-  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth) !important;
-}
-.stat-card:hover {
-  transform: translateY(-4px) scale(1.01) !important;
-  box-shadow: var(--crm-card-hover-shadow) !important;
-}
-
-/* 5. Table card wrapper */
-.table-wrapper, .view-content > .views-table {
-  border-radius: var(--crm-card-radius);
-  box-shadow: var(--crm-card-shadow);
-  transition: box-shadow var(--crm-transition-smooth);
-  background: #ffffff;
-  border: 1px solid var(--crm-border-color);
+/* ─── 3. PAGE HEADER CARD (All Contacts, All Deals...) ─── */
+.crm-header-card {
+  background: var(--crm-white);
+  border-radius: var(--crm-radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--crm-card-shadow-md);
+  border: var(--crm-border);
+  margin-bottom: 20px;
+  position: relative;
   overflow: hidden;
 }
-.table-wrapper:hover, .view-content > .views-table:hover {
-  box-shadow: var(--crm-card-hover-shadow);
-}
-
-/* 6. Table links hover grow */
-.views-table td a, .crm-entities-list td a {
-  position: relative;
-  text-decoration: none !important;
-  color: #2563eb;
-  font-weight: 600;
-  transition: color var(--crm-transition-smooth);
-}
-.views-table td a::after, .crm-entities-list td a::after {
+.crm-header-card::before {
   content: '';
   position: absolute;
-  width: 100%;
-  transform: scaleX(0);
-  height: 2px;
-  bottom: -2px;
+  top: 0;
   left: 0;
-  background-color: #2563eb;
-  transform-origin: bottom right;
-  transition: transform 0.25s ease-out;
-}
-.views-table td a:hover, .crm-entities-list td a:hover {
-  color: #1d4ed8;
-}
-.views-table td a:hover::after, .crm-entities-list td a:hover::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #7c3aed, #06b6d4);
+  border-radius: var(--crm-radius-lg) var(--crm-radius-lg) 0 0;
 }
 
-/* 7. View Filters Card */
-.view-filters {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-  border: 1px solid var(--crm-border-color);
-  border-radius: 12px;
-  padding: 16px 20px;
+/* ─── 4. SUMMARY STATS STRIP ─── */
+.crm-summary-card {
+  background: var(--crm-white);
+  border-radius: var(--crm-radius-md);
+  border: var(--crm-border);
   box-shadow: var(--crm-card-shadow);
-  transition: transform var(--crm-transition-smooth), box-shadow var(--crm-transition-smooth);
+  transition: transform var(--crm-t-base) var(--crm-ease),
+              box-shadow var(--crm-t-base) var(--crm-ease);
+  padding: 10px 18px;
+  white-space: nowrap;
 }
-.view-filters:hover {
+.crm-summary-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--crm-card-hover-shadow);
+  box-shadow: var(--crm-card-shadow-md);
 }
 
-/* 8. Table row hover */
-.views-table tbody tr, .crm-entities-list tbody tr {
-  transition: background var(--crm-transition-smooth), transform var(--crm-transition-smooth);
-}
-.views-table tbody tr:hover, .crm-entities-list tbody tr:hover {
-  background: var(--crm-row-hover-bg) !important;
-}
-
-/* 9. Form Inputs */
-input[type="text"], input[type="email"], select, textarea {
-  transition: all var(--crm-transition-smooth);
-}
-input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
-  outline: none;
-  box-shadow: var(--crm-focus-ring) !important;
-  border-color: #3b82f6 !important;
-}
-
-/* 10. Breadcrumb bar */
-.breadcrumb-wrapper, .view-header {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 12px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  margin-bottom: 20px;
-}
-
-/* 11. Page Header Card */
-.crm-import-header-inner, .contacts-header {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: var(--crm-card-radius);
-  padding: 24px 32px;
+/* ─── 5. FILTER BAR ─── */
+.crm-filters-wrapper {
+  background: var(--crm-white);
+  border-radius: var(--crm-radius-md);
+  border: var(--crm-border);
   box-shadow: var(--crm-card-shadow);
-  margin-bottom: 32px;
-  border: 1px solid var(--crm-border-color);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  transition: box-shadow var(--crm-t-base) var(--crm-ease);
+}
+.crm-filters-wrapper:hover {
+  box-shadow: var(--crm-card-shadow-md);
+}
+.crm-filters-wrapper input[type="text"],
+.crm-filters-wrapper input[type="search"],
+.crm-filters-wrapper select {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--crm-radius-sm);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  transition: border-color var(--crm-t-fast) var(--crm-ease),
+              box-shadow var(--crm-t-fast) var(--crm-ease),
+              background var(--crm-t-fast) var(--crm-ease);
+  outline: none;
+}
+.crm-filters-wrapper input:focus,
+.crm-filters-wrapper select:focus {
+  background: #ffffff;
+  border-color: var(--crm-primary);
+  box-shadow: var(--crm-blue-glow);
 }
 
-/* 12. Avatar circles */
-img.contact-avatar, .contact-avatar-placeholder {
-  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth);
+/* ─── 6. TABLE CARD WRAPPER ─── */
+.table-card {
+  background: var(--crm-white);
+  border-radius: var(--crm-radius-lg);
+  border: var(--crm-border);
+  box-shadow: var(--crm-card-shadow-md);
+  overflow: hidden;
+  transition: box-shadow var(--crm-t-base) var(--crm-ease);
 }
-img.contact-avatar:hover, .contact-avatar-placeholder:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+.table-card:hover {
+  box-shadow: var(--crm-card-shadow-lg);
 }
 
-/* 13. Custom thin scrollbar */
+/* ─── 7. TABLE HEADER ─── */
+.table-card thead,
+.views-table thead,
+.crm-entities-list thead {
+  background: #f8fafc !important;
+}
+.table-card th,
+.views-table th,
+.crm-entities-list th {
+  background-color: #f8fafc !important; /* Soft light slate to match modern SaaS */
+  color: #64748b !important; /* Slate 500 for subtle look */
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 14px 16px !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  text-align: center !important; /* Center align header text */
+}
+.table-card th a,
+.views-table th a {
+  color: #475569 !important; /* Slate 600 for prominent links */
+  transition: color var(--crm-t-fast) var(--crm-ease);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.table-card th a:hover,
+.views-table th a:hover {
+  color: #2563eb !important;
+}
+
+/* ─── 8. TABLE ROWS ─── */
+.table-card tbody tr,
+.views-table tbody tr,
+.crm-entities-list tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background var(--crm-t-fast) var(--crm-ease);
+}
+.table-card tbody tr:hover,
+.views-table tbody tr:hover,
+.crm-entities-list tbody tr:hover {
+  background: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%) !important;
+}
+.table-card tbody tr:last-child,
+.views-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* ─── 9. TABLE LINKS ─── */
+.contact-name-link,
+.table-card td a,
+.views-table td a:not(.badge) {
+  color: var(--crm-primary);
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  transition: color var(--crm-t-fast) var(--crm-ease);
+}
+.contact-name-link:hover,
+.table-card td a:hover,
+.views-table td a:hover:not(.badge) {
+  color: var(--crm-primary-dark);
+}
+
+/* ─── 10. DASHBOARD STAT CARDS ─── */
+.stat-card {
+  background: var(--crm-white);
+  border-radius: var(--crm-radius-lg);
+  border: var(--crm-border);
+  box-shadow: var(--crm-card-shadow);
+  transition: transform var(--crm-t-slow) var(--crm-spring),
+              box-shadow var(--crm-t-base) var(--crm-ease);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: var(--crm-card-shadow-lg);
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--crm-t-base) var(--crm-ease);
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.4) 0%, transparent 70%);
+}
+.stat-card:hover::after {
+  opacity: 1;
+}
+
+.stat-icon-wrapper {
+  transition: transform var(--crm-t-slow) var(--crm-spring);
+}
+.stat-card:hover .stat-icon-wrapper {
+  transform: scale(1.12) rotate(-5deg);
+}
+
+.stat-value {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+}
+
+/* ─── 11. HERO SECTION (Dashboard & Home) ─── */
+.crm-hero-section,
+.crm-dashboard-hero,
+[class*="hero-section"] {
+  background: linear-gradient(135deg, #1e293b 0%, #0f2357 50%, #1a1050 100%) !important;
+  border-radius: var(--crm-radius-lg) !important;
+  position: relative;
+  overflow: hidden;
+}
+.crm-hero-section::before,
+.crm-dashboard-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.hero-action-btn {
+  transition: transform var(--crm-t-base) var(--crm-ease),
+              box-shadow var(--crm-t-base) var(--crm-ease),
+              background var(--crm-t-fast) var(--crm-ease) !important;
+}
+.hero-action-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+}
+
+/* ─── 12. KANBAN COLUMN ─── */
+.kanban-container {
+  gap: 16px;
+  padding-bottom: 24px;
+}
+.kanban-column {
+  background: #f8fafc;
+  border-radius: var(--crm-radius-md);
+  border: var(--crm-border);
+  box-shadow: var(--crm-card-shadow);
+  transition: box-shadow var(--crm-t-base) var(--crm-ease);
+  min-height: 200px;
+}
+.kanban-column:hover {
+  box-shadow: var(--crm-card-shadow-md);
+}
+.kanban-column-header {
+  padding: 14px 16px 10px !important;
+  font-weight: 700 !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  border-bottom: var(--crm-border);
+}
+
+/* ─── 13. KANBAN CARDS ─── */
+.kanban-card {
+  background: var(--crm-white) !important;
+  border-radius: var(--crm-radius-sm) !important;
+  border: var(--crm-border) !important;
+  box-shadow: var(--crm-card-shadow) !important;
+  padding: 14px 16px !important;
+  margin: 8px !important;
+  cursor: grab;
+  position: relative;
+  transition: transform var(--crm-t-slow) var(--crm-spring),
+              box-shadow var(--crm-t-base) var(--crm-ease) !important;
+}
+.kanban-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: var(--crm-radius-sm) 0 0 var(--crm-radius-sm);
+  background: linear-gradient(180deg, #2563eb, #7c3aed);
+  opacity: 0;
+  transition: opacity var(--crm-t-fast) var(--crm-ease);
+}
+.kanban-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--crm-card-shadow-lg) !important;
+}
+.kanban-card:hover::before {
+  opacity: 1;
+}
+.kanban-card:active {
+  cursor: grabbing;
+  transform: scale(1.03) rotate(1deg) !important;
+}
+
+.kanban-card-title {
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  color: var(--crm-text) !important;
+  margin-bottom: 6px !important;
+}
+.kanban-card-value {
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  letter-spacing: -0.01em !important;
+}
+.kanban-card-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--crm-muted);
+}
+
+/* Card action buttons on hover */
+.ca-btn {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--crm-t-fast) var(--crm-ease),
+              transform var(--crm-t-fast) var(--crm-ease);
+}
+.kanban-card:hover .ca-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── 14. FORM INPUTS GLOBAL ─── */
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="number"],
+textarea,
+select {
+  transition: border-color var(--crm-t-fast) var(--crm-ease),
+              box-shadow var(--crm-t-fast) var(--crm-ease) !important;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--crm-primary) !important;
+  box-shadow: var(--crm-blue-glow) !important;
+}
+
+/* ─── 15. BUTTONS — General polish ─── */
+.btn-primary,
+button.btn-primary,
+a.btn-primary {
+  transition: transform var(--crm-t-base) var(--crm-ease),
+              box-shadow var(--crm-t-base) var(--crm-ease),
+              filter var(--crm-t-fast) var(--crm-ease) !important;
+}
+.btn-primary:hover,
+button.btn-primary:hover,
+a.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35) !important;
+  filter: brightness(1.05);
+}
+.btn-primary:active,
+button.btn-primary:active {
+  transform: translateY(0) scale(0.97) !important;
+}
+
+/* ─── 16. PAGINATION ─── */
+.pager__item a,
+.pager__item.is-active a {
+  border-radius: 20px !important;
+  transition: all var(--crm-t-base) var(--crm-ease) !important;
+  font-weight: 600 !important;
+}
+.pager__item.is-active a {
+  background: var(--crm-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+}
+
+/* ─── 17. MODAL ─── */
+.crm-modal-backdrop,
+.crm-delete-modal__overlay,
+.ui-widget-overlay {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+}
+.crm-modal,
+.crm-delete-modal,
+.ui-dialog {
+  border-radius: var(--crm-radius-lg) !important;
+  box-shadow: var(--crm-card-shadow-lg) !important;
+  border: var(--crm-border) !important;
+  animation: modalSlideIn 0.3s var(--crm-spring) forwards;
+}
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── 18. CHECKBOX ─── */
+input[type="checkbox"] {
+  accent-color: var(--crm-primary);
+  cursor: pointer;
+  transition: transform 0.1s var(--crm-ease);
+}
+input[type="checkbox"]:active {
+  transform: scale(0.88);
+}
+
+/* ─── 19. FAB ─── */
+.crm-fab-container {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ─── 20. CUSTOM SCROLLBAR ─── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* 14. Pagination */
-.pager__item a {
-  border-radius: 20px !important;
-  transition: all var(--crm-transition-smooth);
+/* ─── 21. BADGES / STATUS TAGS ─── */
+.badge,
+[class*="crm-badge"],
+[class*="stage-badge"] {
+  transition: transform var(--crm-t-base) var(--crm-spring),
+              box-shadow var(--crm-t-fast) var(--crm-ease) !important;
+  font-weight: 700 !important;
 }
-.pager__item.is-active a {
-  background: #2563eb !important;
-  color: white !important;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-}
-
-/* 15. Status badges */
-.badge {
-  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth);
-}
-.badge:hover {
+.badge:hover,
+[class*="crm-badge"]:hover {
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
 }
 
-/* 16. Checkbox */
-input[type="checkbox"] {
-  accent-color: #2563eb;
-  transition: transform 0.1s ease;
-}
-input[type="checkbox"]:active {
-  transform: scale(0.9);
-}
-
-/* 17. FAB (Spring logic already in JS/CSS, just ensure hardware accel) */
-.crm-fab-container {
-  transform: translateZ(0);
-}
-
-/* 18. Modal Backdrop */
-.crm-modal-backdrop, .crm-delete-modal__overlay, .ui-widget-overlay {
-  backdrop-filter: blur(5px);
-  background: rgba(15, 23, 42, 0.5) !important;
-  transition: opacity 0.3s ease;
-}
-
-/* 19. Toast (Handled in existing CSS, adding z-index fix) */
-.crm-toast-container {
-  z-index: 10000;
-}
-
-/* 20. Skeleton structure */
-.crm-skeleton-animate {
+/* ─── 22. SKELETON SHIMMER ─── */
+.crm-skeleton-animate,
+.crm-skeleton {
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
 }
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
+  0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-/* 21. Empty State */
-.empty-state, .crm-empty-state {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-  border-radius: var(--crm-card-radius);
-  padding: 48px;
-  box-shadow: var(--crm-card-shadow);
+/* ─── 23. TOAST ─── */
+.crm-toast-container {
+  z-index: 10100;
 }
 
-/* 22. Nav back button */
-.nav-back-button, .btn-back {
-  background: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transition: transform var(--crm-transition-smooth);
-}
-.nav-back-button:hover, .btn-back:hover {
-  transform: translateX(-3px);
-  background: #f8fafc !important;
-}
-
-/* 23. Kanban cards */
-.kanban-card, .deal-card {
-  transition: transform var(--crm-transition-spring), box-shadow var(--crm-transition-smooth);
-}
-.kanban-card:hover, .deal-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--crm-card-hover-shadow);
-}
-
-/* 24. Reduced Motion */
+/* ─── 24. REDUCED MOTION SAFETY ─── */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
-/* TABLE HEADER OVERRIDE */
-.views-table thead, .crm-entities-list thead, .views-table caption {
-  background: var(--crm-header-bg) !important;
+/* ─── BONUS: SECTION HEADERS ─── */
+.stat-card-section-title,
+[class*="stat-section-label"],
+.dashboard-section-label {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: var(--crm-muted) !important;
+  margin-bottom: 12px !important;
 }
-.views-table th, .crm-entities-list th {
-  color: #ffffff !important;
-  letter-spacing: 0.5px;
+
+/* ─── BONUS: QAC panel hero (homepage) ─── */
+.qac-hero,
+.qac-panel {
+  border-radius: var(--crm-radius-lg) !important;
+  border: var(--crm-border) !important;
+  box-shadow: var(--crm-card-shadow-md) !important;
+  position: relative;
+  overflow: hidden;
 }
-.views-table th a, .crm-entities-list th a {
-  color: #93c5fd !important;
+.qac-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb 0%, #7c3aed 50%, #06b6d4 100%);
+  pointer-events: none;
 }
-.views-table th a:hover, .crm-entities-list th a:hover {
-  color: #ffffff !important;
+
+/* ─── BONUS: Quick access cards (homepage grid) ─── */
+.qac-card {
+  transition: transform var(--crm-t-slow) var(--crm-spring),
+              box-shadow var(--crm-t-base) var(--crm-ease) !important;
+}
+.qac-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--crm-card-shadow-lg) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VERIFIED OVERRIDES — Added based on actual HTML class inspection
+   Target: table-card, crm-header-card, crm-summary-card, crm-filters-wrapper
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Hard override: summary cards strip hover */
+.crm-page-shell .crm-summary-card:hover,
+.view-crm-all-contacts .crm-summary-card:hover,
+.view-crm-all-deals .crm-summary-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.1) !important;
+}
+
+/* Hard override: crm-header-card rainbow top border */
+.view-crm-all-contacts .crm-header-card::before,
+.view-crm-all-deals .crm-header-card::before,
+.view-crm-all-pipeline .crm-header-card::before,
+body .crm-header-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb 0%, #7c3aed 50%, #10b981 100%);
+  pointer-events: none;
+}
+
+/* Hard override: table card definition */
+body .table-card {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07) !important;
+  border: 1px solid rgba(226,232,240,0.8) !important;
+}
+body .table-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+  transition: box-shadow 0.22s ease !important;
+}
+
+/* Contacts table row hover gradient */
+body .table-card tbody tr:hover td {
+  background: linear-gradient(90deg, #eff6ff, #f5f3ff) !important;
+}
+
+/* Stat card strong spring lift */
+body .stat-card {
+  cursor: default;
+  will-change: transform;
+}
+body .stat-card:hover {
+  transform: translateY(-5px) scale(1.015) !important;
+  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.12), 0 4px 12px rgba(0,0,0,0.06) !important;
+}
+
+/* Deal card on kanban: subtle accent line */
+body .deal-card::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 3px !important;
+  border-radius: 16px 0 0 16px !important;
+  background: linear-gradient(180deg, #2563eb, #7c3aed) !important;
+  opacity: 0 !important;
+  transition: opacity 0.15s ease !important;
+}
+body .deal-card:hover::before {
+  opacity: 1 !important;
 }

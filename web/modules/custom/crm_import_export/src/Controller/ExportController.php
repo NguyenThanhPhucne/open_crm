@@ -208,58 +208,64 @@ HTML;
   public function exportContacts() {
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
-    $is_admin = $current_user->hasRole('administrator') || $user_id == 1;
-    $is_manager = $current_user->hasRole('sales_manager');
-    $see_all = $is_admin || $is_manager;
+    $see_all = $current_user->hasRole('administrator') || $user_id == 1 || $current_user->hasRole('sales_manager');
 
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'contact')
-      ->accessCheck(FALSE)
-      ->sort('created', 'DESC');
-    if (!$see_all) {
-      $query->condition('field_owner', $user_id);
-    }
-
-    $nids = $query->execute();
-    $contacts = Node::loadMultiple($nids);
-
-    $csv_data = [];
-    $headers = ['ID', 'Name', 'Email', 'Phone', 'Position', 'Organization', 'Owner', 'Source', 'Customer Type', 'Status', 'Tags', 'LinkedIn', 'Last Contacted', 'Created Date', 'Modified Date'];
-    $csv_data[] = $headers;
-
-    foreach ($contacts as $contact) {
-      $row = [];
-      $row[] = $contact->id();
-      $row[] = $contact->getTitle();
-      $row[] = $contact->hasField('field_email') && !$contact->get('field_email')->isEmpty() ? $contact->get('field_email')->value : '';
-      $row[] = $contact->hasField('field_phone') && !$contact->get('field_phone')->isEmpty() ? $contact->get('field_phone')->value : '';
-      $row[] = $contact->hasField('field_position') && !$contact->get('field_position')->isEmpty() ? $contact->get('field_position')->value : '';
-      $row[] = ($contact->hasField('field_organization') && $contact->get('field_organization')->entity) ? $contact->get('field_organization')->entity->getTitle() : '';
-      $row[] = ($contact->hasField('field_owner') && $contact->get('field_owner')->entity) ? $contact->get('field_owner')->entity->getDisplayName() : '';
-      $row[] = ($contact->hasField('field_source') && $contact->get('field_source')->entity) ? $contact->get('field_source')->entity->getName() : '';
-      $row[] = ($contact->hasField('field_customer_type') && $contact->get('field_customer_type')->entity) ? $contact->get('field_customer_type')->entity->getName() : '';
-      $row[] = $contact->hasField('field_status') ? $contact->get('field_status')->value : '';
+    $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($see_all, $user_id) {
+      $handle = fopen('php://output', 'w');
+      // Add BOM to fix UTF-8 in Excel
+      fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
       
-      $tags = [];
-      if ($contact->hasField('field_tags')) {
-        foreach ($contact->get('field_tags') as $tag) {
-          if ($tag->entity) $tags[] = $tag->entity->getName();
-        }
+      fputcsv($handle, ['ID', 'Name', 'Email', 'Phone', 'Position', 'Organization', 'Owner', 'Source', 'Customer Type', 'Status', 'Tags', 'LinkedIn', 'Last Contacted', 'Created Date', 'Modified Date']);
+
+      $query = \Drupal::entityQuery('node')
+        ->condition('type', 'contact')
+        ->accessCheck(FALSE)
+        ->sort('created', 'DESC');
+      if (!$see_all) {
+        $query->condition('field_owner', $user_id);
       }
-      $row[] = implode(', ', $tags);
-      $row[] = $contact->hasField('field_linkedin') ? $contact->get('field_linkedin')->uri : '';
-      $row[] = $contact->hasField('field_last_contacted') ? $contact->get('field_last_contacted')->value : '';
-      $row[] = date('Y-m-d H:i:s', $contact->getCreatedTime());
-      $row[] = date('Y-m-d H:i:s', $contact->getChangedTime());
-      
-      $csv_data[] = $row;
-    }
 
-    $csv_content = $this->arrayToCsv($csv_data);
-    $response = new Response($csv_content);
+      $nids = $query->execute();
+      $chunks = array_chunk($nids, 50);
+
+      foreach ($chunks as $chunk) {
+        $contacts = Node::loadMultiple($chunk);
+        foreach ($contacts as $contact) {
+          $row = [
+            $contact->id(),
+            $contact->getTitle(),
+            $contact->hasField('field_email') && !$contact->get('field_email')->isEmpty() ? $contact->get('field_email')->value : '',
+            $contact->hasField('field_phone') && !$contact->get('field_phone')->isEmpty() ? $contact->get('field_phone')->value : '',
+            $contact->hasField('field_position') && !$contact->get('field_position')->isEmpty() ? $contact->get('field_position')->value : '',
+            ($contact->hasField('field_organization') && $contact->get('field_organization')->entity) ? $contact->get('field_organization')->entity->getTitle() : '',
+            ($contact->hasField('field_owner') && $contact->get('field_owner')->entity) ? $contact->get('field_owner')->entity->getDisplayName() : '',
+            ($contact->hasField('field_source') && $contact->get('field_source')->entity) ? $contact->get('field_source')->entity->getName() : '',
+            ($contact->hasField('field_customer_type') && $contact->get('field_customer_type')->entity) ? $contact->get('field_customer_type')->entity->getName() : '',
+            $contact->hasField('field_status') ? $contact->get('field_status')->value : '',
+          ];
+          $tags = [];
+          if ($contact->hasField('field_tags')) {
+            foreach ($contact->get('field_tags') as $tag) {
+              if ($tag->entity) $tags[] = $tag->entity->getName();
+            }
+          }
+          $row[] = implode(', ', $tags);
+          $row[] = $contact->hasField('field_linkedin') ? $contact->get('field_linkedin')->uri : '';
+          $row[] = $contact->hasField('field_last_contacted') ? $contact->get('field_last_contacted')->value : '';
+          $row[] = date('Y-m-d H:i:s', $contact->getCreatedTime());
+          $row[] = date('Y-m-d H:i:s', $contact->getChangedTime());
+
+          fputcsv($handle, $row);
+        }
+        // Free memory footprint after processing each chunk
+        \Drupal::entityTypeManager()->getStorage('node')->resetCache($chunk);
+      }
+      fclose($handle);
+    });
+
     $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
     $response->headers->set('Content-Disposition', 'attachment; filename="contacts_export_' . date('Y-m-d_His') . '.csv"');
-    
+
     return $response;
   }
 
