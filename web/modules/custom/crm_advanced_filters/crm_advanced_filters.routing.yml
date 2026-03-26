@@ -1,0 +1,82 @@
+crm_advanced_filters.settings:
+  path: "/admin/config/crm/advanced-filters"
+  defaults:
+    _form: '\Drupal\crm_advanced_filters\Form\SettingsForm'
+    _title: "Advanced Filters Settings"
+  requirements:
+    _permission: "administer crm"
+
+crm_advanced_filters.builder:
+  path: "/crm/filters/{entity_type}"
+  defaults:
+    _form: '\Drupal\crm_advanced_filters\Form\AdvancedFilterForm'
+    _title: "Advanced Filters"
+  requirements:
+    _permission: "access crm"
+    entity_type: "contact|deal|organization|activity"
+
+crm_advanced_filters.results:
+  path: "/crm/filters/{entity_type}/results"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterResultsController::results'
+    _title: "Filter Results"
+  requirements:
+    _permission: "access crm"
+    entity_type: "contact|deal|organization|activity"
+
+crm_advanced_filters.saved:
+  path: "/crm/filters/saved"
+  defaults:
+    _form: '\Drupal\crm_advanced_filters\Form\SavedFiltersForm'
+    _title: "Saved Filters"
+  requirements:
+    _permission: "access crm"
+
+crm_advanced_filters.api.query:
+  path: "/api/crm/filters/query"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterApiController::query'
+  requirements:
+    _permission: "access crm"
+    _method: "POST"
+
+crm_advanced_filters.api.available:
+  path: "/api/crm/filters/available/{entity_type}"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterApiController::available'
+  requirements:
+    _permission: "access crm"
+    _method: "GET"
+    entity_type: "contact|deal|organization|activity"
+
+crm_advanced_filters.api.options:
+  path: "/api/crm/filters/options/{entity_type}/{field}"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterApiController::options'
+  requirements:
+    _permission: "access crm"
+    _method: "GET"
+
+crm_advanced_filters.api.saved:
+  path: "/api/crm/filters/saved"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterApiController::saved'
+  requirements:
+    _permission: "access crm"
+    _method: "GET"
+
+crm_advanced_filters.api.save:
+  path: "/api/crm/filters/save"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterApiController::save'
+  requirements:
+    _permission: "access crm"
+    _method: "POST"
+
+crm_advanced_filters.api.delete:
+  path: "/api/crm/filters/{filter_id}"
+  defaults:
+    _controller: '\Drupal\crm_advanced_filters\Controller\FilterApiController::delete'
+  requirements:
+    _permission: "access crm"
+    _method: "DELETE"

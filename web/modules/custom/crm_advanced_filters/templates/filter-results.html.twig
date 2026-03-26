@@ -1,0 +1,305 @@
+{#
+/**
+ * @file
+ * Template for displaying filter results.
+ *
+ * Variables:
+ * - total: Total number of results
+ * - results: Array of result entities
+ * - filter_description: Human-readable description of applied filter
+ * - saved_filters: Array of user's saved filters
+ * - pagination: Pagination information
+ */
+#}
+
+<div class="crm-filter-results-wrapper">
+  <div class="results-header">
+    <h2>{{ 'Filter Results'|t }}</h2>
+    
+    {% if filter_description %}
+      <div class="filter-info">
+        <strong>{{ 'Applied filter:'|t }}</strong>
+        <span class="filter-description">{{ filter_description }}</span>
+        <a href="#" class="edit-filter">{{ 'Edit'|t }}</a>
+      </div>
+    {% endif %}
+
+    <div class="results-count">
+      {{ 'Found @count results'|t({'@count': total}) }}
+    </div>
+  </div>
+
+  <div class="results-toolbar">
+    <div class="toolbar-left">
+      <label>
+        <input type="checkbox" class="select-all" id="select-all">
+        {{ 'Select All'|t }}
+      </label>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="btn btn-secondary" id="export-results">
+        {{ 'Export'|t }}
+      </button>
+      <button class="btn btn-secondary" id="bulk-actions">
+        {{ 'Bulk Actions'|t }}
+      </button>
+    </div>
+  </div>
+
+  {% if results|length > 0 %}
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" class="select-all-checkbox"></th>
+          {% for column in columns %}
+            <th>{{ column.label }}</th>
+          {% endfor %}
+          <th>{{ 'Actions'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+          <tr class="result-row" data-id="{{ result.id }}">
+            <td><input type="checkbox" class="result-checkbox" value="{{ result.id }}"></td>
+            {% for column in columns %}
+              <td>{{ result[column.key] }}</td>
+            {% endfor %}
+            <td class="actions-cell">
+              <a href="{{ result.url }}/edit" class="btn-icon" title="{{ 'Edit'|t }}">✎</a>
+              <a href="{{ result.url }}" class="btn-icon" title="{{ 'View'|t }}">👁</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if pagination %}
+      <nav class="pagination">
+        {% if pagination.has_previous %}
+          <a href="?page={{ pagination.current_page - 1 }}" class="prev">
+            {{ '← Previous'|t }}
+          </a>
+        {% endif %}
+
+        {% for page_num in pagination.pages %}
+          {% if page_num == pagination.current_page %}
+            <span class="current">{{ page_num }}</span>
+          {% else %}
+            <a href="?page={{ page_num }}">{{ page_num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+          <a href="?page={{ pagination.current_page + 1 }}" class="next">
+            {{ 'Next →'|t }}
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="empty-results">
+      <p>{{ 'No results found matching your filter.'|t }}</p>
+      <a href="#" class="btn btn-primary">{{ 'Back to Filter Builder'|t }}</a>
+    </div>
+  {% endif %}
+
+  {# Export modal #}
+  <div class="modal modal-export" id="modal-export" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>{{ 'Export Results'|t }}</h3>
+      
+      <form id="export-form">
+        <div class="form-group">
+          <label>{{ 'Select Format:'|t }}</label>
+          <div class="format-options">
+            <label>
+              <input type="radio" name="export_format" value="csv" checked>
+              {{ 'CSV (Excel compatible)'|t }}
+            </label>
+            <label>
+              <input type="radio" name="export_format" value="pdf">
+              {{ 'PDF (Printable)'|t }}
+            </label>
+            <label>
+              <input type="radio" name="export_format" value="json">
+              {{ 'JSON (API format)'|t }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="include_headers" checked>
+            {{ 'Include column headers'|t }}
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">{{ 'Export Now'|t }}</button>
+          <button type="button" class="btn btn-secondary cancel">{{ 'Cancel'|t }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {# Bulk actions modal #}
+  <div class="modal modal-bulk-actions" id="modal-bulk-actions" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>{{ 'Bulk Actions'|t }}</h3>
+      
+      <form id="bulk-actions-form">
+        <div class="form-group">
+          <label for="bulk-action">{{ 'Select Action:'|t }}</label>
+          <select id="bulk-action" name="bulk_action">
+            <option value="">- {{ 'Choose action'|t }} -</option>
+            <option value="change_owner">{{ 'Change owner'|t }}</option>
+            <option value="add_tag">{{ 'Add tag'|t }}</option>
+            <option value="remove_tag">{{ 'Remove tag'|t }}</option>
+            <option value="delete">{{ 'Delete'|t }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="action-options">
+          {# Populated dynamically based on selected action #}
+        </div>
+
+        <div class="form-group">
+          <strong>{{ 'Selected:'|t }}</strong>
+          <span id="selected-count">0</span> {{ 'items'|t }}
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">{{ 'Apply'|t }}</button>
+          <button type="button" class="btn btn-secondary cancel">{{ 'Cancel'|t }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .crm-filter-results-wrapper {
+    padding: 20px;
+  }
+
+  .results-header {
+    margin-bottom: 20px;
+  }
+
+  .filter-info {
+    background: #e8f3ff;
+    padding: 10px 15px;
+    border-left: 4px solid #0066cc;
+    margin: 10px 0;
+  }
+
+  .filter-description {
+    font-weight: bold;
+    margin: 0 10px;
+  }
+
+  .results-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+  }
+
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #ddd;
+  }
+
+  .results-table thead {
+    background: #f9f9f9;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  .results-table tbody tr:hover {
+    background: #f5f5f5;
+  }
+
+  .actions-cell {
+    white-space: nowrap;
+  }
+
+  .btn-icon {
+    margin: 0 5px;
+    text-decoration: none;
+    color: #0066cc;
+    font-size: 18px;
+  }
+
+  .btn-icon:hover {
+    opacity: 0.7;
+  }
+
+  .empty-results {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 4px;
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .format-options label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .modal-actions {
+    text-align: right;
+    margin-top: 20px;
+  }
+
+  .modal-actions button {
+    margin-left: 10px;
+  }
+</style>

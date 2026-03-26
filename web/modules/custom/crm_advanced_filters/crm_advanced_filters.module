@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * @file
+ * CRM Advanced Filters module - Enhanced search and filtering for Open CRM.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_help().
+ */
+function crm_advanced_filters_help($route_name, $route_match) {
+  if ($route_name === 'help.page.crm_advanced_filters') {
+    $output = '<h3>' . t('About CRM Advanced Filters') . '</h3>';
+    $output .= '<p>' . t('Provides advanced search and filtering capabilities for Open CRM including:') . '</p>';
+    $output .= '<ul>';
+    $output .= '<li>' . t('Complex filter logic (AND/OR/NOT)') . '</li>';
+    $output .= '<li>' . t('Range filters for numeric and date fields') . '</li>';
+    $output .= '<li>' . t('Saved search filters') . '</li>';
+    $output .= '<li>' . t('Fuzzy search with typo tolerance') . '</li>';
+    $output .= '<li>' . t('Filter suggestions and auto-complete') . '</li>';
+    $output .= '<li>' . t('Bulk operations on filtered results') . '</li>';
+    $output .= '</ul>';
+    return $output;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function crm_advanced_filters_theme() {
+  return [
+    'filter_builder' => [
+      'variables' => [
+        'entity_type' => NULL,
+        'available_filters' => [],
+        'default_logic' => 'AND',
+      ],
+      'template' => 'filter-builder',
+    ],
+    'filter_results' => [
+      'variables' => [
+        'total' => 0,
+        'results' => [],
+        'filter_description' => '',
+        'saved_filters' => [],
+        'pagination' => NULL,
+      ],
+      'template' => 'filter-results',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_entity_access().
+ * 
+ * Ensure users can only access their own saved filters.
+ */
+function crm_advanced_filters_entity_access(EntityInterface $entity, $operation, $account) {
+  if ($entity->getEntityTypeId() === 'saved_filter') {
+    if ($operation === 'view' || $operation === 'update' || $operation === 'delete') {
+      $is_owner = (int) $entity->get('uid')->target_id === (int) $account->id();
+      $is_admin = $account->hasPermission('administer saved_filter');
+      
+      if (!($is_owner || $is_admin)) {
+        return \Drupal\Core\Access\AccessResult::forbidden('User is not the owner of this saved filter');
+      }
+    }
+  }
+}

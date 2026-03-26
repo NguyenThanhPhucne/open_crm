@@ -1,0 +1,30 @@
+filter-builder:
+  version: VERSION
+  css:
+    theme:
+      css/advanced-filters.css: {}
+  js:
+    js/filter-builder.js:
+      scope: footer
+  dependencies:
+    - core/drupal
+    - core/drupal.ajax
+    - core/jquery
+    - core/once
+
+filter-api:
+  version: VERSION
+  js:
+    js/filter-api.js:
+      scope: footer
+  dependencies:
+    - core/drupal
+
+suggestions:
+  version: VERSION
+  js:
+    js/suggestions.js:
+      scope: footer
+  dependencies:
+    - core/drupal
+    - crm_advanced_filters/filter-api

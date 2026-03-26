@@ -1,0 +1,332 @@
+{#
+/**
+ * @file
+ * Template for the advanced filter builder interface.
+ *
+ * Variables:
+ * - entity_type: The entity type being filtered
+ * - available_filters: Array of available filters for this entity type
+ * - default_logic: Default filter logic (AND or OR)
+ */
+#}
+
+<div class="crm-filter-builder-wrapper">
+  <div class="filter-builder-header">
+    <h2>{{ 'Advanced Filter Builder'|t }}</h2>
+    <p class="description">{{ 'Build complex queries with multiple conditions and save them for reuse.'|t }}</p>
+  </div>
+
+  <div class="filter-builder-content">
+    {# Filter suggestions sidebar #}
+    <aside class="filter-suggestions">
+      <h3>{{ 'Suggested Filters'|t }}</h3>
+      <div class="suggestions-list">
+        {% for suggestion in suggestions %}
+          <div class="suggestion-item" data-field="{{ suggestion.key }}">
+            <strong>{{ suggestion.label }}</strong>
+            <div class="suggestion-operators">
+              {% for operator in suggestion.suggested_operators %}
+                <span class="operator-badge">{{ operator }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <h3>{{ 'Trending Filters'|t }}</h3>
+      <div class="trending-filters">
+        {% if trending_filters|length > 0 %}
+          <ul>
+            {% for filter in trending_filters %}
+              <li>
+                <a href="#" data-filter-id="{{ filter.id }}">
+                  {{ filter.name }}
+                </a>
+                <small>{{ 'by'|t }} {{ filter.created_by }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="empty-message">{{ 'No trending filters yet'|t }}</p>
+        {% endif %}
+      </div>
+    </aside>
+
+    {# Main filter builder form #}
+    <main class="filter-builder-main">
+      <div class="filter-logic-selector">
+        <label>{{ 'Match:'|t }}</label>
+        <button class="logic-btn active" data-logic="AND">
+          {{ 'ALL conditions (AND)'|t }}
+        </button>
+        <button class="logic-btn" data-logic="OR">
+          {{ 'ANY condition (OR)'|t }}
+        </button>
+      </div>
+
+      <div class="conditions-builder">
+        <div class="conditions-list" id="conditions-list">
+          {# Conditions added dynamically #}
+        </div>
+
+        <button class="btn btn-secondary add-condition" id="add-condition">
+          + {{ 'Add Condition'|t }}
+        </button>
+      </div>
+
+      <div class="builder-actions">
+        <button class="btn btn-primary apply-filter" id="apply-filter">
+          {{ 'Apply Filter'|t }}
+        </button>
+        <button class="btn btn-secondary clear-filter" id="clear-filter">
+          {{ 'Clear'|t }}
+        </button>
+        <button class="btn btn-secondary save-filter" id="save-filter">
+          {{ 'Save Filter'|t }}
+        </button>
+      </div>
+    </main>
+  </div>
+
+  {# Save filter modal #}
+  <div class="modal modal-save-filter" id="modal-save-filter" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>{{ 'Save This Filter'|t }}</h3>
+      
+      <form id="save-filter-form">
+        <div class="form-group">
+          <label for="filter-name">{{ 'Filter Name'|t }}</label>
+          <input type="text" id="filter-name" name="filter_name" required 
+                 placeholder="{{ 'e.g., High value prospects'|t }}">
+        </div>
+
+        <div class="form-group">
+          <label for="filter-description">{{ 'Description'|t }}</label>
+          <textarea id="filter-description" name="filter_description" rows="3"
+                    placeholder="{{ 'Describe what this filter finds...'|t }}"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="filter_public" id="filter-public">
+            {{ 'Make this filter public (shareable with team)'|t }}
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">{{ 'Save Filter'|t }}</button>
+          <button type="button" class="btn btn-secondary cancel">{{ 'Cancel'|t }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .crm-filter-builder-wrapper {
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 4px;
+  }
+
+  .filter-builder-header {
+    margin-bottom: 20px;
+  }
+
+  .filter-builder-content {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+  }
+
+  .filter-suggestions {
+    background: white;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: fit-content;
+  }
+
+  .filter-suggestions h3 {
+    margin-top: 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  .suggestion-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #f5f5f5;
+    border-left: 3px solid #0066cc;
+    cursor: pointer;
+  }
+
+  .suggestion-item:hover {
+    background: #e8e8e8;
+  }
+
+  .suggestion-operators {
+    margin-top: 5px;
+  }
+
+  .operator-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-right: 5px;
+    background: #ddd;
+    font-size: 11px;
+    border-radius: 3px;
+  }
+
+  .trending-filters ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .trending-filters li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .trending-filters a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+
+  .filter-builder-main {
+    background: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .filter-logic-selector {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .logic-btn {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .logic-btn:hover {
+    border-color: #0066cc;
+    color: #0066cc;
+  }
+
+  .logic-btn.active {
+    background: #0066cc;
+    color: white;
+    border-color: #0066cc;
+  }
+
+  .conditions-list {
+    min-height: 100px;
+  }
+
+  .builder-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #0066cc;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #0052a3;
+  }
+
+  .btn-secondary {
+    background: #e8e8e8;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+
+  .btn-secondary:hover {
+    background: #ddd;
+  }
+
+  .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 4px;
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .close:hover {
+    color: black;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .form-group input[type="text"],
+  .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    .filter-builder-content {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-suggestions {
+      display: none;
+    }
+  }
+</style>
