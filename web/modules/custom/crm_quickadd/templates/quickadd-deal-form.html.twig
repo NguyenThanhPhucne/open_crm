@@ -22,13 +22,13 @@
       <div class="crm-modal-body">
 
         <div class="form-field required-field">
-          <label class="required">Deal Name<span class="required-mark">*</span></label>
+          <label class="required">Deal Name<span class="required-mark"></span></label>
           <input type="text" id="deal-title" name="title" required
                  placeholder="Deal with ABC Company" autocomplete="off">
         </div>
 
         <div class="form-field required-field">
-          <label class="required">Deal Value (VND)<span class="required-mark">*</span></label>
+          <label class="required">Deal Value (VND)<span class="required-mark"></span></label>
           <input type="number" id="deal-amount" name="amount" required
                  step="1000" placeholder="50000000" min="0">
         </div>
@@ -41,7 +41,7 @@
         </div>
 
         <div class="form-field required-field">
-          <label class="required">Primary Contact<span class="required-mark">*</span></label>
+          <label class="required">Primary Contact<span class="required-mark"></span></label>
           <select id="deal-contact" name="contact" required>
             {{ contact_options|raw }}
           </select>
@@ -55,7 +55,7 @@
       </div>{# /.crm-modal-body #}
 
       <div class="crm-modal-footer add-modal-footer">
-        <span class="required-hint"><span class="required-mark">*</span> Required fields</span>
+        <span class="required-hint"><span class="required-mark"></span> Required fields</span>
         <div class="add-modal-footer-actions">
           <div class="save-status" id="quickadd-message"></div>
           <button type="button" class="btn-cancel" onclick="window.history.back()">
