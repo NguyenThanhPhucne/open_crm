@@ -192,7 +192,7 @@ class ModalEditController extends ControllerBase {
             <div class="form-field">
               <label <?= $field['required'] ? 'class="required"' : '' ?>>
                 <?= htmlspecialchars($field['label'] ?? '') ?>
-                <?= $field['required'] ? '<span class="required-mark">*</span>' : '' ?>
+                <?= $field['required'] ? '<span class="required-mark"></span>' : '' ?>
               </label>
               <?php
                 $field_name = $field['name'];

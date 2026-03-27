@@ -362,7 +362,7 @@ class AddController extends ControllerBase {
             <div class="form-field <?= $field['required'] ? 'required-field' : '' ?>">
               <label <?= $field['required'] ? 'class="required"' : '' ?>>
                 <?= htmlspecialchars($field['label'] ?? '') ?>
-                <?= $field['required'] ? '<span class="required-mark">*</span>' : '' ?>
+                <?= $field['required'] ? '<span class="required-mark"></span>' : '' ?>
               </label>
               
               <?php
@@ -505,7 +505,7 @@ class AddController extends ControllerBase {
         </div>
         
         <div class="crm-modal-footer add-modal-footer">
-          <span class="required-hint"><span class="required-mark">*</span> Required fields</span>
+          <span class="required-hint"><span class="required-mark"></span> Required fields</span>
           <div class="add-modal-footer-actions">
             <div class="save-status"></div>
             <button type="button" class="btn-cancel">

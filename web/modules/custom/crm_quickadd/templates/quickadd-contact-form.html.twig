@@ -22,13 +22,13 @@
       <div class="crm-modal-body">
 
         <div class="form-field required-field">
-          <label class="required">Full Name<span class="required-mark">*</span></label>
+          <label class="required">Full Name<span class="required-mark"></span></label>
           <input type="text" id="contact-name" name="name" required
                  placeholder="e.g. Nguyễn Văn An" autocomplete="off">
         </div>
 
         <div class="form-field required-field">
-          <label class="required">Phone Number<span class="required-mark">*</span></label>
+          <label class="required">Phone Number<span class="required-mark"></span></label>
           <input type="tel" id="contact-phone" name="phone" required
                  placeholder="+84 901 234 567">
           <span class="field-error" id="phone-validation" style="display:none;"></span>
@@ -71,7 +71,7 @@
         {# Inline new company creation #}
         <div id="inline-org-fields" style="display:none;">
           <div class="form-field required-field">
-            <label class="required">New Company Name<span class="required-mark">*</span></label>
+            <label class="required">New Company Name<span class="required-mark"></span></label>
             <input type="text" id="inline-org-name" name="organization_name"
                    placeholder="ABC Company Ltd.">
           </div>
@@ -80,7 +80,7 @@
       </div>{# /.crm-modal-body #}
 
       <div class="crm-modal-footer add-modal-footer">
-        <span class="required-hint"><span class="required-mark">*</span> Required fields</span>
+        <span class="required-hint"><span class="required-mark"></span> Required fields</span>
         <div class="add-modal-footer-actions">
           <div class="save-status" id="quickadd-message"></div>
           <button type="button" class="btn-cancel" onclick="window.history.back()">
