@@ -110,9 +110,11 @@
    position:sticky on thead is relative to this scroll container, not the outer clip. */
 .table-scroll-wrap {
   width: 100%;
+  max-height: calc(100vh - 240px);
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 90px;
 }
 /* Thin elegant scrollbar */
 .table-scroll-wrap::-webkit-scrollbar { height: 5px; }

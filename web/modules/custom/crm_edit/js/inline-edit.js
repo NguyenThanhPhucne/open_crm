@@ -207,7 +207,14 @@ globalThis.CRMInlineEdit = {
         if (data.success) {
           // Replace loading with actual modal
           const overlay = document.getElementById("crm-modal-overlay");
-          overlay.innerHTML = data.html;
+          if (window.trustedTypes && window.trustedTypes.createPolicy) {
+            if (!window.crmPolicy) {
+              window.crmPolicy = window.trustedTypes.createPolicy('crmPolicy', { createHTML: (s) => s });
+            }
+            overlay.innerHTML = window.crmPolicy.createHTML(data.html);
+          } else {
+            overlay.innerHTML = data.html;
+          }
 
           // Initialize Lucide icons in modal
           if (typeof lucide !== "undefined") {
