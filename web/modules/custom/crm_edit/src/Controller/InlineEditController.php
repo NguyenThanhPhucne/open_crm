@@ -139,6 +139,15 @@ class InlineEditController extends ControllerBase {
         continue;
       }
       
+      // EXCLUDE redundant or internal fields from inline editing
+      $excluded_fields = [
+        'field_contract', // Redundant with field_contract_file
+        'field_deleted_at', // Internal soft-delete flag
+      ];
+      if (in_array($field_name, $excluded_fields)) {
+        continue;
+      }
+      
       $field_type = $field_def->getType();
       $field_label = $field_def->getLabel();
       $is_required = $field_def->isRequired();
@@ -367,6 +376,14 @@ class InlineEditController extends ControllerBase {
         background: #eff6ff;
         color: #1d4ed8;
         border-color: #1d4ed8;
+      }
+
+      .btn svg {
+        width: 18px !important;
+        height: 18px !important;
+        stroke: currentColor !important;
+        fill: none !important;
+        stroke-width: 2px !important;
       }
       
       .btn-secondary {
