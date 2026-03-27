@@ -383,9 +383,17 @@ class AllContactsController extends ControllerBase {
   .filter-count{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap;margin-left:auto}
 
   /* ── Table card ── */
-  .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;box-shadow:0 1px 3px rgba(0,0,0,.05);overflow:hidden;}
+  /* Scrollable wrapper: captures horizontal scroll, sticky thead works inside */
+  .table-scroll-wrap{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;}
+  /* Custom scrollbar for the scroll wrapper */
+  .table-scroll-wrap::-webkit-scrollbar{height:5px;}
+  .table-scroll-wrap::-webkit-scrollbar-track{background:#f8fafc;}
+  .table-scroll-wrap::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;}
+  .table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
   
-  .contacts-table thead tr { background:rgba(248,250,252,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
+  /* Sticky header: works because position:sticky is relative to the scroll container, not outer overflow:hidden */
+  .contacts-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0;background:rgba(248,250,252,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
   
   .contacts-table th.th-action{text-align:right}
   
@@ -461,7 +469,7 @@ class AllContactsController extends ControllerBase {
   .contacts-table th,
   /* ── ClickUp-inspired UX additions ── */
   /* Sticky thead */
-  .contacts-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0 }
+  /* Sticky header already merged above */
   /* Sort headers */
   .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
   .sort-ic{width:9px;height:12px;margin-left:4px;vertical-align:-1px;color:#cbd5e1;transition:color .12s}.th-sort:hover .sort-ic,.th-sorted .sort-ic,.sort-ic.asc,.sort-ic.desc{color:#3b82f6}
@@ -490,7 +498,7 @@ class AllContactsController extends ControllerBase {
   .is-roomy .contacts-table td,.is-roomy .contacts-table th{padding-top:14px !important;padding-bottom:14px !important}
   /* Page size */
   .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius: 16px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
-  .contacts-table {width:100%;border-collapse:separate;border-spacing:0;margin-top:16px}
+  .contacts-table {width:100%;min-width:700px;border-collapse:separate;border-spacing:0;}
   .contacts-table th {font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px;border-bottom:1px solid #e2e8f0;background:transparent;text-align:left}
   .contacts-table td {padding:14px 16px;font-size:14px;color:#334155;border-bottom:1px solid #f8fafc;transition:all 0.2s ease;vertical-align:middle}
   .contacts-table tbody tr {transition:all 0.2s ease;}
@@ -561,6 +569,7 @@ HTML;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
+    <div class="table-scroll-wrap">
     <table class="contacts-table">
       <colgroup>
         <col class="col-chk">
@@ -669,8 +678,10 @@ EMPTY;
     }
 
     $html .= '</tbody></table>';
+    $html .= '</div>'; // .table-scroll-wrap
 
     // ── Pagination ────────────────────────────────────────────────────────────
+
     $html .= '<div class="pagination"><div class="pg-sz"><label for="pg-sz-sel">Rows:</label><select id="pg-sz-sel">' . $per_page_sel . '</select></div>';
     if ($total_pages > 1) {
       $from_count = $filtered_total === 0 ? 0 : $page * $per_page + 1;
