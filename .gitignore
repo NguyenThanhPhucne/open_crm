@@ -185,6 +185,11 @@ yarn.lock
 *.orig
 .gitignore.old
 
+# One-off maintenance/debug scripts (do not track)
+scripts/production/quick_fix_*.sh
+scripts/production/verify_*.sh
+web/modules/custom/*/debug*.php
+
 # ========== Temporary Working Reports ==========
 ADVANCED_FILTERS_IMPLEMENTATION.md
 BUG_FIXES_APPLIED.md
