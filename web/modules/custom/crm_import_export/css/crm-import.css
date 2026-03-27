@@ -1174,7 +1174,7 @@
 .crm-import-actions-row {
   display: flex !important;
   flex-direction: row !important;
-  justify-content: flex-end !important;
+  justify-content: flex-start !important;
   align-items: center !important;
   gap: 10px !important;
   flex-wrap: wrap !important;
