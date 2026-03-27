@@ -185,6 +185,15 @@ yarn.lock
 *.orig
 .gitignore.old
 
+# ========== Temporary Working Reports ==========
+ADVANCED_FILTERS_IMPLEMENTATION.md
+BUG_FIXES_APPLIED.md
+COMPREHENSIVE_CRM_AUDIT.md
+DEPLOYMENT_GUIDE.md
+IMPLEMENTATION_ROADMAP.md
+MISSING_FEATURES_REPORT.md
+MISSING_FEATURES_SUMMARY_VI.md
+
 # ========== PHP Code Style Cache ==========
 *.php_cs.cache
 .php_cs.cache
