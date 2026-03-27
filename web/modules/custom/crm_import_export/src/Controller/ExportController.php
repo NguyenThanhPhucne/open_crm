@@ -3,7 +3,7 @@
 namespace Drupal\crm_import_export\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Drupal\node\Entity\Node;
 
 /**
@@ -210,7 +210,12 @@ HTML;
     $user_id = $current_user->id();
     $see_all = $current_user->hasRole('administrator') || $user_id == 1 || $current_user->hasRole('sales_manager');
 
-    $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($see_all, $user_id) {
+    $response = new StreamedResponse(function () use ($see_all, $user_id) {
+      // Disable any output buffering so chunks stream immediately
+      while (ob_get_level()) ob_end_clean();
+      @ini_set('output_buffering', 'off');
+      @ini_set('zlib.output_compression', 'off');
+
       $handle = fopen('php://output', 'w');
       // Add BOM to fix UTF-8 in Excel
       fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
@@ -257,8 +262,9 @@ HTML;
 
           fputcsv($handle, $row);
         }
-        // Free memory footprint after processing each chunk
+        // Flush entity cache and push data to output stream after each chunk
         \Drupal::entityTypeManager()->getStorage('node')->resetCache($chunk);
+        flush();
       }
       fclose($handle);
     });
@@ -275,48 +281,60 @@ HTML;
   public function exportDeals() {
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
-    $is_admin = $current_user->hasRole('administrator') || $user_id == 1;
-    $is_manager = $current_user->hasRole('sales_manager');
-    $see_all = $is_admin || $is_manager;
+    $see_all = $current_user->hasRole('administrator') || $user_id == 1 || $current_user->hasRole('sales_manager');
 
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'deal')
-      ->accessCheck(FALSE)
-      ->sort('created', 'DESC');
-    if (!$see_all) {
-      $query->condition('field_owner', $user_id);
-    }
+    $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($see_all, $user_id) {
+      // Disable any output buffering so chunks stream immediately
+      while (ob_get_level()) ob_end_clean();
+      @ini_set('output_buffering', 'off');
+      @ini_set('zlib.output_compression', 'off');
 
-    $nids = $query->execute();
-    $deals = Node::loadMultiple($nids);
-
-    $csv_data = [];
-    $headers = ['ID', 'Title', 'Amount', 'Stage', 'Probability', 'Contact', 'Organization', 'Owner', 'Expected Close Date', 'Closing Date', 'Status', 'Notes', 'Lost Reason', 'Created Date', 'Modified Date'];
-    $csv_data[] = $headers;
-
-    foreach ($deals as $deal) {
-      $row = [];
-      $row[] = $deal->id();
-      $row[] = $deal->getTitle();
-      $row[] = $deal->hasField('field_amount') ? $deal->get('field_amount')->value : '0';
-      $row[] = ($deal->hasField('field_stage') && $deal->get('field_stage')->entity) ? $deal->get('field_stage')->entity->getName() : '';
-      $row[] = $deal->hasField('field_probability') ? $deal->get('field_probability')->value : '';
-      $row[] = ($deal->hasField('field_contact') && $deal->get('field_contact')->entity) ? $deal->get('field_contact')->entity->getTitle() : '';
-      $row[] = ($deal->hasField('field_organization') && $deal->get('field_organization')->entity) ? $deal->get('field_organization')->entity->getTitle() : '';
-      $row[] = ($deal->hasField('field_owner') && $deal->get('field_owner')->entity) ? $deal->get('field_owner')->entity->getDisplayName() : '';
-      $row[] = $deal->hasField('field_expected_close_date') ? $deal->get('field_expected_close_date')->value : '';
-      $row[] = $deal->hasField('field_closing_date') ? $deal->get('field_closing_date')->value : '';
-      $row[] = $deal->isPublished() ? 'Active' : 'Closed';
-      $row[] = $deal->hasField('field_notes') ? strip_tags($deal->get('field_notes')->value) : '';
-      $row[] = $deal->hasField('field_lost_reason') ? strip_tags($deal->get('field_lost_reason')->value) : '';
-      $row[] = date('Y-m-d H:i:s', $deal->getCreatedTime());
-      $row[] = date('Y-m-d H:i:s', $deal->getChangedTime());
+      $handle = fopen('php://output', 'w');
+      // Add BOM to fix UTF-8 in Excel
+      fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
       
-      $csv_data[] = $row;
-    }
+      fputcsv($handle, ['ID', 'Title', 'Amount', 'Stage', 'Probability', 'Contact', 'Organization', 'Owner', 'Expected Close Date', 'Closing Date', 'Status', 'Notes', 'Lost Reason', 'Created Date', 'Modified Date']);
 
-    $csv_content = $this->arrayToCsv($csv_data);
-    $response = new Response($csv_content);
+      $query = \Drupal::entityQuery('node')
+        ->condition('type', 'deal')
+        ->accessCheck(FALSE)
+        ->sort('created', 'DESC');
+      if (!$see_all) {
+        $query->condition('field_owner', $user_id);
+      }
+
+      $nids = $query->execute();
+      $chunks = array_chunk($nids, 50);
+
+      foreach ($chunks as $chunk) {
+        $deals = Node::loadMultiple($chunk);
+        foreach ($deals as $deal) {
+          $row = [
+            $deal->id(),
+            $deal->getTitle(),
+            $deal->hasField('field_amount') ? $deal->get('field_amount')->value : '0',
+            ($deal->hasField('field_stage') && $deal->get('field_stage')->entity) ? $deal->get('field_stage')->entity->getName() : '',
+            $deal->hasField('field_probability') ? $deal->get('field_probability')->value : '',
+            ($deal->hasField('field_contact') && $deal->get('field_contact')->entity) ? $deal->get('field_contact')->entity->getTitle() : '',
+            ($deal->hasField('field_organization') && $deal->get('field_organization')->entity) ? $deal->get('field_organization')->entity->getTitle() : '',
+            ($deal->hasField('field_owner') && $deal->get('field_owner')->entity) ? $deal->get('field_owner')->entity->getDisplayName() : '',
+            $deal->hasField('field_expected_close_date') ? $deal->get('field_expected_close_date')->value : '',
+            $deal->hasField('field_closing_date') ? $deal->get('field_closing_date')->value : '',
+            $deal->isPublished() ? 'Active' : 'Closed',
+            $deal->hasField('field_notes') ? strip_tags($deal->get('field_notes')->value) : '',
+            $deal->hasField('field_lost_reason') ? strip_tags($deal->get('field_lost_reason')->value) : '',
+            date('Y-m-d H:i:s', $deal->getCreatedTime()),
+            date('Y-m-d H:i:s', $deal->getChangedTime())
+          ];
+          
+          fputcsv($handle, $row);
+        }
+        \Drupal::entityTypeManager()->getStorage('node')->resetCache($chunk);
+        flush();
+      }
+      fclose($handle);
+    });
+
     $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
     $response->headers->set('Content-Disposition', 'attachment; filename="deals_export_' . date('Y-m-d_His') . '.csv"');
     
@@ -329,62 +347,59 @@ HTML;
   public function exportOrganizations() {
     $current_user = \Drupal::currentUser();
     $user_id = $current_user->id();
-    $is_admin = $current_user->hasRole('administrator') || $user_id == 1;
-    $is_manager = $current_user->hasRole('sales_manager');
-    $see_all = $is_admin || $is_manager;
+    $see_all = $current_user->hasRole('administrator') || $user_id == 1 || $current_user->hasRole('sales_manager');
 
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'organization')
-      ->accessCheck(FALSE)
-      ->sort('created', 'DESC');
-    if (!$see_all) {
-      $query->condition('field_owner', $user_id);
-    }
+    $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($see_all, $user_id) {
+      // Disable any output buffering so chunks stream immediately
+      while (ob_get_level()) ob_end_clean();
+      @ini_set('output_buffering', 'off');
+      @ini_set('zlib.output_compression', 'off');
 
-    $nids = $query->execute();
-    $orgs = Node::loadMultiple($nids);
-
-    $csv_data = [];
-    $headers = ['ID', 'Name', 'Website', 'Industry', 'Address', 'Phone', 'Status', 'Employees', 'Created Date', 'Modified Date'];
-    $csv_data[] = $headers;
-
-    foreach ($orgs as $org) {
-      $row = [];
-      $row[] = $org->id();
-      $row[] = $org->getTitle();
-      $row[] = $org->hasField('field_website') ? $org->get('field_website')->uri : '';
-      $row[] = ($org->hasField('field_industry') && $org->get('field_industry')->entity) ? $org->get('field_industry')->entity->getName() : '';
-      $row[] = $org->hasField('field_address') ? $org->get('field_address')->value : '';
-      $row[] = $org->hasField('field_phone') ? $org->get('field_phone')->value : '';
-      $row[] = $org->hasField('field_status') ? $org->get('field_status')->value : '';
-      $row[] = $org->hasField('field_employees') ? $org->get('field_employees')->value : '';
-      $row[] = date('Y-m-d H:i:s', $org->getCreatedTime());
-      $row[] = date('Y-m-d H:i:s', $org->getChangedTime());
+      $handle = fopen('php://output', 'w');
+      // Add BOM to fix UTF-8 in Excel
+      fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
       
-      $csv_data[] = $row;
-    }
+      fputcsv($handle, ['ID', 'Name', 'Website', 'Industry', 'Address', 'Phone', 'Status', 'Employees', 'Created Date', 'Modified Date']);
 
-    $csv_content = $this->arrayToCsv($csv_data);
-    $response = new Response($csv_content);
+      $query = \Drupal::entityQuery('node')
+        ->condition('type', 'organization')
+        ->accessCheck(FALSE)
+        ->sort('created', 'DESC');
+      if (!$see_all) {
+        $query->condition('field_owner', $user_id);
+      }
+
+      $nids = $query->execute();
+      $chunks = array_chunk($nids, 50);
+
+      foreach ($chunks as $chunk) {
+        $orgs = Node::loadMultiple($chunk);
+        foreach ($orgs as $org) {
+          $row = [
+            $org->id(),
+            $org->getTitle(),
+            $org->hasField('field_website') ? $org->get('field_website')->uri : '',
+            ($org->hasField('field_industry') && $org->get('field_industry')->entity) ? $org->get('field_industry')->entity->getName() : '',
+            $org->hasField('field_address') ? $org->get('field_address')->value : '',
+            $org->hasField('field_phone') ? $org->get('field_phone')->value : '',
+            $org->hasField('field_status') ? $org->get('field_status')->value : '',
+            $org->hasField('field_employees') ? $org->get('field_employees')->value : '',
+            date('Y-m-d H:i:s', $org->getCreatedTime()),
+            date('Y-m-d H:i:s', $org->getChangedTime())
+          ];
+          
+          fputcsv($handle, $row);
+        }
+        \Drupal::entityTypeManager()->getStorage('node')->resetCache($chunk);
+        flush();
+      }
+      fclose($handle);
+    });
+
     $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
     $response->headers->set('Content-Disposition', 'attachment; filename="organizations_export_' . date('Y-m-d_His') . '.csv"');
     
     return $response;
-  }
-
-  /**
-   * Convert array to CSV string.
-   */
-  private function arrayToCsv(array $data) {
-    $output = fopen('php://temp', 'r+');
-    fputs($output, "\xEF\xBB\xBF");
-    foreach ($data as $row) {
-      fputcsv($output, $row);
-    }
-    rewind($output);
-    $csv = stream_get_contents($output);
-    fclose($output);
-    return $csv;
   }
 
   /**
