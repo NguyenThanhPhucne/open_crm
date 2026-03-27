@@ -8,6 +8,7 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
+  pointer-events: none;
 }
 
 .crm-fab-button {
@@ -28,6 +29,7 @@
               box-shadow 0.3s ease;
   position: relative;
   z-index: 2;
+  pointer-events: auto;
 }
 
 .crm-fab-button:hover {
