@@ -6,16 +6,12 @@ services:
       - "@database"
       - "@logger.factory"
       - "@crm.access_service"
-    tags:
-      - { name: service_collector }
 
   crm_advanced_filters.saved_filter_service:
     class: Drupal\crm_advanced_filters\Service\SavedFilterService
     arguments:
       - "@entity_type.manager"
       - "@current_user"
-    tags:
-      - { name: service_collector }
 
   crm_advanced_filters.suggestion_service:
     class: Drupal\crm_advanced_filters\Service\SuggestionService
@@ -23,5 +19,3 @@ services:
       - "@entity_type.manager"
       - "@database"
       - "@crm_advanced_filters.filter_service"
-    tags:
-      - { name: service_collector }
