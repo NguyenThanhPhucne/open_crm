@@ -535,8 +535,7 @@ HTML;
 
     function crmWordMatch(text, q) {
       if (!q) return true;
-      if (text.startsWith(q)) return true;
-      return text.split(/[\s\-_\/]+/).some(function(w){ return w.startsWith(q); });
+      return text.includes(q);
     }
 
     function formatCurrencyShort(value) {

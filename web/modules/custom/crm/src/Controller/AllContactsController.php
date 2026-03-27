@@ -75,13 +75,13 @@ class AllContactsController extends ControllerBase {
         $q->notExists('field_deleted_at');
       }
       if ($search_name) {
-        $q->condition('title', $search_name . '%', 'LIKE');
+        $q->condition('title', $search_name, 'CONTAINS');
       }
       if ($search_email) {
-        $q->condition('field_email.value', $search_email . '%', 'LIKE');
+        $q->condition('field_email.value', $search_email, 'CONTAINS');
       }
       if ($search_phone) {
-        $q->condition('field_phone', $search_phone . '%', 'LIKE');
+        $q->condition('field_phone', $search_phone, 'CONTAINS');
       }
       if ($is_my_view || (!$can_manage && $user_id > 0)) {
         $q->condition('field_owner', $user_id);

@@ -73,10 +73,10 @@ class AllOrganizationsController extends ControllerBase {
         $q->notExists('field_deleted_at');
       }
       if ($search_name) {
-        $q->condition('title', $search_name . '%', 'LIKE');
+        $q->condition('title', $search_name, 'CONTAINS');
       }
       if ($search_industry) {
-        $q->condition('field_industry', $search_industry . '%', 'LIKE');
+        $q->condition('field_industry', $search_industry, 'CONTAINS');
       }
       if ($search_status) {
         $q->condition('field_status', $search_status);

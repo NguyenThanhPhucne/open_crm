@@ -91,7 +91,7 @@ class AllDealsController extends ControllerBase {
         $q->notExists('field_deleted_at');
       }
       if ($search_name) {
-        $q->condition('title', $search_name . '%', 'LIKE');
+        $q->condition('title', $search_name, 'CONTAINS');
       }
       if ($filter_stage > 0) {
         $q->condition('field_stage', $filter_stage);
