@@ -140,7 +140,10 @@ class ImportOrganizationsForm extends FormBase {
       '),
     ];
 
-    $form['actions'] = ['#type' => 'actions'];
+    $form['actions'] = [
+      '#type'       => 'container',
+      '#attributes' => ['class' => ['crm-import-actions-row']],
+    ];
     $form['actions']['submit'] = [
       '#type'       => 'submit',
       '#value'      => $this->t('Import Organizations'),
@@ -148,15 +151,13 @@ class ImportOrganizationsForm extends FormBase {
         'class' => ['crm-import-submit-btn'],
         'id'    => 'crm-orgs-submit',
       ],
-      '#prefix' => '<div class="crm-import-submit">',
-      '#suffix' => '</div>',
     ];
 
     $form['actions']['cancel'] = [
       '#type'       => 'link',
       '#title'      => $this->t('← Back'),
       '#url'        => Url::fromRoute('crm_import_export.import_page'),
-      '#attributes' => ['class' => ['btn-import', 'btn-import--secondary', 'btn-import--back']],
+      '#attributes' => ['class' => ['btn-import', 'btn-import--secondary', 'crm-import-btn-cancel']],
     ];
 
     return $form;

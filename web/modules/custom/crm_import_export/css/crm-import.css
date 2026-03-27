@@ -999,29 +999,30 @@
 /* Submit button */
 .crm-import-submit {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .crm-import-submit-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 28px;
+  gap: 7px;
+  padding: 9px 18px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
 }
 .crm-import-submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.45);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 .crm-import-submit-btn:active {
   transform: translateY(0);
@@ -1137,3 +1138,72 @@
 .crm-export-bg-pink { background: #ec4899 !important; }
 .crm-export-border-pink { border-left: 4px solid #ec4899 !important; }
 .crm-export-color-slate { color: #64748b !important; }
+
+/* ── Import form: force actions row to right ── */
+.crm-import-form-page .form-actions,
+.crm-import-form .form-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Keep the wrapper div in sync */
+.crm-import-form-page .crm-import-submit,
+.crm-import-form .crm-import-submit {
+  display: contents; /* let the button participate in the parent flex row */
+}
+
+/* Back / secondary button compact size */
+.crm-import-btn-cancel,
+.btn-import.btn-import--secondary {
+  padding: 9px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+}
+
+/* ── New container-based action row (bypasses Drupal .form-actions theming) ── */
+.crm-import-actions-row {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-top: 8px !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Force override Drupal's .button and .button--primary base styles */
+.crm-import-form-page .crm-import-submit-btn,
+.crm-import-form .crm-import-submit-btn {
+  padding: 9px 18px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: normal !important;
+  height: auto !important;
+  min-height: 0 !important;
+  border-radius: 8px !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: max-content !important;
+}
+
+/* Also ensure the Back button doesn't stretch */
+.crm-import-btn-cancel,
+.btn-import.btn-import--secondary {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: max-content !important;
+}
