@@ -363,8 +363,13 @@ class AllOrganizationsController extends ControllerBase {
 
   /* ── Table card ── */
   .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-  .orgs-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-  .orgs-table thead tr { background:rgba(248,250,252,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
+  .table-scroll-wrap{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;}
+  .table-scroll-wrap::-webkit-scrollbar{height:5px;}
+  .table-scroll-wrap::-webkit-scrollbar-track{background:#f8fafc;}
+  .table-scroll-wrap::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;}
+  .table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
+  .orgs-table{width:100%;min-width:800px;border-collapse:collapse;font-size:12px}
+  .orgs-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0;background:rgba(248,250,252,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
   .orgs-table th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;white-space:nowrap;overflow:hidden}
   .orgs-table th.th-action{text-align:right}
   .orgs-table tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
@@ -463,9 +468,7 @@ class AllOrganizationsController extends ControllerBase {
   @media(max-width:1000px){.orgs-table .col-employees,.orgs-table th.th-employees,.orgs-table td.td-employees-cell{display:none}}
   @media(max-width:900px){.orgs-table .col-email,.orgs-table th.th-email,.orgs-table td.td-email-cell{display:none}}
   @media(max-width:700px){.orgs-table .col-phone,.orgs-table th.th-phone,.orgs-table td.td-phone-cell{display:none}}
-  .orgs-table th,.orgs-table td{box-sizing:border-box}
-  /* ── ClickUp-inspired UX additions ── */
-  .orgs-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0 }
+  /* Sticky thead already handled above */
   .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
   .sort-ic{width:9px;height:12px;margin-left:4px;vertical-align:-1px;color:#cbd5e1;transition:color .12s}.th-sort:hover .sort-ic,.th-sorted .sort-ic,.sort-ic.asc,.sort-ic.desc{color:#3b82f6}
   .th-sort a,.th-sort a:visited{color:inherit;text-decoration:none;display:flex;align-items:center;gap:0}
@@ -582,6 +585,7 @@ HTML;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
+    <div class="table-scroll-wrap">
     <table class="orgs-table">
       <colgroup>
         <col class="col-chk">
@@ -706,6 +710,7 @@ EMPTY;
     }
 
     $html .= '</tbody></table>';
+    $html .= '</div>'; // .table-scroll-wrap
 
     // ── Pagination ────────────────────────────────────────────────────────────
     $html .= '<div class="pagination"><div class="pg-sz"><label for="pg-sz-sel">Rows:</label><select id="pg-sz-sel">' . $per_page_sel . '</select></div>';

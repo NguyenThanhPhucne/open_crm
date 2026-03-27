@@ -8,6 +8,14 @@ crm_shared:
   dependencies:
     - core/drupal
 
+crm_list_tables:
+  version: 1.0
+  css:
+    theme:
+      css/crm-list-tables.css: {}
+  dependencies:
+    - core/drupal
+
 crm-design-system:
   version: 4.0
   css: {}

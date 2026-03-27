@@ -401,8 +401,13 @@ class AllDealsController extends ControllerBase {
 
   /* Table */
   .table-card{background:#fff;border:1px solid #e2e8f0;border-radius: 16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-  
-  .deals-table thead tr { background:rgba(248,250,252,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
+  .table-scroll-wrap{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;}
+  .table-scroll-wrap::-webkit-scrollbar{height:5px;}
+  .table-scroll-wrap::-webkit-scrollbar-track{background:#f8fafc;}
+  .table-scroll-wrap::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;}
+  .table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
+
+  .deals-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0;background:rgba(248,250,252,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e2e8f0 }
   
   .deals-table th.th-action{text-align:right}
   
@@ -497,9 +502,7 @@ class AllDealsController extends ControllerBase {
   @media(max-width:1100px){.deals-table .col-owner,.deals-table th.th-owner,.deals-table td.td-owner-cell{display:none}}
   @media(max-width:900px){.deals-table .col-close,.deals-table th.th-close,.deals-table td.td-close-cell{display:none}}
   @media(max-width:700px){.deals-table .col-prob,.deals-table th.th-prob,.deals-table td.td-prob-cell{display:none}}
-  .deals-table th,
-  /* ── ClickUp-inspired UX additions ── */
-  .deals-table thead tr { position:sticky;top:0;z-index:10;box-shadow:0 1px 0 #e2e8f0 }
+  /* Sticky thead already handled above */
   .th-sort{cursor:pointer;user-select:none;white-space:nowrap}.th-sort:hover{color:#3b82f6;background:rgba(59,130,246,.04)}.th-sorted{color:#2563eb !important}
   .sort-ic{width:9px;height:12px;margin-left:4px;vertical-align:-1px;color:#cbd5e1;transition:color .12s}.th-sort:hover .sort-ic,.th-sorted .sort-ic,.sort-ic.asc,.sort-ic.desc{color:#3b82f6}
   .th-sort a,.th-sort a:visited{color:inherit;text-decoration:none;display:flex;align-items:center;gap:0}
@@ -521,7 +524,7 @@ class AllDealsController extends ControllerBase {
   .is-compact .deals-table td,.is-compact .deals-table th{padding-top:5px !important;padding-bottom:5px !important}
   .is-roomy .deals-table td,.is-roomy .deals-table th{padding-top:14px !important;padding-bottom:14px !important}
   .pg-sz{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}.pg-sz select{height:28px;padding:0 6px;border:1px solid #e2e8f0;border-radius: 16px;font-size:12px;color:#374151;background:#fff;cursor:pointer;outline:none}.pg-sz select:focus{border-color:#3b82f6}
-  .deals-table {width:100%;border-collapse:separate;border-spacing:0;margin-top:16px}
+  .deals-table {width:100%;min-width:760px;border-collapse:separate;border-spacing:0;}
   .deals-table th {font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px;border-bottom:1px solid #e2e8f0;background:transparent;text-align:left}
   .deals-table td {padding:14px 16px;font-size:14px;color:#334155;border-bottom:1px solid #f8fafc;transition:all 0.2s ease;vertical-align:middle}
   .deals-table tbody tr {transition:all 0.2s ease;}
@@ -589,6 +592,7 @@ HTML;
     // ── Table ─────────────────────────────────────────────────────────────────
     $html .= <<<HTML
   <div class="table-card">
+    <div class="table-scroll-wrap">
     <table class="deals-table">
       <colgroup>
         <col class="col-chk">
@@ -700,6 +704,7 @@ EMPTY;
     }
 
     $html .= '</tbody></table>';
+    $html .= '</div>'; // .table-scroll-wrap
 
     // ── Pagination ────────────────────────────────────────────────────────────
     $html .= '<div class="pagination"><div class="pg-sz"><label for="pg-sz-sel">Rows:</label><select id="pg-sz-sel">' . $per_page_sel . '</select></div>';
@@ -805,7 +810,7 @@ JS;
       '#markup' => Markup::create($html),
       '#attached' => [
         'library' => [
-          'core/drupal',          'crm/crm_shared',          'crm_edit/inline_edit',
+          'core/drupal', 'crm/crm_shared', 'crm/crm_list_tables', 'crm_edit/inline_edit',
 
         ],
       ],
