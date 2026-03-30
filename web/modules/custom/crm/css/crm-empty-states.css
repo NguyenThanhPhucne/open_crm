@@ -1,0 +1,131 @@
+/**
+ * @file
+ * CRM Empty States — styling for zero-data views.
+ * Complements the server-side empty state injected in crm_preprocess_views_view().
+ */
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EMPTY STATE WRAPPER
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.crm-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 32px;
+  min-height: 300px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    sans-serif;
+  animation: crm-empty-fade-in 0.35s ease;
+}
+
+@keyframes crm-empty-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icon illustration container */
+.crm-empty-state__icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(29, 78, 216, 0.08);
+}
+
+.crm-empty-state__icon svg {
+  width: 44px;
+  height: 44px;
+  color: #3b82f6;
+  stroke: currentColor;
+}
+
+/* Title */
+.crm-empty-state__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 10px;
+}
+
+/* Subtitle description */
+.crm-empty-state__desc {
+  font-size: 14px;
+  color: #64748b;
+  max-width: 400px;
+  margin: 0 auto 28px;
+  line-height: 1.65;
+}
+
+/* Call-to-action button */
+.crm-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2);
+}
+
+.crm-empty-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(29, 78, 216, 0.3);
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  color: #fff;
+}
+
+.crm-empty-cta svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Secondary link below main CTA */
+.crm-empty-state__secondary {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.crm-empty-state__secondary:hover {
+  color: #64748b;
+  text-decoration: underline;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INLINE EMPTY (inside table / list)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.crm-empty-inline {
+  text-align: center;
+  padding: 40px 24px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.crm-empty-inline svg {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 10px;
+  display: block;
+  opacity: 0.45;
+}

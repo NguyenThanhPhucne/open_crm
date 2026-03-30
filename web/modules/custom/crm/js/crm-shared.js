@@ -406,8 +406,11 @@
    */
   function renderShortcutHints(shortcuts) {
     if (!shortcuts || !shortcuts.length) return;
+    // Guard: only inject once per page. Drupal behaviors may call attach() multiple times.
+    if (document.getElementById("crm-shortcuts-hint")) return;
     var bar = document.createElement("div");
     bar.className = "crm-shortcuts-hint";
+    bar.id = "crm-shortcuts-hint";
     bar.innerHTML = shortcuts
       .map(function (s) {
         return (

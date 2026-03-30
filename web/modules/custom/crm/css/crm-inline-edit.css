@@ -8,6 +8,7 @@
 /* Editable cells - normal state */
 td.is-inline-editable {
   position: relative;
+  cursor: pointer;
   transition: background-color 0.15s;
 }
 
@@ -164,4 +165,31 @@ td.is-editing select:focus {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ── Inline edit input/textarea (replaces JS inline styles) ──────────── */
+.crm-inline-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid #2196f3;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: inherit;
+  background: #fff;
+  color: inherit;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.crm-inline-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+}
+
+.crm-inline-textarea {
+  resize: vertical;
+  min-height: 72px;
 }

@@ -68,7 +68,9 @@ class DeleteController extends ControllerBase {
       $result = $this->invalidValidationResult(400, 'Missing node ID or type');
     }
     else {
-      $node = \Drupal::entityTypeManager()->getStorage('node')->load($data['nid']);
+      $entity = \Drupal::entityTypeManager()->getStorage('node')->load($data['nid']);
+      // Node storage always returns NodeInterface; the cast satisfies static analysis.
+      $node = ($entity instanceof \Drupal\node\NodeInterface) ? $entity : NULL;
       if (!$node) {
         $result = $this->invalidValidationResult(404, 'Entity not found');
       }
@@ -105,8 +107,8 @@ class DeleteController extends ControllerBase {
     elseif (!$this->isValidDeleteConfirmation($data, $node)) {
       $error = $this->invalidValidationResult(400, 'Confirmation text does not match. Please type the exact name to confirm deletion.');
     }
-    elseif ($requested_delete_mode === 'hard' && !$this->currentUser()->hasPermission('administer nodes')) {
-      $error = $this->invalidValidationResult(403, 'Hard delete requires administrator permission.');
+    elseif ($requested_delete_mode === 'hard' && !$this->canHardDelete()) {
+      $error = $this->invalidValidationResult(403, 'You do not have permission to permanently delete records.');
     }
 
     return $error;
@@ -254,6 +256,49 @@ class DeleteController extends ControllerBase {
   }
   
   /**
+   * Check if current user can perform a hard delete.
+   *
+   * Allowed roles:
+   *   - Administrator (administer nodes)
+   *   - Sales Manager (bypass crm team access OR sales_manager role)
+   *   - Any user with explicit 'delete any * content' permission
+   *
+   * @return bool
+   */
+  protected function canHardDelete(): bool {
+    $account = $this->currentUser();
+
+    // Administrators always can.
+    if ($account->hasPermission('administer nodes')) {
+      return TRUE;
+    }
+
+    // Users with the bypass-team permission (Sales Managers) can delete.
+    if ($account->hasPermission('bypass crm team access')) {
+      return TRUE;
+    }
+
+    // Any role named 'sales_manager' can delete.
+    /** @var \Drupal\user\UserInterface $full_account */
+    $full_account = \Drupal::entityTypeManager()
+      ->getStorage('user')
+      ->load($account->id());
+    if ($full_account && in_array('sales_manager', $full_account->getRoles(), TRUE)) {
+      return TRUE;
+    }
+
+    // User has explicit delete-any permission for at least one CRM type.
+    $crm_types = ['contact', 'deal', 'organization', 'activity'];
+    foreach ($crm_types as $type) {
+      if ($account->hasPermission("delete any {$type} content")) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+
+  /**
    * Get ownership field name for content type.
    */
   protected function getOwnerField($bundle) {
@@ -311,6 +356,9 @@ class DeleteController extends ControllerBase {
 
         $entities = $storage->loadMultiple($ids);
         foreach ($entities as $entity) {
+          if (!($entity instanceof \Drupal\node\NodeInterface)) {
+            continue;
+          }
           if ($entity->hasField($field_name)) {
             $entity->set($field_name, []);
             $entity->save();

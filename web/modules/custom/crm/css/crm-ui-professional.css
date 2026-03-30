@@ -311,7 +311,7 @@ select.error {
 }
 
 /* === BUTTONS === */
-button,
+button:not(.button--dismiss):not(.ui-dialog-titlebar-close):not(.toolbar-icon),
 .btn,
 .crm-btn,
 input[type="submit"],
@@ -334,7 +334,7 @@ a.btn {
   user-select: none;
 }
 
-button:focus,
+button:not(.button--dismiss):not(.ui-dialog-titlebar-close):not(.toolbar-icon):focus,
 .btn:focus,
 input[type="submit"]:focus,
 input[type="button"]:focus {
@@ -416,7 +416,7 @@ button[type="submit"]:active {
 }
 
 /* Disabled */
-button:disabled,
+button:not(.button--dismiss):not(.ui-dialog-titlebar-close):not(.toolbar-icon):disabled,
 input:disabled,
 .btn:disabled {
   opacity: 0.6;

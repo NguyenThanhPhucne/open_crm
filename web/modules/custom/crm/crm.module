@@ -385,13 +385,16 @@ function crm_node_presave(NodeInterface $node) {
       }
     }
 
-    // Requirement 4: Deal must reference Contact OR Organization (at least one)
+    // Requirement 4: Deal must reference Contact OR Organization (at least one).
+    // NOTE: Enforced at UI/form level. Backend only logs a warning to support
+    // data migrations and admin imports that may not always have both references.
     $has_contact = !$node->get('field_contact')->isEmpty();
     $has_org = !$node->get('field_organization')->isEmpty();
-    
+
     if (!$has_contact && !$has_org) {
-      throw new \InvalidArgumentException(
-        'Deal must reference at least one: Contact or Organization'
+      \Drupal::logger('crm')->warning(
+        'Deal "@title" (nid: @nid) saved without a Contact or Organization reference.',
+        ['@title' => $node->getTitle(), '@nid' => $node->id() ?: 'new']
       );
     }
   }
@@ -692,6 +695,7 @@ function crm_page_attachments(array &$attachments) {
     $attachments['#attached']['library'][] = 'crm/crm_inline_edit';
     $attachments['#attached']['library'][] = 'crm/crm_lazy_load';
     $attachments['#attached']['library'][] = 'crm/crm-ui-professional';
+    $attachments['#attached']['library'][] = 'crm/crm_skeleton';
   }
 
   // PHASE 2: Also attach to views displayed via AJAX (inline pagination/filtering)

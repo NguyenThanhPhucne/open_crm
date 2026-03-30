@@ -1,0 +1,245 @@
+/**
+ * @file
+ * CRM Skeleton Loaders — Premium loading experience.
+ *
+ * Replaces opacity-fade spinners with animated content placeholders
+ * that mirror the real layout, giving the impression of instant load.
+ *
+ * Usage:
+ *   CRMSkeleton.show(containerEl, 'table', 8);   // 8 skeleton rows
+ *   CRMSkeleton.show(containerEl, 'cards', 4);   // 4 stat cards
+ *   CRMSkeleton.show(containerEl, 'kanban', 3);  // 3 kanban columns
+ *   CRMSkeleton.hide(containerEl);
+ */
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BASE SHIMMER ANIMATION
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes crm-shimmer {
+  0% {
+    background-position: -600px 0;
+  }
+  100% {
+    background-position: 600px 0;
+  }
+}
+
+.crm-skeleton {
+  background: linear-gradient(
+    90deg,
+    #eef2f7 0px,
+    #f6f9fc 40px,
+    #eef2f7 80px
+  );
+  background-size: 600px 100%;
+  animation: crm-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+  display: block;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SKELETON TABLE ROWS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.crm-skeleton-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.crm-skeleton-row {
+  border-bottom: 1px solid #eef2f7;
+}
+
+.crm-skeleton-row td {
+  padding: 14px 16px;
+}
+
+/* Checkbox col */
+.crm-skeleton-row .sk-col-check {
+  width: 40px;
+}
+.crm-skeleton-row .sk-col-check .crm-skeleton {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+/* Name col — wider with avatar circle */
+.crm-skeleton-row .sk-col-name {
+  width: 200px;
+}
+.crm-skeleton-row .sk-col-name .sk-name-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crm-skeleton-row .sk-col-name .sk-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.crm-skeleton-row .sk-col-name .sk-label {
+  height: 13px;
+  border-radius: 4px;
+  flex: 1;
+  max-width: 140px;
+}
+
+/* Generic text col */
+.crm-skeleton-row .sk-col-text .crm-skeleton {
+  height: 13px;
+  border-radius: 4px;
+  width: 80%;
+}
+
+/* Status / badge col */
+.crm-skeleton-row .sk-col-badge .crm-skeleton {
+  height: 22px;
+  width: 72px;
+  border-radius: 11px;
+}
+
+/* Actions col */
+.crm-skeleton-row .sk-col-actions {
+  width: 100px;
+  text-align: right;
+}
+.crm-skeleton-row .sk-col-actions .crm-skeleton {
+  height: 28px;
+  width: 80px;
+  border-radius: 6px;
+  margin-left: auto;
+}
+
+/* Stagger delay for natural feel */
+.crm-skeleton-row:nth-child(2) .crm-skeleton { animation-delay: 0.1s; }
+.crm-skeleton-row:nth-child(3) .crm-skeleton { animation-delay: 0.2s; }
+.crm-skeleton-row:nth-child(4) .crm-skeleton { animation-delay: 0.3s; }
+.crm-skeleton-row:nth-child(5) .crm-skeleton { animation-delay: 0.4s; }
+.crm-skeleton-row:nth-child(6) .crm-skeleton { animation-delay: 0.15s; }
+.crm-skeleton-row:nth-child(7) .crm-skeleton { animation-delay: 0.25s; }
+.crm-skeleton-row:nth-child(8) .crm-skeleton { animation-delay: 0.35s; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SKELETON STAT CARDS (Dashboard)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.crm-skeleton-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.crm-skeleton-card {
+  background: #fff;
+  border: 1px solid #e8eef5;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crm-skeleton-card .sk-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.crm-skeleton-card .sk-card-value {
+  height: 28px;
+  width: 60%;
+  border-radius: 6px;
+}
+
+.crm-skeleton-card .sk-card-label {
+  height: 12px;
+  width: 80%;
+  border-radius: 4px;
+}
+
+.crm-skeleton-card:nth-child(2) .crm-skeleton { animation-delay: 0.12s; }
+.crm-skeleton-card:nth-child(3) .crm-skeleton { animation-delay: 0.24s; }
+.crm-skeleton-card:nth-child(4) .crm-skeleton { animation-delay: 0.36s; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SKELETON KANBAN COLUMN
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.crm-skeleton-kanban {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.crm-skeleton-kanban-col {
+  min-width: 260px;
+  flex-shrink: 0;
+  background: #f7f9fc;
+  border: 1px solid #e4eaf2;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.crm-skeleton-kanban-col .sk-col-header {
+  height: 14px;
+  width: 60%;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.crm-skeleton-kanban-card {
+  background: #fff;
+  border: 1px solid #e8eef5;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crm-skeleton-kanban-card .sk-kanban-title {
+  height: 13px;
+  border-radius: 4px;
+  width: 85%;
+}
+
+.crm-skeleton-kanban-card .sk-kanban-sub {
+  height: 11px;
+  border-radius: 4px;
+  width: 55%;
+}
+
+.crm-skeleton-kanban-card .sk-kanban-badge {
+  height: 20px;
+  width: 64px;
+  border-radius: 10px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LOADING OVERLAY (replaces crm-loading opacity fade)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.crm-results-wrap.crm-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.crm-results-wrap.crm-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
+  backdrop-filter: blur(1px);
+  z-index: 10;
+  animation: crm-fade-in 0.15s ease;
+}
+
+@keyframes crm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

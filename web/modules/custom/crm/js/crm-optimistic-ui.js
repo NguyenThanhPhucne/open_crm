@@ -185,8 +185,10 @@
       return;
     }
 
-    // Check if form is actually dirty
-    if (!formState.isDirty) {
+    // On add (new record) forms: skip if nothing was touched.
+    // On edit forms: always allow submit — user may want to re-save without changes.
+    var isAddForm = $form.attr("id") && $form.attr("id").indexOf("node-add") !== -1;
+    if (isAddForm && !formState.isDirty) {
       window.CRM.toast("No changes to save", "info", 2000);
       return;
     }

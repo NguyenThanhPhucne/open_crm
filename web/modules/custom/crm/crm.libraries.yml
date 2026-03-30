@@ -22,6 +22,16 @@ crm-design-system:
   dependencies:
     - core/drupal
 
+crm_skeleton:
+  version: 1.0
+  css:
+    theme:
+      css/crm-skeleton.css: {}
+  js:
+    js/crm-skeleton.js: {}
+  dependencies:
+    - core/drupal
+
 user_profile_styles:
   version: 4.0
   css:
@@ -132,12 +142,11 @@ crm_inline_edit:
   css:
     theme:
       css/crm-inline-edit.css: {}
-  js:
-    js/crm-inline-edit.js: {}
   dependencies:
     - core/drupal
     - core/jquery
     - core/once
+    - crm_edit/inline_edit
 
 crm_lazy_load:
   version: 4.0
@@ -156,6 +165,7 @@ crm-ui-professional:
   css:
     theme:
       css/crm-ui-professional.css: {}
+      css/crm-micro-interactions.css: {}
   js:
     js/crm-list-toolbar.js: {}
   dependencies:

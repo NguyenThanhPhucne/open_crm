@@ -1,0 +1,292 @@
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MODAL ANIMATIONS & MICRO-INTERACTIONS SUPPLEMENT
+   (appended to crm-ui-professional.css via separate import)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Backdrop enter */
+@keyframes crm-backdrop-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal card enter — spring easing */
+@keyframes crm-modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Bulk-delete confirm overlay ── */
+.crm-bulk-confirm {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99998;
+  padding: 16px;
+  animation: crm-backdrop-enter 0.22s ease;
+}
+
+.crm-bulk-confirm__card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.22),
+    0 4px 16px rgba(15, 23, 42, 0.1);
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 440px;
+  animation: crm-modal-enter 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.crm-bulk-confirm__ttl {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px;
+}
+
+.crm-bulk-confirm__txt {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.crm-bulk-confirm__warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+
+.crm-bulk-confirm__lbl {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.crm-bulk-confirm__input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: #fafbfc;
+}
+
+.crm-bulk-confirm__input:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+  background: #fff;
+}
+
+.crm-bulk-confirm__hint {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+.crm-bulk-confirm__row {
+  margin-bottom: 20px;
+}
+
+.crm-bulk-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.crm-bulk-confirm__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.18s ease;
+}
+
+.crm-bulk-confirm__btn:not(.crm-bulk-confirm__btn--danger) {
+  background: #fff;
+  color: #374151;
+  border-color: #e2e8f0;
+}
+
+.crm-bulk-confirm__btn:not(.crm-bulk-confirm__btn--danger):hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.crm-bulk-confirm__btn--danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.crm-bulk-confirm__btn--danger:not(:disabled):hover {
+  background: #dc2626;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+.crm-bulk-confirm__btn--danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Card hover lift ── */
+.crm-stat-card,
+.crm-activity-card,
+.crm-kanban-card,
+.crm-dashboard-card {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.crm-stat-card:hover,
+.crm-activity-card:hover,
+.crm-kanban-card:hover,
+.crm-dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.1),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+/* ── Danger button micro-interaction ── */
+.btn-danger:hover,
+.crm-btn--danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:active,
+.crm-btn--danger:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ── Delete row flash animation ── */
+@keyframes crm-row-delete-flash {
+  0%   { background: rgba(239, 68, 68, 0.09); }
+  60%  { background: rgba(239, 68, 68, 0.14); opacity: 1; }
+  100% { background: transparent; opacity: 0; }
+}
+
+tr.crm-row-deleting {
+  animation: crm-row-delete-flash 0.45s ease forwards;
+  pointer-events: none;
+}
+
+/* ── Results wrap base (skeleton integration) ── */
+#crm-results-wrap {
+  position: relative;
+  transition: opacity 0.15s;
+}
+
+/* ── Accessible focus ring ── */
+:focus-visible {
+  outline: 2px solid var(--primary-500, #0066cc);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Drupal Core Message Dismiss Button Fix (Premium UI) ── */
+.button.button--dismiss.js-message-button-hide {
+  display: block !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-height: auto !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  transition: background-color 0.2s ease, transform 0.1s ease !important;
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  overflow: hidden !important; /* Cắt đứt các text rác */
+}
+
+.button.button--dismiss.js-message-button-hide:hover {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.button.button--dismiss.js-message-button-hide:active {
+  transform: scale(0.92) !important;
+  background-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Ẩn mọi text phụ sinh ra bên trong */
+.button.button--dismiss span {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+}
+
+.button.button--dismiss .icon-close {
+  display: block !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important; /* Ép tâm tĩnh tuyệt đối */
+  margin: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  background-color: transparent !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E") !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  opacity: 1 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Ẩn các icon CSS cũ do theme Claro/Gin tự tạo bằng ::before ::after */
+.button.button--dismiss .icon-close::before,
+.button.button--dismiss .icon-close::after {
+  content: none !important;
+  display: none !important;
+}
+
+.button.button--dismiss.js-message-button-hide:hover .icon-close {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E") !important;
+}
+
+/* ── Inter font CSS variable ── */
+:root {
+  --font-family-ui:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+}
